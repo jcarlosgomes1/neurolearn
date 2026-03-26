@@ -1,4 +1,27 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NeuroLearn — Plataforma de Cursos de IA</title>
+  <meta name="description" content="Aprende IA. Transforma o futuro."/>
+  <style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}#root{min-height:100vh}</style>
+</head>
+<body>
+  <div id="root"><div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;color:#86868B;font-size:14px">A carregar NeuroLearn...</div></div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+  <script>
+    window.storage={
+      get:async(k)=>{try{const v=localStorage.getItem(k);return v?{key:k,value:v}:null;}catch{return null;}},
+      set:async(k,v)=>{try{localStorage.setItem(k,typeof v==='string'?v:JSON.stringify(v));return{key:k,value:v};}catch{return null;}},
+      delete:async(k)=>{try{localStorage.removeItem(k);return{key:k,deleted:true};}catch{return null;}},
+      list:async(p)=>{try{const ks=Object.keys(localStorage).filter(k=>!p||k.startsWith(p));return{keys:ks};}catch{return{keys:[]};}}
+    };
+  </script>
+  <script id="app-code" type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
 
 const CK="nl7-c",SK="nl7-s",NK="nl7-n",NOK="nl7-notes",LCK="nl7-lc",LVK="nl7-lv",EMK="nl7-em",CMK="nl7-cm",BDK="nl7-bd",SSK="nl7-session";
 const PIN="2026";
@@ -103,7 +126,7 @@ const TESTIMONIALS=[
   {name:"Ana Ferreira",role:"Professora Universitária",text:"Recomendo aos meus alunos. A qualidade do conteúdo gerado por IA é impressionante e sempre atualizado.",rating:4,avatar:"AF"},
 ];
 
-export default function App(){
+function App(){
   const[zone,setZone]=useState("public");
   const[view,setView]=useState("home");
   const[aView,setAView]=useState("dashboard");
@@ -1337,3 +1360,8 @@ export default function App(){
   if(zone==="student")return(<div style={{fontFamily:F,color:tx1,background:bg1,minHeight:"100vh",opacity:mounted?1:0,transition:"all .4s"}} onClick={()=>{showNotif&&setShowNotif(false);showEmails&&setShowEmails(false);}}><SNav/>{sView==="my"&&<MyCourses/>}{sView==="explore"&&<Explore2/>}{sView==="play"&&<Player/>}{sView==="profile"&&<Profile/>}{renderPayModal()}{renderToast()}</div>);
   return(<div style={{fontFamily:F,color:"#1D1D1F",background:"#FBFBFD",minHeight:"100vh",opacity:mounted?1:0,transition:"opacity .4s"}} onClick={()=>showNotif&&setShowNotif(false)}><PNav/>{view==="home"&&<Home/>}{view==="courses"&&<PubCourses/>}{view==="pricing"&&<Pricing/>}{view==="detail"&&<Detail/>}{view==="about"&&<div style={{maxWidth:640,margin:"0 auto",padding:"64px 20px",textAlign:"center"}}><style>{anim}</style><h1 style={{fontSize:38,fontWeight:700,letterSpacing:"-0.03em",marginBottom:12,animation:"fu .5s ease both"}}>Sobre a NeuroLearn</h1><p style={{fontSize:16,color:"#6E6E73",lineHeight:1.7,animation:"fu .5s ease .1s both"}}>Plataforma de ensino de IA, com cursos criados por profissionais e gerida por agentes inteligentes.</p><div style={{marginTop:36,display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:16}}>{[{e:"🎯",t:"Prático"},{e:"🧑‍🏫",t:"Especialistas"},{e:"🤖",t:"IA-powered"}].map((x,i)=>(<div key={i} style={{padding:22,borderRadius:16,background:"#fff",border:bd,animation:`fu .5s ease ${.2+i*.08}s both`}}><div style={{fontSize:28,marginBottom:8}}>{x.e}</div><div style={{fontSize:14,fontWeight:600}}>{x.t}</div></div>))}</div></div>}<Foot/>{renderPayModal()}{renderToast()}</div>);
 }
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+  </script>
+</body>
+</html>
