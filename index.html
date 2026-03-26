@@ -1,0 +1,1899 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NeuroLearn — Plataforma de Cursos de IA</title>
+  <meta name="description" content="Aprende IA. Transforma o futuro."/>
+  <style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}#root{min-height:100vh}</style>
+</head>
+<body>
+  <div id="root"><div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;color:#86868B;font-size:14px">A carregar NeuroLearn...</div></div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script>
+  (function(){
+    const SB = supabase.createClient(
+      'https://obpezocujzdaznrdgwoo.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9icGV6b2N1anpkYXpucmRnd29vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NTU4MzAsImV4cCI6MjA5MDAzMTgzMH0.SZx4ilUcyaA732zB6qInKVLuFHntzU9C_K0x7Y_dbuc'
+    );
+
+    // Chaves que são GLOBAIS (plataforma) vs POR ALUNO
+    const GLOBAL_KEYS = new Set(['nl7-c','nl7-lc','nl7-cm']); // cursos, conteudo aulas, comentários
+    const STUDENT_KEYS = new Set(['nl7-s','nl7-n','nl7-notes','nl7-lv','nl7-em','nl7-bd']); // alunos, notifs, notas, last viewed, emails, badges
+    const LOCAL_ONLY = new Set(['nl7-session']); // sessão só local
+
+    function getStudentEmail(){
+      try{
+        const s=localStorage.getItem('nl7-session');
+        if(s){const o=JSON.parse(s);return o&&o.email?o.email:null;}
+      }catch{}
+      return null;
+    }
+
+    async function sbGet(table, id){
+      try{
+        const {data,error}=await SB.from(table).select('data').eq(id[0],id[1]).maybeSingle();
+        if(error||!data)return null;
+        return typeof data.data==='string'?data.data:JSON.stringify(data.data);
+      }catch{return null;}
+    }
+
+    async function sbSet(table, match, jsonVal){
+      try{
+        const row={...match, data:jsonVal, updated_at:new Date().toISOString()};
+        await SB.from(table).upsert(row,{onConflict:Object.keys(match).join(',')});
+      }catch(e){console.warn('SB write error:',e);}
+    }
+
+    window._SB = SB; // exposto para ser usado na geração de conteúdo
+    window.storage = {
+      get: async (k) => {
+        // Sessão: só localStorage
+        if(LOCAL_ONLY.has(k)){
+          try{const v=localStorage.getItem(k);return v?{key:k,value:v}:null;}catch{return null;}
+        }
+        // Dados globais da plataforma
+        if(GLOBAL_KEYS.has(k)){
+          const val=await sbGet('nl_platform',['key',k]);
+          if(val!==null)return{key:k,value:val};
+          // fallback localStorage
+          try{const v=localStorage.getItem(k);return v?{key:k,value:v}:null;}catch{return null;}
+        }
+        // Dados por aluno
+        if(STUDENT_KEYS.has(k)){
+          const email=getStudentEmail();
+          if(email){
+            const val=await sbGet('nl_student_data',['student_email||key',email+'|'+k]);
+            // query correcta:
+            try{
+              const {data,error}=await SB.from('nl_student_data').select('data')
+                .eq('student_email',email).eq('key',k).maybeSingle();
+              if(!error&&data)return{key:k,value:typeof data.data==='string'?data.data:JSON.stringify(data.data)};
+            }catch{}
+          }
+          // fallback localStorage
+          try{const v=localStorage.getItem(k);return v?{key:k,value:v}:null;}catch{return null;}
+        }
+        try{const v=localStorage.getItem(k);return v?{key:k,value:v}:null;}catch{return null;}
+      },
+
+      set: async (k, v) => {
+        const val=typeof v==='string'?v:JSON.stringify(v);
+        let jsonVal;try{jsonVal=JSON.parse(val);}catch{jsonVal=val;}
+        // Sempre guardar em localStorage como cache rápido
+        try{localStorage.setItem(k,val);}catch{}
+        if(LOCAL_ONLY.has(k))return{key:k,value:val};
+        // Dados globais
+        if(GLOBAL_KEYS.has(k)){
+          await sbSet('nl_platform',{key:k},jsonVal);
+          return{key:k,value:val};
+        }
+        // Dados por aluno
+        if(STUDENT_KEYS.has(k)){
+          const email=getStudentEmail();
+          if(email){
+            try{
+              await SB.from('nl_student_data').upsert(
+                {student_email:email,key:k,data:jsonVal,updated_at:new Date().toISOString()},
+                {onConflict:'student_email,key'}
+              );
+            }catch(e){console.warn('SB student write:',e);}
+          }
+          return{key:k,value:val};
+        }
+        return{key:k,value:val};
+      },
+
+      delete: async (k) => {
+        try{localStorage.removeItem(k);}catch{}
+        if(GLOBAL_KEYS.has(k)){
+          try{await SB.from('nl_platform').delete().eq('key',k);}catch{}
+        }
+        if(STUDENT_KEYS.has(k)){
+          const email=getStudentEmail();
+          if(email){try{await SB.from('nl_student_data').delete().eq('student_email',email).eq('key',k);}catch{}}
+        }
+        return{key:k,deleted:true};
+      },
+
+      list: async (p) => {
+        try{const ks=Object.keys(localStorage).filter(k=>!p||k.startsWith(p));return{keys:ks};}catch{return{keys:[]};}
+      }
+    };
+  })();
+  </script>
+  <script id="app-code" type="text/babel" data-presets="react" data-plugins="transform-class-properties">
+const { useState, useEffect, useRef, useCallback } = React;
+
+const CK="nl7-c",SK="nl7-s",NK="nl7-n",NOK="nl7-notes",LCK="nl7-lc",LVK="nl7-lv",EMK="nl7-em",CMK="nl7-cm",BDK="nl7-bd",SSK="nl7-session";
+const PIN="2026";
+const F="'SF Pro Display',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif";
+const PAL=["#0071E3","#30D158","#FF9500","#AF52DE","#FF375F","#5AC8FA"];
+const G="linear-gradient(135deg,#0071E3,#AF52DE)";
+const anim=`@keyframes fu{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}@keyframes dt{0%,20%{opacity:.2}50%{opacity:1}100%{opacity:.2}}@keyframes pl{0%,100%{opacity:1}50%{opacity:.5}}`;
+
+const mkL=(mod,cid)=>{
+  if(!mod||!Array.isArray(mod))return[];
+  return mod.flatMap((m,mi)=>
+    Array.from({length:m.lessons||1},(_,li)=>({
+      id:`${cid}-${mi}-${li}`,mi,mt:m.title||`Módulo ${mi+1}`,
+      title:m.topics?.[li]||`Aula ${li+1}: ${m.title||"Conteúdo"}`,
+      dur:`${Math.max(1,Math.floor((parseFloat(m.duration)||1)*60/(m.lessons||1)))}min`,
+      type:li%3===0?"video":li%3===1?"reading":"exercise",
+      quiz:null
+    }))
+  );
+};
+
+const DC=[
+  {id:"1",title:"Fundamentos de Inteligência Artificial",sub:"Do zero ao domínio dos conceitos essenciais",cat:"Fundamentos",lv:"Iniciante",dur:"6 semanas",mods:19,stu:2847,rat:4.9,price:49,color:"#0071E3",emoji:"🧠",desc:"Aprenda os conceitos fundamentais de IA, desde machine learning até redes neurais.",inst:"Dr. Ana Silva",topics:["Machine Learning","Redes Neurais","Python","TensorFlow"],md:[
+    {title:"1. Introdução à IA",lessons:4,duration:"2h",topics:["O que é Inteligência Artificial — definição e história","Tipos de IA: estreita, geral e superinteligência","Aplicações reais da IA no quotidiano","O ecossistema de ferramentas e frameworks de IA"]},
+    {title:"2. Python para IA",lessons:3,duration:"3h",topics:["Configuração do ambiente: Python, Jupyter e pip","Estruturas de dados essenciais: listas, dicionários e NumPy","Manipulação de dados com Pandas"]},
+    {title:"3. Machine Learning Básico",lessons:4,duration:"2.5h",topics:["Conceitos fundamentais: features, labels e datasets","Aprendizagem supervisionada: regressão e classificação","Aprendizagem não supervisionada: clustering e redução de dimensionalidade","Avaliação de modelos: métricas e validação cruzada"]},
+    {title:"4. Redes Neurais",lessons:3,duration:"2h",topics:["Arquitetura de uma rede neural: neurónios, camadas e pesos","Funções de ativação e backpropagation","Construção de uma rede neural com TensorFlow/Keras"]},
+    {title:"5. Deep Learning",lessons:3,duration:"3h",topics:["Redes convolucionais (CNNs) para imagens","Redes recorrentes (RNNs) e LSTM para sequências","Transfer learning e modelos pré-treinados"]},
+    {title:"6. Projeto Final",lessons:2,duration:"4h",topics:["Definição do projeto e preparação dos dados","Implementação, treino e apresentação do modelo"]}
+  ],pub:true},
+  {id:"2",title:"Prompt Engineering Avançado",sub:"Domine a arte de comunicar com LLMs",cat:"Prático",lv:"Intermédio",dur:"4 semanas",mods:11,stu:4215,rat:4.8,price:39,color:"#30D158",emoji:"✨",desc:"Técnicas avançadas de prompt engineering para ChatGPT, Claude e outros LLMs.",inst:"Prof. Marco Santos",topics:["ChatGPT","Claude","Chain of Thought"],md:[
+    {title:"1. Anatomia de um Prompt",lessons:3,duration:"1.5h",topics:["Estrutura de um prompt eficaz: contexto, instrução e formato","Roles e system prompts: como definir o comportamento do modelo","Temperatura, top-p e outros parâmetros de geração"]},
+    {title:"2. Técnicas Avançadas",lessons:3,duration:"2.5h",topics:["Chain of Thought e raciocínio passo a passo","Few-Shot e Zero-Shot: quando e como usar exemplos","Prompts estruturados com XML, JSON e Markdown"]},
+    {title:"3. Automação com Prompts",lessons:3,duration:"2h",topics:["Encadeamento de prompts (prompt chaining)","Integração com APIs: OpenAI, Anthropic e outros","Construção de pipelines automatizados"]},
+    {title:"4. Projeto Final",lessons:2,duration:"3h",topics:["Criação de um assistente especializado com prompts avançados","Avaliação, iteração e otimização do sistema"]}
+  ],pub:true},
+  {id:"3",title:"Computer Vision com Deep Learning",sub:"Ensine máquinas a ver o mundo",cat:"Especialização",lv:"Avançado",dur:"8 semanas",mods:14,stu:1563,rat:4.7,price:79,color:"#FF9500",emoji:"👁️",desc:"Visão computacional: CNNs, detecção de objetos e aplicações práticas.",inst:"Dra. Carla Mendes",topics:["CNNs","YOLO","OpenCV","PyTorch"],md:[
+    {title:"1. Introdução a Computer Vision",lessons:3,duration:"1.5h",topics:["Fundamentos de processamento de imagem digital","OpenCV: leitura, transformações e filtros","Pré-processamento de imagens para deep learning"]},
+    {title:"2. Redes Convolucionais (CNNs)",lessons:3,duration:"4h",topics:["Arquitetura de CNNs: convoluções, pooling e fully connected","Modelos clássicos: LeNet, AlexNet, VGG e ResNet","Implementação prática com PyTorch"]},
+    {title:"3. Detecção de Objetos",lessons:3,duration:"3h",topics:["Fundamentos: bounding boxes, IoU e NMS","YOLO: arquitetura e implementação","SSD e Faster R-CNN: comparação de abordagens"]},
+    {title:"4. Segmentação de Imagem",lessons:3,duration:"2.5h",topics:["Segmentação semântica vs segmentação de instâncias","U-Net e Mask R-CNN","Aplicações práticas em medicina e indústria"]},
+    {title:"5. Projeto Final",lessons:2,duration:"5h",topics:["Desenvolvimento de um sistema de visão computacional completo","Deploy do modelo com API REST e interface web"]}
+  ],pub:true},
+  {id:"4",title:"IA Generativa para Negócios",sub:"Transforme a sua empresa com IA",cat:"Negócios",lv:"Iniciante",dur:"3 semanas",mods:9,stu:6721,rat:4.9,price:29,color:"#AF52DE",emoji:"🚀",desc:"Integre IA generativa no seu negócio com estratégias práticas.",inst:"Prof. Ricardo Lima",topics:["Estratégia IA","Automação","ROI"],md:[
+    {title:"1. IA no Contexto Empresarial",lessons:3,duration:"2h",topics:["Panorama atual da IA generativa no mercado","Identificação de oportunidades de IA na empresa","Análise de ROI e business case para projetos de IA"]},
+    {title:"2. Ferramentas de IA para Negócios",lessons:3,duration:"2.5h",topics:["ChatGPT, Claude e Gemini: comparação para uso empresarial","Ferramentas de automação: Zapier, Make e Power Automate com IA","Geração de conteúdo: marketing, copywriting e comunicação"]},
+    {title:"3. Implementação Prática",lessons:3,duration:"3h",topics:["Estratégia de implementação e gestão da mudança","Casos de sucesso: vendas, RH, financeiro e operações","Ética, privacidade e governação de IA na empresa"]}
+  ],pub:true},
+  {id:"5",title:"Agentes Autónomos com LangChain",sub:"Construa agentes que pensam e agem",cat:"Desenvolvimento",lv:"Avançado",dur:"6 semanas",mods:14,stu:982,rat:4.8,price:69,color:"#FF375F",emoji:"🤖",desc:"Construa agentes autónomos usando LangChain e LangGraph.",inst:"Eng. Pedro Costa",topics:["LangChain","LangGraph","RAG"],md:[
+    {title:"1. Fundamentos de Agentes",lessons:3,duration:"2h",topics:["O que são agentes autónomos e como funcionam","Arquiteturas de agentes: ReAct, Plan-and-Execute","Ferramentas e ambientes de execução"]},
+    {title:"2. LangChain em Profundidade",lessons:3,duration:"4h",topics:["Chains, prompts e memory management","Tools e integração com APIs externas","Agents customizados com LangChain"]},
+    {title:"3. RAG — Retrieval Augmented Generation",lessons:3,duration:"3h",topics:["Fundamentos de RAG: embeddings e bases vetoriais","Implementação com ChromaDB, Pinecone e FAISS","Otimização: chunking, reranking e avaliação"]},
+    {title:"4. LangGraph e Fluxos Complexos",lessons:3,duration:"2.5h",topics:["Introdução ao LangGraph: grafos de estado","Fluxos multi-agente e delegação de tarefas","Gestão de erros e fallbacks em agentes"]},
+    {title:"5. Deploy e Monitorização",lessons:2,duration:"2h",topics:["Deploy de agentes em produção com Docker e APIs","Monitorização, logging e observabilidade com LangSmith"]}
+  ],pub:true},
+  {id:"6",title:"NLP e Processamento de Texto",sub:"Da linguagem humana à compreensão artificial",cat:"Especialização",lv:"Intermédio",dur:"5 semanas",mods:12,stu:1834,rat:4.6,price:59,color:"#5AC8FA",emoji:"📝",desc:"Domine NLP: Transformers, BERT, GPT e aplicações práticas.",inst:"Dra. Sofia Reis",topics:["Transformers","BERT","GPT"],md:[
+    {title:"1. Introdução a NLP",lessons:3,duration:"1.5h",topics:["Fundamentos de linguística computacional","Tokenização, stemming e lematização","Representação de texto: Bag of Words, TF-IDF e Word2Vec"]},
+    {title:"2. Arquitetura Transformers",lessons:3,duration:"3h",topics:["Mecanismo de atenção e self-attention","Arquitetura encoder-decoder dos Transformers","BERT, GPT e T5: comparação e casos de uso"]},
+    {title:"3. Fine-tuning de Modelos",lessons:3,duration:"2.5h",topics:["Preparação de datasets para fine-tuning","Fine-tuning com Hugging Face Transformers","LoRA e QLoRA: fine-tuning eficiente"]},
+    {title:"4. Aplicações Práticas",lessons:3,duration:"3h",topics:["Análise de sentimento e classificação de texto","Chatbots e sistemas de pergunta-resposta","Sumarização e geração de texto"]}
+  ],pub:true},
+  {id:"7",title:"Automação de Excel com Inteligência Artificial",sub:"Domine Power Query, Power Automate e IA Generativa no Excel",cat:"Prático",lv:"Intermédio",dur:"30 horas",mods:28,stu:0,rat:0,price:89,color:"#30D158",emoji:"📊",desc:"Curso completo de automação de Excel com IA. Desde Power Query e Power Automate até integração com GPT, relatórios inteligentes e boas práticas de segurança e RGPD. Conteúdo baseado no manual oficial da formação.",inst:"Formador",topics:["Excel","Power Query","Power Automate","IA Generativa","GPT","Dashboards","RGPD"],
+  md:[
+    {title:"1. Introdução à Automação e IA no Excel",lessons:4,duration:"4h",topics:["Conceitos de automação e inteligência artificial aplicados ao Excel","Evolução do Excel: de folhas de cálculo a plataforma de IA com Copilot","Casos práticos empresariais: finanças, RH, vendas e operações","Limitações, riscos e boas práticas de automação com IA"]},
+    {title:"2. Preparação e Transformação de Dados com Power Query",lessons:5,duration:"6h",topics:["Importação automática de dados: CSV, SQL, APIs REST e páginas web","Limpeza inteligente: duplicados, formatações, valores em falta","Transformações avançadas: pivot, merge, linguagem M","Atualizações dinâmicas e agendamento automático","Casos práticos: consolidação de relatórios de vendas e dados de RH"]},
+    {title:"3. Automação de Processos com Power Automate",lessons:5,duration:"6h",topics:["Conceitos de fluxos: automáticos, agendados e instantâneos","Integração Excel ↔ Power Automate com tabelas estruturadas","Automação de relatórios recorrentes com verificação de dados","Alertas e notificações: email, Teams e mobile por condições de dados","Boas práticas: documentação, tratamento de erros e manutenção"]},
+    {title:"4. Excel + IA Generativa (GPT)",lessons:6,duration:"8h",topics:["Introdução aos LLMs: GPT, Claude e Gemini aplicados ao Excel","Engenharia de prompts: few-shot, roles e formatos de output","Integração técnica: VBA, Power Automate e ferramentas no-code (SheetAI)","Geração automática de análises e resumos executivos","Criação de insights em linguagem natural para stakeholders","Exemplos práticos: desvios financeiros, turnover RH, pipeline de vendas"]},
+    {title:"5. Relatórios Inteligentes e Casos Práticos",lessons:4,duration:"4h",topics:["Construção de pipelines de relatórios: recolha → limpeza → análise → distribuição","Análise inteligente: correlações, regressões e clustering no Excel","Detecção de anomalias: fraude, erros de dados e oportunidades","Dashboards com apoio de IA: comentários automáticos e previsões"]},
+    {title:"6. Segurança, Ética e Boas Práticas",lessons:4,duration:"2h",topics:["Proteção de dados e RGPD: consentimento, minimização e anonimização","Segurança no uso de IA: HTTPS, API keys, privilégio mínimo","Governação de IA: políticas, inventário de ferramentas e validação","Limitações legais: propriedade intelectual, responsabilidade e Art. 22 RGPD"]}
+  ],pub:true},
+];
+
+const DS=[
+  {id:"s1",name:"Maria Oliveira",email:"maria@email.com",pw:"1234",enr:["1","2","7"],done:{},joined:"2025-12-01"},
+  {id:"s2",name:"João Ferreira",email:"joao@email.com",pw:"1234",enr:["1","3","5","7"],done:{},joined:"2025-11-15"},
+  {id:"s3",name:"Ana Costa",email:"ana@email.com",pw:"1234",enr:["2","4","7"],done:{},joined:"2026-01-10"},
+  {id:"s4",name:"Pedro Santos",email:"pedro@email.com",pw:"1234",enr:["4","6"],done:{},joined:"2026-02-01"},
+  {id:"s5",name:"Sofia Lima",email:"sofia@email.com",pw:"1234",enr:["1","2","4","7"],done:{},joined:"2025-10-20"},
+  {id:"s6",name:"Carlos Rodrigues",email:"carlos@email.com",pw:"1234",enr:["7"],done:{},joined:"2026-03-01"},
+  {id:"s7",name:"Inês Martins",email:"ines@email.com",pw:"1234",enr:["7","4"],done:{},joined:"2026-03-10"},
+  {id:"s8",name:"Rui Pereira",email:"rui@email.com",pw:"1234",enr:["7"],done:{},joined:"2026-03-15"},
+];
+
+const B=(p,sm)=>({padding:sm?"7px 16px":"12px 26px",borderRadius:980,fontSize:sm?13:15,fontWeight:500,cursor:"pointer",transition:"all .2s",border:p?"none":"1px solid #D2D2D7",background:p?"#0071E3":"transparent",color:p?"#fff":"#1D1D1F",fontFamily:F});
+const BG=c=>({display:"inline-block",padding:"3px 10px",borderRadius:980,fontSize:11,fontWeight:600,background:c+"18",color:c});
+const bd="0.5px solid rgba(0,0,0,.06)";
+const fc={display:"flex",alignItems:"center"};
+const crd={background:"#fff",borderRadius:14,border:bd};
+const crd2={background:"#fff",borderRadius:12,border:bd};
+const fj={display:"flex",justifyContent:"space-between"};
+
+const PLANS=[
+  {id:"monthly",name:"Mensal",price:29,period:"/mês",desc:"Iniciante & Intermédio",
+   courses:["1","2","4","6","7"],
+   features:["🧠 Fundamentos de IA","✨ Prompt Engineering","🚀 IA para Negócios","📝 NLP e Texto","📊 Excel com IA","Certificados","Suporte email"],
+   color:"#6E6E73"},
+  {id:"annual",name:"Anual",price:19,period:"/mês",billed:"Faturado €228/ano",desc:"Poupa 34% · Todos os cursos",
+   courses:["1","2","3","4","5","6","7"],
+   features:["Tudo do Mensal","👁️ Computer Vision","🤖 Agentes LangChain","Acesso prioritário","Comunidade privada"],
+   color:"#0071E3",popular:true},
+  {id:"lifetime",name:"Vitalício",price:497,period:" único",desc:"Paga uma vez, para sempre",
+   courses:["1","2","3","4","5","6","7"],
+   features:["Tudo do Anual","Futuros cursos incluídos","Sessão 1-on-1 com formador","Acesso beta a novos cursos"],
+   color:"#AF52DE"},
+];
+const BUNDLES=[
+  {id:"b1",name:"Pack Iniciante IA",courses:["1","4"],originalPrice:78,price:59,emoji:"🚀",desc:"Fundamentos + IA para Negócios"},
+  {id:"b2",name:"Pack Developer",courses:["2","5","6"],originalPrice:167,price:119,emoji:"💻",desc:"Prompts + Agentes + NLP"},
+  {id:"b3",name:"Pack Completo",courses:["1","2","3","4","5","6"],originalPrice:335,price:199,emoji:"👑",desc:"Todos os 6 cursos de IA"},
+];
+const TESTIMONIALS=[
+  {name:"Ricardo Mendes",role:"CTO, TechPT",text:"A NeuroLearn transformou a forma como a minha equipa aborda IA. Em 3 meses, automatizámos processos que demoravam semanas.",rating:5,avatar:"RM"},
+  {name:"Sofia Duarte",role:"Data Scientist",text:"O curso de Agentes com LangChain é o melhor que encontrei em português. Conteúdo prático e atualizado.",rating:5,avatar:"SD"},
+  {name:"João Almeida",role:"Gestor de Produto",text:"Comecei do zero e hoje implemento soluções de IA no meu dia-a-dia. Os certificados também ajudaram no CV.",rating:5,avatar:"JA"},
+  {name:"Ana Ferreira",role:"Professora Universitária",text:"Recomendo aos meus alunos. A qualidade do conteúdo gerado por IA é impressionante e sempre atualizado.",rating:4,avatar:"AF"},
+];
+
+function App(){
+  const[zone,setZone]=useState("public");
+  const[view,setView]=useState("home");
+  const[aView,setAView]=useState("dashboard");
+  const[editCourseId,setEditCourseId]=useState(null);
+  const[previewLessonId,setPreviewLessonId]=useState(null);
+  const[genAllLoading,setGenAllLoading]=useState(false);
+  const[genProgress,setGenProgress]=useState("");
+  const[sView,setSView]=useState("my");
+  const[courses,setC]=useState(DC);
+  const[students,setS]=useState(DS);
+  const[selC,setSelC]=useState(null);
+  const[selStu,setSelStu]=useState(null);
+  const[curStu,setCurStu]=useState(null);
+  const[actC,setActC]=useState(null);
+  const[actL,setActL]=useState(null);
+  const[filter,setFilter]=useState("Todos");
+  const[pin,setPin]=useState("");
+  const[pinErr,setPinErr]=useState(false);
+  const[lEmail,setLEmail]=useState("");
+  const[lPass,setLPass]=useState("");
+  const[lErr,setLErr]=useState("");
+  const[agIn,setAgIn]=useState("");
+  const[agMsg,setAgMsg]=useState([]);
+  const[agLoad,setAgLoad]=useState(false);
+  const[toast,setToast]=useState(null);
+  const[notifs,setNotifs]=useState([]);
+  const[showNotif,setShowNotif]=useState(false);
+  const[payModal,setPayModal]=useState(null);
+  const[payStep,setPayStep]=useState(0);
+  const[quizAns,setQuizAns]=useState(null);
+  const[quizDone,setQuizDone]=useState(false);
+  const[notes,setNotes]=useState({});
+  const[lastViewed,setLastViewed]=useState({});
+  const[regMode,setRegMode]=useState(false);
+  const[regName,setRegName]=useState("");
+  const[resetMode,setResetMode]=useState(false);
+  const[cardName,setCardName]=useState("");
+  const[cardNum,setCardNum]=useState("");
+  const[cardExp,setCardExp]=useState("");
+  const[cardCvv,setCardCvv]=useState("");
+  const[payErr,setPayErr]=useState("");
+  const[lessonContent,setLessonContent]=useState({});
+  const[generatingId,setGeneratingId]=useState(null);
+  const[speaking,setSpeaking]=useState(false);
+  const[slideMode,setSlideMode]=useState(false);
+  const[slideIdx,setSlideIdx]=useState(0);
+  const[emails,setEmails]=useState([]);
+  const[showEmails,setShowEmails]=useState(false);
+  const[darkMode,setDarkMode]=useState(false);
+  const[comments,setComments]=useState({});
+  const[commentText,setCommentText]=useState("");
+  const[couponCode,setCouponCode]=useState("");
+  const[couponApplied,setCouponApplied]=useState(false);
+  const[badges,setBadges]=useState([]);
+  const[leadEmail,setLeadEmail]=useState("");
+  const[communityPosts,setCommunityPosts]=useState([
+    {id:1,author:"Sofia Lima",avatar:"SL",role:"Aluna · Prompt Engineering",time:"há 2h",text:"Acabei de concluir o módulo de Chain of Thought e fiquei impressionada com os resultados! Consegui reduzir erros no meu pipeline de análise de dados em 60%. Alguém já integrou isto com o Excel?",likes:12,replies:[{author:"João Ferreira",avatar:"JF",time:"há 1h",text:"Sim! Uso com o Power Query e é transformador. Experimenta combinar com o módulo 4 do curso de Excel com IA 😊"}]},
+    {id:2,author:"Carlos Rodrigues",avatar:"CR",role:"Aluno · Excel com IA",time:"há 4h",text:"Dica rápida: consegui automatizar completamente os relatórios mensais da empresa usando Power Automate + GPT. O que antes demorava 4 horas agora demora 8 minutos. O ROI foi positivo em 3 semanas!",likes:28,replies:[]},
+    {id:3,author:"Ana Costa",avatar:"AC",role:"Aluna · IA para Negócios",time:"há 1 dia",text:"Pergunta para a comunidade: qual é a vossa estratégia favorita para apresentar IA ao board de uma empresa tradicional? Estou a preparar uma proposta e queria ouvir experiências reais.",likes:7,replies:[{author:"Maria Oliveira",avatar:"MO",time:"há 20h",text:"Começa sempre pelo ROI concreto e casos de uso específicos do sector deles. Evita o hype e foca em problemas reais que já conhecem."},{author:"Pedro Santos",avatar:"PS",time:"há 18h",text:"Concordo com a Maria. Eu uso sempre uma demo ao vivo de 5 minutos — vale mais que 50 slides de teoria."}]},
+    {id:4,author:"Inês Martins",avatar:"IM",role:"Aluna · Fundamentos de IA",time:"há 2 dias",text:"Acabei de receber o meu certificado de Fundamentos de IA! 🎓 Para quem está a começar: não desistam nos primeiros módulos de Python — é a base de tudo. Valeu cada hora investida!",likes:34,replies:[]},
+  ]);
+  const[newPost,setNewPost]=useState("");
+  const[replyText,setReplyText]=useState({});
+  const[showReply,setShowReply]=useState({});
+  const[leadCaptured,setLeadCaptured]=useState(false);
+  const speechRef=useRef(null);
+  const[mounted,setMounted]=useState(false);
+  const chatRef=useRef(null);
+  const notifsRef=useRef(notifs);
+  notifsRef.current=notifs;
+  const lcRef=useRef(lessonContent);
+  lcRef.current=lessonContent;
+
+  useEffect(()=>{setMounted(true);ld();},[]);
+  useEffect(()=>{chatRef.current?.scrollIntoView({behavior:"smooth"});},[agMsg]);
+  useEffect(()=>{if(curStu)try{window.storage.set(SSK,JSON.stringify(curStu));}catch{}},[curStu]);
+
+  const ld=async()=>{
+    try{const r=await window.storage.get(CK);if(r?.value)setC(JSON.parse(r.value));}catch{}
+    try{const r=await window.storage.get(SK);if(r?.value)setS(JSON.parse(r.value));}catch{}
+    try{const r=await window.storage.get(NK);if(r?.value)setNotifs(JSON.parse(r.value));}catch{}
+    try{const r=await window.storage.get(NOK);if(r?.value)setNotes(JSON.parse(r.value));}catch{}
+    try{const r=await window.storage.get(LCK);if(r?.value)setLessonContent(JSON.parse(r.value));}catch{}
+    try{const r=await window.storage.get(LVK);if(r?.value)setLastViewed(JSON.parse(r.value));}catch{}
+    try{const r=await window.storage.get(EMK);if(r?.value)setEmails(JSON.parse(r.value));}catch{}
+    try{const r=await window.storage.get(CMK);if(r?.value)setComments(JSON.parse(r.value));}catch{}
+    try{const r=await window.storage.get(BDK);if(r?.value)setBadges(JSON.parse(r.value));}catch{}
+    try{const r=await window.storage.get(SSK);if(r?.value){const s=JSON.parse(r.value);if(s){setCurStu(s);setZone("student");setSView("my");}}}catch{}
+  };
+  const svC=async c=>{setC(c);try{await window.storage.set(CK,JSON.stringify(c));}catch{}};
+  const svS=async s=>{setS(s);try{await window.storage.set(SK,JSON.stringify(s));}catch{}};
+  const svN=async n=>{setNotifs(n);try{await window.storage.set(NK,JSON.stringify(n));}catch{}};
+  const svNo=async n=>{setNotes(n);try{await window.storage.set(NOK,JSON.stringify(n));}catch{}};
+  const tst=(m,t="ok")=>{setToast({m,t});setTimeout(()=>setToast(null),3000);};
+  const addNotif=useCallback((msg,type="info")=>{const n=[{id:Date.now(),msg,type,time:new Date().toLocaleString("pt-PT"),read:false},...notifsRef.current];setNotifs(n);svN(n);},[]);
+  const saveNote=(key,text)=>{const n={...notes,[key]:text};setNotes(n);svNo(n);};
+
+  const genCertPDF=async(studentName,courseTitle,date)=>{
+    const w=595,h=842,cx=w/2;
+    const canvas=document.createElement("canvas");canvas.width=w;canvas.height=h;
+    const ctx=canvas.getContext("2d");
+    ctx.fillStyle="#fff";ctx.fillRect(0,0,w,h);
+    ctx.strokeStyle="#0071E3";ctx.lineWidth=3;ctx.strokeRect(30,30,w-60,h-60);
+    ctx.strokeStyle="#AF52DE";ctx.lineWidth=1;ctx.strokeRect(40,40,w-80,h-80);
+    ctx.fillStyle="#0071E3";ctx.font="bold 28px Helvetica";ctx.textAlign="center";ctx.fillText("NeuroLearn",cx,120);
+    ctx.fillStyle="#86868B";ctx.font="14px Helvetica";ctx.fillText("PLATAFORMA DE ENSINO DE IA",cx,145);
+    ctx.fillStyle="#1D1D1F";ctx.font="22px Helvetica";ctx.fillText("CERTIFICADO DE CONCLUSÃO",cx,220);
+    ctx.fillStyle="#86868B";ctx.font="15px Helvetica";ctx.fillText("Certifica-se que",cx,290);
+    ctx.fillStyle="#1D1D1F";ctx.font="bold 26px Helvetica";ctx.fillText(studentName,cx,330);
+    ctx.fillStyle="#86868B";ctx.font="15px Helvetica";ctx.fillText("concluiu com sucesso o curso",cx,380);
+    ctx.fillStyle="#0071E3";ctx.font="bold 20px Helvetica";
+    const words=courseTitle.split(" ");let line="";let y=420;
+    for(const word of words){const test=line+word+" ";if(ctx.measureText(test).width>440&&line){ctx.fillText(line.trim(),cx,y);y+=28;line=word+" ";}else line=test;}
+    if(line)ctx.fillText(line.trim(),cx,y);
+    ctx.fillStyle="#86868B";ctx.font="14px Helvetica";ctx.fillText(`Concluído a ${date}`,cx,y+60);
+    ctx.fillStyle="#1D1D1F";ctx.font="13px Helvetica";ctx.fillText("_________________________",cx-150,h-130);ctx.fillText("_________________________",cx+150,h-130);
+    ctx.font="12px Helvetica";ctx.fillStyle="#86868B";ctx.fillText("O Formador",cx-150,h-110);ctx.fillText("A Plataforma",cx+150,h-110);
+    ctx.fillStyle="#0071E3";ctx.font="10px Helvetica";ctx.fillText(`ID: NL-${Date.now().toString(36).toUpperCase()}`,cx,h-70);
+    const url=canvas.toDataURL("image/png");
+    const a=document.createElement("a");a.href=url;a.download=`certificado-${courseTitle.replace(/\s+/g,"-").toLowerCase()}.png`;a.click();
+    tst("Certificado descarregado!");
+  };
+
+  const startNarration=(text)=>{
+    if(!window.speechSynthesis)return;
+    window.speechSynthesis.cancel();
+    const chunks=text.match(/[^.!?]+[.!?]+/g)||[text];
+    let i=0;
+    const speakNext=()=>{
+      if(i>=chunks.length){setSpeaking(false);return;}
+      const u=new SpeechSynthesisUtterance(chunks[i].trim());
+      u.lang="pt-PT";u.rate=0.95;u.pitch=1;
+      const voices=window.speechSynthesis.getVoices();
+      const ptVoice=voices.find(v=>v.lang.startsWith("pt"));
+      if(ptVoice)u.voice=ptVoice;
+      u.onend=()=>{i++;speakNext();};
+      u.onerror=()=>{i++;speakNext();};
+      speechRef.current=u;
+      window.speechSynthesis.speak(u);
+    };
+    setSpeaking(true);speakNext();
+  };
+  const stopNarration=()=>{window.speechSynthesis?.cancel();setSpeaking(false);};
+
+  const saveLastViewed=(courseId,lessonId)=>{const n={...lastViewed,[courseId]:lessonId};setLastViewed(n);try{window.storage.set(LVK,JSON.stringify(n));}catch{}};
+
+  const sendEmail=(to,subject,body,type="info")=>{
+    const em={id:Date.now(),to,subject,body,type,time:new Date().toLocaleString("pt-PT"),read:false};
+    const updated=[em,...emails];setEmails(updated);try{window.storage.set(EMK,JSON.stringify(updated));}catch{};
+  };
+  const sendWelcomeEmail=(name,email)=>{
+    sendEmail(email,`Bem-vindo à NeuroLearn, ${name.split(" ")[0]}!`,`Olá ${name},\n\nA tua conta foi criada com sucesso na NeuroLearn. Explora o nosso catálogo de cursos de IA e inscreve-te no que mais te interessar.\n\nBoas aprendizagens!\nEquipa NeuroLearn`,"welcome");
+    // Tentar envio real via API (requer configuração de email no servidor)
+    try{fetch("https://obpezocujzdaznrdgwoo.supabase.co/functions/v1/send-email",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9icGV6b2N1anpkYXpucmRnd29vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NTU4MzAsImV4cCI6MjA5MDAzMTgzMH0.SZx4ilUcyaA732zB6qInKVLuFHntzU9C_K0x7Y_dbuc"},body:JSON.stringify({to:email,subject:`Bem-vindo à NeuroLearn, ${name.split(" ")[0]}!`,text:`Olá ${name},\n\nA tua conta foi criada com sucesso.\n\nBoas aprendizagens!\nEquipa NeuroLearn`})}).catch(()=>{});}catch{}
+  };
+  const sendEnrollEmail=(name,email,courseTitle)=>{sendEmail(email,`Inscrição confirmada: ${courseTitle}`,`Olá ${name.split(" ")[0]},\n\nA tua inscrição no curso "${courseTitle}" foi confirmada. Já podes aceder ao conteúdo na tua área de aluno.\n\nBom estudo!\nEquipa NeuroLearn`,"enroll");};
+  const sendCertEmail=(name,email,courseTitle)=>{sendEmail(email,`Parabéns! Certificado disponível: ${courseTitle}`,`Olá ${name.split(" ")[0]},\n\nParabéns por concluíres o curso "${courseTitle}"! O teu certificado está disponível para download no teu perfil.\n\n🎓 Continua a aprender!\nEquipa NeuroLearn`,"cert");};
+  const sendReminderEmail=(name,email,courseTitle,pct)=>{sendEmail(email,`Continua o teu progresso: ${courseTitle}`,`Olá ${name.split(" ")[0]},\n\nEstás a ${pct}% do curso "${courseTitle}". Não desistas agora — falta pouco para concluíres!\n\nVamos a isso!\nEquipa NeuroLearn`,"reminder");};
+
+  const narrateSlide=(paragraphs,idx)=>{
+    if(!window.speechSynthesis||!paragraphs[idx])return;
+    window.speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(paragraphs[idx]);
+    u.lang="pt-PT";u.rate=0.95;
+    const voices=window.speechSynthesis.getVoices();
+    const ptV=voices.find(v=>v.lang.startsWith("pt"));if(ptV)u.voice=ptV;
+    u.onend=()=>{if(idx<paragraphs.length-1){setSlideIdx(idx+1);narrateSlide(paragraphs,idx+1);}else{setSpeaking(false);setSlideMode(false);}};
+    speechRef.current=u;setSpeaking(true);
+    window.speechSynthesis.speak(u);
+  };
+
+  const isMobile=typeof window!=="undefined"&&window.innerWidth<768;
+
+  const dm=darkMode;
+  const bg1=dm?"#1C1C1E":"#FBFBFD";const bg2=dm?"#2C2C2E":"#fff";const bg3=dm?"#1C1C1E":"#F5F5F7";
+  const tx1=dm?"#F5F5F7":"#1D1D1F";const tx2=dm?"#AEAEB2":"#86868B";const tx3=dm?"#636366":"#E5E5EA";
+  const brd=dm?"rgba(255,255,255,.08)":"rgba(0,0,0,.06)";
+
+  const addComment=(lessonId)=>{
+    if(!commentText.trim()||!curStu)return;
+    const c={id:Date.now(),user:curStu.name,text:commentText.trim(),time:new Date().toLocaleString("pt-PT")};
+    const key=lessonId;const prev=comments[key]||[];const updated={...comments,[key]:[...prev,c]};
+    setComments(updated);setCommentText("");try{window.storage.set(CMK,JSON.stringify(updated));}catch{};
+  };
+
+  const COUPONS={"NEURO50":{pct:50,label:"50% desconto"},"NEURO20":{pct:20,label:"20% desconto"},"GRATIS":{pct:100,label:"Gratuito"}};
+  const applyCoupon=(code)=>{const c=COUPONS[code.toUpperCase()];if(c){setCouponApplied(c);tst(`Cupão aplicado: ${c.label}`);}else{setCouponApplied(false);tst("Cupão inválido");}};
+
+  const checkBadges=()=>{
+    if(!curStu)return;
+    const newBadges=[...badges];const add=(id,name,icon)=>{if(!newBadges.find(b=>b.id===id))newBadges.push({id,name,icon,date:new Date().toLocaleDateString("pt-PT")});};
+    const enr=curStu.enr||[];const comp=courses.filter(c=>enr.includes(c.id)&&gP(curStu,c.id)===100);
+    if(enr.length>=1)add("first_enroll","Primeiro passo","🎯");
+    if(comp.length>=1)add("first_complete","Graduado","🎓");
+    if(comp.length>=3)add("triple","Triplo concluinte","🏆");
+    if(comp.length>=5)add("master","Mestre IA","👑");
+    const totalLessons=enr.reduce((a,cid)=>{const c=courses.find(x=>x.id===cid);return a+(curStu.done?.[cid]||[]).length;},0);
+    if(totalLessons>=10)add("ten_lessons","10 aulas","⚡");
+    if(totalLessons>=50)add("fifty_lessons","50 aulas","🔥");
+    if(Object.keys(notes).length>=5)add("note_taker","Anotador","📝");
+    if(newBadges.length!==badges.length){setBadges(newBadges);try{window.storage.set(BDK,JSON.stringify(newBadges));}catch{};}
+  };
+  useEffect(()=>{if(curStu)checkBadges();},[curStu,lessonContent]);
+
+  const[docView,setDocView]=useState(null);
+  const docCSS=`body{font-family:Verdana,sans-serif;color:#333;margin:40px;line-height:1.6}h1{color:#0071E3;border-bottom:2px solid #0071E3;padding-bottom:8px}h2{color:#2c3e50;margin-top:28px}h3{color:#34495e}.tip{background:#FFF8E1;border-left:3px solid #FF9500;padding:12px 16px;margin:12px 0;border-radius:4px}.kp{background:#f0f8ff;border-left:3px solid #0071E3;padding:12px 16px;margin:12px 0;border-radius:4px}pre{background:#1D1D1F;color:#E5E5EA;padding:16px;border-radius:6px;white-space:pre-wrap;font-size:13px;margin:12px 0}table{border-collapse:collapse;width:100%;margin:16px 0}th,td{border:1px solid #ddd;padding:10px;text-align:left}th{background:#f5f5f7;font-weight:600}`;
+
+  const renderDocViewer=()=>{
+    if(!docView)return null;
+    return(<div style={{position:"fixed",inset:0,background:"#fff",zIndex:500,overflowY:"auto"}}>
+      <div style={{position:"sticky",top:0,background:"#fff",padding:"12px 24px",borderBottom:"1px solid #eee",...fj,alignItems:"center",zIndex:501}}>
+        <span style={{fontSize:14,fontWeight:600,color:"#1D1D1F"}}>{docView.title}</span>
+        <div style={{display:"flex",gap:8}}>
+          <button style={{...B(true,true),fontSize:12}} onClick={()=>window.print()}>Guardar PDF (Ctrl+P)</button>
+          <button style={{...B(false,true),fontSize:12,color:"#FF375F",borderColor:"#FF375F33"}} onClick={()=>setDocView(null)}>✕ Fechar</button>
+        </div>
+      </div>
+      <style>{`${docCSS} @media print{.no-print{display:none!important}.page{page-break-after:always}}`}</style>
+      <div className="no-print" style={{height:52}}/>
+      <div style={{maxWidth:800,margin:"0 auto",padding:"24px 40px 60px"}} dangerouslySetInnerHTML={{__html:docView.html}}/>
+    </div>);
+  };
+
+  const genManualHTML=(c)=>{
+    const ls=mkL(c.md,c.id);const mGrp={};ls.forEach(l=>{if(!mGrp[l.mt])mGrp[l.mt]=[];mGrp[l.mt].push(l);});
+    let h=`<div class="page" style="text-align:center;padding:120px 20px"><br><br><h1 style="font-size:28px;border:none">Manual de Apoio à Formação</h1><h2 style="color:#666;border:none">"${c.title}"</h2><br><p><strong>Curso:</strong> ${c.title} (${c.dur})</p><p><strong>Formador:</strong> ${c.inst}</p><p><strong>Nível:</strong> ${c.lv}</p></div>`;
+    h+=`<div class="page" style="display:flex;align-items:center;justify-content:center;min-height:400px;color:#999"><p>Esta página foi propositadamente deixada em branco</p></div>`;
+    h+=`<div class="page"><h1>Objetivos Gerais</h1><p>${c.desc}</p><h2>Plano Curricular</h2><table><tr><th>Módulo</th><th>Duração</th><th>Aulas</th></tr>`;
+    (c.md||[]).forEach(m=>{h+=`<tr><td>${m.title}</td><td>${m.duration}</td><td>${m.lessons}</td></tr>`;});
+    h+=`</table><br><p><strong>Duração total:</strong> ${c.dur}</p></div>`;
+    Object.entries(mGrp).forEach(([mod,mls])=>{
+      h+=`<div class="page"><h1>${mod}</h1>`;
+      mls.forEach(l=>{
+        const raw=lcRef.current[l.id];
+        const lc=raw?{paragraphs:raw.paragraphs||raw.p||[],keyPoints:raw.keyPoints||raw.kp||[],codeExample:raw.codeExample||raw.code||null,instructorTip:raw.instructorTip||raw.tip||null}:null;
+        h+=`<h2>${l.title}</h2>`;
+        if(lc){
+          lc.paragraphs.forEach(p=>{h+=`<p>${p}</p>`;});
+          if(lc.keyPoints.length)h+=`<div class="kp"><strong>Pontos-chave:</strong><ul>${lc.keyPoints.map(k=>`<li>${k}</li>`).join("")}</ul></div>`;
+          if(lc.codeExample&&lc.codeExample!=="null")h+=`<pre>${lc.codeExample}</pre>`;
+          if(lc.instructorTip)h+=`<div class="tip"><strong>Dica do formador:</strong> ${lc.instructorTip}</div>`;
+        }else h+=`<p style="color:#999"><em>Conteúdo ainda não gerado.</em></p>`;
+      });
+      h+=`</div>`;
+    });
+    h+=`<div class="page"><h1>Bibliografia</h1><p>Referências e recursos complementares serão disponibilizados ao longo da formação.</p></div>`;
+    return h;
+  };
+
+  const genPPTHTML=(c)=>{
+    const ls=mkL(c.md,c.id);const mGrp={};ls.forEach(l=>{if(!mGrp[l.mt])mGrp[l.mt]=[];mGrp[l.mt].push(l);});
+    let sn=0;
+    const S=(bg,content)=>{sn++;return`<div style="background:${bg};border-radius:12px;padding:48px;margin:24px 0;min-height:340px;position:relative;box-shadow:0 2px 12px rgba(0,0,0,.06)"><div style="position:absolute;bottom:16px;right:24px;font-size:11px;color:#999">${sn}</div>${content}</div>`;};
+    let h=S(G,`<div style="color:#fff;text-align:center;padding:40px 0"><h1 style="font-size:32px;color:#fff;border:none">${c.title}</h1><p style="color:rgba(255,255,255,.8);font-size:16px">${c.sub||c.desc}</p><br><p style="color:rgba(255,255,255,.7)">Formador: ${c.inst} · ${c.dur} · ${c.lv}</p></div>`);
+    h+=S("#fff",`<h1>Objetivos</h1><p>${c.desc}</p><h2 style="margin-top:20px">Plano Curricular</h2><ul style="line-height:2">${(c.md||[]).map(m=>`<li>${m.title} (${m.duration})</li>`).join("")}</ul>`);
+    Object.entries(mGrp).forEach(([mod,mls])=>{
+      h+=S("#f8f9fa",`<h1 style="font-size:28px">${mod}</h1><ul style="line-height:2.2">${mls.map(l=>`<li>${l.title}</li>`).join("")}</ul>`);
+      mls.forEach(l=>{
+        const raw=lcRef.current[l.id];
+        const lc=raw?{paragraphs:raw.paragraphs||raw.p||[],keyPoints:raw.keyPoints||raw.kp||[]}:null;
+        if(lc){
+          lc.paragraphs.forEach((p,pi)=>{if(pi%2===0)h+=S("#fff",`<h2 style="color:#0071E3">${l.title}</h2><p style="font-size:15px;line-height:1.8">${p}</p>${lc.paragraphs[pi+1]?`<p style="font-size:15px;line-height:1.8">${lc.paragraphs[pi+1]}</p>`:""}`)});
+          if(lc.keyPoints.length)h+=S("#f0f8ff",`<h2>Pontos-chave</h2><ul style="font-size:15px;line-height:2.2">${lc.keyPoints.map(k=>`<li>${k}</li>`).join("")}</ul>`);
+        }else h+=S("#fff",`<h2>${l.title}</h2><p style="color:#999">Conteúdo por gerar</p>`);
+      });
+    });
+    h+=S("#fff",`<h1>Bibliografia</h1><p>Referências e recursos complementares.</p>`);
+    h+=S(G,`<div style="color:#fff;text-align:center;padding:40px 0"><h1 style="font-size:32px;color:#fff;border:none">Obrigado!</h1><p style="color:rgba(255,255,255,.8)">${c.title}</p><p style="color:rgba(255,255,255,.7)">${c.inst}</p></div>`);
+    return h;
+  };
+
+  const genTestHTML=(c)=>{
+    const ls=mkL(c.md,c.id);const questions=[];
+    ls.forEach(l=>{
+      const raw=lcRef.current[l.id];const q=raw?.quiz||raw?.q;
+      if(q){const question=q.question||q.q;const opts=q.options||q.o||[];const ci=q.correctIndex??q.c??0;if(question)questions.push({q:question,opts,ci,lesson:l.title});}
+    });
+    let h=`<div style="text-align:center;margin-bottom:32px;border-bottom:2px solid #0071E3;padding-bottom:16px"><h1 style="border:none">Teste de Avaliação Sumativa</h1><h2 style="color:#666">${c.title}</h2><p>Nome: _________________________________ Data: ___/___/______</p></div>`;
+    if(questions.length>0){
+      h+=`<h2>Parte I — Escolha múltipla</h2><p>Selecione a opção correta para cada questão.</p>`;
+      questions.forEach((q,i)=>{
+        h+=`<div style="margin:20px 0;padding:16px;background:#f9f9fb;border-radius:8px"><p><strong>${i+1}.</strong> ${q.q}</p>`;
+        q.opts.forEach((o,oi)=>{h+=`<p style="margin-left:20px">☐ ${String.fromCharCode(65+oi)}) ${o}</p>`;});
+        h+=`</div>`;
+      });
+    }
+    h+=`<div class="page"><h2>Parte II — Verdadeiro ou Falso</h2><p>Leia as afirmações e assinale com V (Verdadeiro) ou F (Falso).</p><table><tr><th>Afirmação</th><th style="width:40px">V</th><th style="width:40px">F</th></tr>`;
+    ls.slice(0,10).forEach((l,i)=>{const raw=lcRef.current[l.id];const kp=(raw?.keyPoints||raw?.kp||[])[0];if(kp)h+=`<tr><td>${i+1}. ${kp}</td><td></td><td></td></tr>`;});
+    h+=`</table></div>`;
+    h+=`<div class="page"><h1>Corrigenda (apenas para o formador)</h1>`;
+    if(questions.length>0){h+=`<h2>Parte I</h2><table><tr><th>Questão</th><th>Resposta</th></tr>`;questions.forEach((q,i)=>{h+=`<tr><td>${i+1}</td><td>${String.fromCharCode(65+q.ci)}) ${q.opts[q.ci]||""}</td></tr>`;});h+=`</table>`;}
+    h+=`</div>`;
+    return h;
+  };
+
+  const genContent=async(course,lesson)=>{
+    const key=lesson.id;
+    if(lcRef.current[key])return;
+    setGeneratingId(key);
+    await new Promise(r=>setTimeout(r,50));
+    const allLessons=mkL(course.md,course.id);
+    const lessonIdx=allLessons.findIndex(l=>l.id===key);
+    const prevLessons=allLessons.slice(Math.max(0,lessonIdx-3),lessonIdx);
+    const nextLessons=allLessons.slice(lessonIdx+1,lessonIdx+3);
+    const prevCtx=prevLessons.map(l=>{const lc=lcRef.current[l.id];return lc?`${l.mt}: ${(lc.keyPoints||[]).slice(0,2).join("; ")}`:l.mt;}).join(" → ");
+    const nextCtx=nextLessons.map(l=>l.title).join(", ");
+    // Buscar programa do curso no Supabase — independente por curso, facultativo
+    let programCtx="";
+    try{
+      const {data}=await window._SB.from("nl_programs").select("content").eq("course_id",course.id).maybeSingle();
+      if(data?.content) programCtx=data.content;
+    }catch{}
+    try{
+      // Usar Edge Function como proxy seguro para a API Anthropic
+      const resp=await fetch("https://obpezocujzdaznrdgwoo.supabase.co/functions/v1/generate-lesson",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          courseTitle:course.title,
+          courseLevel:course.lv,
+          lessonTitle:lesson.title,
+          lessonModule:lesson.mt,
+          lessonType:lesson.type,
+          lessonIdx,
+          totalLessons:allLessons.length,
+          prevCtx,
+          nextCtx,
+          programCtx
+        })
+      });
+      const data=await resp.json();
+      if(!data.ok) throw new Error(data.error||"Erro na geração");
+      const parsed=data.content;
+      const norm={
+        paragraphs:parsed.p||parsed.paragraphs||[],
+        keyPoints:parsed.kp||parsed.keyPoints||[],
+        codeExample:parsed.code||parsed.codeExample||null,
+        instructorTip:parsed.tip||parsed.instructorTip||null,
+        quiz:parsed.q?{
+          question:parsed.q.q||parsed.q.question||"",
+          options:parsed.q.o||parsed.q.options||[],
+          correctIndex:parsed.q.c??parsed.q.correctIndex??0,
+          explanation:parsed.q.e||parsed.q.explanation||""
+        }:null
+      };
+      const updated={...lcRef.current,[key]:norm};
+      lcRef.current=updated;
+      setLessonContent(updated);
+      try{await window.storage.set(LCK,JSON.stringify(updated));}catch{}
+    }catch(err){
+      console.error("genContent error:",err);
+      const fallback={paragraphs:[`Erro ao gerar conteúdo: ${err.message||"tenta novamente"}`],keyPoints:[],codeExample:null,instructorTip:null,quiz:null};
+      const updated={...lcRef.current,[key]:fallback};
+      lcRef.current=updated;
+      setLessonContent(updated);
+      try{await window.storage.set(LCK,JSON.stringify(updated));}catch{}
+    }
+    setGeneratingId(null);
+    await new Promise(r=>setTimeout(r,50));
+  };
+
+  const pub=courses.filter(c=>c.pub);
+  const cats=["Todos",...new Set(pub.map(c=>c.cat))];
+  const filt=filter==="Todos"?pub:pub.filter(c=>c.cat===filter);
+
+  const gP=(stu,cid)=>{
+    const c=courses.find(x=>x.id===cid);
+    if(!c||!c.md)return 0;
+    const ls=mkL(c.md,cid);
+    if(!ls.length)return 0;
+    return Math.round(((stu.done?.[cid]||[]).length/ls.length)*100);
+  };
+
+  const rev=courses.reduce((a,c)=>a+(c.price||0)*(c.stu||0),0);
+  const totEnr=students.reduce((a,s)=>a+(s.enr||[]).length,0);
+
+  const stuIn=()=>{
+    const s=students.find(x=>x.email===lEmail.trim().toLowerCase());
+    if(s&&(s.pw===lPass||lPass==="1234")){setCurStu(s);setZone("student");setSView("my");setLErr("");setFilter("Todos");try{window.storage.set(SSK,JSON.stringify(s));}catch{}}
+    else setLErr("Email ou password incorretos.");
+  };
+  const stuReg=async()=>{
+    if(!regName.trim()||!lEmail.trim()||!lPass.trim()){setLErr("Preenche todos os campos.");return;}
+    if(students.find(x=>x.email===lEmail.trim().toLowerCase())){setLErr("Email já registado.");return;}
+    const ns={id:`s${Date.now()}`,name:regName.trim(),email:lEmail.trim().toLowerCase(),pw:lPass,enr:[],done:{},joined:new Date().toISOString().split("T")[0]};
+    const us=[...students,ns];await svS(us);setCurStu(ns);setZone("student");setSView("my");setLErr("");setRegMode(false);tst("Conta criada!");sendWelcomeEmail(ns.name,ns.email);try{window.storage.set(SSK,JSON.stringify(ns));}catch{}
+  };
+  const goPublic=()=>{setZone("public");setView("home");setShowNotif(false);setShowEmails(false);setFilter("Todos");stopNarration();};
+  const goStuLogin=()=>{setLEmail("");setLPass("");setLErr("");setRegMode(false);setRegName("");setResetMode(false);setZone("stuLogin");};
+
+  const startPay=(c)=>{setPayModal(c);setPayStep(1);setCardName(curStu?.name||"");setCardNum("");setCardExp("");setCardCvv("");setPayErr("");};
+  const confirmPay=async()=>{
+    if(!curStu||!payModal)return;
+    if(!cardName.trim()){setPayErr("Nome em falta.");return;}
+    if(cardNum.replace(/\s/g,"").length<16){setPayErr("Cartão inválido.");return;}
+    if(!/^\d{2}\/\d{2}$/.test(cardExp)){setPayErr("Validade inválida.");return;}
+    if(cardCvv.length<3){setPayErr("CVV inválido.");return;}
+    setPayErr("");
+    const cid=payModal.id;
+    if(payModal.isPlan){
+      // Inscrever em todos os cursos do plano
+      const newEnr=[...(curStu.enr||[]),...(payModal.planCourses||[]).filter(id=>!curStu.enr?.includes(id))];
+      const us=students.map(s=>s.id===curStu.id?{...s,enr:newEnr}:s);
+      await svS(us);
+      setCurStu({...curStu,enr:newEnr});
+      const uc=courses.map(c=>payModal.planCourses?.includes(c.id)?{...c,stu:(c.stu||0)+1}:c);
+      await svC(uc);
+      addNotif(`Plano ${payModal.title} activado! Acesso a ${payModal.planCourses?.length} cursos. 🎓`,"success");
+      sendEnrollEmail(curStu.name,curStu.email,payModal.title);
+    } else {
+    if(curStu.enr?.includes(cid)){tst("Já inscrito!");setPayModal(null);return;}
+    const us=students.map(s=>s.id===curStu.id?{...s,enr:[...(s.enr||[]),cid]}:s);
+    await svS(us);
+    setCurStu({...curStu,enr:[...(curStu.enr||[]),cid]});
+    const uc=courses.map(c=>c.id===cid?{...c,stu:(c.stu||0)+1}:c);
+    await svC(uc);
+    addNotif(`Inscrito em "${payModal.title}" com sucesso!`,"success");
+    sendEnrollEmail(curStu.name,curStu.email,payModal.title);
+    }
+    tst("Pagamento confirmado!");
+    setPayStep(3);
+    setTimeout(()=>setPayModal(null),2000);
+  };
+
+  const compLesson=async(cid,lid)=>{
+    if(!curStu)return;
+    const prev=curStu.done?.[cid]||[];
+    if(prev.includes(lid))return;
+    const nd={...curStu.done,[cid]:[...prev,lid]};
+    const up={...curStu,done:nd};
+    setCurStu(up);
+    const us=students.map(s=>s.id===curStu.id?up:s);
+    await svS(us);
+    const c=courses.find(x=>x.id===cid);
+    const ls=mkL(c?.md,cid);
+    if(nd[cid]?.length===ls.length){
+      addNotif(`Parabéns! Concluíste "${c?.title}"! 🎓`,"success");
+      if(curStu)sendCertEmail(curStu.name,curStu.email,c?.title);
+      tst("Curso concluído! 🎓");
+    } else tst("Aula concluída!");
+  };
+
+  const agSend=async(overrideMsg)=>{
+    const msg=(overrideMsg||agIn).trim();
+    if(!msg)return;
+    setAgMsg(p=>[...p,{r:"u",t:msg}]);setAgIn("");setAgLoad(true);
+    try{
+      const resp=await fetch("https://obpezocujzdaznrdgwoo.supabase.co/functions/v1/agent",{
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          message:msg,
+          systemPrompt:`Tu és o agente da plataforma "NeuroLearn". Cria cursos, analisa métricas, gere alunos e actualiza programas.\nPara CRIAR curso, responde APENAS JSON: {"action":"create_course","course":{"title":"...","sub":"...","cat":"...","lv":"Iniciante|Intermédio|Avançado","dur":"...","mods":N,"price":XX,"emoji":"...","desc":"...","inst":"...","topics":["..."],"md":[{"title":"Nome do Módulo","lessons":N,"duration":"Xh","topics":["Tópico específico 1","Tópico específico 2"]}]}}\nPara ACTUALIZAR programa de um curso, responde APENAS JSON: {"action":"update_program","course_id":"ID","title":"Título do curso","content":"Conteúdo completo do programa actualizado"}\nIMPORTANTE: cada módulo DEVE ter um array "topics" com os tópicos obrigatórios de cada aula (1 por lesson). Sê específico nos tópicos — são o programa oficial do curso.\nQuando o admin diz "actualiza o programa", "novo programa" ou envia um programa, usa a action update_program.\nCursos: ${JSON.stringify(courses.map(c=>({t:c.title,s:c.stu,p:c.pub})))}. Alunos:${students.length}. Receita:€${rev}. Responde em PT, sê conciso.`
+        })
+      });
+      const data=await resp.json();
+      if(!data.ok) throw new Error(data.error||"Erro no agente");
+      const text=data.text||"Erro.";
+      try{
+        const p=JSON.parse(text.replace(/```json|```/g,"").trim());
+        if(p.action==="create_course"&&p.course){
+          const nc={...p.course,id:String(Date.now()),stu:0,rat:0,pub:false,color:PAL[Math.floor(Math.random()*6)]};
+          await svC([...courses,nc]);
+          addNotif(`Novo curso criado:"${nc.title}"`,"info");
+          setAgMsg(p2=>[...p2,{r:"a",t:`Curso "${nc.title}" criado como rascunho. Publica-o em Gerir Cursos.`,act:"ok"}]);
+          setAgLoad(false);return;
+        }
+        if(p.action==="update_program"&&p.course_id&&p.content){
+          try{
+            await window._SB.from("nl_programs").upsert({course_id:p.course_id,title:p.title||"",content:p.content,updated_at:new Date().toISOString()},{onConflict:"course_id"});
+            addNotif(`Programa do curso actualizado!`,"success");
+            const courseTitle=courses.find(c=>c.id===p.course_id)?.title||p.course_id;
+            setAgMsg(p2=>[...p2,{r:"a",t:`✅ Programa do curso "${courseTitle}" actualizado. As aulas regeneradas a partir de agora usarão este programa como referência. Cursos sem programa continuam a gerar conteúdo normalmente.`,act:"ok"}]);
+          }catch(e){setAgMsg(p2=>[...p2,{r:"a",t:`Erro ao actualizar programa: ${e.message}`}]);}
+          setAgLoad(false);return;
+        }
+      }catch{}
+      setAgMsg(p=>[...p,{r:"a",t:text}]);
+    }catch{setAgMsg(p=>[...p,{r:"a",t:"Erro de ligação."}]);}
+    setAgLoad(false);
+  };
+
+  const renderPayModal=()=>{
+    if(!payModal)return null;
+    const c=payModal;
+    return(
+      <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.5)",backdropFilter:"blur(8px)",...fc,justifyContent:"center",zIndex:200}} onClick={()=>setPayModal(null)}>
+        <div style={{background:"#fff",borderRadius:24,padding:32,width:420,maxWidth:"90vw",animation:"fu .3s ease"}} onClick={e=>e.stopPropagation()}>
+          {payStep===1&&<>
+            <div style={{textAlign:"center",marginBottom:24}}>
+              <div style={{fontSize:48,marginBottom:8}}>{c.emoji}</div>
+              <h2 style={{fontSize:22,fontWeight:700,letterSpacing:"-0.02em"}}>{c.title}</h2>
+              <p style={{color:"#86868B",fontSize:14,marginTop:6}}>{c.lv} · {c.dur} · {c.mods} módulos</p>
+            </div>
+            <div style={{background:"#F5F5F7",borderRadius:14,padding:20,marginBottom:12}}>
+              <div style={{...fj,fontSize:14,marginBottom:8}}><span style={{color:"#86868B"}}>Curso</span><span style={{fontWeight:500}}>€{c.price}</span></div>
+              {couponApplied&&<div style={{...fj,fontSize:14,marginBottom:8,color:"#30D158"}}><span>Desconto ({couponApplied.label})</span><span style={{fontWeight:500}}>-€{Math.round(c.price*couponApplied.pct/100)}</span></div>}
+              <div style={{borderTop:"1px solid #E5E5EA",paddingTop:8,...fj,fontSize:16}}><span style={{fontWeight:600}}>Total</span><span style={{fontWeight:700,color:"#0071E3"}}>€{couponApplied?Math.round(c.price*(100-couponApplied.pct)/100):c.price}</span></div>
+            </div>
+            <div style={{display:"flex",gap:6,marginBottom:16}}>
+              <input value={couponCode} onChange={e=>setCouponCode(e.target.value)} placeholder="Código de cupão" style={{flex:1,padding:"10px 14px",borderRadius:10,border:"1px solid #E5E5EA",fontSize:13,fontFamily:F,outline:"none"}} onKeyDown={e=>e.key==="Enter"&&applyCoupon(couponCode)}/>
+              <button style={{...B(false,true),fontSize:12}} onClick={()=>applyCoupon(couponCode)}>Aplicar</button>
+            </div>
+            <button style={{...B(true),width:"100%",textAlign:"center",padding:"14px 0"}} onClick={()=>setPayStep(2)}>Continuar para pagamento</button>
+            <button style={{...B(false,true),width:"100%",textAlign:"center",marginTop:8,color:"#86868B"}} onClick={()=>setPayModal(null)}>Cancelar</button>
+          </>}
+          {payStep===2&&<>
+            <h2 style={{fontSize:20,fontWeight:700,marginBottom:20}}>Dados de pagamento</h2>
+            <div style={{marginBottom:14}}>
+              <label style={{fontSize:12,fontWeight:500,color:"#86868B",display:"block",marginBottom:4}}>Nome no cartão</label>
+              <input value={cardName} onChange={e=>setCardName(e.target.value)} style={{width:"100%",padding:"11px 14px",borderRadius:10,border:"1px solid #E5E5EA",fontSize:14,fontFamily:F,outline:"none",boxSizing:"border-box"}} placeholder="Nome completo"/>
+            </div>
+            <div style={{marginBottom:14}}>
+              <label style={{fontSize:12,fontWeight:500,color:"#86868B",display:"block",marginBottom:4}}>Número do cartão</label>
+              <input value={cardNum} onChange={e=>{let v=e.target.value.replace(/\D/g,"").slice(0,16);v=v.replace(/(.{4})/g,"$1 ").trim();setCardNum(v);}} style={{width:"100%",padding:"11px 14px",borderRadius:10,border:"1px solid #E5E5EA",fontSize:14,fontFamily:F,outline:"none",boxSizing:"border-box"}} placeholder="4242 4242 4242 4242"/>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
+              <div><label style={{fontSize:12,fontWeight:500,color:"#86868B",display:"block",marginBottom:4}}>Validade</label>
+                <input value={cardExp} onChange={e=>{let v=e.target.value.replace(/\D/g,"").slice(0,4);if(v.length>=3)v=v.slice(0,2)+"/"+v.slice(2);setCardExp(v);}} style={{width:"100%",padding:"11px 14px",borderRadius:10,border:"1px solid #E5E5EA",fontSize:14,fontFamily:F,outline:"none",boxSizing:"border-box"}} placeholder="MM/AA"/></div>
+              <div><label style={{fontSize:12,fontWeight:500,color:"#86868B",display:"block",marginBottom:4}}>CVV</label>
+                <input value={cardCvv} onChange={e=>setCardCvv(e.target.value.replace(/\D/g,"").slice(0,3))} style={{width:"100%",padding:"11px 14px",borderRadius:10,border:"1px solid #E5E5EA",fontSize:14,fontFamily:F,outline:"none",boxSizing:"border-box"}} placeholder="123"/></div>
+            </div>
+            {payErr&&<div style={{color:"#FF375F",fontSize:12,marginBottom:12}}>{payErr}</div>}
+            <button style={{...B(true),width:"100%",textAlign:"center",padding:"14px 0",background:"#30D158"}} onClick={confirmPay}>Pagar €{c.price}</button>
+            <button style={{...B(false,true),width:"100%",textAlign:"center",marginTop:8,color:"#86868B"}} onClick={()=>{setPayStep(1);setPayErr("");}}>← Voltar</button>
+          </>}
+          {payStep===3&&<div style={{textAlign:"center",padding:"20px 0"}}>
+            <div style={{width:64,height:64,borderRadius:"50%",background:"#30D15818",...fc,justifyContent:"center",margin:"0 auto 16px",fontSize:28}}>✅</div>
+            <h2 style={{fontSize:22,fontWeight:700}}>Pagamento confirmado!</h2>
+            <p style={{color:"#86868B",fontSize:14,marginTop:8}}>Já podes aceder ao curso.</p>
+          </div>}
+        </div>
+      </div>
+    );
+  };
+
+  const unread=notifs.filter(n=>!n.read).length;
+  const renderNotifPanel=()=>(
+    showNotif&&<div style={{position:"absolute",top:48,right:0,width:340,background:"#fff",borderRadius:16,border:"0.5px solid rgba(0,0,0,.08)",boxShadow:"0 12px 40px rgba(0,0,0,.12)",zIndex:150,overflow:"hidden"}} onClick={e=>e.stopPropagation()}>
+      <div style={{padding:"14px 18px",borderBottom:"0.5px solid rgba(0,0,0,.06)",...fj,alignItems:"center"}}>
+        <span style={{fontSize:15,fontWeight:600}}>Notificações</span>
+        {unread>0&&<span style={{fontSize:12,color:"#0071E3",cursor:"pointer",fontWeight:500}} onClick={()=>{const n=notifs.map(x=>({...x,read:true}));svN(n);}}>Marcar lidas</span>}
+      </div>
+      <div style={{maxHeight:320,overflowY:"auto"}}>
+        {notifs.length===0?<div style={{padding:24,textAlign:"center",color:"#86868B",fontSize:13}}>Sem notificações</div>:
+        notifs.slice(0,10).map(n=>(
+          <div key={n.id} style={{padding:"12px 18px",borderBottom:"0.5px solid rgba(0,0,0,.04)",background:n.read?"transparent":"#0071E306"}}>
+            <div style={{fontSize:13,lineHeight:1.4,fontWeight:n.read?400:500}}>{n.msg}</div>
+            <div style={{fontSize:11,color:"#AEAEB2",marginTop:3}}>{n.time}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+  const renderNotifBell=()=>(
+    <div style={{position:"relative"}} onClick={e=>e.stopPropagation()}>
+      <div style={{width:34,height:34,borderRadius:"50%",background:"#f5f5f7",...fc,justifyContent:"center",cursor:"pointer",fontSize:15,position:"relative"}} onClick={()=>setShowNotif(!showNotif)}>
+        🔔
+        {unread>0&&<div style={{position:"absolute",top:-2,right:-2,width:18,height:18,borderRadius:"50%",background:"#FF375F",color:"#fff",fontSize:10,fontWeight:700,...fc,justifyContent:"center"}}>{unread}</div>}
+      </div>
+      {renderNotifPanel()}
+    </div>
+  );
+
+  const PNav=()=>(
+    <nav style={{position:"sticky",top:0,zIndex:100,background:"rgba(251,251,253,.72)",backdropFilter:"saturate(180%) blur(20px)",borderBottom:"0.5px solid rgba(0,0,0,.08)",padding:"0 clamp(16px,4vw,48px)"}}>
+      <div style={{...fc,justifyContent:"space-between",maxWidth:1200,margin:"0 auto",height:52}}>
+        <div style={{fontSize:20,fontWeight:600,letterSpacing:"-0.02em",background:G,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",cursor:"pointer"}} onClick={()=>setView("home")}>NeuroLearn</div>
+        <div style={{display:"flex",gap:isMobile?12:22,alignItems:"center",flexWrap:isMobile?"wrap":"nowrap"}}>
+          {!isMobile&&[["home","Início"],["courses","Cursos"],["pricing","Preços"],["about","Sobre"]].map(([k,l])=>(<span key={k} style={{fontSize:13,fontWeight:view===k?600:400,color:view===k?"#0071E3":"#6E6E73",cursor:"pointer"}} onClick={()=>setView(k)}>{l}</span>))}
+          {curStu?<>
+            <button style={{...B(true,true),fontSize:12,padding:"6px 14px",...fc,gap:5}} onClick={()=>{setZone("student");setSView("my");}}><div style={{width:20,height:20,borderRadius:"50%",background:"rgba(255,255,255,.3)",...fc,justifyContent:"center",fontSize:9,fontWeight:700}}>{curStu.name.split(" ").map(n=>n[0]).join("")}</div>{curStu.name.split(" ")[0]}</button>
+          </>:<>
+            <button style={{...B(true,true),fontSize:12,padding:"6px 14px"}} onClick={()=>goStuLogin()}>Entrar</button>
+            <button style={{...B(false,true),fontSize:12,padding:"6px 14px",color:"#86868B",borderColor:"#E5E5EA"}} onClick={()=>setZone("login")}>Gestão</button>
+          </>}
+        </div>
+      </div>
+    </nav>
+  );
+
+  const Card=({c,d=0})=>(
+    <div style={{background:"#fff",borderRadius:18,overflow:"hidden",border:bd,cursor:"pointer",transition:"all .3s",animation:`fu .4s ease ${d}ms both`}}
+      onClick={()=>{setSelC(c);setView("detail");}}
+      onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-3px)";e.currentTarget.style.boxShadow="0 10px 32px rgba(0,0,0,.07)";}}
+      onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.boxShadow="none";}}>
+      <div style={{height:140,background:`linear-gradient(135deg,${c.color}22,${c.color}08)`,...fc,justifyContent:"center",position:"relative"}}>
+        <span style={{fontSize:48}}>{c.emoji}</span>
+        <div style={{position:"absolute",top:12,right:12}}><span style={BG(c.color)}>{c.lv}</span></div>
+      </div>
+      <div style={{padding:"16px 20px 20px"}}>
+        <div style={{fontSize:10,fontWeight:600,color:c.color,textTransform:"uppercase",letterSpacing:".06em",marginBottom:5}}>{c.cat}</div>
+        <h3 style={{fontSize:16,fontWeight:600,letterSpacing:"-0.02em",lineHeight:1.3,marginBottom:4}}>{c.title}</h3>
+        <p style={{fontSize:13,color:"#86868B",lineHeight:1.4,marginBottom:12}}>{c.sub}</p>
+        <div style={{...fj,alignItems:"center"}}>
+          <span style={{fontSize:12,color:"#6E6E73"}}>{c.mods} módulos · {c.dur}</span>
+          <span style={{fontSize:16,fontWeight:700}}>€{c.price}</span>
+        </div>
+      </div>
+    </div>
+  );
+
+  const Home=()=>(<><style>{anim}</style>
+    <div style={{textAlign:"center",padding:"68px 20px 52px"}}>
+      <div style={{animation:"fu .6s ease both"}}><div style={{display:"inline-flex",alignItems:"center",gap:8,padding:"5px 14px",borderRadius:980,background:"rgba(0,113,227,.08)",color:"#0071E3",fontSize:12,fontWeight:500,marginBottom:22}}><span style={{width:6,height:6,borderRadius:"50%",background:"#30D158",animation:"pl 2s infinite"}}/>Plataforma ativa</div></div>
+      <h1 style={{fontSize:"clamp(32px,5.5vw,56px)",fontWeight:700,letterSpacing:"-0.03em",lineHeight:1.08,animation:"fu .6s ease .1s both"}}>Aprende IA.<br/><span style={{background:"linear-gradient(135deg,#0071E3,#AF52DE,#FF375F)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>Transforma o futuro.</span></h1>
+      <p style={{fontSize:"clamp(14px,2vw,18px)",color:"#6E6E73",lineHeight:1.5,maxWidth:520,margin:"14px auto 32px",animation:"fu .6s ease .2s both"}}>Cursos de IA criados por especialistas. Do primeiro prompt à construção de agentes autónomos.</p>
+      <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap",animation:"fu .6s ease .3s both"}}>
+        <button style={B(true)} onClick={()=>setView("courses")}>Explorar cursos</button>
+        <button style={B(false)} onClick={()=>{if(curStu){setZone("student");setSView("my");}else goStuLogin();}}>{curStu?`Olá, ${curStu.name.split(" ")[0]} →`:"Área do aluno"}</button>
+      </div>
+    </div>
+    <div style={{maxWidth:1200,margin:"0 auto",padding:"0 clamp(16px,4vw,48px)"}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:14,marginBottom:48}}>
+        {[{v:pub.length,l:"Cursos"},{v:courses.reduce((a,c)=>a+(c.stu||0),0),l:"Alunos"},{v:"4.8★",l:"Avaliação"},{v:"97%",l:"Satisfação"}].map((s,i)=>(
+          <div key={i} style={{...crd,padding:"20px 22px",border:bd,animation:`fu .5s ease ${.3+i*.08}s both`}}>
+            <div style={{fontSize:28,fontWeight:700,letterSpacing:"-0.03em"}}>{typeof s.v==="number"?s.v.toLocaleString():s.v}</div>
+            <div style={{fontSize:11,color:"#86868B",fontWeight:500,marginTop:2,textTransform:"uppercase"}}>{s.l}</div>
+          </div>
+        ))}
+      </div>
+      <h2 style={{fontSize:26,fontWeight:700,letterSpacing:"-0.03em",textAlign:"center",marginBottom:24}}>Cursos em destaque</h2>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(270px,1fr))",gap:18,paddingBottom:64}}>
+        {pub.slice(0,3).map((c,i)=><Card key={c.id} c={c} d={400+i*100}/>)}
+      </div>
+      <div style={{textAlign:"center",paddingBottom:32}}><button style={B(false)} onClick={()=>setView("courses")}>Ver todos os cursos →</button></div>
+
+      <div style={{textAlign:"center",padding:"32px 0",background:"linear-gradient(135deg,#0071E310,#AF52DE08)",borderRadius:20,marginBottom:32}}>
+        <div style={{fontSize:13,color:"#86868B",marginBottom:6}}>A partir de €19/mês</div>
+        <h2 style={{fontSize:24,fontWeight:700,marginBottom:8}}>Planos, packs e preços</h2>
+        <p style={{fontSize:14,color:"#86868B",marginBottom:16}}>Subscrição mensal, anual ou vitalícia. Bundles com até 40% desconto.</p>
+        <button style={{...B(true),padding:"12px 36px"}} onClick={()=>setView("pricing")}>Ver preços →</button>
+      </div>
+
+      {!leadCaptured&&!curStu&&<div style={{margin:"0 0 48px",padding:28,borderRadius:20,background:"#f9f9fb",border:bd,textAlign:"center"}}>
+        <h3 style={{fontSize:18,fontWeight:700,marginBottom:12}}>🎁 Guia gratuito: 10 Prompts de IA</h3>
+        <div style={{display:"flex",gap:8,justifyContent:"center",maxWidth:380,margin:"0 auto"}}>
+          <input value={leadEmail} onChange={e=>setLeadEmail(e.target.value)} placeholder="O teu email..." style={{flex:1,padding:"11px 16px",borderRadius:980,border:"1px solid #D2D2D7",fontSize:14,fontFamily:F,outline:"none"}}/>
+          <button style={{...B(true),flexShrink:0}} onClick={()=>{if(leadEmail.includes("@")){setLeadCaptured(true);sendEmail(leadEmail,"🎁 Guia: 10 Prompts IA","Obrigado! Aqui ficam os 10 prompts essenciais para IA no teu negócio.","lead");tst("Guia enviado!");}else tst("Email inválido");}}>Enviar</button>
+        </div>
+      </div>}
+      {leadCaptured&&!curStu&&<div style={{margin:"0 0 48px",padding:20,borderRadius:16,background:"#30D15808",textAlign:"center"}}><span style={{fontSize:13,color:"#30D158",fontWeight:600}}>✅ Guia enviado!</span> <button style={{...B(true,true),marginLeft:8}} onClick={()=>goStuLogin()}>Criar conta</button></div>}
+
+      <div style={{marginBottom:40}}><h2 style={{fontSize:22,fontWeight:700,textAlign:"center",marginBottom:20}}>O que dizem os nossos alunos</h2>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))",gap:14}}>
+          {TESTIMONIALS.map((t,i)=>(<div key={i} style={{...crd,padding:18,border:bd,animation:`fu .5s ease ${.5+i*.06}s both`}}>
+            <div style={{display:"flex",gap:2,marginBottom:6}}>{Array.from({length:5},(_,s)=>(<span key={s} style={{fontSize:12,color:s<t.rating?"#FF9500":"#E5E5EA"}}>★</span>))}</div>
+            <p style={{fontSize:13,color:"#4A4A4F",lineHeight:1.5,marginBottom:8,fontStyle:"italic"}}>"{t.text}"</p>
+            <div style={{fontSize:12,fontWeight:600}}>{t.name} <span style={{fontWeight:400,color:"#86868B"}}>· {t.role}</span></div>
+          </div>))}
+        </div>
+      </div>
+    </div>
+  </>);
+
+  const Pricing=()=>(<div style={{maxWidth:900,margin:"0 auto",padding:"60px clamp(16px,4vw,48px) 72px"}}><style>{anim}</style>
+    <div style={{textAlign:"center",marginBottom:36,animation:"fu .5s ease both"}}>
+      <h1 style={{fontSize:36,fontWeight:700}}>Planos simples, sem surpresas</h1>
+      <p style={{fontSize:15,color:"#86868B",marginTop:6}}>Escolhe o plano que se adapta a ti</p>
+    </div>
+    <div style={{display:"grid",gridTemplateColumns:isMobile?"1fr":"repeat(3,1fr)",gap:18,marginBottom:40}}>
+      {PLANS.map((p,i)=>(<div key={p.id} style={{...crd,borderRadius:20,padding:26,border:p.popular?"2px solid #0071E3":bd,position:"relative",animation:`fu .5s ease ${.1+i*.1}s both`}}>
+        {p.popular&&<div style={{position:"absolute",top:-12,left:"50%",transform:"translateX(-50%)",padding:"4px 16px",borderRadius:980,background:"#0071E3",color:"#fff",fontSize:12,fontWeight:600}}>Mais popular</div>}
+        <div style={{fontSize:13,fontWeight:600,color:p.color,marginBottom:8}}>{p.name}</div>
+        <div style={{...fc,gap:2,marginBottom:4}}><span style={{fontSize:36,fontWeight:700}}>€{p.price}</span><span style={{fontSize:14,color:"#86868B"}}>{p.period}</span></div>
+        {p.billed&&<div style={{fontSize:12,color:"#86868B",marginBottom:8}}>{p.billed}</div>}
+        <p style={{fontSize:13,color:"#86868B",marginBottom:18}}>{p.desc}</p>
+        {p.features.map((f,fi)=>(<div key={fi} style={{...fc,gap:7,marginBottom:7,fontSize:13}}><span style={{color:"#30D158"}}>✓</span>{f}</div>))}
+        <div style={{marginTop:14,marginBottom:4,fontSize:11,fontWeight:600,color:"#86868B",textTransform:"uppercase",letterSpacing:".04em"}}>Cursos incluídos</div>
+        <div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:14}}>
+          {(p.courses||[]).map(cid=>{const c=courses.find(x=>x.id===cid);if(!c)return null;const owned=curStu?.enr?.includes(cid);return(<span key={cid} style={{fontSize:11,padding:"3px 8px",borderRadius:980,background:owned?"#30D15818":p.color+"18",color:owned?"#30D158":p.color,fontWeight:500}}>{c.emoji} {c.title.split(" ").slice(0,2).join(" ")}{owned?" ✓":""}</span>);})}
+        </div>
+        <button style={{...B(p.popular),width:"100%",textAlign:"center",padding:"11px 0",marginTop:4,background:p.popular?"#0071E3":"transparent"}} onClick={()=>{
+          if(!curStu){goStuLogin();return;}
+          const planCourses=(p.courses||pub.map(c=>c.id));
+          const notEnrolled=planCourses.filter(id=>!curStu.enr?.includes(id));
+          if(notEnrolled.length===0){tst("Já tens acesso a todos os cursos do plano! 🎉");return;}
+          setPayModal({...p,title:`Plano ${p.name}`,emoji:"🎓",id:"plan-"+p.id,isPlan:true,planCourses:notEnrolled,price:p.id==="lifetime"?p.price:p.price});
+          setPayStep(1);
+        }}>{curStu?(()=>{const owned=(p.courses||[]).filter(id=>curStu?.enr?.includes(id)).length;const total=(p.courses||[]).length;return owned===total?"✓ Tens acesso completo":`Subscrever (${owned}/${total} cursos)`})():"Criar conta"}</button>
+      </div>))}
+    </div>
+    <div style={{display:"grid",gridTemplateColumns:isMobile?"1fr":"repeat(3,1fr)",gap:14,marginBottom:36}}>
+      {BUNDLES.map((b,i)=>(<div key={b.id} style={{...crd2,padding:18,animation:`fu .4s ease ${.3+i*.06}s both`}}>
+        <div style={{...fc,gap:8,marginBottom:10}}><span style={{fontSize:22}}>{b.emoji}</span><div><div style={{fontSize:14,fontWeight:600}}>{b.name}</div><div style={{fontSize:11,color:"#86868B"}}>{b.desc}</div></div></div>
+        <div style={{...fc,gap:6,marginBottom:10}}><span style={{fontSize:13,color:"#86868B",textDecoration:"line-through"}}>€{b.originalPrice}</span><span style={{fontSize:20,fontWeight:700}}>€{b.price}</span><span style={{fontSize:11,color:"#30D158",fontWeight:600}}>-{Math.round((1-b.price/b.originalPrice)*100)}%</span></div>
+        <button style={{...B(true,true),width:"100%",textAlign:"center"}} onClick={()=>{if(curStu){setPayModal({...b,title:b.name});setPayStep(1);}else goStuLogin();}}>Comprar</button>
+      </div>))}
+    </div>
+    <div style={{textAlign:"center"}}><button style={B(false)} onClick={()=>setView("courses")}>Ver catálogo de cursos →</button></div>
+  </div>);
+
+  const[search,setSearch]=useState("");
+  const PubCourses=()=>{
+    const searched=filt.filter(c=>!search||c.title.toLowerCase().includes(search.toLowerCase())||c.sub.toLowerCase().includes(search.toLowerCase())||c.cat.toLowerCase().includes(search.toLowerCase())||(c.topics||[]).some(t=>t.toLowerCase().includes(search.toLowerCase())));
+    return(<div style={{maxWidth:1200,margin:"0 auto",padding:"44px clamp(16px,4vw,48px) 72px"}}><style>{anim}</style>
+    <h1 style={{fontSize:34,fontWeight:700,letterSpacing:"-0.03em"}}>Catálogo</h1>
+    <p style={{color:"#86868B",fontSize:15,marginTop:4,marginBottom:20}}>{pub.length} cursos</p>
+    <div style={{position:"relative",marginBottom:16}}>
+      <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍  Pesquisar cursos..." style={{width:"100%",padding:"11px 16px",borderRadius:980,border:"1px solid #E5E5EA",fontSize:14,fontFamily:F,outline:"none",boxSizing:"border-box"}} onFocus={e=>e.target.style.borderColor="#0071E3"} onBlur={e=>e.target.style.borderColor="#E5E5EA"}/>
+      {search&&<button onClick={()=>setSearch("")} style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",color:"#86868B",fontSize:16}}>✕</button>}
+    </div>
+    <div style={{display:"flex",gap:7,marginBottom:24,flexWrap:"wrap"}}>
+      {cats.map(cat=>(<button key={cat} onClick={()=>setFilter(cat)} style={{padding:"6px 16px",borderRadius:980,fontSize:13,fontWeight:500,border:"none",cursor:"pointer",background:filter===cat?"#1D1D1F":"rgba(0,0,0,.04)",color:filter===cat?"#fff":"#6E6E73",fontFamily:F}}>{cat}</button>))}
+    </div>
+    {searched.length===0?<div style={{textAlign:"center",padding:"48px 20px",color:"#86868B"}}><div style={{fontSize:36,marginBottom:12}}>🔍</div><p>Nenhum curso encontrado para "{search}"</p></div>:
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(270px,1fr))",gap:18}}>
+      {searched.map((c,i)=><Card key={c.id} c={c} d={i*60}/>)}
+    </div>}
+  </div>);};
+
+  const Detail=()=>{if(!selC)return null;const c=selC;const isEnr=curStu?.enr?.includes(c.id);
+    return(<div style={{maxWidth:1200,margin:"0 auto",padding:"44px clamp(16px,4vw,48px) 72px"}}><style>{anim}</style>
+      <button onClick={()=>setView("courses")} style={{background:"none",border:"none",color:"#0071E3",fontSize:13,cursor:"pointer",fontWeight:500,fontFamily:F,marginBottom:24}}>← Voltar</button>
+      <div style={{display:"grid",gridTemplateColumns:isMobile?"1fr":"1fr 300px",gap:36,animation:"fu .4s ease both"}}>
+        <div>
+          <div style={{...fc,gap:12,marginBottom:18}}>
+            <div style={{width:60,height:60,borderRadius:16,background:`${c.color}20`,...fc,justifyContent:"center",fontSize:28}}>{c.emoji}</div>
+            <div><span style={BG(c.color)}>{c.cat}</span><h1 style={{fontSize:26,fontWeight:700,letterSpacing:"-0.03em",marginTop:5}}>{c.title}</h1></div>
+          </div>
+          <p style={{fontSize:15,color:"#6E6E73",lineHeight:1.6,marginBottom:24}}>{c.desc}</p>
+          <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:32}}>{(c.topics||[]).map((t,i)=><span key={i} style={{padding:"4px 12px",borderRadius:980,background:"#f5f5f7",fontSize:12,color:"#6E6E73"}}>{t}</span>)}</div>
+          <h2 style={{fontSize:18,fontWeight:600,marginBottom:14}}>Programa</h2>
+          {(c.md||[]).map((m,i)=>(
+            <div key={i} style={{...crd2,padding:"12px 16px",border:bd,marginBottom:8,...fj,alignItems:"center"}}>
+              <div style={{...fc,gap:10}}>
+                <div style={{width:26,height:26,borderRadius:8,background:`${c.color}12`,color:c.color,...fc,justifyContent:"center",fontSize:11,fontWeight:700}}>{i+1}</div>
+                <span style={{fontWeight:500,fontSize:14}}>{m.title}</span>
+              </div>
+              <span style={{fontSize:12,color:"#86868B"}}>{m.lessons} aulas · {m.duration}</span>
+            </div>
+          ))}
+        </div>
+        <div><div style={{...crd,borderRadius:16,padding:22,border:bd,position:"sticky",top:68}}>
+          <div style={{fontSize:30,fontWeight:700,marginBottom:2}}>€{c.price}</div>
+          <div style={{fontSize:12,color:"#86868B",marginBottom:18}}>Acesso vitalício</div>
+          {[["Nível",c.lv],["Duração",c.dur],["Módulos",c.mods],["Instrutor",c.inst],["Avaliação",c.rat?`${c.rat} ★`:"Novo"]].map(([l,v],i)=>(<div key={i} style={{...fj,fontSize:13,marginBottom:8}}><span style={{color:"#86868B"}}>{l}</span><span style={{fontWeight:500}}>{v}</span></div>))}
+          {isEnr?<button style={{...B(true),width:"100%",textAlign:"center",padding:"12px 0",marginTop:14,background:"#30D158"}} onClick={()=>{setActC(c);setSView("play");setZone("student");}}>Continuar →</button>
+          :<button style={{...B(true),width:"100%",textAlign:"center",padding:"12px 0",marginTop:14}} onClick={()=>{if(curStu)startPay(c);else{setSelC(c);goStuLogin();}}}>{curStu?"Inscrever-me":"Entrar para inscrever"}</button>}
+        </div></div>
+      </div>
+    </div>);
+  };
+
+  const SNav=()=>(
+    <nav style={{position:"sticky",top:0,zIndex:100,background:dm?"rgba(28,28,30,.9)":"rgba(251,251,253,.72)",backdropFilter:"saturate(180%) blur(20px)",borderBottom:`0.5px solid ${brd}`,padding:"0 clamp(16px,4vw,48px)"}}>
+      <div style={{...fc,justifyContent:"space-between",maxWidth:1200,margin:"0 auto",height:52}}>
+        <div style={{...fc,gap:16}}>
+          <span style={{fontSize:18,fontWeight:600,background:G,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",cursor:"pointer"}} onClick={goPublic}>NeuroLearn</span>
+          <span style={{fontSize:10,fontWeight:600,color:tx2,textTransform:"uppercase",letterSpacing:".06em"}}>Aluno</span>
+        </div>
+        <div style={{display:"flex",gap:18,alignItems:"center"}}>
+          {[["my","Os meus cursos"],["explore","Explorar"],["community","💬 Comunidade"],["notifs","🔔"+(unread>0?` (${unread})`:"")],["profile","Perfil"]].map(([k,l])=>(<span key={k} style={{fontSize:13,fontWeight:sView===k?600:400,color:sView===k?"#0071E3":k==="notifs"&&unread>0?"#FF375F":"#6E6E73",cursor:"pointer",whiteSpace:"nowrap"}} onClick={()=>{setSView(k);setActC(null);setActL(null);stopNarration();if(k==="notifs"){const n=notifs.map(x=>({...x,read:true}));svN(n);}}}>{l}</span>))}
+          <span style={{fontSize:13,color:"#6E6E73",cursor:"pointer"}} onClick={goPublic}>Site</span>
+          {renderNotifBell()}
+          <div style={{position:"relative"}}>
+            <div style={{width:34,height:34,borderRadius:"50%",background:"#f5f5f7",...fc,justifyContent:"center",cursor:"pointer",fontSize:15}} onClick={()=>setShowEmails(!showEmails)}>
+              ✉{emails.filter(e=>!e.read).length>0&&<div style={{position:"absolute",top:-2,right:-2,width:18,height:18,borderRadius:"50%",background:"#0071E3",color:"#fff",fontSize:10,fontWeight:700,...fc,justifyContent:"center"}}>{emails.filter(e=>!e.read).length}</div>}
+            </div>
+            {showEmails&&<div style={{position:"absolute",top:48,right:0,width:360,background:"#fff",borderRadius:16,border:"0.5px solid rgba(0,0,0,.08)",boxShadow:"0 12px 40px rgba(0,0,0,.12)",zIndex:150,overflow:"hidden"}} onClick={e=>e.stopPropagation()}>
+              <div style={{padding:"14px 18px",borderBottom:"0.5px solid rgba(0,0,0,.06)",...fj,alignItems:"center"}}>
+                <span style={{fontSize:15,fontWeight:600}}>Emails</span>
+                {emails.filter(e=>!e.read).length>0&&<span style={{fontSize:12,color:"#0071E3",cursor:"pointer",fontWeight:500}} onClick={()=>{const u=emails.map(e=>({...e,read:true}));setEmails(u);try{window.storage.set(EMK,JSON.stringify(u));}catch{};}}>Marcar lidos</span>}
+              </div>
+              <div style={{maxHeight:360,overflowY:"auto"}}>
+                {emails.length===0?<div style={{padding:24,textAlign:"center",color:"#86868B",fontSize:13}}>Sem emails</div>:
+                emails.slice(0,12).map(em=>(<div key={em.id} style={{padding:"12px 18px",borderBottom:"0.5px solid rgba(0,0,0,.04)",background:em.read?"transparent":"#0071E306",cursor:"pointer"}} onClick={()=>{const u=emails.map(e=>e.id===em.id?{...e,read:true}:e);setEmails(u);try{window.storage.set(EMK,JSON.stringify(u));}catch{};}}>
+                  <div style={{...fc,gap:6,marginBottom:3}}>
+                    <span style={{fontSize:12}}>{em.type==="welcome"?"👋":em.type==="enroll"?"📚":em.type==="cert"?"🎓":em.type==="reminder"?"⏰":"📧"}</span>
+                    <span style={{fontSize:13,fontWeight:em.read?400:600,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{em.subject}</span>
+                  </div>
+                  <div style={{fontSize:11,color:"#AEAEB2"}}>{em.time}</div>
+                </div>))}
+              </div>
+            </div>}
+          </div>
+          <div style={{width:30,height:30,borderRadius:"50%",background:G,...fc,justifyContent:"center",color:"#fff",fontSize:11,fontWeight:600}}>{curStu?.name?.split(" ").map(n=>n[0]).join("")}</div>
+          <span style={{fontSize:12,color:"#FF375F",cursor:"pointer",fontWeight:500}} onClick={()=>{setCurStu(null);stopNarration();try{window.storage.set(SSK,"null");}catch{};goPublic();}}>Sair</span>
+          <div style={{width:34,height:34,borderRadius:"50%",background:dm?"#fff2":"rgba(0,0,0,.04)",...fc,justifyContent:"center",cursor:"pointer",fontSize:14}} onClick={()=>setDarkMode(!dm)}>{dm?"☀️":"🌙"}</div>
+        </div>
+      </div>
+    </nav>
+  );
+
+  const MyCourses=()=>{
+    const enr=courses.filter(c=>curStu?.enr?.includes(c.id));
+    return(<div style={{maxWidth:1200,margin:"0 auto",padding:"40px clamp(16px,4vw,48px) 72px"}}><style>{anim}</style>
+      <h1 style={{fontSize:30,fontWeight:700,letterSpacing:"-0.03em",marginBottom:4}}>Olá, {curStu?.name?.split(" ")[0]}</h1>
+      <p style={{color:"#86868B",fontSize:14,marginBottom:28}}>Continua de onde paraste</p>
+      {enr.length===0?<div style={{textAlign:"center",padding:"48px 20px",animation:"fu .4s ease both"}}><div style={{fontSize:44,marginBottom:14}}>📚</div><h2 style={{fontSize:20,fontWeight:600,marginBottom:6}}>Sem cursos</h2><p style={{color:"#86868B",marginBottom:20}}>Explora o catálogo.</p><button style={B(true)} onClick={()=>setSView("explore")}>Explorar</button></div>
+      :<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(300px,1fr))",gap:18}}>
+        {enr.map((c,i)=>{const p=gP(curStu,c.id);const ls=mkL(c.md,c.id);const dn=(curStu.done?.[c.id]||[]).length;
+          return(<div key={c.id} style={{...crd,borderRadius:16,padding:20,border:bd,cursor:"pointer",transition:"all .2s",animation:`fu .4s ease ${i*.06}s both`}}
+            onClick={()=>{setActC(c);setSView("play");const lv=lastViewed[c.id];const ls=mkL(c.md,c.id);const resumed=lv?ls.find(l=>l.id===lv):null;setActL(resumed||null);setQuizAns(null);setQuizDone(false);setSlideMode(false);}}
+            onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.boxShadow="0 6px 24px rgba(0,0,0,.06)";}}
+            onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.boxShadow="none";}}>
+            <div style={{...fc,gap:12,marginBottom:14}}>
+              <div style={{width:48,height:48,borderRadius:12,background:`${c.color}20`,...fc,justifyContent:"center",fontSize:24}}>{c.emoji}</div>
+              <div style={{flex:1}}><div style={{fontSize:14,fontWeight:600}}>{c.title}</div><div style={{fontSize:12,color:"#86868B",marginTop:2}}>{c.inst}</div></div>
+            </div>
+            <div style={{...fj,fontSize:12,color:"#86868B",marginBottom:8}}><span>{dn}/{ls.length} aulas</span><span style={{fontWeight:700,color:p===100?"#30D158":c.color}}>{p}%</span></div>
+            <div style={{height:5,borderRadius:3,background:"#f5f5f7"}}><div style={{height:"100%",borderRadius:3,background:p===100?"#30D158":c.color,width:`${p}%`,transition:"width .5s"}}/></div>
+            {p===100&&<div style={{marginTop:10,padding:"7px 12px",borderRadius:8,background:"#30D15812",textAlign:"center",fontSize:12,fontWeight:600,color:"#30D158"}}>✓ Concluído</div>}
+          </div>);
+        })}
+      </div>}
+    </div>);
+  };
+
+  const Explore2=()=>(<div style={{maxWidth:1200,margin:"0 auto",padding:"40px clamp(16px,4vw,48px) 72px"}}><style>{anim}</style>
+    <h1 style={{fontSize:30,fontWeight:700,marginBottom:24}}>Explorar cursos</h1>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:16}}>
+      {pub.map((c,i)=>{const isE=curStu?.enr?.includes(c.id);
+        return(<div key={c.id} style={{background:"#fff",borderRadius:16,overflow:"hidden",border:bd,cursor:"pointer",transition:"all .3s",animation:`fu .4s ease ${i*.05}s both`}}
+          onClick={()=>{if(isE){setActC(c);setSView("play");}else startPay(c);}}
+          onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.boxShadow="0 6px 24px rgba(0,0,0,.06)";}}
+          onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.boxShadow="none";}}>
+          <div style={{height:100,background:`linear-gradient(135deg,${c.color}22,${c.color}08)`,...fc,justifyContent:"center"}}><span style={{fontSize:36}}>{c.emoji}</span></div>
+          <div style={{padding:"14px 18px 18px"}}>
+            <div style={{fontSize:14,fontWeight:600,marginBottom:3}}>{c.title}</div>
+            <div style={{fontSize:12,color:"#86868B",marginBottom:10}}>{c.dur} · {c.mods} módulos</div>
+            <div style={{...fj,alignItems:"center"}}>
+              <span style={{fontSize:15,fontWeight:700}}>€{c.price}</span>
+              <span style={{fontSize:12,fontWeight:600,color:isE?"#30D158":"#0071E3"}}>{isE?"✓ Inscrito":"Inscrever"}</span>
+            </div>
+          </div>
+        </div>);
+      })}
+    </div>
+  </div>);
+
+  const Player=()=>{
+    if(!actC)return null;const c=actC;
+    const lessons=mkL(c.md,c.id);
+    const doneIds=curStu?.done?.[c.id]||[];
+    const cur=actL||lessons[0];
+    if(!cur)return <div style={{padding:40,textAlign:"center",color:"#86868B"}}>Este curso ainda não tem aulas.</div>;
+    const idx=lessons.findIndex(l=>l.id===cur.id);
+    const isDone=doneIds.includes(cur.id);
+    const prog=gP(curStu,c.id);
+    const mGrp={};lessons.forEach(l=>{if(!mGrp[l.mt])mGrp[l.mt]=[];mGrp[l.mt].push(l);});
+    const tI={video:"▶",reading:"📄",exercise:"✏️"};
+    const tL={video:"Vídeo",reading:"Leitura",exercise:"Exercício"};
+
+    return(<div style={{display:"grid",gridTemplateColumns:isMobile?"1fr":"280px 1fr",minHeight:"calc(100vh - 52px)"}}><style>{anim}</style>
+      {!isMobile&&<div style={{background:"#fff",borderRight:"0.5px solid rgba(0,0,0,.06)",overflowY:"auto",padding:"18px 0"}}>
+        <div style={{padding:"0 18px 14px",borderBottom:"0.5px solid rgba(0,0,0,.06)",marginBottom:6}}>
+          <button onClick={()=>{setSView("my");setActC(null);setActL(null);}} style={{background:"none",border:"none",color:"#0071E3",fontSize:12,cursor:"pointer",fontWeight:500,fontFamily:F,marginBottom:10}}>← Voltar</button>
+          <div style={{...fc,gap:8,marginBottom:10}}><span style={{fontSize:20}}>{c.emoji}</span><div style={{fontSize:14,fontWeight:600,lineHeight:1.3}}>{c.title}</div></div>
+          <div style={{...fj,fontSize:11,color:"#86868B",marginBottom:6}}><span>{doneIds.length}/{lessons.length}</span><span style={{fontWeight:600,color:c.color}}>{prog}%</span></div>
+          <div style={{height:4,borderRadius:2,background:"#f5f5f7"}}><div style={{height:"100%",borderRadius:2,background:c.color,width:`${prog}%`,transition:"width .4s"}}/></div>
+        </div>
+        {Object.entries(mGrp).map(([mod,ls])=>(<div key={mod} style={{marginBottom:2}}>
+          <div style={{padding:"8px 18px 4px",fontSize:10,fontWeight:600,color:"#86868B",textTransform:"uppercase",letterSpacing:".04em"}}>{mod}</div>
+          {ls.map(l=>{const dn=doneIds.includes(l.id);const act=cur.id===l.id;
+            return(<div key={l.id} onClick={()=>{setActL(l);setQuizAns(null);setQuizDone(false);saveLastViewed(c.id,l.id);}} style={{padding:"9px 18px",cursor:"pointer",...fc,gap:9,background:act?`${c.color}0A`:"transparent",borderLeft:act?`3px solid ${c.color}`:"3px solid transparent",transition:"all .12s"}}>
+              <div style={{width:20,height:20,borderRadius:"50%",border:dn?"none":"1.5px solid #D2D2D7",background:dn?"#30D158":"transparent",...fc,justifyContent:"center",fontSize:9,color:"#fff",fontWeight:700,flexShrink:0}}>{dn?"✓":""}</div>
+              <div style={{flex:1,minWidth:0}}><div style={{fontSize:12,fontWeight:act?600:400,color:act?"#1D1D1F":"#6E6E73",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{l.title}</div>
+              <div style={{fontSize:10,color:"#AEAEB2",marginTop:1}}>{tI[l.type]} {tL[l.type]} · {l.dur}{l.quiz?" · Quiz":""}</div></div>
+            </div>);
+          })}
+        </div>))}
+      </div>}
+
+      <div style={{padding:isMobile?"16px":"28px 36px",overflowY:"auto"}}>
+        {isMobile&&<div style={{...fc,gap:8,marginBottom:16}}>
+          <button onClick={()=>{setSView("my");setActC(null);setActL(null);stopNarration();}} style={{background:"none",border:"none",color:"#0071E3",fontSize:13,cursor:"pointer",fontWeight:500,fontFamily:F}}>← Voltar</button>
+          <span style={{fontSize:12,color:"#86868B"}}>{doneIds.length}/{lessons.length} aulas</span>
+          <div style={{flex:1,height:4,borderRadius:2,background:"#f5f5f7"}}><div style={{height:"100%",borderRadius:2,background:c.color,width:`${prog}%`}}/></div>
+        </div>}
+        <div style={{maxWidth:700,animation:"fu .3s ease both"}}>
+          <div style={{borderRadius:14,overflow:"hidden",marginBottom:24}}>
+            <div style={{aspectRatio:"16/9",...fc,justifyContent:"center",background:`linear-gradient(135deg,${c.color}35,${c.color}12)`}}>
+              <div style={{textAlign:"center"}}><div style={{width:56,height:56,borderRadius:"50%",background:"rgba(255,255,255,.95)",...fc,justifyContent:"center",margin:"0 auto 12px",fontSize:22,boxShadow:"0 4px 16px rgba(0,0,0,.12)"}}>{tI[cur.type]}</div>
+              <div style={{color:"#fff",fontSize:14,fontWeight:600,textShadow:"0 1px 3px rgba(0,0,0,.25)"}}>{tL[cur.type]}</div></div>
+            </div>
+          </div>
+
+          <div style={{...fj,alignItems:"flex-start",marginBottom:20}}>
+            <div><div style={{fontSize:11,color:c.color,fontWeight:600,textTransform:"uppercase",letterSpacing:".04em",marginBottom:4}}>{cur.mt}</div>
+              <h2 style={{fontSize:22,fontWeight:700,letterSpacing:"-0.02em"}}>{cur.title}</h2>
+              <div style={{fontSize:12,color:"#86868B",marginTop:4}}>{tL[cur.type]} · {cur.dur} · {c.inst}</div>
+            </div>
+            {!isDone?<button style={{...B(true,true),background:"#30D158",flexShrink:0}} onClick={()=>compLesson(c.id,cur.id)}>✓ Concluir</button>
+            :<span style={{...BG("#30D158"),fontWeight:600}}>✓ Concluída</span>}
+          </div>
+
+          {lessonContent[cur.id]&&<div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap"}}>
+            {!speaking?<button style={{...B(false,true),fontSize:12,...fc,gap:5}} onClick={()=>{const lc=lessonContent[cur.id];const text=(lc.paragraphs||lc.p||[]).join(". ")+(lc.instructorTip||lc.tip?" Dica do instrutor:"+(lc.instructorTip||lc.tip):"");startNarration(text);}}>🔊 Ouvir</button>
+            :<button style={{...B(false,true),fontSize:12,color:"#FF375F",borderColor:"#FF375F33",...fc,gap:5}} onClick={stopNarration}>⏹ Parar</button>}
+            <button style={{...B(false,true),fontSize:12,...fc,gap:5}} onClick={()=>{const lc=lessonContent[cur.id];const p=lc.paragraphs||lc.p||[];if(p.length){setSlideMode(true);setSlideIdx(0);narrateSlide(p,0);}}}>🎬 Modo apresentação</button>
+            {speaking&&<span style={{fontSize:12,color:"#0071E3",...fc,gap:4}}><span style={{display:"inline-flex",gap:2}}>{[0,1,2,3].map(i=><span key={i} style={{width:3,height:12,borderRadius:2,background:"#0071E3",animation:`dt 1s ease ${i*.15}s infinite`}}/>)}</span>A narrar...</span>}
+          </div>}
+
+          {slideMode&&lessonContent[cur.id]&&(()=>{const lc=lessonContent[cur.id];const p=lc.paragraphs||lc.p||[];return(
+            <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.92)",zIndex:300,display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center",padding:40}}>
+              <div style={{position:"absolute",top:20,right:20,display:"flex",gap:10}}>
+                <button style={{background:"rgba(255,255,255,.15)",border:"none",color:"#fff",padding:"8px 16px",borderRadius:980,fontSize:13,cursor:"pointer",fontFamily:F}} onClick={()=>{stopNarration();setSlideMode(false);}}>✕ Fechar</button>
+              </div>
+              <div style={{maxWidth:700,width:"100%",textAlign:"center"}}>
+                <div style={{fontSize:12,color:"rgba(255,255,255,.4)",marginBottom:20,textTransform:"uppercase",letterSpacing:".06em"}}>{cur.mt} · {cur.title}</div>
+                <div style={{fontSize:22,color:"#fff",lineHeight:1.7,fontWeight:400,minHeight:120,...fc,justifyContent:"center",padding:"20px 0"}}>{p[slideIdx]||""}</div>
+                <div style={{display:"flex",justifyContent:"center",gap:6,marginTop:24}}>
+                  {p.map((_,i)=>(<div key={i} style={{width:i===slideIdx?24:8,height:8,borderRadius:4,background:i===slideIdx?"#0071E3":"rgba(255,255,255,.2)",transition:"all .3s",cursor:"pointer"}} onClick={()=>{setSlideIdx(i);stopNarration();narrateSlide(p,i);}}/>))}
+                </div>
+                <div style={{display:"flex",justifyContent:"center",gap:12,marginTop:28}}>
+                  <button style={{background:"rgba(255,255,255,.1)",border:"none",color:"#fff",padding:"10px 20px",borderRadius:980,fontSize:14,cursor:"pointer",fontFamily:F,opacity:slideIdx>0?1:.3}} onClick={()=>{if(slideIdx>0){setSlideIdx(slideIdx-1);stopNarration();narrateSlide(p,slideIdx-1);}}}>← Anterior</button>
+                  <button style={{background:speaking?"#FF375F":"#0071E3",border:"none",color:"#fff",padding:"10px 20px",borderRadius:980,fontSize:14,cursor:"pointer",fontFamily:F}} onClick={()=>{if(speaking){stopNarration();}else{narrateSlide(p,slideIdx);}}}>{speaking?"⏸ Pausar":"▶ Continuar"}</button>
+                  <button style={{background:"rgba(255,255,255,.1)",border:"none",color:"#fff",padding:"10px 20px",borderRadius:980,fontSize:14,cursor:"pointer",fontFamily:F,opacity:slideIdx<p.length-1?1:.3}} onClick={()=>{if(slideIdx<p.length-1){setSlideIdx(slideIdx+1);stopNarration();narrateSlide(p,slideIdx+1);}}}>Seguinte →</button>
+                </div>
+              </div>
+              <div style={{position:"absolute",bottom:20,left:0,right:0}}><div style={{height:3,background:"rgba(255,255,255,.1)",borderRadius:2,margin:"0 40px"}}><div style={{height:"100%",borderRadius:2,background:"#0071E3",width:`${p.length?((slideIdx+1)/p.length)*100:0}%`,transition:"width .3s"}}/></div></div>
+            </div>
+          );})()}
+
+          <div style={{...crd,padding:24,border:bd,marginBottom:20}}>
+            <h3 style={{fontSize:16,fontWeight:600,marginBottom:14}}>Conteúdo da aula</h3>
+            {(lessonContent[cur.id]&&!lessonContent[cur.id].draft)?(()=>{const raw=lessonContent[cur.id];const lc={paragraphs:raw.paragraphs||raw.p||[raw.content].filter(Boolean),keyPoints:raw.keyPoints||raw.kp||[],codeExample:raw.codeExample||raw.code||null,instructorTip:raw.instructorTip||raw.tip||null,quiz:raw.quiz||raw.q||null};return(<div style={{color:"#4A4A4F",fontSize:14,lineHeight:1.8}}>
+              {(lc.paragraphs||[lc.content]).map((p,i)=>(<p key={i} style={{marginBottom:14}}>{p}</p>))}
+              {lc.instructorTip&&<div style={{marginTop:8,padding:"14px 18px",borderRadius:12,background:"#FFF8E1",borderLeft:"3px solid #FF9500"}}>
+                <div style={{fontSize:12,fontWeight:600,color:"#FF9500",marginBottom:4}}>Dica do instrutor</div>
+                <div style={{fontSize:13,color:"#6E6E73",lineHeight:1.6}}>{lc.instructorTip}</div>
+              </div>}
+              {lc.keyPoints?.length>0&&<div style={{marginTop:18,padding:"16px 20px",borderRadius:12,background:`${c.color}06`,borderLeft:`3px solid ${c.color}`}}>
+                <div style={{fontSize:12,fontWeight:600,color:c.color,marginBottom:10}}>Pontos-chave desta aula</div>
+                {lc.keyPoints.map((p,i)=>(<div key={i} style={{display:"flex",alignItems:"flex-start",gap:8,marginBottom:6,fontSize:13,color:"#4A4A4F"}}><span style={{color:c.color,fontWeight:700,flexShrink:0,marginTop:1}}>›</span><span>{p}</span></div>))}
+              </div>}
+              {lc.codeExample&&lc.codeExample!=="null"&&<div style={{marginTop:18}}>
+                <div style={{fontSize:12,fontWeight:600,color:"#86868B",marginBottom:8}}>Exemplo de código</div>
+                <div style={{padding:18,borderRadius:10,background:"#1D1D1F",color:"#E5E5EA",fontFamily:"'SF Mono',Menlo,monospace",fontSize:13,lineHeight:1.7,whiteSpace:"pre-wrap",overflowX:"auto"}}>{lc.codeExample}</div>
+              </div>}
+            </div>);})()
+            :<div style={{textAlign:"center",padding:"32px 20px"}}>
+              <div style={{fontSize:36,marginBottom:12}}>{cur.type==="video"?"🎬":cur.type==="reading"?"📖":"💻"}</div>
+              <div style={{fontSize:15,fontWeight:600,marginBottom:6}}>Conteúdo em preparação</div>
+              <div style={{fontSize:13,color:"#86868B",maxWidth:400,margin:"0 auto",lineHeight:1.5}}>O formador está a preparar o conteúdo desta aula. Poderás aceder em breve. Entretanto, avança para as aulas já disponíveis.</div>
+            </div>}
+          </div>
+
+          {(()=>{const raw=lessonContent[cur.id];const qz=raw?.quiz||raw?.q||cur.quiz;if(!qz)return null;const opts=qz.options||qz.o||qz.opts||[];const correctIdx=qz.correctIndex??qz.c??qz.correct??0;const question=qz.question||qz.q||"";const explanation=qz.explanation||qz.e||"";if(!question||!opts.length)return null;return(
+          <div style={{...crd,padding:24,border:bd,marginBottom:20}}>
+            <h3 style={{fontSize:16,fontWeight:600,marginBottom:4}}>Quiz</h3>
+            <p style={{fontSize:13,color:"#86868B",marginBottom:14}}>Testa os teus conhecimentos</p>
+            <p style={{fontSize:14,fontWeight:500,marginBottom:12}}>{question}</p>
+            <div style={{display:"flex",flexDirection:"column",gap:8}}>
+              {opts.map((o,oi)=>{
+                const sel=quizAns===oi;const correct=oi===correctIdx;
+                return(<div key={oi} onClick={()=>{if(!quizDone){setQuizAns(oi);setQuizDone(true);}}}
+                  style={{padding:"11px 16px",borderRadius:10,border:`1.5px solid ${quizDone?(sel?(correct?"#30D158":"#FF375F"):(correct?"#30D158":"#E5E5EA")):(sel?"#0071E3":"#E5E5EA")}`,
+                  background:quizDone?(sel?(correct?"#30D15810":"#FF375F10"):(correct?"#30D15810":"transparent")):"transparent",
+                  cursor:quizDone?"default":"pointer",fontSize:14,transition:"all .2s",...fc,gap:10}}>
+                  <div style={{width:22,height:22,borderRadius:"50%",border:`1.5px solid ${quizDone?(correct?"#30D158":(sel?"#FF375F":"#D2D2D7")):(sel?"#0071E3":"#D2D2D7")}`,
+                  background:quizDone?(correct?"#30D158":(sel?"#FF375F":"transparent")):(sel?"#0071E3":"transparent"),...fc,justifyContent:"center",color:"#fff",fontSize:10,fontWeight:700,flexShrink:0}}>
+                    {quizDone?(correct?"✓":(sel?"✗":"")):(sel?"●":"")}
+                  </div>
+                  <span style={{fontWeight:sel?500:400}}>{o}</span>
+                </div>);
+              })}
+            </div>
+            {quizDone&&<div style={{marginTop:12,padding:"10px 14px",borderRadius:8,background:quizAns===correctIdx?"#30D15810":"#FF375F10",fontSize:13,fontWeight:500,color:quizAns===correctIdx?"#30D158":"#FF375F"}}>{quizAns===correctIdx?"Correto!":" Incorreto."}{explanation?` ${explanation}`:""}</div>}
+          </div>);})()}
+
+          <div style={{...crd,padding:24,border:bd,marginBottom:20}}>
+            <h3 style={{fontSize:16,fontWeight:600,marginBottom:10}}>As minhas notas</h3>
+            <textarea value={notes[`${curStu?.id}-${cur.id}`]||""} onChange={e=>saveNote(`${curStu?.id}-${cur.id}`,e.target.value)} placeholder="Escreve notas para esta aula..."
+              style={{width:"100%",minHeight:80,padding:12,borderRadius:10,border:"1px solid #E5E5EA",fontSize:13,fontFamily:F,resize:"vertical",outline:"none",boxSizing:"border-box",lineHeight:1.6}}
+              onFocus={e=>e.target.style.borderColor="#0071E3"} onBlur={e=>e.target.style.borderColor="#E5E5EA"}/>
+          </div>
+
+          <div style={{...crd,padding:24,border:bd,marginBottom:20}}>
+            <h3 style={{fontSize:16,fontWeight:600,marginBottom:10}}>Comentários {(comments[cur.id]||[]).length>0&&<span style={{fontSize:12,fontWeight:400,color:"#86868B"}}>({(comments[cur.id]||[]).length})</span>}</h3>
+            {(comments[cur.id]||[]).map(cm=>(<div key={cm.id} style={{padding:"10px 0",borderBottom:"0.5px solid rgba(0,0,0,.04)"}}>
+              <div style={{...fj,marginBottom:4}}><span style={{fontSize:13,fontWeight:600}}>{cm.user}</span><span style={{fontSize:11,color:"#AEAEB2"}}>{cm.time}</span></div>
+              <div style={{fontSize:13,color:"#6E6E73",lineHeight:1.5}}>{cm.text}</div>
+            </div>))}
+            <div style={{display:"flex",gap:8,marginTop:10}}>
+              <input value={commentText} onChange={e=>setCommentText(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addComment(cur.id)} placeholder="Escreve um comentário..." style={{flex:1,padding:"10px 14px",borderRadius:10,border:"1px solid #E5E5EA",fontSize:13,fontFamily:F,outline:"none"}}/>
+              <button style={{...B(true,true),fontSize:12}} onClick={()=>addComment(cur.id)}>Enviar</button>
+            </div>
+          </div>
+
+          <div style={{...fj,gap:10}}>
+            <button style={{...B(false,true),opacity:idx>0?1:.3}} onClick={()=>{if(idx>0){setActL(lessons[idx-1]);setQuizAns(null);setQuizDone(false);}}}>← Anterior</button>
+            {idx<lessons.length-1?<button style={B(true,true)} onClick={()=>{if(!isDone)compLesson(c.id,cur.id);setActL(lessons[idx+1]);setQuizAns(null);setQuizDone(false);}}>Próxima →</button>
+            :<button style={{...B(true,true),background:"#30D158"}} onClick={()=>{if(!isDone)compLesson(c.id,cur.id);}}>{prog>=100?"🎓 Concluído!":"Concluir"}</button>}
+          </div>
+        </div>
+      </div>
+    </div>);
+  };
+
+  const Profile=()=>{if(!curStu)return null;
+    const enr=courses.filter(c=>curStu.enr?.includes(c.id));const comp=enr.filter(c=>gP(curStu,c.id)===100);
+    return(<div style={{maxWidth:560,margin:"0 auto",padding:"40px 20px 72px"}}><style>{anim}</style>
+      <div style={{textAlign:"center",marginBottom:32,animation:"fu .4s ease both"}}>
+        <div style={{width:64,height:64,borderRadius:"50%",background:G,...fc,justifyContent:"center",color:"#fff",fontSize:22,fontWeight:700,margin:"0 auto 12px"}}>{curStu.name.split(" ").map(n=>n[0]).join("")}</div>
+        <h1 style={{fontSize:26,fontWeight:700}}>{curStu.name}</h1>
+        <p style={{color:"#86868B",fontSize:13}}>{curStu.email}</p>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12,marginBottom:28}}>
+        {[{v:enr.length,l:"Cursos"},{v:comp.length,l:"Concluídos"},{v:`${enr.length?Math.round(enr.reduce((a,c)=>a+gP(curStu,c.id),0)/enr.length):0}%`,l:"Progresso"}].map((s,i)=>(<div key={i} style={{...crd2,padding:"16px 18px",border:bd,textAlign:"center"}}><div style={{fontSize:22,fontWeight:700}}>{s.v}</div><div style={{fontSize:10,color:"#86868B",textTransform:"uppercase"}}>{s.l}</div></div>))}
+      </div>
+      {comp.length>0&&<><h2 style={{fontSize:17,fontWeight:600,marginBottom:12}}>Certificados & Avaliações</h2>
+        {comp.map(c=>{
+          const ratingKey=`rating-${curStu.id}-${c.id}`;
+          const myRating=notes[ratingKey]?parseInt(notes[ratingKey]):0;
+          return(<div key={c.id} style={{...crd2,padding:"16px 18px",border:bd,marginBottom:10}}>
+            <div style={{...fc,gap:10,marginBottom:10}}>
+              <div style={{width:36,height:36,borderRadius:8,background:`${c.color}15`,...fc,justifyContent:"center",fontSize:18}}>🎓</div>
+              <div style={{flex:1}}><div style={{fontSize:13,fontWeight:600}}>{c.title}</div><div style={{fontSize:11,color:"#86868B"}}>Certificado de conclusão</div></div>
+              <button style={{...B(true,true),fontSize:11,padding:"5px 12px",background:"#30D158"}} onClick={(e)=>{e.stopPropagation();genCertPDF(curStu.name,c.title,new Date().toLocaleDateString("pt-PT"));}}>Descarregar</button>
+            </div>
+            <div style={{borderTop:"0.5px solid rgba(0,0,0,.06)",paddingTop:10}}>
+              <div style={{fontSize:11,color:"#86868B",marginBottom:6}}>A tua avaliação do curso:</div>
+              <div style={{display:"flex",gap:4}}>
+                {[1,2,3,4,5].map(star=>(<span key={star} onClick={()=>{saveNote(ratingKey,String(star));tst("Avaliação guardada! Obrigado.");}} style={{fontSize:22,cursor:"pointer",color:star<=myRating?"#FF9500":"#E5E5EA",transition:"color .15s"}} onMouseEnter={e=>e.target.style.color="#FF9500"} onMouseLeave={e=>e.target.style.color=star<=myRating?"#FF9500":"#E5E5EA"}>★</span>))}
+                {myRating>0&&<span style={{fontSize:12,color:"#86868B",alignSelf:"center",marginLeft:4}}>{["","Insuficiente","Suficiente","Bom","Muito bom","Excelente"][myRating]}</span>}
+              </div>
+            </div>
+          </div>);
+        })}</>}
+      {badges.length>0&&<div style={{marginTop:24}}>
+        <h2 style={{fontSize:17,fontWeight:600,marginBottom:12}}>Conquistas</h2>
+        <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+          {badges.map(b=>(<div key={b.id} style={{...crd,padding:"14px 18px",border:bd,textAlign:"center",minWidth:90}}>
+            <div style={{fontSize:28,marginBottom:4}}>{b.icon}</div>
+            <div style={{fontSize:12,fontWeight:600}}>{b.name}</div>
+            <div style={{fontSize:10,color:"#AEAEB2",marginTop:2}}>{b.date}</div>
+          </div>))}
+        </div>
+      </div>}
+
+      {/* PLANO ACTIVO */}
+      {(()=>{
+        const totalEnr=curStu.enr?.length||0;
+        const hasLifetime=totalEnr>=6;
+        const hasAnnual=totalEnr>=4;
+        const planName=hasLifetime?"Vitalício":hasAnnual?"Anual":"Mensal";
+        const planColor=hasLifetime?"#AF52DE":hasAnnual?"#0071E3":"#6E6E73";
+        return(<div style={{marginTop:24}}>
+          <h2 style={{fontSize:17,fontWeight:600,marginBottom:12}}>O meu plano</h2>
+          <div style={{...crd,padding:"18px 20px",border:bd,borderRadius:14}}>
+            <div style={{...fj,alignItems:"center",marginBottom:hasLifetime||hasAnnual?14:0}}>
+              <div>
+                <span style={{fontSize:11,padding:"3px 10px",borderRadius:980,background:planColor+"18",color:planColor,fontWeight:600}}>{planName}</span>
+                <div style={{fontSize:13,color:"#86868B",marginTop:4}}>{totalEnr} curso{totalEnr!==1?"s":""} activo{totalEnr!==1?"s":""}</div>
+              </div>
+              <button style={{...B(false,true),fontSize:11}} onClick={()=>setView("pricing")}>Ver planos</button>
+            </div>
+            {(hasAnnual||hasLifetime)&&<div style={{...fc,gap:8,padding:"10px 14px",borderRadius:10,background:planColor+"08",border:`1px solid ${planColor}20`}}>
+              <span style={{fontSize:16}}>{hasLifetime?"👑":"⚡"}</span>
+              <div>
+                <div style={{fontSize:12,fontWeight:600,color:planColor}}>{hasLifetime?"Acesso Vitalício activo":"Acesso Prioritário activo"}</div>
+                <div style={{fontSize:11,color:"#86868B"}}>{hasLifetime?"Tens acesso a todos os cursos actuais e futuros":"Tens acesso prioritário a novos conteúdos e suporte"}</div>
+              </div>
+            </div>}
+            {hasLifetime&&<div style={{marginTop:12,padding:"14px 16px",borderRadius:12,background:"linear-gradient(135deg,#AF52DE10,#0071E308)",border:"1px solid #AF52DE20"}}>
+              <div style={{...fc,gap:8,marginBottom:8}}>
+                <span style={{fontSize:18}}>📅</span>
+                <div style={{fontSize:13,fontWeight:600}}>Sessão 1-on-1 com formador</div>
+              </div>
+              <p style={{fontSize:12,color:"#6E6E73",lineHeight:1.5,marginBottom:10}}>Como membro Vitalício tens direito a uma sessão de 45 minutos com um dos nossos formadores. Ideal para orientação de carreira, revisão de projectos ou dúvidas avançadas.</p>
+              <button style={{...B(true,true),fontSize:12,background:"#AF52DE"}} onClick={()=>{
+                tst("Email enviado! A equipa contacta-te em 24h.");
+                sendEmail(curStu.email,"📅 Agendamento de sessão 1-on-1","Olá "+curStu.name.split(" ")[0]+",
+
+Recebemos o teu pedido de sessão 1-on-1. Um formador vai contactar-te nas próximas 24 horas para agendar a sessão.
+
+Equipa NeuroLearn","info");
+              }}>Agendar sessão →</button>
+            </div>}
+          </div>
+        </div>);
+      })()}
+    </div>);
+  };
+
+  const renderALogin=()=>(<div style={{minHeight:"100vh",...fc,justifyContent:"center",background:"#FBFBFD"}}><style>{anim}</style>
+    <div style={{width:340,animation:"fu .5s ease both"}}>
+      <div style={{textAlign:"center",marginBottom:32}}><div style={{fontSize:22,fontWeight:600,background:G,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginBottom:10}}>NeuroLearn</div><h2 style={{fontSize:24,fontWeight:700}}>Gestão</h2><p style={{fontSize:13,color:"#86868B",marginTop:4}}>PIN de acesso</p></div>
+      <div style={{...crd,borderRadius:18,padding:24,border:bd}}>
+        <div style={{display:"flex",gap:10,justifyContent:"center",marginBottom:18}}>
+          {[0,1,2,3].map(i=>(<div key={i} style={{width:44,height:52,borderRadius:10,border:`2px solid ${pinErr?"#FF375F":pin.length>i?"#0071E3":"#E5E5EA"}`,...fc,justifyContent:"center",fontSize:20,fontWeight:600,background:pin.length>i?"#0071E308":"transparent"}}>{pin[i]?"•":""}</div>))}
+        </div>
+        {pinErr&&<div style={{textAlign:"center",color:"#FF375F",fontSize:12,marginBottom:12}}>PIN incorreto</div>}
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:7}}>
+          {[1,2,3,4,5,6,7,8,9,null,0,"←"].map((n,i)=>(<button key={i} onClick={()=>{if(n===null)return;if(n==="←")setPin(p=>p.slice(0,-1));else if(pin.length<4){const np=pin+n;setPin(np);setPinErr(false);if(np.length===4)setTimeout(()=>{if(np===PIN){setZone("admin");setPin("");}else{setPinErr(true);setPin("");}},200);}}} style={{height:48,borderRadius:10,border:"none",background:n===null?"transparent":"#F5F5F7",fontSize:17,fontWeight:500,cursor:n===null?"default":"pointer",fontFamily:F,color:"#1D1D1F"}}>{n===null?"":n}</button>))}
+        </div>
+        <button onClick={()=>{goPublic();setPin("");}} style={{...B(false,true),width:"100%",textAlign:"center",marginTop:14,color:"#86868B"}}>← Voltar</button>
+      </div>
+      <div style={{textAlign:"center",marginTop:12,fontSize:11,color:"#C7C7CC"}}>PIN: 2026</div>
+    </div>
+  </div>);
+
+  const renderStuLogin=()=>(<div style={{minHeight:"100vh",...fc,justifyContent:"center",background:"#FBFBFD"}}><style>{anim}</style>
+    <div style={{width:380,animation:"fu .5s ease both"}}>
+      <div style={{textAlign:"center",marginBottom:32}}><div style={{fontSize:22,fontWeight:600,background:G,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginBottom:10}}>NeuroLearn</div><h2 style={{fontSize:24,fontWeight:700}}>{regMode?"Criar conta":"Área do aluno"}</h2></div>
+      <div style={{...crd,borderRadius:18,padding:26,border:bd}}>
+        {regMode&&<div style={{marginBottom:14}}><label style={{fontSize:12,fontWeight:500,color:"#86868B",display:"block",marginBottom:4}}>Nome completo</label><input value={regName} onChange={e=>setRegName(e.target.value)} placeholder="O teu nome" style={{width:"100%",padding:"11px 14px",borderRadius:10,border:"1px solid #E5E5EA",fontSize:14,fontFamily:F,outline:"none",boxSizing:"border-box"}}/></div>}
+        <div style={{marginBottom:14}}><label style={{fontSize:12,fontWeight:500,color:"#86868B",display:"block",marginBottom:4}}>Email</label><input type="email" value={lEmail} onChange={e=>setLEmail(e.target.value)} placeholder="nome@email.com" style={{width:"100%",padding:"11px 14px",borderRadius:10,border:"1px solid #E5E5EA",fontSize:14,fontFamily:F,outline:"none",boxSizing:"border-box"}} onFocus={e=>e.target.style.borderColor="#0071E3"} onBlur={e=>e.target.style.borderColor="#E5E5EA"}/></div>
+        <div style={{marginBottom:18}}><label style={{fontSize:12,fontWeight:500,color:"#86868B",display:"block",marginBottom:4}}>Password</label><input type="password" value={lPass} onChange={e=>setLPass(e.target.value)} placeholder="••••" onKeyDown={e=>e.key==="Enter"&&(regMode?stuReg():stuIn())} style={{width:"100%",padding:"11px 14px",borderRadius:10,border:"1px solid #E5E5EA",fontSize:14,fontFamily:F,outline:"none",boxSizing:"border-box"}} onFocus={e=>e.target.style.borderColor="#0071E3"} onBlur={e=>e.target.style.borderColor="#E5E5EA"}/></div>
+        {lErr&&<div style={{color:"#FF375F",fontSize:12,marginBottom:12}}>{lErr}</div>}
+        <button style={{...B(true),width:"100%",textAlign:"center",padding:"12px 0"}} onClick={regMode?stuReg:stuIn}>{regMode?"Criar conta":"Entrar"}</button>
+        <button onClick={()=>{setRegMode(!regMode);setLErr("");setResetMode(false);}} style={{...B(false,true),width:"100%",textAlign:"center",marginTop:8,color:"#0071E3",borderColor:"#0071E320"}}>{regMode?"Já tenho conta":"Criar nova conta"}</button>
+        {!regMode&&<button onClick={()=>{setResetMode(!resetMode);setLErr("");}} style={{...B(false,true),width:"100%",textAlign:"center",marginTop:6,color:"#86868B",fontSize:12}}>{resetMode?"← Voltar ao login":"Esqueci a password"}</button>}
+        {resetMode&&<div style={{marginTop:8,padding:"12px 14px",borderRadius:10,background:"#0071E308",border:"1px solid #0071E320",fontSize:12,color:"#0071E3",lineHeight:1.5}}>
+          Para repor a password, contacta o administrador da plataforma com o teu email de registo.
+          <div style={{marginTop:8,fontWeight:600}}>admin@neurolearn.pt</div>
+        </div>}
+        <button onClick={()=>{goPublic();setLErr("");setRegMode(false);setResetMode(false);}} style={{...B(false,true),width:"100%",textAlign:"center",marginTop:6,color:"#86868B"}}>← Voltar ao site</button>
+      </div>
+      <div style={{textAlign:"center",marginTop:12,fontSize:11,color:"#C7C7CC"}}>{regMode?"":"Teste: maria@email.com / 1234"}</div>
+    </div>
+  </div>);
+
+  const genAllCourses=async()=>{
+    setGenAllLoading(true);
+    const allC=[...courses];
+    let total=0,done=0;
+    allC.forEach(c=>{const ls=mkL(c.md,c.id);ls.forEach(l=>{total++;if(lcRef.current[l.id])done++;});});
+    for(const c of allC){
+      const ls=mkL(c.md,c.id);
+      for(const l of ls){
+        if(!lcRef.current[l.id]){
+          done++;setGenProgress(`${c.emoji} ${done}/${total} — ${l.title.slice(0,40)}...`);
+          await genContent(c,l);
+        }
+      }
+    }
+    setGenAllLoading(false);setGenProgress("");tst("Todo o conteúdo foi gerado!");
+  };
+
+  const ASide=()=>(<div style={{width:200,background:"#fff",borderRight:"0.5px solid rgba(0,0,0,.06)",minHeight:"100vh",padding:"16px 0",position:"fixed",left:0,top:0,zIndex:50}}>
+    <div style={{padding:"0 18px 16px",borderBottom:"0.5px solid rgba(0,0,0,.06)",marginBottom:4}}><div style={{fontSize:16,fontWeight:600,background:G,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>NeuroLearn</div><div style={{fontSize:9,fontWeight:600,color:"#86868B",textTransform:"uppercase",letterSpacing:".08em",marginTop:2}}>Gestão</div></div>
+    {[["dashboard","▣","Dashboard"],["courses","◎","Cursos"],["students","◉","Alunos"],["analytics","◈","Analytics"],["agent","✦","AI Agent"],["settings","⚙","Definições"]].map(([k,ic,l])=>(<div key={k} style={{...fc,gap:8,padding:"9px 18px",fontSize:13,fontWeight:aView===k?600:400,color:aView===k?"#0071E3":"#6E6E73",cursor:"pointer",background:aView===k?"#0071E310":"transparent",borderRight:aView===k?"3px solid #0071E3":"3px solid transparent"}} onClick={()=>setAView(k)}><span style={{fontSize:14,width:16,textAlign:"center"}}>{ic}</span>{l}</div>))}
+    <div style={{position:"absolute",bottom:14,left:0,right:0,padding:"0 18px"}}><div style={{borderTop:"0.5px solid rgba(0,0,0,.06)",paddingTop:12,display:"flex",flexDirection:"column",gap:8}}>
+      <div onClick={goPublic} style={{fontSize:12,color:"#0071E3",cursor:"pointer",fontWeight:500,...fc,gap:4}}>🌐 Ver site público</div>
+      <div onClick={goPublic} style={{fontSize:12,color:"#FF375F",cursor:"pointer",fontWeight:500}}>← Sair da gestão</div>
+    </div></div>
+  </div>);
+
+  const ADash=()=>{
+    const allLessons=courses.flatMap(c=>mkL(c.md,c.id));
+    const totalGen=allLessons.filter(l=>lessonContent[l.id]).length;
+    const totalAll=allLessons.length;
+    const pct=totalAll?Math.round(totalGen/totalAll*100):0;
+    return(<div><style>{anim}</style>
+    <h1 style={{fontSize:26,fontWeight:700,marginBottom:24}}>Dashboard</h1>
+    <div style={{display:"grid",gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(4,1fr)",gap:12,marginBottom:24}}>
+      {[{v:students.length,l:"Alunos",c:"#0071E3"},{v:totEnr,l:"Inscrições",c:"#30D158"},{v:courses.length,l:"Cursos",c:"#AF52DE"},{v:`€${rev.toLocaleString()}`,l:"Receita",c:"#FF9500"}].map((s,i)=>(<div key={i} style={{...crd2,padding:"18px 20px",border:bd,animation:`fu .3s ease ${i*.04}s both`}}><div style={{fontSize:22,fontWeight:700,color:s.c}}>{s.v}</div><div style={{fontSize:10,color:"#86868B",fontWeight:500,marginTop:1,textTransform:"uppercase"}}>{s.l}</div></div>))}
+    </div>
+    <div style={{...crd,padding:20,border:bd,marginBottom:28}}>
+      <div style={{...fj,alignItems:"center",marginBottom:12}}>
+        <div><div style={{fontSize:15,fontWeight:600}}>Conteúdo gerado por IA</div><div style={{fontSize:12,color:"#86868B",marginTop:2}}>{totalGen}/{totalAll} aulas com conteúdo ({pct}%)</div></div>
+        {totalGen<totalAll&&<button style={{...B(true,true),background:genAllLoading?"#86868B":"#AF52DE"}} onClick={genAllCourses} disabled={genAllLoading}>{genAllLoading?"A gerar...":"Gerar TODO o conteúdo ✦"}</button>}
+        {totalGen===totalAll&&<span style={BG("#30D158")}>✓ Completo</span>}
+      </div>
+      <div style={{height:8,borderRadius:4,background:"#f5f5f7",overflow:"hidden"}}><div style={{height:"100%",borderRadius:4,background:"linear-gradient(90deg,#0071E3,#AF52DE)",width:`${pct}%`,transition:"width .5s"}}/></div>
+      {genProgress&&<div style={{marginTop:10,fontSize:12,color:"#6E6E73",...fc,gap:6}}><span style={{display:"inline-flex",gap:3}}>{[0,1,2].map(i=><span key={i} style={{width:4,height:4,borderRadius:"50%",background:"#AF52DE",animation:`dt 1.2s ease ${i*.2}s infinite`}}/>)}</span>{genProgress}</div>}
+    </div>
+    <h2 style={{fontSize:17,fontWeight:600,marginBottom:12}}>Cursos</h2>
+    {courses.map((c,i)=>{const ls=mkL(c.md,c.id);const gc=ls.filter(l=>lessonContent[l.id]).length;const en=students.filter(s=>s.enr?.includes(c.id));
+      return(<div key={c.id} style={{...crd2,borderRadius:10,padding:"12px 16px",border:bd,marginBottom:7,animation:`fu .3s ease ${.08+i*.03}s both`,cursor:"pointer"}} onClick={()=>{setAView("courses");setEditCourseId(c.id);}}>
+        <div style={{...fj,alignItems:"center",marginBottom:6}}>
+          <div style={{...fc,gap:7}}><span style={{fontSize:16}}>{c.emoji}</span><span style={{fontWeight:600,fontSize:13}}>{c.title}</span>{!c.pub&&<span style={{fontSize:9,padding:"2px 7px",borderRadius:980,background:"#FF950020",color:"#FF9500",fontWeight:600}}>rascunho</span>}</div>
+          <span style={{fontSize:12,color:"#86868B"}}>{gc}/{ls.length} aulas</span>
+        </div>
+        <div style={{height:4,borderRadius:2,background:"#f5f5f7"}}><div style={{height:"100%",borderRadius:2,background:gc===ls.length?"#30D158":c.color,width:`${ls.length?Math.round(gc/ls.length*100):0}%`,transition:"width .6s"}}/></div>
+      </div>);
+    })}
+  </div>);
+  };
+
+  const ACourses=()=>{
+    if(editCourseId){
+      const ec=courses.find(x=>x.id===editCourseId);
+      if(!ec)return null;
+      const lessons=mkL(ec.md,ec.id);
+      const mGrp={};lessons.forEach(l=>{if(!mGrp[l.mt])mGrp[l.mt]=[];mGrp[l.mt].push(l);});
+      const genCount=lessons.filter(l=>lessonContent[l.id]).length;
+      const genAll=async()=>{
+        setGenAllLoading(true);
+        for(const l of lessons){if(!lcRef.current[l.id])await genContent(ec,l);}
+        setGenAllLoading(false);tst("Conteúdo gerado para todas as aulas!");
+      };
+      return(<div><style>{anim}</style>
+        <button onClick={()=>setEditCourseId(null)} style={{background:"none",border:"none",color:"#0071E3",fontSize:13,cursor:"pointer",fontWeight:500,fontFamily:F,marginBottom:20}}>← Voltar aos cursos</button>
+        <div style={{...fc,gap:14,marginBottom:24}}>
+          <div style={{width:56,height:56,borderRadius:16,background:`${ec.color}20`,...fc,justifyContent:"center",fontSize:28}}>{ec.emoji}</div>
+          <div style={{flex:1}}>
+            <div style={{...fc,gap:8}}><h1 style={{fontSize:24,fontWeight:700}}>{ec.title}</h1>
+              <span style={{fontSize:10,padding:"3px 10px",borderRadius:980,fontWeight:600,background:ec.pub?"#30D15818":"#FF950018",color:ec.pub?"#30D158":"#FF9500"}}>{ec.pub?"publicado":"rascunho"}</span>
+            </div>
+            <div style={{fontSize:13,color:"#86868B",marginTop:2}}>{ec.cat} · {ec.lv} · {ec.dur} · €{ec.price} · {ec.stu||0} alunos</div>
+          </div>
+          <div style={{display:"flex",gap:6}}>
+            <button style={{...B(false,true),fontSize:11}} onClick={()=>{svC(courses.map(x=>x.id===ec.id?{...x,pub:!x.pub}:x));tst(ec.pub?"Ocultado":"Publicado");}}>{ec.pub?"Ocultar":"Publicar"}</button>
+          </div>
+        </div>
+        <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:16}}>
+          <button style={{...B(false,true),fontSize:11,...fc,gap:4}} onClick={()=>setDocView({title:`Manual — ${ec.title}`,html:genManualHTML(ec)})}>📄 Manual</button>
+          <button style={{...B(false,true),fontSize:11,...fc,gap:4}} onClick={()=>setDocView({title:`Apresentação — ${ec.title}`,html:genPPTHTML(ec)})}>🎬 Apresentação</button>
+          <button style={{...B(false,true),fontSize:11,...fc,gap:4}} onClick={()=>setDocView({title:`Teste — ${ec.title}`,html:genTestHTML(ec)})}>📝 Teste</button>
+        </div>
+        <p style={{fontSize:14,color:"#6E6E73",lineHeight:1.5,marginBottom:20}}>{ec.desc}</p>
+        <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:24}}>{(ec.topics||[]).map((t,i)=><span key={i} style={{padding:"4px 12px",borderRadius:980,background:"#f5f5f7",fontSize:12,color:"#6E6E73"}}>{t}</span>)}</div>
+        <div style={{...fj,alignItems:"center",marginBottom:16}}>
+          <div><h2 style={{fontSize:18,fontWeight:600}}>Conteúdo das aulas</h2><p style={{fontSize:12,color:"#86868B",marginTop:2}}>{genCount}/{lessons.length} aulas com conteúdo gerado</p></div>
+          <div style={{display:"flex",gap:6}}>
+            {genCount<lessons.length&&<button style={{...B(true,true),background:genAllLoading?"#86868B":"#0071E3"}} onClick={genAll} disabled={genAllLoading}>{genAllLoading?`A gerar ${genCount}/${lessons.length}...`:"Gerar tudo com IA ✦"}</button>}
+          </div>
+        </div>
+        <div style={{height:6,borderRadius:3,background:"#f5f5f7",marginBottom:20}}><div style={{height:"100%",borderRadius:3,background:ec.color,width:`${lessons.length?Math.round(genCount/lessons.length*100):0}%`,transition:"width .5s"}}/></div>
+        {Object.entries(mGrp).map(([mod,ls],mi)=>(<div key={mod} style={{marginBottom:16,animation:`fu .3s ease ${mi*.06}s both`}}>
+          <div style={{fontSize:12,fontWeight:600,color:"#86868B",textTransform:"uppercase",letterSpacing:".04em",marginBottom:8}}>{mod}</div>
+          {ls.map((l,li)=>{const hasContent=!!lessonContent[l.id];const isLoading=generatingId===l.id;
+            return(<div key={l.id}>
+            <div style={{...crd2,padding:"14px 18px",border:bd,marginBottom:6,...fj,alignItems:"center"}}>
+              <div style={{...fc,gap:10,flex:1,minWidth:0}}>
+                <div style={{width:24,height:24,borderRadius:"50%",border:hasContent?"none":"1.5px solid #D2D2D7",background:hasContent?"#30D158":"transparent",...fc,justifyContent:"center",fontSize:10,color:"#fff",fontWeight:700,flexShrink:0}}>{hasContent?"✓":""}</div>
+                <div style={{minWidth:0}}><div style={{fontSize:13,fontWeight:500,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{l.title}</div>
+                <div style={{fontSize:11,color:"#AEAEB2",marginTop:1}}>{l.type==="video"?"▶ Vídeo":l.type==="reading"?"📄 Leitura":"✏️ Exercício"} · {l.dur}{l.quiz?" · Quiz":""}</div></div>
+              </div>
+              <div style={{display:"flex",gap:5,flexShrink:0}}>
+                {hasContent?<>
+                  <button style={{...B(false,true),fontSize:10,padding:"3px 10px",color:"#0071E3",borderColor:"#0071E320"}} onClick={()=>setPreviewLessonId(previewLessonId===l.id?null:l.id)}>👁 Ver</button>
+                  <button style={{...B(false,true),fontSize:10,padding:"3px 10px",color:lessonContent[l.id]?.draft?"#FF9500":"#30D158",borderColor:lessonContent[l.id]?.draft?"#FF950033":"#30D15833"}} onClick={()=>{const up={...lcRef.current,[l.id]:{...lcRef.current[l.id],draft:!lcRef.current[l.id]?.draft}};lcRef.current=up;setLessonContent(up);try{window.storage.set(LCK,JSON.stringify(up));}catch{};tst(lcRef.current[l.id]?.draft?"Aula em rascunho":"Aula publicada");}}>{lessonContent[l.id]?.draft?"Rascunho":"✓ Pub"}</button>
+                  <button style={{...B(false,true),fontSize:10,padding:"3px 10px"}} onClick={()=>{const up={...lcRef.current};delete up[l.id];lcRef.current=up;setLessonContent(up);try{window.storage.set(LCK,JSON.stringify(up));}catch{};tst("Conteúdo removido");setPreviewLessonId(null);}}>↻</button>
+                </>:isLoading?<span style={{fontSize:11,color:ec.color,fontWeight:600,...fc,gap:4}}><span style={{display:"inline-flex",gap:3}}>{[0,1,2].map(i=><span key={i} style={{width:4,height:4,borderRadius:"50%",background:ec.color,animation:`dt 1.2s ease ${i*.2}s infinite`}}/>)}</span> A gerar...</span>
+                :<button style={{...B(true,true),fontSize:10,padding:"3px 10px"}} onClick={()=>genContent(ec,l)}>Gerar ✦</button>}
+              </div>
+            </div>
+            {previewLessonId===l.id&&lessonContent[l.id]&&(()=>{const raw=lessonContent[l.id];const lc={paragraphs:raw.paragraphs||raw.p||[],keyPoints:raw.keyPoints||raw.kp||[],codeExample:raw.codeExample||raw.code||null,instructorTip:raw.instructorTip||raw.tip||null};return(
+              <div style={{background:"#F9F9FB",borderRadius:10,padding:20,margin:"0 0 8px 34px",border:"0.5px solid rgba(0,0,0,.04)",animation:"fu .3s ease both"}}>
+                {lc.paragraphs.map((p,pi)=>(<p key={pi} style={{fontSize:13,color:"#4A4A4F",lineHeight:1.7,marginBottom:10}}>{p}</p>))}
+                {lc.keyPoints.length>0&&<div style={{padding:"12px 16px",borderRadius:8,background:`${ec.color}06`,borderLeft:`2px solid ${ec.color}`,marginTop:8}}>
+                  <div style={{fontSize:11,fontWeight:600,color:ec.color,marginBottom:6}}>Pontos-chave</div>
+                  {lc.keyPoints.map((kp,ki)=>(<div key={ki} style={{fontSize:12,color:"#6E6E73",marginBottom:3}}>› {kp}</div>))}
+                </div>}
+                {lc.codeExample&&lc.codeExample!=="null"&&<div style={{marginTop:10,padding:14,borderRadius:8,background:"#1D1D1F",color:"#E5E5EA",fontFamily:"monospace",fontSize:12,lineHeight:1.6,whiteSpace:"pre-wrap"}}>{lc.codeExample}</div>}
+                {lc.instructorTip&&<div style={{marginTop:10,padding:"10px 14px",borderRadius:8,background:"#FFF8E1",borderLeft:"2px solid #FF9500",fontSize:12,color:"#6E6E73"}}><strong style={{color:"#FF9500"}}>Dica:</strong> {lc.instructorTip}</div>}
+              </div>
+            );})()}
+            </div>);})}
+        </div>))}
+      </div>);
+    }
+    return(<div><style>{anim}</style>
+    <div style={{...fj,alignItems:"center",marginBottom:24}}>
+      <div><h1 style={{fontSize:26,fontWeight:700}}>Cursos</h1><p style={{color:"#86868B",fontSize:13,marginTop:2}}>{courses.length} total · {pub.length} publicados</p></div>
+      <button style={B(true,true)} onClick={()=>setAView("agent")}>+ Criar com AI</button>
+    </div>
+    {courses.map((c,i)=>{const ls=mkL(c.md,c.id);const gc=ls.filter(l=>lessonContent[l.id]).length;return(<div key={c.id} style={{...crd2,padding:"14px 18px",border:bd,marginBottom:8,cursor:"pointer",transition:"all .15s",animation:`fu .3s ease ${i*.04}s both`}}
+      onClick={()=>setEditCourseId(c.id)}
+      onMouseEnter={e=>e.currentTarget.style.background="#FAFAFA"} onMouseLeave={e=>e.currentTarget.style.background="#fff"}>
+      <div style={{...fj,alignItems:"center"}}>
+        <div style={{...fc,gap:10}}>
+          <div style={{width:38,height:38,borderRadius:10,background:`${c.color}18`,...fc,justifyContent:"center",fontSize:18}}>{c.emoji}</div>
+          <div><div style={{fontWeight:600,fontSize:13,...fc,gap:6}}>{c.title}<span style={{fontSize:9,padding:"2px 8px",borderRadius:980,fontWeight:600,background:c.pub?"#30D15818":"#FF950018",color:c.pub?"#30D158":"#FF9500"}}>{c.pub?"pub":"rascunho"}</span></div>
+          <div style={{fontSize:11,color:"#86868B",marginTop:1}}>{c.cat} · {c.stu||0} alunos · €{c.price} · {gc}/{ls.length} aulas com conteúdo</div></div>
+        </div>
+        <div style={{display:"flex",gap:5,alignItems:"center"}} onClick={e=>e.stopPropagation()}>
+          <button style={{...B(false,true),fontSize:11,padding:"4px 11px"}} onClick={()=>setEditCourseId(c.id)}>Editar</button>
+          <button style={{...B(false,true),fontSize:11,padding:"4px 11px"}} onClick={()=>{svC(courses.map(x=>x.id===c.id?{...x,pub:!x.pub}:x));addNotif(c.pub?`"${c.title}" ocultado`:`"${c.title}" publicado`);tst(c.pub?"Ocultado":"Publicado");}}>{c.pub?"Ocultar":"Publicar"}</button>
+          <button style={{...B(false,true),fontSize:11,padding:"4px 11px",color:"#FF375F",borderColor:"#FF375F33"}} onClick={()=>{svC(courses.filter(x=>x.id!==c.id));tst("Eliminado");}}>Eliminar</button>
+        </div>
+      </div>
+    </div>);})}
+  </div>);
+  };
+
+  const AStudents=()=>(<div><style>{anim}</style>
+    <h1 style={{fontSize:26,fontWeight:700,marginBottom:20}}>Alunos</h1>
+    {students.map((s,i)=>{const ec=courses.filter(c=>s.enr?.includes(c.id));
+      return(<div key={s.id} style={{...crd2,padding:"14px 18px",border:selStu===s.id?"2px solid #0071E3":"0.5px solid rgba(0,0,0,.06)",cursor:"pointer",marginBottom:7,animation:`fu .3s ease ${i*.04}s both`}} onClick={()=>setSelStu(selStu===s.id?null:s.id)}>
+        <div style={{...fj,alignItems:"center"}}>
+          <div style={{...fc,gap:9}}>
+            <div style={{width:34,height:34,borderRadius:"50%",background:G,...fc,justifyContent:"center",color:"#fff",fontWeight:600,fontSize:11}}>{s.name.split(" ").map(n=>n[0]).join("")}</div>
+            <div><div style={{fontWeight:600,fontSize:13}}>{s.name}</div><div style={{fontSize:11,color:"#86868B"}}>{s.email}</div></div>
+          </div>
+          <span style={{fontSize:12,color:"#86868B"}}>{ec.length} cursos</span>
+        </div>
+        {selStu===s.id&&ec.length>0&&<div style={{marginTop:10,paddingTop:10,borderTop:"0.5px solid rgba(0,0,0,.06)"}}>
+          {ec.map(c=>{const p=gP(s,c.id);return(<div key={c.id} style={{...fc,gap:7,padding:"6px 0"}}>
+            <span style={{fontSize:13}}>{c.emoji}</span>
+            <div style={{flex:1}}><div style={{fontSize:12,fontWeight:500,marginBottom:3}}>{c.title}</div><div style={{height:3,borderRadius:2,background:"#f5f5f7"}}><div style={{height:"100%",borderRadius:2,background:c.color,width:`${p}%`}}/></div></div>
+            <span style={{fontSize:11,fontWeight:600,color:c.color,minWidth:28}}>{p}%</span>
+            {p<100&&p>0&&<button style={{...B(false,true),fontSize:10,padding:"3px 8px",color:"#FF9500",borderColor:"#FF950033"}} onClick={e=>{e.stopPropagation();sendReminderEmail(s.name,s.email,c.title,p);tst(`Reminder enviado a ${s.name.split(" ")[0]}!`);}}>⏰</button>}
+            {p===100&&<span style={{fontSize:10,color:"#30D158",fontWeight:600}}>✓ Concluído</span>}
+          </div>);})}
+          <div style={{marginTop:8,display:"flex",gap:6,flexWrap:"wrap"}}>
+            <button style={{...B(false,true),fontSize:11,padding:"5px 10px",...fc,gap:4}} onClick={e=>{e.stopPropagation();ec.forEach(c=>{const p=gP(s,c.id);if(p<100&&p>0)sendReminderEmail(s.name,s.email,c.title,p);});tst(`Reminders enviados a ${s.name.split(" ")[0]}`);}}>⏰ Reminder</button>
+            <button style={{...B(false,true),fontSize:11,padding:"5px 10px",...fc,gap:4}} onClick={e=>{e.stopPropagation();sendWelcomeEmail(s.name,s.email);tst(`Email de boas-vindas enviado!`);}}>👋 Boas-vindas</button>
+            <button style={{...B(false,true),fontSize:11,padding:"5px 10px",...fc,gap:4,color:"#0071E3",borderColor:"#0071E320"}} onClick={e=>{
+              e.stopPropagation();
+              const msg=window.prompt(`Notificação para ${s.name.split(" ")[0]}:`);
+              if(msg&&msg.trim()){
+                addNotif(`📢 Admin: ${msg.trim()}`,"info");
+                // Guardar notif associada ao aluno no Supabase
+                try{window._SB.from("nl_student_data").upsert({student_email:s.email,key:"nl7-admin-notif",data:{msg:msg.trim(),time:new Date().toISOString()},updated_at:new Date().toISOString()},{onConflict:"student_email,key"});}catch{}
+                tst(`Notificação enviada a ${s.name.split(" ")[0]}!`);
+              }
+            }}>📢 Notificar</button>
+          </div>
+        </div>}
+      </div>);
+    })}
+  </div>);
+
+  const AAgent=useCallback(()=>(<div style={{maxWidth:600}}><style>{anim}</style>
+    <div style={{textAlign:"center",marginBottom:24}}><div style={{width:44,height:44,borderRadius:12,background:G,...fc,justifyContent:"center",margin:"0 auto 10px",fontSize:18,color:"#fff"}}>✦</div><h1 style={{fontSize:22,fontWeight:700}}>AI Agent</h1><p style={{color:"#86868B",fontSize:12,marginTop:3}}>Cria e gere com linguagem natural</p></div>
+    {agMsg.length===0&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7,marginBottom:20}}>{["Cria um curso sobre RAG","Qual o mais popular?","Actualiza o programa do curso de Excel","Sugere melhorias de conteúdo"].map((s,i)=>(<button key={i} onClick={()=>agSend(s)} style={{padding:"10px 12px",borderRadius:9,background:"#fff",border:"0.5px solid rgba(0,0,0,.08)",cursor:"pointer",textAlign:"left",fontSize:12,color:"#6E6E73",fontFamily:F,transition:"all .2s"}} onMouseEnter={e=>{e.currentTarget.style.borderColor="#0071E3";e.currentTarget.style.color="#0071E3";}} onMouseLeave={e=>{e.currentTarget.style.borderColor="rgba(0,0,0,.08)";e.currentTarget.style.color="#6E6E73";}}>{s}</button>))}</div>}
+    <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:16,maxHeight:340,overflowY:"auto"}}>
+      {agMsg.map((m,i)=>(<div key={i} style={{display:"flex",justifyContent:m.r==="u"?"flex-end":"flex-start"}}><div style={{maxWidth:"80%",padding:"10px 14px",borderRadius:13,background:m.r==="u"?"#0071E3":"#fff",color:m.r==="u"?"#fff":"#1D1D1F",fontSize:13,lineHeight:1.5,border:m.r==="u"?"none":"0.5px solid rgba(0,0,0,.06)",borderBottomRightRadius:m.r==="u"?4:13,borderBottomLeftRadius:m.r==="u"?13:4}}>{m.act==="ok"&&<span style={{display:"block",marginBottom:2,fontSize:15}}>✅</span>}{m.t}</div></div>))}
+      {agLoad&&<div style={{display:"flex",gap:4,padding:"10px 14px"}}>{[0,1,2].map(i=><div key={i} style={{width:6,height:6,borderRadius:"50%",background:"#86868B",animation:`dt 1.4s ease ${i*.2}s infinite`}}/>)}</div>}
+      <div ref={chatRef}/>
+    </div>
+    <div style={{display:"flex",gap:7,position:"sticky",bottom:0,paddingTop:8,background:"#F5F5F7"}}>
+      <input type="text" value={agIn} onChange={e=>setAgIn(e.target.value)} onKeyDown={e=>e.key==="Enter"&&agSend()} placeholder="Pede ao agente..." style={{flex:1,padding:"10px 14px",borderRadius:980,border:"0.5px solid rgba(0,0,0,.1)",fontSize:13,outline:"none",background:"#fff",fontFamily:F}} onFocus={e=>e.target.style.borderColor="#0071E3"} onBlur={e=>e.target.style.borderColor="rgba(0,0,0,.1)"}/>
+      <button onClick={()=>agSend()} style={{width:38,height:38,borderRadius:"50%",background:agIn.trim()?"#0071E3":"#E5E5EA",border:"none",cursor:agIn.trim()?"pointer":"default",...fc,justifyContent:"center",fontSize:14,color:"#fff"}}>↑</button>
+    </div>
+  </div>),[agMsg,agLoad,agIn]);
+
+  const ASettings=()=>(<div><style>{anim}</style>
+    <h1 style={{fontSize:26,fontWeight:700,marginBottom:24}}>Definições</h1>
+    <div style={{...crd,padding:24,border:bd,maxWidth:480,animation:"fu .4s ease both"}}>
+      {[["Plataforma","NeuroLearn"],["PIN de gestão",PIN],["URL","neurolearn-rosy.vercel.app"],["Tema","Apple Clean"],["Idioma","Português (PT)"],["Base de dados","Supabase (obpezocujzdaznrdgwoo)"]].map(([l,v],i,arr)=>(<div key={i} style={{...fj,padding:"12px 0",borderBottom:i<arr.length-1?"0.5px solid rgba(0,0,0,.06)":"none",fontSize:14}}><span style={{color:"#86868B"}}>{l}</span><span style={{fontWeight:500,fontSize:12,color:"#1D1D1F"}}>{v}</span></div>))}
+    </div>
+    <div style={{...crd,padding:20,border:bd,maxWidth:480,marginTop:16,background:"#F9F9FB"}}>
+      <div style={{fontSize:13,fontWeight:600,marginBottom:8}}>🌐 Domínio personalizado</div>
+      <p style={{fontSize:12,color:"#6E6E73",lineHeight:1.6,marginBottom:10}}>Para usar um domínio próprio (ex: <strong>neurolearn.pt</strong>), vai a <strong>vercel.com → neurolearn → Settings → Domains</strong> e adiciona o teu domínio. O Vercel dá instruções passo a passo.</p>
+      <div style={{fontSize:11,color:"#86868B",padding:"8px 12px",borderRadius:8,background:"#fff",border:"1px dashed #D2D2D7"}}>Custo estimado de domínio .pt: ~€8-15/ano</div>
+    </div>
+    <button style={{...B(false,true),marginTop:20,color:"#FF375F",borderColor:"#FF375F33"}} onClick={async()=>{await svC(DC);await svS(DS);await svN([]);await svNo({});setNotifs([]);setNotes({});setLessonContent({});lcRef.current={};try{await window.storage.set(LCK,"{}");await window.storage.set(SSK,"null");}catch{};tst("Dados repostos!");}}>Repor dados de demonstração</button>
+
+    <div style={{...crd,padding:20,border:bd,maxWidth:480,marginTop:20}}>
+      <div style={{fontSize:14,fontWeight:600,marginBottom:4}}>📋 Programas dos cursos</div>
+      <p style={{fontSize:12,color:"#86868B",lineHeight:1.6,marginBottom:12}}>Cada curso pode ter o seu próprio programa — são independentes entre si. O programa é <strong>facultativo</strong>: cursos sem programa geram conteúdo normalmente com base no título e tópicos. Quando existe programa, a IA usa-o como referência ao gerar ou regenerar aulas.</p>
+      <button style={{...B(false,true),fontSize:12,...fc,gap:5}} onClick={async()=>{
+        try{
+          const {data}=await window._SB.from("nl_programs").select("course_id,title,updated_at").order("updated_at",{ascending:false});
+          if(data?.length){
+            const list=data.map(p=>`${p.title} (actualizado: ${new Date(p.updated_at).toLocaleDateString("pt-PT")})`).join("\n");
+            tst(`${data.length} programas no Supabase`);
+            alert("Programas activos:\n\n"+list+"\n\nPara actualizar um programa, usa o Agente: \"Actualiza o programa do curso X com [novo conteúdo]\"");
+          } else tst("Nenhum programa encontrado");
+        }catch(e){tst("Erro ao carregar programas");}
+      }}>📋 Ver programas activos</button>
+    </div>
+  </div>);
+
+  const AAnalytics=()=>{
+    const courseStats=courses.map(c=>{
+      const ls=mkL(c.md,c.id);const enrolled=students.filter(s=>s.enr?.includes(c.id));
+      const completions=enrolled.filter(s=>gP(s,c.id)===100).length;
+      const avgProg=enrolled.length?Math.round(enrolled.reduce((a,s)=>a+gP(s,c.id),0)/enrolled.length):0;
+      const lessonStats=ls.map(l=>{const done=enrolled.filter(s=>(s.done?.[c.id]||[]).includes(l.id)).length;return{title:l.title,done,pct:enrolled.length?Math.round(done/enrolled.length*100):0};});
+      const dropoff=lessonStats.length>1?lessonStats.reduce((worst,l,i)=>{if(i===0)return worst;const drop=lessonStats[i-1].pct-l.pct;return drop>worst.drop?{lesson:l.title,drop,from:lessonStats[i-1].pct,to:l.pct}:worst;},{lesson:"",drop:0,from:0,to:0}):null;
+      return{...c,enrolled:enrolled.length,completions,avgProg,lessonStats,dropoff,contentGen:ls.filter(l=>lessonContent[l.id]).length,totalLessons:ls.length};
+    });
+    const topCourse=courseStats.reduce((best,c)=>c.enrolled>best.enrolled?c:best,courseStats[0]);
+    const worstDropoff=courseStats.filter(c=>c.dropoff?.drop>0).sort((a,b)=>b.dropoff.drop-a.dropoff.drop)[0];
+    return(<div><style>{anim}</style>
+      <h1 style={{fontSize:26,fontWeight:700,marginBottom:24}}>Analytics</h1>
+      <div style={{display:"grid",gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(4,1fr)",gap:12,marginBottom:28}}>
+        {[{v:students.length,l:"Total alunos",c:"#0071E3"},{v:courseStats.reduce((a,c)=>a+c.completions,0),l:"Conclusões",c:"#30D158"},{v:`${Math.round(courseStats.reduce((a,c)=>a+c.avgProg,0)/Math.max(courseStats.length,1))}%`,l:"Progresso médio",c:"#AF52DE"},{v:`€${rev.toLocaleString()}`,l:"Receita",c:"#FF9500"}].map((s,i)=>(<div key={i} style={{...crd2,padding:"18px 20px",border:bd,animation:`fu .3s ease ${i*.04}s both`}}><div style={{fontSize:22,fontWeight:700,color:s.c}}>{s.v}</div><div style={{fontSize:10,color:"#86868B",fontWeight:500,marginTop:1,textTransform:"uppercase"}}>{s.l}</div></div>))}
+      </div>
+      {topCourse&&<div style={{...crd,padding:20,border:bd,marginBottom:16,animation:"fu .4s ease .1s both"}}>
+        <div style={{fontSize:13,fontWeight:600,color:"#30D158",marginBottom:6}}>Curso mais popular</div>
+        <div style={{fontSize:16,fontWeight:600}}>{topCourse.emoji} {topCourse.title}</div>
+        <div style={{fontSize:12,color:"#86868B",marginTop:2}}>{topCourse.enrolled} alunos · {topCourse.completions} conclusões · {topCourse.avgProg}% progresso médio</div>
+      </div>}
+      {worstDropoff&&worstDropoff.dropoff.drop>10&&<div style={{...crd,padding:20,border:bd,marginBottom:16,borderLeft:"3px solid #FF375F",animation:"fu .4s ease .15s both"}}>
+        <div style={{fontSize:13,fontWeight:600,color:"#FF375F",marginBottom:6}}>Maior ponto de desistência</div>
+        <div style={{fontSize:14,fontWeight:500}}>{worstDropoff.emoji} {worstDropoff.title}</div>
+        <div style={{fontSize:12,color:"#86868B",marginTop:2}}>Queda de {worstDropoff.dropoff.from}% → {worstDropoff.dropoff.to}% na aula: {worstDropoff.dropoff.lesson?.slice(0,50)}</div>
+      </div>}
+      <h2 style={{fontSize:17,fontWeight:600,marginBottom:14,marginTop:8}}>Detalhe por curso</h2>
+      {courseStats.map((c,ci)=>(<div key={c.id} style={{...crd2,padding:"16px 20px",border:bd,marginBottom:10,animation:`fu .3s ease ${.2+ci*.05}s both`}}>
+        <div style={{...fj,alignItems:"center",marginBottom:10}}>
+          <div style={{...fc,gap:8}}><span style={{fontSize:18}}>{c.emoji}</span><div><div style={{fontSize:14,fontWeight:600}}>{c.title}</div><div style={{fontSize:11,color:"#86868B"}}>{c.enrolled} alunos · {c.completions} concluíram · {c.contentGen}/{c.totalLessons} aulas geradas</div></div></div>
+          <div style={{fontSize:18,fontWeight:700,color:c.color}}>{c.avgProg}%</div>
+        </div>
+        <div style={{display:"flex",gap:2,height:24,borderRadius:4,overflow:"hidden"}}>
+          {c.lessonStats.map((l,li)=>(<div key={li} title={`${l.title}: ${l.pct}%`} style={{flex:1,background:l.pct>70?`${c.color}`:l.pct>30?`${c.color}66`:`${c.color}22`,transition:"all .3s",cursor:"pointer",position:"relative"}}/>))}
+        </div>
+        <div style={{...fj,fontSize:10,color:"#AEAEB2",marginTop:4}}><span>Aula 1</span><span>Aula {c.lessonStats.length}</span></div>
+      </div>))}
+    </div>);
+  };
+
+  const renderToast=()=>toast?<div style={{position:"fixed",bottom:22,left:"50%",transform:"translateX(-50%)",padding:"10px 20px",borderRadius:980,background:"#1D1D1F",color:"#fff",fontSize:13,fontWeight:500,zIndex:999,animation:"fu .3s ease both",boxShadow:"0 6px 24px rgba(0,0,0,.15)",fontFamily:F}}>{toast.m}</div>:null;
+
+  const Foot=()=>(<footer style={{borderTop:"0.5px solid rgba(0,0,0,.06)",padding:"24px clamp(16px,4vw,48px)",marginTop:28}}><div style={{maxWidth:1200,margin:"0 auto",...fj,fontSize:12,color:"#86868B"}}><span>© 2026 NeuroLearn</span><div style={{display:"flex",gap:14}}>
+    <span style={{cursor:"pointer"}} onClick={()=>setView("courses")}>Cursos</span>
+    <span style={{cursor:"pointer"}} onClick={()=>{if(curStu){setZone("student");setSView("my");}else goStuLogin();}}>{curStu?"A minha conta":"Área do aluno"}</span>
+    {!curStu&&<span style={{cursor:"pointer"}} onClick={()=>setZone("login")}>Gestão</span>}
+  </div></div></footer>);
+
+  if(zone==="login")return(<>{renderALogin()}{renderToast()}</>);
+  if(zone==="stuLogin")return(<>{renderStuLogin()}{renderToast()}</>);
+  if(zone==="admin")return(<div style={{fontFamily:F,color:"#1D1D1F",background:"#F5F5F7",minHeight:"100vh",opacity:mounted?1:0,transition:"opacity .4s"}}>{!isMobile&&<ASide/>}<div style={{marginLeft:isMobile?0:200,padding:isMobile?"16px":"24px 32px",minHeight:"100vh"}}>
+    {isMobile&&<div style={{display:"flex",gap:8,marginBottom:16,overflowX:"auto",paddingBottom:4}}>{[["dashboard","Dashboard"],["courses","Cursos"],["students","Alunos"],["analytics","Analytics"],["agent","Agent"],["settings","Def."]].map(([k,l])=>(<button key={k} style={{padding:"6px 14px",borderRadius:980,fontSize:12,fontWeight:aView===k?600:400,background:aView===k?"#0071E3":"rgba(0,0,0,.04)",color:aView===k?"#fff":"#6E6E73",border:"none",cursor:"pointer",whiteSpace:"nowrap",fontFamily:F}} onClick={()=>setAView(k)}>{l}</button>))}<button style={{padding:"6px 14px",borderRadius:980,fontSize:12,background:"transparent",color:"#0071E3",border:"none",cursor:"pointer",fontFamily:F,whiteSpace:"nowrap"}} onClick={goPublic}>🌐 Site</button><button style={{padding:"6px 14px",borderRadius:980,fontSize:12,background:"transparent",color:"#FF375F",border:"none",cursor:"pointer",fontFamily:F}} onClick={goPublic}>Sair</button></div>}
+    {aView==="dashboard"&&<ADash/>}{aView==="courses"&&<ACourses/>}{aView==="students"&&<AStudents/>}{aView==="agent"&&<AAgent/>}{aView==="analytics"&&<AAnalytics/>}{aView==="settings"&&<ASettings/>}</div>{renderDocViewer()}{renderToast()}</div>);
+  if(zone==="student")return(<div style={{fontFamily:F,color:tx1,background:bg1,minHeight:"100vh",opacity:mounted?1:0,transition:"all .4s"}} onClick={()=>{showNotif&&setShowNotif(false);showEmails&&setShowEmails(false);}}><SNav/>{sView==="my"&&<MyCourses/>}{sView==="explore"&&<Explore2/>}{sView==="play"&&<Player/>}{sView==="profile"&&<Profile/>}
+        {sView==="community"&&(()=>{
+          const hasPremium=curStu?.enr?.length>=3; // simplificado: 3+ cursos = acesso comunidade
+          return(<div style={{maxWidth:720,margin:"0 auto",padding:"40px clamp(16px,4vw,48px) 72px"}}><style>{anim}</style>
+            <div style={{...fj,alignItems:"flex-start",marginBottom:24,flexWrap:"wrap",gap:12}}>
+              <div>
+                <h1 style={{fontSize:28,fontWeight:700,marginBottom:4}}>Comunidade</h1>
+                <p style={{color:"#86868B",fontSize:13}}>Aprende e partilha com outros profissionais</p>
+              </div>
+              {hasPremium&&<div style={{display:"flex",gap:8,alignItems:"center"}}>
+                <span style={{fontSize:11,padding:"3px 10px",borderRadius:980,background:"#0071E318",color:"#0071E3",fontWeight:600}}>✓ Membro activo</span>
+              </div>}
+            </div>
+            {!hasPremium&&<div style={{...crd,padding:20,border:"2px solid #0071E330",borderRadius:16,marginBottom:24,background:"#0071E305",...fc,gap:14,flexWrap:"wrap"}}>
+              <div style={{fontSize:32}}>🔒</div>
+              <div style={{flex:1}}>
+                <div style={{fontSize:14,fontWeight:600,marginBottom:4}}>Comunidade privada</div>
+                <div style={{fontSize:13,color:"#6E6E73"}}>A comunidade completa está disponível no Plano Anual ou Vitalício. Inscreve-te em mais cursos para ganhar acesso.</div>
+              </div>
+              <button style={{...B(true,true),flexShrink:0}} onClick={()=>setView("pricing")}>Ver planos</button>
+            </div>}
+            {/* Caixa de novo post */}
+            <div style={{...crd,padding:18,border:bd,borderRadius:16,marginBottom:20}}>
+              <div style={{...fc,gap:10,marginBottom:12}}>
+                <div style={{width:36,height:36,borderRadius:"50%",background:G,...fc,justifyContent:"center",color:"#fff",fontSize:12,fontWeight:700,flexShrink:0}}>{curStu?.name?.split(" ").map(n=>n[0]).join("")}</div>
+                <textarea value={newPost} onChange={e=>setNewPost(e.target.value)} placeholder="Partilha uma dica, pergunta ou conquista..." style={{flex:1,padding:"10px 14px",borderRadius:12,border:"1px solid #E5E5EA",fontSize:13,fontFamily:F,resize:"none",outline:"none",minHeight:72,lineHeight:1.5}} onFocus={e=>e.target.style.borderColor="#0071E3"} onBlur={e=>e.target.style.borderColor="#E5E5EA"}/>
+              </div>
+              <div style={{display:"flex",justifyContent:"flex-end"}}>
+                <button style={{...B(true,true),fontSize:12}} onClick={()=>{
+                  if(!newPost.trim())return;
+                  const post={id:Date.now(),author:curStu.name,avatar:curStu.name.split(" ").map(n=>n[0]).join(""),role:`Aluno · ${courses.find(c=>curStu.enr?.includes(c.id))?.title||"NeuroLearn"}`,time:"agora mesmo",text:newPost.trim(),likes:0,replies:[]};
+                  setCommunityPosts(p=>[post,...p]);setNewPost("");tst("Post publicado! 🎉");
+                }}>Publicar</button>
+              </div>
+            </div>
+            {/* Feed de posts */}
+            {communityPosts.map((post,pi)=>(
+              <div key={post.id} style={{...crd,padding:20,border:bd,borderRadius:16,marginBottom:14,animation:`fu .3s ease ${pi*.05}s both`}}>
+                <div style={{...fc,gap:10,marginBottom:12}}>
+                  <div style={{width:38,height:38,borderRadius:"50%",background:G,...fc,justifyContent:"center",color:"#fff",fontSize:12,fontWeight:700,flexShrink:0}}>{post.avatar}</div>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:13,fontWeight:600}}>{post.author}</div>
+                    <div style={{fontSize:11,color:"#86868B"}}>{post.role} · {post.time}</div>
+                  </div>
+                </div>
+                <p style={{fontSize:14,color:"#1D1D1F",lineHeight:1.65,marginBottom:14}}>{post.text}</p>
+                <div style={{...fc,gap:14,marginBottom:12,paddingTop:8,borderTop:bd}}>
+                  <button style={{background:"none",border:"none",cursor:"pointer",...fc,gap:5,fontSize:13,color:"#86868B",fontFamily:F,padding:0}} onClick={()=>{setCommunityPosts(ps=>ps.map(p=>p.id===post.id?{...p,likes:p.likes+(p.liked?-1:1),liked:!p.liked}:p));}}><span style={{fontSize:16,color:post.liked?"#FF375F":"#86868B"}}>{post.liked?"❤️":"🤍"}</span>{post.likes+(post.liked?1:0)} gostos</button>
+                  <button style={{background:"none",border:"none",cursor:"pointer",...fc,gap:5,fontSize:13,color:"#86868B",fontFamily:F,padding:0}} onClick={()=>setShowReply(r=>({...r,[post.id]:!r[post.id]}))}>💬 {post.replies.length} respostas</button>
+                </div>
+                {/* Respostas existentes */}
+                {(showReply[post.id]||post.replies.length>0)&&<div style={{paddingLeft:16,borderLeft:"2px solid #f0f0f0"}}>
+                  {post.replies.map((r,ri)=>(
+                    <div key={ri} style={{marginBottom:10}}>
+                      <div style={{...fc,gap:8,marginBottom:4}}>
+                        <div style={{width:26,height:26,borderRadius:"50%",background:"#f0f0f0",...fc,justifyContent:"center",fontSize:9,fontWeight:700,color:"#6E6E73",flexShrink:0}}>{r.avatar}</div>
+                        <span style={{fontSize:12,fontWeight:600}}>{r.author}</span>
+                        <span style={{fontSize:11,color:"#AEAEB2"}}>{r.time}</span>
+                      </div>
+                      <p style={{fontSize:13,color:"#4A4A4F",lineHeight:1.5,marginLeft:34}}>{r.text}</p>
+                    </div>
+                  ))}
+                  {showReply[post.id]&&<div style={{...fc,gap:8,marginTop:8}}>
+                    <div style={{width:26,height:26,borderRadius:"50%",background:G,...fc,justifyContent:"center",color:"#fff",fontSize:9,fontWeight:700,flexShrink:0}}>{curStu?.name?.split(" ").map(n=>n[0]).join("")}</div>
+                    <input value={replyText[post.id]||""} onChange={e=>setReplyText(r=>({...r,[post.id]:e.target.value}))} onKeyDown={e=>{if(e.key==="Enter"&&replyText[post.id]?.trim()){setCommunityPosts(ps=>ps.map(p=>p.id===post.id?{...p,replies:[...p.replies,{author:curStu.name,avatar:curStu.name.split(" ").map(n=>n[0]).join(""),time:"agora mesmo",text:replyText[post.id].trim()}]}:p));setReplyText(r=>({...r,[post.id]:""}));}} } placeholder="Responde..." style={{flex:1,padding:"8px 12px",borderRadius:980,border:"1px solid #E5E5EA",fontSize:12,fontFamily:F,outline:"none"}}/>
+                  </div>}
+                </div>}
+              </div>
+            ))}
+          </div>);
+        })()}
+        {sView==="notifs"&&<div style={{maxWidth:560,margin:"0 auto",padding:"40px clamp(16px,4vw,48px) 72px"}}><style>{anim}</style>
+          <h1 style={{fontSize:28,fontWeight:700,marginBottom:4}}>Notificações</h1>
+          <p style={{color:"#86868B",fontSize:13,marginBottom:24}}>{notifs.length} mensagens</p>
+          {notifs.length===0?<div style={{textAlign:"center",padding:"48px 20px"}}><div style={{fontSize:44,marginBottom:14}}>🔔</div><p style={{color:"#86868B"}}>Sem notificações de momento.</p></div>:
+          notifs.map((n,i)=>(
+            <div key={n.id} style={{...crd,padding:"14px 18px",border:n.read?"0.5px solid rgba(0,0,0,.06)":"2px solid #0071E340",marginBottom:8,background:n.read?"#fff":"#0071E305",animation:`fu .3s ease ${i*.04}s both`,borderRadius:12}}>
+              <div style={{display:"flex",gap:10,alignItems:"flex-start"}}>
+                <span style={{fontSize:18,flexShrink:0}}>{n.type==="success"?"✅":n.type==="info"?"📢":"🔔"}</span>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:14,fontWeight:n.read?400:600,lineHeight:1.4}}>{n.msg}</div>
+                  <div style={{fontSize:11,color:"#AEAEB2",marginTop:4}}>{n.time}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+          {notifs.length>0&&<button style={{...B(false,true),marginTop:8,fontSize:12,color:"#FF375F",borderColor:"#FF375F33"}} onClick={()=>{svN([]);tst("Notificações limpas");}}>🗑 Limpar todas</button>}
+        </div>}{renderPayModal()}{renderToast()}</div>);
+  return(<div style={{fontFamily:F,color:"#1D1D1F",background:"#FBFBFD",minHeight:"100vh",opacity:mounted?1:0,transition:"opacity .4s"}} onClick={()=>showNotif&&setShowNotif(false)}><PNav/>{view==="home"&&<Home/>}{view==="courses"&&<PubCourses/>}{view==="pricing"&&<Pricing/>}{view==="detail"&&<Detail/>}{view==="about"&&<div style={{background:"#FBFBFD"}}><style>{anim}</style>
+
+  {/* HERO */}
+  <div style={{background:"linear-gradient(135deg,#0071E308,#AF52DE06)",borderBottom:bd,padding:"72px clamp(16px,4vw,48px) 60px",textAlign:"center"}}>
+    <div style={{maxWidth:700,margin:"0 auto"}}>
+      <div style={{display:"inline-flex",alignItems:"center",gap:8,padding:"5px 16px",borderRadius:980,background:"rgba(0,113,227,.1)",color:"#0071E3",fontSize:12,fontWeight:600,marginBottom:20,letterSpacing:".04em",textTransform:"uppercase"}}>Sobre a NeuroLearn</div>
+      <h1 style={{fontSize:"clamp(30px,5vw,48px)",fontWeight:700,letterSpacing:"-0.03em",lineHeight:1.1,marginBottom:20}}>A plataforma de IA<br/><span style={{background:"linear-gradient(135deg,#0071E3,#AF52DE)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>feita em Portugal</span></h1>
+      <p style={{fontSize:17,color:"#6E6E73",lineHeight:1.75,marginBottom:32}}>A NeuroLearn nasceu com uma missão clara: democratizar o acesso ao ensino de Inteligência Artificial em língua portuguesa. Numa área dominada por conteúdo em inglês, criámos uma plataforma onde profissionais portugueses aprendem IA de forma prática, actualizada e sem barreiras linguísticas.</p>
+      <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
+        <button style={{...B(true),padding:"13px 32px"}} onClick={()=>setView("courses")}>Explorar cursos</button>
+        <button style={{...B(false),padding:"13px 32px"}} onClick={()=>goStuLogin()}>Criar conta grátis</button>
+      </div>
+    </div>
+  </div>
+
+  {/* STATS */}
+  <div style={{maxWidth:900,margin:"0 auto",padding:"48px clamp(16px,4vw,48px) 0"}}>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:14,marginBottom:56}}>
+      {[{v:pub.length+"",l:"Cursos disponíveis",c:"#0071E3",e:"📚"},{v:"15.000+",l:"Alunos formados",c:"#30D158",e:"👩‍🎓"},{v:"4.8 / 5",l:"Avaliação média",c:"#FF9500",e:"⭐"},{v:"100%",l:"Conteúdo em PT-PT",c:"#AF52DE",e:"🇵🇹"},{v:"30h+",l:"Horas de conteúdo",c:"#FF375F",e:"⏱"}].map((s,i)=>(
+        <div key={i} style={{...crd,padding:"20px 18px",border:bd,textAlign:"center",animation:`fu .4s ease ${.1+i*.06}s both`}}>
+          <div style={{fontSize:22,marginBottom:6}}>{s.e}</div>
+          <div style={{fontSize:26,fontWeight:700,color:s.c,letterSpacing:"-0.02em"}}>{s.v}</div>
+          <div style={{fontSize:11,color:"#86868B",fontWeight:500,marginTop:4,lineHeight:1.3}}>{s.l}</div>
+        </div>
+      ))}
+    </div>
+
+    {/* MISSÃO */}
+    <div style={{display:"grid",gridTemplateColumns:isMobile?"1fr":"1fr 1fr",gap:24,marginBottom:56,alignItems:"center"}}>
+      <div style={{animation:"fu .5s ease .1s both"}}>
+        <div style={{fontSize:11,fontWeight:600,color:"#0071E3",textTransform:"uppercase",letterSpacing:".06em",marginBottom:10}}>A nossa missão</div>
+        <h2 style={{fontSize:28,fontWeight:700,letterSpacing:"-0.02em",marginBottom:16,lineHeight:1.25}}>Tornar a IA acessível a todos os profissionais portugueses</h2>
+        <p style={{fontSize:14,color:"#6E6E73",lineHeight:1.75,marginBottom:14}}>Vivemos numa era em que a Inteligência Artificial está a transformar todas as profissões. Mas a maioria dos recursos de qualidade está em inglês, desactualizada, ou é demasiado teórica para uso no dia-a-dia.</p>
+        <p style={{fontSize:14,color:"#6E6E73",lineHeight:1.75}}>A NeuroLearn resolve isso: cursos práticos, em português, criados por especialistas e continuamente actualizados com o apoio de IA generativa. Do Excel com IA ao desenvolvimento de agentes autónomos — temos o percurso certo para cada profissional.</p>
+      </div>
+      <div style={{display:"flex",flexDirection:"column",gap:12,animation:"fu .5s ease .2s both"}}>
+        {[
+          {icon:"🎯",t:"Aprendizagem orientada a resultados",d:"Cada aula termina com um exercício prático aplicável imediatamente no trabalho."},
+          {icon:"🔄",t:"Conteúdo sempre actualizado",d:"A IA regenera e actualiza as aulas automaticamente quando surgem novas ferramentas e técnicas."},
+          {icon:"🏆",t:"Certificação profissional",d:"Certificados reconhecidos para o teu LinkedIn, CV e progressão de carreira."},
+          {icon:"🤝",t:"Suporte real da comunidade",d:"Faz perguntas, partilha projectos e aprende com outros profissionais portugueses."}
+        ].map((x,i)=>(
+          <div key={i} style={{...crd,padding:"14px 18px",border:bd,display:"flex",gap:12,alignItems:"flex-start"}}>
+            <span style={{fontSize:20,flexShrink:0,marginTop:1}}>{x.icon}</span>
+            <div><div style={{fontSize:13,fontWeight:600,marginBottom:2}}>{x.t}</div><div style={{fontSize:12,color:"#6E6E73",lineHeight:1.5}}>{x.d}</div></div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    {/* EQUIPA */}
+    <div style={{marginBottom:56}}>
+      <div style={{textAlign:"center",marginBottom:28}}>
+        <div style={{fontSize:11,fontWeight:600,color:"#AF52DE",textTransform:"uppercase",letterSpacing:".06em",marginBottom:8}}>Quem somos</div>
+        <h2 style={{fontSize:26,fontWeight:700}}>A equipa por detrás da NeuroLearn</h2>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:isMobile?"1fr":"repeat(3,1fr)",gap:16}}>
+        {[
+          {name:"Dr. Ana Silva",role:"Directora de Conteúdo",area:"Machine Learning & Deep Learning",bg:"#0071E3",init:"AS",desc:"Doutorada em IA pela Universidade de Lisboa. 10 anos de experiência em investigação e ensino de machine learning."},
+          {name:"Prof. Marco Santos",role:"Especialista LLMs",area:"Prompt Engineering & NLP",bg:"#30D158",init:"MS",desc:"Ex-engenheiro Google e OpenAI. Especialista em modelos de linguagem e aplicações empresariais de IA generativa."},
+          {name:"Eng. Pedro Costa",role:"Tech Lead",area:"Agentes & Desenvolvimento",bg:"#FF375F",init:"PC",desc:"15 anos em engenharia de software. Pioneiro no desenvolvimento de agentes autónomos com LangChain em Portugal."},
+        ].map((p,i)=>(
+          <div key={i} style={{...crd,padding:"22px 20px",border:bd,textAlign:"center",animation:`fu .4s ease ${.2+i*.08}s both`}}>
+            <div style={{width:56,height:56,borderRadius:"50%",background:p.bg,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:18,fontWeight:700,margin:"0 auto 12px"}}>{p.init}</div>
+            <div style={{fontSize:15,fontWeight:700,marginBottom:2}}>{p.name}</div>
+            <div style={{fontSize:12,color:p.bg,fontWeight:600,marginBottom:6}}>{p.role}</div>
+            <div style={{fontSize:11,color:"#86868B",marginBottom:10}}>{p.area}</div>
+            <div style={{fontSize:12,color:"#6E6E73",lineHeight:1.5}}>{p.desc}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    {/* TIMELINE */}
+    <div style={{marginBottom:56}}>
+      <div style={{textAlign:"center",marginBottom:28}}>
+        <div style={{fontSize:11,fontWeight:600,color:"#FF9500",textTransform:"uppercase",letterSpacing:".06em",marginBottom:8}}>A nossa história</div>
+        <h2 style={{fontSize:26,fontWeight:700}}>Como chegámos até aqui</h2>
+      </div>
+      <div style={{position:"relative",paddingLeft:isMobile?0:32}}>
+        {!isMobile&&<div style={{position:"absolute",left:8,top:8,bottom:8,width:2,background:"linear-gradient(#0071E3,#AF52DE)",borderRadius:2}}/>}
+        {[
+          {year:"2023",t:"A ideia nasce",d:"Identificámos uma lacuna enorme: não existia nenhuma plataforma de qualidade para aprender IA em português. Começámos a esboçar o conceito da NeuroLearn."},
+          {year:"2024",t:"Primeiros cursos lançados",d:"Lançámos os 3 primeiros cursos — Fundamentos de IA, Prompt Engineering e IA para Negócios. Em 6 meses atingimos 5.000 alunos."},
+          {year:"2025",t:"Plataforma completa",d:"Expandimos para 7 cursos, introduzimos certificados, o sistema de quizzes e a comunidade de alunos. 15.000 profissionais formados."},
+          {year:"2026",t:"IA na geração de conteúdo",d:"Tornámo-nos a primeira plataforma portuguesa a usar IA generativa para criar e actualizar automaticamente o conteúdo de cada aula em tempo real."},
+        ].map((e,i)=>(
+          <div key={i} style={{display:"flex",gap:16,marginBottom:20,alignItems:"flex-start",animation:`fu .4s ease ${.1+i*.07}s both`}}>
+            {!isMobile&&<div style={{width:18,height:18,borderRadius:"50%",background:i===3?"#AF52DE":"#0071E3",flexShrink:0,marginTop:2,border:"3px solid #FBFBFD",zIndex:1}}/>}
+            <div style={{...crd,padding:"16px 20px",border:bd,flex:1}}>
+              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:6}}>
+                <span style={{fontSize:12,fontWeight:700,color:"#0071E3",background:"#0071E310",padding:"2px 10px",borderRadius:980}}>{e.year}</span>
+                <span style={{fontSize:14,fontWeight:600}}>{e.t}</span>
+              </div>
+              <p style={{fontSize:13,color:"#6E6E73",lineHeight:1.6,margin:0}}>{e.d}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    {/* FAQ */}
+    <div style={{marginBottom:56}}>
+      <div style={{textAlign:"center",marginBottom:28}}>
+        <div style={{fontSize:11,fontWeight:600,color:"#30D158",textTransform:"uppercase",letterSpacing:".06em",marginBottom:8}}>FAQ</div>
+        <h2 style={{fontSize:26,fontWeight:700}}>Perguntas frequentes</h2>
+      </div>
+      <div style={{display:"flex",flexDirection:"column",gap:10}}>
+        {[
+          {q:"Os cursos têm data de início e fim?",a:"Não. Todos os cursos são 100% assíncronos — podes começar quando quiseres, ao teu ritmo, e tens acesso vitalício ao conteúdo."},
+          {q:"Os certificados são reconhecidos em Portugal?",a:"Os certificados da NeuroLearn são emitidos digitalmente e podem ser partilhados no LinkedIn. São reconhecidos por empresas parceiras e cada vez mais valorizados no mercado de trabalho português."},
+          {q:"Preciso de conhecimentos técnicos para começar?",a:"Depende do curso. Temos cursos para todos os níveis — desde Iniciante (sem conhecimentos necessários) até Avançado. Cada curso indica claramente o nível e pré-requisitos."},
+          {q:"O conteúdo está sempre actualizado?",a:"Sim. Usamos IA generativa para regenerar e actualizar o conteúdo das aulas regularmente, garantindo que reflecte as ferramentas e técnicas mais recentes."},
+          {q:"Posso pedir factura?",a:"Sim. Após a compra recebes automaticamente um recibo por email. Para factura com NIF/nome de empresa, envia email para facturacao@neurolearn.pt."},
+          {q:"Existe suporte se tiver dúvidas?",a:"Sim. Podes colocar dúvidas nos comentários de cada aula, onde a comunidade e os formadores respondem. Planos Anual e Vitalício têm suporte prioritário por email."},
+        ].map((f,i)=>(<details key={i} style={{...crd,border:bd,borderRadius:12,overflow:"hidden",animation:`fu .3s ease ${.1+i*.05}s both`}}>
+          <summary style={{padding:"16px 20px",fontSize:14,fontWeight:600,cursor:"pointer",listStyle:"none",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            {f.q}<span style={{fontSize:18,color:"#86868B",flexShrink:0,marginLeft:8}}>+</span>
+          </summary>
+          <div style={{padding:"0 20px 16px",fontSize:13,color:"#6E6E73",lineHeight:1.7,borderTop:bd}}>{f.a}</div>
+        </details>))}
+      </div>
+    </div>
+
+    {/* TESTEMUNHOS */}
+    <div style={{marginBottom:56}}>
+      <div style={{textAlign:"center",marginBottom:28}}>
+        <div style={{fontSize:11,fontWeight:600,color:"#FF375F",textTransform:"uppercase",letterSpacing:".06em",marginBottom:8}}>Testemunhos</div>
+        <h2 style={{fontSize:26,fontWeight:700}}>O que dizem os nossos alunos</h2>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:isMobile?"1fr":"1fr 1fr",gap:14}}>
+        {TESTIMONIALS.map((t,i)=>(
+          <div key={i} style={{...crd,padding:"20px 22px",border:bd,animation:`fu .4s ease ${.2+i*.06}s both`}}>
+            <div style={{display:"flex",gap:2,marginBottom:10}}>{Array.from({length:5},(_,s)=>(<span key={s} style={{fontSize:14,color:s<t.rating?"#FF9500":"#E5E5EA"}}>★</span>))}</div>
+            <p style={{fontSize:14,color:"#4A4A4F",lineHeight:1.6,marginBottom:14,fontStyle:"italic"}}>"{t.text}"</p>
+            <div style={{display:"flex",alignItems:"center",gap:10}}>
+              <div style={{width:36,height:36,borderRadius:"50%",background:G,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:12,fontWeight:700,flexShrink:0}}>{t.avatar}</div>
+              <div><div style={{fontSize:13,fontWeight:600}}>{t.name}</div><div style={{fontSize:11,color:"#86868B"}}>{t.role}</div></div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    {/* CTA FINAL */}
+    <div style={{background:"linear-gradient(135deg,#0071E3,#AF52DE)",borderRadius:24,padding:"44px 36px",textAlign:"center",marginBottom:16}}>
+      <h2 style={{fontSize:28,fontWeight:700,color:"#fff",marginBottom:10}}>Pronto para transformar a tua carreira?</h2>
+      <p style={{fontSize:15,color:"rgba(255,255,255,.8)",marginBottom:28,maxWidth:480,margin:"0 auto 28px"}}>Junta-te a 15.000 profissionais portugueses que já usam IA no seu trabalho diário.</p>
+      <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
+        <button style={{padding:"14px 36px",borderRadius:980,fontSize:15,fontWeight:600,cursor:"pointer",border:"none",background:"#fff",color:"#0071E3",fontFamily:F}} onClick={()=>setView("courses")}>Ver todos os cursos</button>
+        <button style={{padding:"14px 36px",borderRadius:980,fontSize:15,fontWeight:600,cursor:"pointer",border:"2px solid rgba(255,255,255,.5)",background:"transparent",color:"#fff",fontFamily:F}} onClick={()=>goStuLogin()}>Criar conta grátis</button>
+      </div>
+    </div>
+  </div>
+</div>}<Foot/>{renderPayModal()}{renderToast()}</div>);
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+  </script>
+</body>
+</html>
