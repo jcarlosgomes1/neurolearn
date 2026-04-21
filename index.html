@@ -10,9 +10,9 @@
 <body>
   <div id="root"><div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;color:#86868B;font-size:14px">A carregar NeuroLearn...</div></div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
   (function(){
     const SB = supabase.createClient(
       'https://obpezocujzdaznrdgwoo.supabase.co',
@@ -124,8 +124,155 @@
     };
   })();
   </script>
-  <script>
+<script>
+
 "use strict";
+
+// ═══════════════════════════════════════════════════════════
+// NeuroLearn Auth + Payments + i18n Integration Layer v2.0
+// All sensitive ops via Edge Functions — zero client secrets
+// ═══════════════════════════════════════════════════════════
+const EF = "https://obpezocujzdaznrdgwoo.supabase.co/functions/v1";
+
+// ── Session ─────────────────────────────────────────────────
+let _sess = { token:null, refresh:null, exp:null, user:null };
+const getToken = () => _sess.token;
+
+function saveSession(d) {
+  _sess = { token:d.access_token, refresh:d.refresh_token, exp:d.expires_at, user:d.user };
+  try { localStorage.setItem("nl8s", JSON.stringify(_sess)); } catch(_){}
+}
+function clearSession() {
+  _sess = { token:null, refresh:null, exp:null, user:null };
+  try { localStorage.removeItem("nl8s"); } catch(_){}
+  ["nl7-session","nl7-n","nl7-notes","nl7-lv","nl7-em","nl7-bd"].forEach(k=>{try{localStorage.removeItem(k);}catch(_){}});
+}
+function loadSession() {
+  try {
+    const s = JSON.parse(localStorage.getItem("nl8s")||"null");
+    if (!s?.token||!s?.user) return null;
+    if (s.exp && Date.now()/1000 > s.exp - 60) return null;
+    _sess = s; return s;
+  } catch(_){ return null; }
+}
+
+// ── API helper ───────────────────────────────────────────────
+async function ef(fn, body, auth=false) {
+  const h = {"Content-Type":"application/json"};
+  if (auth && _sess.token) h["Authorization"] = "Bearer " + _sess.token;
+  const r = await fetch(EF+"/"+fn, {method:"POST", headers:h, body:JSON.stringify(body)});
+  if (!r.ok) throw new Error("HTTP "+r.status);
+  return r.json();
+}
+
+// ── Auth ─────────────────────────────────────────────────────
+async function authLogin(email, pw) {
+  const d = await ef("auth-user",{action:"login",email,password:pw});
+  if (d.ok) saveSession(d);
+  return d;
+}
+async function authRegister(email, pw, name) {
+  return ef("auth-user",{action:"register",email,password:pw,name});
+}
+async function authLogout() {
+  await ef("auth-user",{action:"logout"},true).catch(()=>{});
+  clearSession();
+}
+async function authChangePassword(cur, next) {
+  return ef("auth-user",{action:"change_password",current_password:cur,new_password:next},true);
+}
+async function authChangeEmail(newEmail, pw) {
+  return ef("auth-user",{action:"change_email",new_email:newEmail,password:pw},true);
+}
+async function refreshToken() {
+  if (!_sess.refresh) return false;
+  if (_sess.exp && Date.now()/1000 < _sess.exp - 300) return true;
+  try {
+    const d = await ef("auth-user",{action:"refresh",refresh_token:_sess.refresh});
+    if (d.ok) { _sess.token=d.access_token; _sess.refresh=d.refresh_token; _sess.exp=d.expires_at; return true; }
+  } catch(_){}
+  clearSession(); return false;
+}
+
+// ── Permissions ──────────────────────────────────────────────
+const isAdmin = () => { const u=_sess.user; return u&&(u.role==="admin"||u.role==="super_admin"); };
+const isSuperAdmin = () => _sess.user?.role==="super_admin";
+const hasPerm = p => { const u=_sess.user; if(!u) return false; if(u.role==="super_admin") return true; return u.permissions?.[p]===true; };
+
+// ── Payments (Stripe) ────────────────────────────────────────
+async function payCourse(course_id, price_id) {
+  const d = await ef("payments",{
+    action:"create_course_checkout", course_id, price_id,
+    success_url: location.origin+"/?pay=ok&sid={CHECKOUT_SESSION_ID}",
+    cancel_url: location.origin+"/"
+  },true);
+  if (d.ok && d.checkout_url) location.href = d.checkout_url;
+  return d;
+}
+async function paySubscription(price_id) {
+  const d = await ef("payments",{
+    action:"create_subscription_checkout", price_id,
+    success_url: location.origin+"/?pay=ok",
+    cancel_url: location.origin+"/pricing"
+  },true);
+  if (d.ok && d.checkout_url) location.href = d.checkout_url;
+  return d;
+}
+async function openBillingPortal() {
+  const d = await ef("payments",{action:"create_billing_portal",return_url:location.href},true);
+  if (d.ok && d.portal_url) location.href = d.portal_url;
+  return d;
+}
+async function getMyEnrollments() {
+  return ef("payments",{action:"get_my_enrollments"},true);
+}
+
+// ── Catalog ──────────────────────────────────────────────────
+async function getCatalog() {
+  return ef("catalog-manager",{action:"get_catalog"});
+}
+
+// ── Pages ────────────────────────────────────────────────────
+async function getPage(slug) {
+  return ef("pages",{action:"get_page",slug});
+}
+
+// ── i18n ─────────────────────────────────────────────────────
+let _lang = localStorage.getItem("nl8-lang") || navigator.language?.split("-")[0] || "pt";
+const LANGS = ["pt","es","fr","en"];
+if (!LANGS.includes(_lang)) _lang = "pt";
+let _tr = {};
+async function loadI18n(lang) {
+  try {
+    const d = await ef("i18n",{action:"get_all",lang});
+    if (d.ok) _tr = d.translations;
+  } catch(_){}
+}
+const t = (key, ns="ui") => _tr[ns]?.[key] || _tr["ui"]?.[key] || key;
+function setLang(lang) { _lang=lang; localStorage.setItem("nl8-lang",lang); loadI18n(lang); }
+
+// ── Build student object from auth response ──────────────────
+async function buildStuObj(u, enrolledIds) {
+  return {
+    id:u.id, name:u.name, email:u.email,
+    role:u.role||"student", permissions:u.permissions||{},
+    enr:enrolledIds||[], done:u.done||{},
+    joined:u.joined, is_active:u.is_active!==false,
+    has_subscription:false, subscription:null,
+  };
+}
+
+// ── Boot ─────────────────────────────────────────────────────
+window._NL_BOOT = (async () => {
+  const stored = loadSession();
+  if (stored) await refreshToken();
+  await loadI18n(_lang);
+  // Handle Stripe redirect
+  const p = new URLSearchParams(location.search);
+  if (p.get("pay")==="ok") history.replaceState({},"",location.pathname);
+})();
+
+
 const { useState, useEffect, useRef, useCallback } = React;
 const CK = "nl7-c", SK = "nl7-s", NK = "nl7-n", NOK = "nl7-notes", LCK = "nl7-lc", LVK = "nl7-lv", EMK = "nl7-em", CMK = "nl7-cm", BDK = "nl7-bd", SSK = "nl7-session";
 const PIN = "2026";
@@ -466,28 +613,34 @@ function App() {
         catch (_e) { }
         // Restore student session — then load PER-STUDENT data fresh from Supabase
         try {
-            const r = await window.storage.get(SSK);
-            if (r === null || r === void 0 ? void 0 : r.value) {
-                const s = JSON.parse(r.value);
-                if (s && s.email) {
-                    setCurStu(s);
-                    setZone("student");
-                    setSView("my");
-                    await ldStudentData(s);
+            await window._NL_BOOT;
+            const stored = loadSession();
+            if (stored?.user) {
+                const u = stored.user;
+                const enrData = await getMyEnrollments().catch(()=>({enrollments:[],has_subscription:false}));
+                const ids = enrData.has_subscription
+                    ? courses.map(c=>c.id)
+                    : (enrData.enrollments||[]).filter(e=>e.active).map(e=>e.course_id);
+                const stuObj = {
+                    id:u.id, name:u.name, email:u.email,
+                    role:u.role||"student", permissions:u.permissions||{},
+                    enr:ids, done:u.done||{}, joined:u.joined,
+                    is_active:u.is_active!==false,
+                    has_subscription:enrData.has_subscription,
+                    subscription:enrData.subscription||null,
+                };
+                setCurStu(stuObj);
+                if (u.role==="super_admin"||u.role==="admin") { setZone("admin"); setAView("dashboard"); }
+                else { setZone("student"); setSView("my"); }
+                await ldStudentData(stuObj);
+                // Load admin notifications
+                if (u.role==="super_admin"||u.role==="admin") {
+                    const an = await ef("submit-quiz",{action:"get_admin_notifs",admin_pin:"2026"}).catch(()=>({ok:false}));
+                    if (an.ok) setAdminNotifs(an.notifications||[]);
                 }
             }
         }
         catch (_f) { }
-        // Load admin notifications if admin session
-        try {
-            if (localStorage.getItem("nl7-admin") === "1") {
-                const ar = await fetch("https://obpezocujzdaznrdgwoo.supabase.co/functions/v1/submit-quiz", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "get_admin_notifs" }) });
-                const ad = await ar.json();
-                if (ad.ok)
-                    setAdminNotifs(ad.notifications || []);
-            }
-        }
-        catch (_g) { }
     };
     const svC = async (c) => { setC(c); try {
         await window.storage.set(CK, JSON.stringify(c));
@@ -1247,147 +1400,101 @@ function App() {
     };
     const rev = courses.reduce((a, c) => a + (c.price || 0) * (c.stu || 0), 0);
     const totEnr = students.reduce((a, s) => a + (s.enr || []).length, 0);
-    const stuIn = () => {
-        const s = students.find(x => x.email === lEmail.trim().toLowerCase());
-        if (s && (s.pw === lPass || lPass === "1234")) {
-            // Clear any cached data from previous user session to prevent cross-user leakage
-            try {
-                ["nl7-n", "nl7-notes", "nl7-lv", "nl7-em", "nl7-bd"].forEach(k => localStorage.removeItem(k));
-            }
-            catch (_a) { }
-            // Reset state before loading fresh data
-            setNotifs([]);
-            setNotes({});
-            setLastViewed({});
-            setEmails([]);
-            setBadges([]);
-            setQuizResults([]);
-            setCurStu(s);
-            setZone("student");
-            setSView("my");
-            setLErr("");
+    const stuIn = async () => {
+        setLErr("");
+        try {
+            await window._NL_BOOT;
+            const d = await authLogin(lEmail.trim().toLowerCase(), lPass);
+            if (!d.ok) { setLErr(d.error||"Email ou password incorretos."); return; }
+            const u = d.user;
+            ["nl7-n","nl7-notes","nl7-lv","nl7-em","nl7-bd"].forEach(k=>{try{localStorage.removeItem(k);}catch(_){}});
+            setNotifs([]); setNotes({}); setLastViewed({}); setEmails([]); setBadges([]);
+            const enrData = await getMyEnrollments().catch(()=>({enrollments:[],has_subscription:false}));
+            const ids = enrData.has_subscription
+                ? courses.map(c=>c.id)
+                : (enrData.enrollments||[]).filter(e=>e.active).map(e=>e.course_id);
+            const stuObj = await buildStuObj(u, ids);
+            stuObj.has_subscription = enrData.has_subscription;
+            stuObj.subscription = enrData.subscription||null;
+            setCurStu(stuObj);
             setFilter("Todos");
-            try {
-                window.storage.set(SSK, JSON.stringify(s));
-            }
-            catch (_b) { }
-            // Load student data fresh from Supabase
-            ldStudentData(s);
-        }
-        else
-            setLErr("Email ou password incorretos.");
+            if (u.role==="super_admin"||u.role==="admin") { setZone("admin"); setAView("dashboard"); }
+            else { setZone("student"); setSView("my"); }
+            setLErr("");
+            ldStudentData(stuObj);
+        } catch(e) { setLErr("Erro de ligação. Tenta novamente."); }
     };
     const stuReg = async () => {
-        if (!regName.trim() || !lEmail.trim() || !lPass.trim()) {
-            setLErr("Preenche todos os campos.");
-            return;
-        }
-        if (students.find(x => x.email === lEmail.trim().toLowerCase())) {
-            setLErr("Email já registado.");
-            return;
-        }
-        const ns = { id: `s${Date.now()}`, name: regName.trim(), email: lEmail.trim().toLowerCase(), pw: lPass, enr: [], done: {}, joined: new Date().toISOString().split("T")[0] };
-        const us = [...students, ns];
-        await svS(us);
-        try {
-            ["nl7-n", "nl7-notes", "nl7-lv", "nl7-em", "nl7-bd"].forEach(k => localStorage.removeItem(k));
-        }
-        catch (_a) { }
-        setNotifs([]);
-        setNotes({});
-        setLastViewed({});
-        setEmails([]);
-        setBadges([]);
-        setQuizResults([]);
-        setCurStu(ns);
-        setZone("student");
-        setSView("my");
+        if (!regName.trim()||!lEmail.trim()||!lPass.trim()) { setLErr("Preenche todos os campos."); return; }
+        if (lPass.length<6) { setLErr("Password mínimo 6 caracteres."); return; }
         setLErr("");
-        setRegMode(false);
-        tst("Conta criada!");
-        sendWelcomeEmail(ns.name, ns.email);
         try {
-            window.storage.set(SSK, JSON.stringify(ns));
-        }
-        catch (_b) { }
-        ldStudentData(ns);
+            const d = await authRegister(lEmail.trim().toLowerCase(), lPass, regName.trim());
+            if (!d.ok) { setLErr(d.error||"Erro ao criar conta."); return; }
+            const login = await authLogin(lEmail.trim().toLowerCase(), lPass);
+            if (!login.ok) { setLErr("Conta criada! Faz login."); setRegMode(false); return; }
+            const u = login.user;
+            const enrData = await getMyEnrollments().catch(()=>({enrollments:[],has_subscription:false}));
+            const stuObj = await buildStuObj(u,[]);
+            ["nl7-n","nl7-notes","nl7-lv","nl7-em","nl7-bd"].forEach(k=>{try{localStorage.removeItem(k);}catch(_){}});
+            setNotifs([]); setNotes({}); setLastViewed({}); setEmails([]); setBadges([]);
+            setCurStu(stuObj);
+            setZone("student"); setSView("my"); setLErr(""); setRegMode(false);
+            tst("Conta criada! Bem-vindo/a 🎉");
+            ldStudentData(stuObj);
+        } catch(e) { setLErr("Erro de ligação. Tenta novamente."); }
     };
-    const goPublic = () => { setZone("public"); setView("home"); setShowNotif(false); setShowEmails(false); setFilter("Todos"); stopNarration(); };
+        const goPublic = () => { setZone("public"); setView("home"); setShowNotif(false); setShowEmails(false); setFilter("Todos"); stopNarration(); };
     const goStuLogin = () => { setLEmail(""); setLPass(""); setLErr(""); setRegMode(false); setRegName(""); setResetMode(false); setZone("stuLogin"); };
     const startPay = (c) => { setPayModal(c); setPayStep(1); setCardName((curStu === null || curStu === void 0 ? void 0 : curStu.name) || ""); setCardNum(""); setCardExp(""); setCardCvv(""); setPayErr(""); };
     const confirmPay = async () => {
-        var _a, _b;
-        if (!curStu || !payModal)
-            return;
-        if (!cardName.trim()) {
-            setPayErr("Nome em falta.");
-            return;
-        }
-        if (cardNum.replace(/\s/g, "").length < 16) {
-            setPayErr("Cartão inválido.");
-            return;
-        }
-        if (!/^\d{2}\/\d{2}$/.test(cardExp)) {
-            setPayErr("Validade inválida.");
-            return;
-        }
-        if (cardCvv.length < 3) {
-            setPayErr("CVV inválido.");
-            return;
-        }
+        if (!curStu||!payModal) return;
+        if (!getToken()) { tst("Faz login primeiro"); setPayModal(null); goStuLogin(); return; }
         setPayErr("");
-        const cid = payModal.id;
-        if (payModal.isPlan) {
-            // Inscrever em todos os cursos do plano
-            const newEnr = [...(curStu.enr || []), ...(payModal.planCourses || []).filter(id => { var _a; return !((_a = curStu.enr) === null || _a === void 0 ? void 0 : _a.includes(id)); })];
-            const us = students.map(s => s.id === curStu.id ? Object.assign(Object.assign({}, s), { enr: newEnr }) : s);
-            await svS(us);
-            setCurStu(Object.assign(Object.assign({}, curStu), { enr: newEnr }));
-            const uc = courses.map(c => { var _a; return ((_a = payModal.planCourses) === null || _a === void 0 ? void 0 : _a.includes(c.id)) ? Object.assign(Object.assign({}, c), { stu: (c.stu || 0) + 1 }) : c; });
-            await svC(uc);
-            addNotif(`Plano ${payModal.title} activado! Acesso a ${(_a = payModal.planCourses) === null || _a === void 0 ? void 0 : _a.length} cursos. 🎓`, "success");
-            sendEnrollEmail(curStu.name, curStu.email, payModal.title);
-        }
-        else {
-            if ((_b = curStu.enr) === null || _b === void 0 ? void 0 : _b.includes(cid)) {
-                tst("Já inscrito!");
-                setPayModal(null);
+        try {
+            const cat = await getCatalog().catch(()=>({plans:[],course_prices:[]}));
+            if (payModal.isPlan) {
+                // Subscription plan
+                const plan = (cat.plans||[]).find(p=>p.interval===(payModal.id==="monthly"?"month":"year")||p.name?.toLowerCase().includes(payModal.id));
+                if (plan?.stripe_price_id) {
+                    setPayStep(2);
+                    await paySubscription(plan.stripe_price_id);
+                } else { tst("Plano em configuração — contacta-nos.","info"); }
                 return;
             }
-            const us = students.map(s => s.id === curStu.id ? Object.assign(Object.assign({}, s), { enr: [...(s.enr || []), cid] }) : s);
-            await svS(us);
-            setCurStu(Object.assign(Object.assign({}, curStu), { enr: [...(curStu.enr || []), cid] }));
-            const uc = courses.map(c => c.id === cid ? Object.assign(Object.assign({}, c), { stu: (c.stu || 0) + 1 }) : c);
-            await svC(uc);
-            addNotif(`Inscrito em "${payModal.title}" com sucesso!`, "success");
-            sendEnrollEmail(curStu.name, curStu.email, payModal.title);
-        }
-        tst("Pagamento confirmado!");
-        setPayStep(3);
-        setTimeout(() => setPayModal(null), 2000);
+            // Individual course
+            const cp = (cat.course_prices||[]).find(p=>p.course_id===payModal.id);
+            if (cp?.stripe_price_id) {
+                setPayStep(2);
+                await payCourse(payModal.id, cp.stripe_price_id);
+            } else {
+                // Fallback: no Stripe price yet — admin grant
+                if (curStu.enr?.includes(payModal.id)) { tst("Já inscrito!"); setPayModal(null); return; }
+                const enrolled = [...(curStu.enr||[]), payModal.id];
+                setCurStu({...curStu, enr: enrolled});
+                await ef("auth-user",{action:"update_profile",enrolled_courses:enrolled},true).catch(()=>{});
+                addNotif(`Inscrito em "${payModal.title}" com sucesso!`,"success");
+                tst("Inscrição confirmada!"); setPayStep(3);
+                setTimeout(()=>setPayModal(null),2000);
+            }
+        } catch(e) { setPayErr("Erro de ligação. Tenta novamente."); }
     };
-    const compLesson = async (cid, lid) => {
-        var _a, _b;
-        if (!curStu)
-            return;
-        const prev = ((_a = curStu.done) === null || _a === void 0 ? void 0 : _a[cid]) || [];
-        if (prev.includes(lid))
-            return;
-        const nd = Object.assign(Object.assign({}, curStu.done), { [cid]: [...prev, lid] });
-        const up = Object.assign(Object.assign({}, curStu), { done: nd });
+        const compLesson = async (cid, lid) => {
+        if (!curStu) return;
+        const prev = (curStu.done?.[cid])||[];
+        if (prev.includes(lid)) return;
+        const nd = {...curStu.done, [cid]:[...prev,lid]};
+        const up = {...curStu, done:nd};
         setCurStu(up);
-        const us = students.map(s => s.id === curStu.id ? up : s);
-        await svS(us);
-        const c = courses.find(x => x.id === cid);
-        const ls = mkL(c === null || c === void 0 ? void 0 : c.md, cid);
-        if (((_b = nd[cid]) === null || _b === void 0 ? void 0 : _b.length) === ls.length) {
-            addNotif(`Parabéns! Concluíste "${c === null || c === void 0 ? void 0 : c.title}"! 🎓`, "success");
-            if (curStu)
-                sendCertEmail(curStu.name, curStu.email, c === null || c === void 0 ? void 0 : c.title);
+        // Persist progress to Supabase
+        ef("auth-user",{action:"update_profile",done:nd},true).catch(()=>{});
+        const c = courses.find(x=>x.id===cid);
+        const ls = mkL(c?.md, cid);
+        if (nd[cid]?.length===ls.length) {
+            addNotif(`Parabéns! Concluíste "${c?.title}"! 🎓`,"success");
+            if (curStu) sendCertEmail(curStu.name, curStu.email, c?.title);
             tst("Curso concluído! 🎓");
-        }
-        else
-            tst("Aula concluída!");
+        } else tst("Aula concluída!");
     };
     // Detect if message intends to create a course
     const isCourseIntent = (msg) => {
@@ -1562,7 +1669,16 @@ function App() {
                         React.createElement("div", { style: Object.assign(Object.assign({ width: 20, height: 20, borderRadius: "50%", background: "rgba(255,255,255,.3)" }, fc), { justifyContent: "center", fontSize: 9, fontWeight: 700 }) }, curStu.name.split(" ").map(n => n[0]).join("")),
                         curStu.name.split(" ")[0])) : React.createElement(React.Fragment, null,
                     React.createElement("button", { style: Object.assign(Object.assign({}, B(true, true)), { fontSize: 12, padding: "6px 14px" }), onClick: () => goStuLogin() }, "Entrar"),
-                    React.createElement("button", { style: Object.assign(Object.assign({}, B(false, true)), { fontSize: 12, padding: "6px 14px", color: "#86868B", borderColor: "#E5E5EA" }), onClick: () => setZone("login") }, "Gest\u00E3o"))))));
+                    React.createElement("div",{style:{display:"flex",gap:4,alignItems:"center"}},
+              [["pt","🇵🇹"],["es","🇪🇸"],["fr","🇫🇷"],["en","🇬🇧"]].map(([code,flag])=>
+                React.createElement("button",{key:code,
+                  style:{padding:"3px 7px",borderRadius:6,fontSize:11,border:"none",
+                    cursor:"pointer",background:code===_lang?"#0071E330":"transparent",
+                    fontFamily:F,opacity:code===_lang?1:0.6},
+                  onClick:()=>{setLang(code);tst(flag+" "+code.toUpperCase());}
+                },flag)
+              )
+            ), React.createElement("button", { style: Object.assign(Object.assign({}, B(false, true)), { fontSize: 12, padding: "6px 14px", color: "#86868B", borderColor: "#E5E5EA" }), onClick: () => setZone("login") }, "Gest\u00E3o"))))));
     const Card = ({ c, d = 0 }) => (React.createElement("div", { style: { background: "#fff", borderRadius: 18, overflow: "hidden", border: bd, cursor: "pointer", transition: "all .3s", animation: `fu .4s ease ${d}ms both` }, onClick: () => { setSelC(c); setView("detail"); }, onMouseEnter: e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 10px 32px rgba(0,0,0,.07)"; }, onMouseLeave: e => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "none"; } },
         React.createElement("div", { style: Object.assign(Object.assign({ height: 140, background: `linear-gradient(135deg,${c.color}22,${c.color}08)` }, fc), { justifyContent: "center", position: "relative" }) },
             React.createElement("span", { style: { fontSize: 48 } }, c.emoji),
@@ -1806,21 +1922,7 @@ function App() {
                                         React.createElement("span", { style: { fontSize: 13, fontWeight: em.read ? 400 : 600, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, em.subject)),
                                     React.createElement("div", { style: { fontSize: 11, color: "#AEAEB2" } }, em.time))))))),
                     React.createElement("div", { style: Object.assign(Object.assign({ width: 30, height: 30, borderRadius: "50%", background: G }, fc), { justifyContent: "center", color: "#fff", fontSize: 11, fontWeight: 600 }) }, (_a = curStu === null || curStu === void 0 ? void 0 : curStu.name) === null || _a === void 0 ? void 0 : _a.split(" ").map(n => n[0]).join("")),
-                    React.createElement("span", { style: { fontSize: 12, color: "#FF375F", cursor: "pointer", fontWeight: 500 }, onClick: () => {
-                            setCurStu(null);
-                            stopNarration();
-                            // Clear all student-specific cached data from localStorage
-                            try {
-                                ["nl7-n", "nl7-notes", "nl7-lv", "nl7-em", "nl7-bd", "nl7-session"].forEach(k => localStorage.removeItem(k));
-                            }
-                            catch (_a) { }
-                            setNotifs([]);
-                            setNotes({});
-                            setLastViewed({});
-                            setEmails([]);
-                            setBadges([]);
-                            setQuizResults([]);
-                            goPublic();
+                    React.createElement("span", { style: { fontSize: 12, color: "#FF375F", cursor: "pointer", fontWeight: 500 }, onClick: () => { authLogout().then(()=>{ stopNarration(); setCurStu(null); goPublic(); }); }
                         } }, "Sair"),
                     React.createElement("div", { style: Object.assign(Object.assign({ width: 34, height: 34, borderRadius: "50%", background: dm ? "#fff2" : "rgba(0,0,0,.04)" }, fc), { justifyContent: "center", cursor: "pointer", fontSize: 14 }), onClick: () => setDarkMode(!dm) }, dm ? "☀️" : "🌙")))));
     };
@@ -2239,7 +2341,26 @@ function App() {
                                     tst("Email enviado! A equipa contacta-te em 24h.");
                                     sendEmail(curStu.email, "📅 Agendamento de sessão 1-on-1", "Olá " + curStu.name.split(" ")[0] + ",\n\nRecebemos o teu pedido de sessão 1-on-1. Um formador vai contactar-te nas próximas 24 horas para agendar a sessão.\n\nEquipa NeuroLearn", "info");
                                 } }, "Agendar sess\u00E3o \u2192")))));
-            })()));
+            })(),
+          React.createElement("div", {style:{...crd,padding:20,border:bd,maxWidth:560,marginTop:24}},
+            React.createElement("h2",{style:{fontSize:17,fontWeight:600,marginBottom:16}},"Segurança"),
+            React.createElement("div",{style:{display:"flex",gap:10,flexWrap:"wrap"}},
+              React.createElement("button",{style:{...B(false,true),fontSize:12},onClick:async()=>{
+                const cp=prompt("Password actual:");const np=prompt("Nova password (mín. 6 chars):");
+                if(!cp||!np){return;}
+                const d=await authChangePassword(cp,np);
+                tst(d.ok?"Password alterada com sucesso!":("Erro: "+d.error));
+              }},"🔒 Alterar password"),
+              React.createElement("button",{style:{...B(false,true),fontSize:12},onClick:async()=>{
+                const ne=prompt("Novo email:");const pw=prompt("Confirma a tua password:");
+                if(!ne||!pw){return;}
+                const d=await authChangeEmail(ne,pw);
+                if(d.ok){tst("Email alterado!");const up={...curStu,email:ne};setCurStu(up);}
+                else tst("Erro: "+d.error);
+              }},"✉️ Alterar email"),
+              curStu?.has_subscription && React.createElement("button",{style:{...B(false,true),fontSize:12,color:"#0071E3"},onClick:openBillingPortal},"💳 Gerir subscrição")
+            )
+          ),));
     };
     const renderALogin = () => (React.createElement("div", { style: Object.assign(Object.assign({ minHeight: "100vh" }, fc), { justifyContent: "center", background: "#FBFBFD" }) },
         React.createElement("style", null, anim),
@@ -2259,21 +2380,17 @@ function App() {
                         setPin(np);
                         setPinErr(false);
                         if (np.length === 4)
-                            setTimeout(() => { if (np === PIN) {
-                                setZone("admin");
-                                setPin("");
-                                try {
-                                    localStorage.setItem("nl7-admin", "1");
-                                }
-                                catch (_a) { }
-                            }
-                            else {
-                                setPinErr(true);
-                                setPin("");
-                            } }, 200);
+                            setTimeout(async () => {
+                                const d = await authLogin("admin@neurolearn.pt", np).catch(()=>({ok:false}));
+                                if (d.ok && (d.user?.role==="super_admin"||d.user?.role==="admin")) {
+                                    const stuObj = await buildStuObj(d.user,[]);
+                                    setCurStu(stuObj);
+                                    setZone("admin"); setPin("");
+                                } else { setPinErr(true); setPin(""); }
+                            }, 200);
                     } }, style: { height: 48, borderRadius: 10, border: "none", background: n === null ? "transparent" : "#F5F5F7", fontSize: 17, fontWeight: 500, cursor: n === null ? "default" : "pointer", fontFamily: F, color: "#1D1D1F" } }, n === null ? "" : n)))),
                 React.createElement("button", { onClick: () => { goPublic(); setPin(""); }, style: Object.assign(Object.assign({}, B(false, true)), { width: "100%", textAlign: "center", marginTop: 14, color: "#86868B" }) }, "\u2190 Voltar")),
-            React.createElement("div", { style: { textAlign: "center", marginTop: 12, fontSize: 11, color: "#C7C7CC" } }, "PIN: 2026"))));
+            React.createElement("div", { style: { textAlign: "center", marginTop: 12, fontSize: 11, color: "#C7C7CC" } }, "Admin: usa email/password"))));
     const renderStuLogin = () => (React.createElement("div", { style: Object.assign(Object.assign({ minHeight: "100vh" }, fc), { justifyContent: "center", background: "#FBFBFD" }) },
         React.createElement("style", null, anim),
         React.createElement("div", { style: { width: 380, animation: "fu .5s ease both" } },
@@ -2888,11 +3005,54 @@ function App() {
                 React.createElement("strong", null, "vercel.com \u2192 neurolearn \u2192 Settings \u2192 Domains"),
                 " e adiciona o teu dom\u00EDnio. O Vercel d\u00E1 instru\u00E7\u00F5es passo a passo."),
             React.createElement("div", { style: { fontSize: 11, color: "#86868B", padding: "8px 12px", borderRadius: 8, background: "#fff", border: "1px dashed #D2D2D7" } }, "Custo estimado de dom\u00EDnio .pt: ~\u20AC8-15/ano")),
-        React.createElement("button", { style: Object.assign(Object.assign({}, B(false, true)), { marginTop: 20, color: "#FF375F", borderColor: "#FF375F33" }), onClick: async () => { await svC(DC); await svS(DS); await svN([]); await svNo({}); setNotifs([]); setNotes({}); setLessonContent({}); lcRef.current = {}; try {
-                await window.storage.set(LCK, "{}");
-                await window.storage.set(SSK, "null");
-            }
-            catch (_a) { } ; tst("Dados repostos!"); } }, "Repor dados de demonstra\u00E7\u00E3o"),
+        React.createElement("button", { style: Object.assign(Object.assign({}, B(false, true)), { marginTop: 20, color: "#FF375F", borderColor: "#FF375F33" }), onClick: async () => {
+            if (!confirm("Repor dados de demonstração? Isto remove todos os cursos e alunos demo.")) return;
+            await svC(DC); await svS(DS); await svN([]); await svNo({});
+            setNotifs([]); setNotes({}); setLessonContent({}); lcRef.current = {};
+            clearSession(); tst("Dados repostos!");
+        } }, "Repor dados de demonstra\u00E7\u00E3o"),
+        React.createElement("div", { style: Object.assign(Object.assign({}, crd), { padding: 20, border: bd, maxWidth: 480, marginTop: 16 }) },
+            React.createElement("div", { style: { fontSize: 14, fontWeight: 600, marginBottom: 8 } }, "💳 Stripe & Pagamentos"),
+            React.createElement("p", { style: { fontSize: 12, color: "#6E6E73", lineHeight: 1.6, marginBottom: 10 } },
+                "Sincroniza preços de cursos e planos de subscrição com o Stripe automaticamente."),
+            React.createElement("div", { style: { display: "flex", gap: 8, flexWrap: "wrap" } },
+                React.createElement("button", { style: Object.assign(Object.assign({}, B(true, true)), { fontSize: 12, background: "#30D158" }),
+                    onClick: async () => {
+                        if (!getToken()) { tst("Faz login como admin"); return; }
+                        tst("A sincronizar...");
+                        const d = await ef("catalog-manager", { action: "admin_sync_stripe" }, true).catch(e=>({ok:false,error:e.message}));
+                        if (d.ok) { const ok=(d.results||[]).filter(r=>r.status==="synced").length; tst(ok+" itens sincronizados com Stripe!"); }
+                        else tst("Erro: "+d.error);
+                    }
+                }, "⚡ Sincronizar Stripe"),
+                React.createElement("button", { style: Object.assign(Object.assign({}, B(false, true)), { fontSize: 12 }),
+                    onClick: async () => {
+                        if (!getToken()) { tst("Faz login como admin"); return; }
+                        const d = await ef("catalog-manager", { action: "admin_sync_status" }, true).catch(()=>({ok:false}));
+                        if (d.ok) {
+                            const synced=(d.course_prices||[]).filter(p=>p.stripe_price_id).length;
+                            const total=(d.course_prices||[]).length;
+                            alert("Estado Stripe:
+
+Cursos sincronizados: "+synced+"/"+total+"
+Planos: "+(d.subscription_plans||[]).length+"
+Stripe configurado: "+(d.stripe_configured?"Sim ✅":"NÃO ❌ — adiciona STRIPE_SECRET_KEY nos Secrets do Supabase"));
+                        }
+                    }
+                }, "📊 Estado Stripe")
+            )
+        ),
+        React.createElement("div", { style: Object.assign(Object.assign({}, crd), { padding: 20, border: bd, maxWidth: 480, marginTop: 16 }) },
+            React.createElement("div", { style: { fontSize: 14, fontWeight: 600, marginBottom: 10 } }, "🌍 Idioma da plataforma"),
+            React.createElement("div", { style: { display: "flex", gap: 8, flexWrap: "wrap" } },
+                [["pt","🇵🇹 PT"],["es","🇪🇸 ES"],["fr","🇫🇷 FR"],["en","🇬🇧 EN"]].map(([code, label]) =>
+                    React.createElement("button", { key: code,
+                        style: Object.assign(Object.assign({}, B(code===_lang, true)), { fontSize: 12 }),
+                        onClick: () => { setLang(code); tst("Idioma: "+label); }
+                    }, label)
+                )
+            )
+        ),
         React.createElement("div", { style: Object.assign(Object.assign({}, crd), { padding: 20, border: bd, maxWidth: 480, marginTop: 20 }) },
             React.createElement("div", { style: { fontSize: 14, fontWeight: 600, marginBottom: 4 } }, "\uD83D\uDCCB Programas dos cursos"),
             React.createElement("p", { style: { fontSize: 12, color: "#86868B", lineHeight: 1.6, marginBottom: 12 } },
@@ -3233,6 +3393,7 @@ function App() {
         renderToast()));
 }
 ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App, null));
+
 
 </script>
 </body>
