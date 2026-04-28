@@ -395,7 +395,49 @@ const TESTIMONIALS = [
 
 
 
-function App() {
+const renderMarkdown = (md) => {
+      if (!md) return null;
+      const lines = md.split("\n");
+      const elements = [];
+      let listBuf = [];
+      const flushList = () => {
+        if (listBuf.length) {
+          elements.push(React.createElement("ul", { key: "ul" + elements.length, style: { paddingLeft: 24, marginBottom: 16 } },
+            listBuf.map((item, i) => React.createElement("li", { key: i, style: { marginBottom: 6, lineHeight: 1.6 } }, parseInline(item)))));
+          listBuf = [];
+        }
+      };
+      const parseInline = (text) => {
+        const parts = [];
+        let remaining = text;
+        let key = 0;
+        while (remaining.length) {
+          const boldMatch = remaining.match(/\*\*(.+?)\*\*/);
+          const linkMatch = remaining.match(/\[(.+?)\]\((.+?)\)/);
+          const next = [boldMatch, linkMatch].filter(Boolean).sort((a, b) => a.index - b.index)[0];
+          if (!next) { parts.push(remaining); break; }
+          if (next.index > 0) parts.push(remaining.slice(0, next.index));
+          if (next === boldMatch) {
+            parts.push(React.createElement("strong", { key: key++ }, next[1]));
+          } else {
+            parts.push(React.createElement("a", { key: key++, href: next[2], target: "_blank", rel: "noopener", style: { color: "#2563EB", textDecoration: "underline" } }, next[1]));
+          }
+          remaining = remaining.slice(next.index + next[0].length);
+        }
+        return parts;
+      };
+      lines.forEach((line, i) => {
+        if (line.match(/^- /)) { listBuf.push(line.slice(2)); return; }
+        flushList();
+        if (line.match(/^### /)) elements.push(React.createElement("h3", { key: i, style: { fontSize: 16, fontWeight: 700, marginTop: 24, marginBottom: 10, letterSpacing: "-0.01em" } }, line.slice(4)));
+        else if (line.match(/^## /)) elements.push(React.createElement("h2", { key: i, style: { fontSize: 20, fontWeight: 700, marginTop: 36, marginBottom: 14, letterSpacing: "-0.02em", color: "var(--ink)" } }, line.slice(3)));
+        else if (line.match(/^# /)) elements.push(React.createElement("h1", { key: i, style: { fontSize: 28, fontWeight: 700, marginBottom: 16 } }, line.slice(2)));
+        else if (line.trim()) elements.push(React.createElement("p", { key: i, style: { fontSize: 15, lineHeight: 1.75, marginBottom: 14, color: "var(--ink2)" } }, parseInline(line)));
+      });
+      flushList();
+      return elements;
+    };
+    function App() {
         // ─── New UI state (for moved components) ───────────────────
     const [navScrolled, setNavScrolled] = useState(false);
     const [profEditing, setProfEditing] = useState(null);
@@ -421,6 +463,8 @@ function App() {
     const [courses, setC] = useState(DC);
     const [courseTranslations, setCourseTranslations] = useState({});
     const [platformConfig, setPlatformConfig] = useState({});
+    const [legalPagesCache, setLegalPagesCache] = useState({});
+    const [activeLegalPage, setActiveLegalPage] = useState(null);
     const [cfgDraft, setCfgDraft] = useState({});
     const [cfgSaving, setCfgSaving] = useState(false);
     const [cfgMsg, setCfgMsg] = useState("");
@@ -512,7 +556,39 @@ function App() {
     lcRef.current = lessonContent;
     useEffect(() => { setMounted(true); ld(); ldTranslationsAndConfig(); }, []);
     useEffect(() => { setCfgDraft(platformConfig || {}); }, [platformConfig]);
+    const ldLegalPages = async () => {
+      try {
+        const { data: pages } = await window._SB.from("nl_legal_pages").select("page_slug, lang_code, title, content_md, last_updated_label").eq("is_active", true);
+        if (pages) {
+          const grouped = {};
+          pages.forEach(p => {
+            if (!grouped[p.page_slug]) grouped[p.page_slug] = {};
+            grouped[p.page_slug][p.lang_code] = p;
+          });
+          setLegalPagesCache(grouped);
+        }
+      } catch(e) { console.warn("legal pages load:", e); }
+    };
+    const renderTokens = (text) => {
+      if (!text) return "";
+      const cfg = platformConfig || {};
+      const v = (k, fallback) => (cfg[k] && cfg[k].value) || fallback || "";
+      return text
+        .replace(/\{\{COMPANY_NAME\}\}/g, v("company_name", "NeuroLearn"))
+        .replace(/\{\{VAT\}\}/g, v("vat_number", "—"))
+        .replace(/\{\{ADDRESS\}\}/g, v("company_address", "—"))
+        .replace(/\{\{COUNTRY\}\}/g, v("company_country", "PT"))
+        .replace(/\{\{COMPANY_EMAIL\}\}/g, v("company_email", "info@neurolearn.pt"))
+        .replace(/\{\{SUPPORT_EMAIL\}\}/g, v("support_email", "suporte@neurolearn.pt"))
+        .replace(/\{\{LEGAL_EMAIL\}\}/g, v("legal_email", "legal@neurolearn.pt"))
+        .replace(/\{\{REFUNDS_EMAIL\}\}/g, v("refunds_email", "reembolsos@neurolearn.pt"))
+        .replace(/\{\{DPO_EMAIL\}\}/g, v("gdpr_dpo_email", "privacidade@neurolearn.pt"))
+        .replace(/\{\{SITE_URL\}\}/g, v("site_url", "https://neurolearn.pt"))
+        .replace(/\{\{REFUND_DAYS\}\}/g, v("refund_window_days", "14"))
+        .replace(/\{\{LAST_UPDATED\}\}/g, new Date().toLocaleDateString(_lang || "pt"));
+    };
     const ldTranslationsAndConfig = async () => {
+      ldLegalPages();
       try {
         const { data: trans } = await window._SB.from("nl_course_translations").select("course_id, lang_code, title, subtitle, description, category, level, instructor, topics, modules").eq("published", true);
         if (trans) { const grouped = {}; trans.forEach(t => { if (!grouped[t.course_id]) grouped[t.course_id] = {}; grouped[t.course_id][t.lang_code] = t; }); setCourseTranslations(grouped); }
@@ -4245,11 +4321,11 @@ function App() {
     const renderToast = () => toast ? React.createElement("div", { style: { position: "fixed", bottom: 22, left: "50%", transform: "translateX(-50%)", padding: "10px 20px", borderRadius: 980, background: "#1D1D1F", color: "#fff", fontSize: 13, fontWeight: 500, zIndex: 999, animation: "fu .3s ease both", boxShadow: "0 6px 24px rgba(0,0,0,.15)", fontFamily: F } }, toast.m) : null;
     if (zone === "login")
         return (React.createElement(React.Fragment, null,
-            React.createElement(StuLogin, null),
+            StuLogin(),
             renderToast()));
     if (zone === "stuLogin")
         return (React.createElement(React.Fragment, null,
-            React.createElement(StuLogin, null),
+            StuLogin(),
             renderToast()));
     if (zone === "admin")
         return (React.createElement("div", { style: { fontFamily: F, color: "#1D1D1F", background: "#F5F5F7", minHeight: "100vh", opacity: mounted ? 1 : 0, transition: "opacity .4s" } },
