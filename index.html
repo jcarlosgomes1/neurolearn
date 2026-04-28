@@ -2910,10 +2910,12 @@ const renderMarkdown = (md) => {
     // ── FOOTER ───────────────────────────────────────────────────────────────
     const Foot = () => {
       const T = TL().footer;
+      const supportEmail = (platformConfig.support_email && platformConfig.support_email.value) || "suporte@neurolearn.pt";
+      const goRoute = (route) => { setView(route); window.scrollTo(0,0); };
       const colActions = [
-    [(v,i)=>setView(['courses','pricing','about','faq','blog'][i]||'home'),null,null,null,null],
-    [(v,i)=>{if(i===0)goStuLogin();else if(i===1)goStuLogin();else if(i===2){setZone('student');setSView('my');}else if(i===4)window.open('mailto:suporte@neurolearn.pt');},null,null,null,null],
-    [null,null,null,null,null],
+        [(v,i)=>goRoute(["courses","pricing","about-page","faq","home"][i]||"home"), (v,i)=>goRoute(["courses","pricing","about-page","faq","home"][i]||"home"), (v,i)=>goRoute(["courses","pricing","about-page","faq","home"][i]||"home"), (v,i)=>goRoute(["courses","pricing","about-page","faq","home"][i]||"home"), (v,i)=>goRoute(["courses","pricing","about-page","faq","home"][i]||"home")],
+        [(v,i)=>goStuLogin(), (v,i)=>goStuLogin(), (v,i)=>{ if(curStu){ setZone("student"); setSView("my"); } else goStuLogin(); }, (v,i)=>{ if(curStu){ setZone("student"); setSView("profile"); } else goStuLogin(); }, (v,i)=>window.open("mailto:" + supportEmail)],
+        [(v,i)=>goRoute("privacy"), (v,i)=>goRoute("terms"), (v,i)=>goRoute("refunds"), (v,i)=>goRoute("cookies"), (v,i)=>goRoute("legal-notice")],
       ];
   
       return React.createElement('footer',{style:{
@@ -2989,6 +2991,28 @@ const renderMarkdown = (md) => {
     };
 
     // ── LOGIN / REGISTER ─────────────────────────────────────────────────────
+    const LegalPage = ({ slug, fallbackTitle }) => {
+      const langKey = _lang || "pt";
+      const page = (legalPagesCache[slug] || {})[langKey] || (legalPagesCache[slug] || {}).pt || (legalPagesCache[slug] || {}).en;
+      const isLoaded = Object.keys(legalPagesCache).length > 0;
+      return React.createElement("div", { style: { background: "var(--surface)", minHeight: "calc(100vh - 60px)" } },
+        React.createElement("div", { style: { maxWidth: 760, margin: "0 auto", padding: "48px clamp(20px,5vw,32px) 80px" } },
+          React.createElement("button", {
+            onClick: () => { setView("home"); window.scrollTo(0,0); },
+            style: { background: "none", border: "1px solid var(--border)", color: "var(--ink3)", borderRadius: 8, padding: "6px 12px", fontSize: 13, cursor: "pointer", marginBottom: 24, fontFamily: "var(--font)" }
+          }, "← " + ({pt:"Início",es:"Inicio",fr:"Accueil",en:"Home"}[langKey] || "Home")),
+          !isLoaded ? React.createElement("div", { style: { padding: 40, textAlign: "center", color: "var(--ink4)" } }, "...") :
+          !page ? React.createElement("div", null,
+            React.createElement("h1", { style: { fontSize: 26, fontWeight: 700, marginBottom: 12 } }, fallbackTitle || slug),
+            React.createElement("p", { style: { color: "var(--ink3)" } }, ({pt:"Esta página ainda não foi configurada.",es:"Esta página aún no está configurada.",fr:"Cette page n'a pas encore été configurée.",en:"This page has not been configured yet."}[langKey] || "Not yet configured."))
+          ) : React.createElement("div", null,
+            React.createElement("h1", { style: { fontSize: "clamp(28px,4vw,40px)", fontWeight: 700, letterSpacing: "-0.03em", marginBottom: 8, color: "var(--ink)" } }, page.title),
+            page.last_updated_label && React.createElement("p", { style: { fontSize: 12, color: "var(--ink4)", marginBottom: 32 } }, ({pt:"Última atualização: ",es:"Última actualización: ",fr:"Dernière mise à jour: ",en:"Last updated: "}[langKey] || "") + page.last_updated_label),
+            React.createElement("div", { style: { color: "var(--ink2)" } }, renderMarkdown(renderTokens(page.content_md)))
+          )
+        )
+      );
+    };
     const StuLogin = () => {
       const T = TL().login;
       const showPass = loginShowPass;
@@ -4445,6 +4469,13 @@ const renderMarkdown = (md) => {
         view === "courses" && React.createElement(PubCourses, null),
         view === "pricing" && React.createElement(Pricing, null),
         view === "detail" && React.createElement(Detail, null),
+        view === "privacy" && React.createElement(LegalPage, { slug: "privacy", fallbackTitle: "Privacidade" }),
+        view === "terms" && React.createElement(LegalPage, { slug: "terms", fallbackTitle: "Termos" }),
+        view === "refunds" && React.createElement(LegalPage, { slug: "refunds", fallbackTitle: "Reembolsos" }),
+        view === "cookies" && React.createElement(LegalPage, { slug: "cookies", fallbackTitle: "Cookies" }),
+        view === "legal-notice" && React.createElement(LegalPage, { slug: "legal-notice", fallbackTitle: "Aviso Legal" }),
+        view === "faq" && React.createElement(LegalPage, { slug: "faq", fallbackTitle: "FAQ" }),
+        view === "about-page" && React.createElement(LegalPage, { slug: "about", fallbackTitle: "Sobre" }),
         view === "about" && React.createElement("div", { style: { background: "#FBFBFD" } },
             React.createElement("style", null, anim),
             React.createElement("div", { style: { background: "linear-gradient(135deg,#0071E308,#AF52DE06)", borderBottom: bd, padding: "72px clamp(16px,4vw,48px) 60px", textAlign: "center" } },
