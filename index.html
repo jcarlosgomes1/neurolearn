@@ -419,6 +419,12 @@ function App() {
     const [genProgress, setGenProgress] = useState("");
     const [sView, setSView] = useState("my");
     const [courses, setC] = useState(DC);
+    const [courseTranslations, setCourseTranslations] = useState({});
+    const [platformConfig, setPlatformConfig] = useState({});
+    const [cfgDraft, setCfgDraft] = useState({});
+    const [cfgSaving, setCfgSaving] = useState(false);
+    const [cfgMsg, setCfgMsg] = useState("");
+    const [cfgTranslating, setCfgTranslating] = useState(null);
     const [students, setS] = useState(DS);
     const [selC, setSelC] = useState(null);
     const [selStu, setSelStu] = useState(null);
@@ -504,7 +510,33 @@ function App() {
     notifsRef.current = notifs;
     const lcRef = useRef(lessonContent);
     lcRef.current = lessonContent;
-    useEffect(() => { setMounted(true); ld(); }, []);
+    useEffect(() => { setMounted(true); ld(); ldTranslationsAndConfig(); }, []);
+    useEffect(() => { setCfgDraft(platformConfig || {}); }, [platformConfig]);
+    const ldTranslationsAndConfig = async () => {
+      try {
+        const { data: trans } = await window._SB.from("nl_course_translations").select("course_id, lang_code, title, subtitle, description, category, level, instructor, topics, modules").eq("published", true);
+        if (trans) { const grouped = {}; trans.forEach(t => { if (!grouped[t.course_id]) grouped[t.course_id] = {}; grouped[t.course_id][t.lang_code] = t; }); setCourseTranslations(grouped); }
+      } catch(e) { console.warn("translations load:", e); }
+      try {
+        const { data: cfg } = await window._SB.from("nl_platform_config").select("key, value, description");
+        if (cfg) { const c = {}; cfg.forEach(row => { c[row.key] = { value: row.value, description: row.description }; }); setPlatformConfig(c); }
+      } catch(e) { console.warn("config load:", e); }
+    };
+    const localizedCourses = courses.map(c => {
+      const t = courseTranslations[c.id] && courseTranslations[c.id][_lang]; if (!t) return c;
+      const merged = Object.assign({}, c);
+      if (t.title) merged.title = t.title;
+      if (t.subtitle) merged.sub = t.subtitle;
+      if (t.description) merged.desc = t.description;
+      if (t.category) merged.cat = t.category;
+      if (t.level) merged.lv = t.level;
+      if (t.instructor) merged.inst = t.instructor;
+      if (t.topics && Array.isArray(t.topics) && t.topics.length) merged.topics = t.topics;
+      if (t.modules && Array.isArray(t.modules) && t.modules.length && c.md) {
+        merged.md = c.md.map((m, i) => { const tm = t.modules[i]; if (!tm) return m; return Object.assign({}, m, { title: tm.title || m.title, topics: (tm.topics && tm.topics.length) ? tm.topics : m.topics }); });
+      }
+      return merged;
+    });
     useEffect(() => { var _a; (_a = chatRef.current) === null || _a === void 0 ? void 0 : _a.scrollIntoView({ behavior: "smooth" }); }, [agMsg]);
     useEffect(() => { if (curStu)
         try {
@@ -1402,7 +1434,7 @@ function App() {
         setGeneratingId(null);
         await new Promise(r => setTimeout(r, 50));
     };
-    const pub = courses.filter(c => c.pub);
+    const pub = localizedCourses.filter(c => c.pub);
     const cats = ["Todos", ...new Set(pub.map(c => c.cat))];
     const filt = filter === "Todos" ? pub : pub.filter(c => c.cat === filter);
     const gP = (stu, cid) => {
@@ -2137,7 +2169,7 @@ function App() {
     // ── HOME PAGE ────────────────────────────────────────────────────────────
     const Home = () => {
       const T = TL();
-      const pub = courses.filter(c=>c.pub);
+      const pub = localizedCourses.filter(c=>c.pub);
       const COLORS = ['#2563EB','#7C3AED','#059669','#D97706','#DC2626','#0891B2'];
   
       return React.createElement(React.Fragment,null,
@@ -2573,7 +2605,7 @@ function App() {
     // ── MY COURSES (STUDENT) ─────────────────────────────────────────────────
     const MyCourses = () => {
       const T = TL().mycourses;
-      const enrCourses = courses.filter(c=>(curStu?.enr||[]).includes(c.id));
+      const enrCourses = localizedCourses.filter(c=>(curStu?.enr||[]).includes(c.id));
   
       const getDone = (cid) => {
     const ls = mkL((courses.find(c=>c.id===cid)||{}).md,cid);
@@ -3092,7 +3124,7 @@ function App() {
 
     const PubCourses = () => {
       const T = TL();
-      const pub = courses.filter(c=>c.pub);
+      const pub = localizedCourses.filter(c=>c.pub);
       return React.createElement("div",{style:{maxWidth:1200,margin:"0 auto",
     padding:"48px clamp(16px,4vw,48px) 80px"}},
     React.createElement("style",null,GLOBAL_CSS+anim),
@@ -3233,7 +3265,7 @@ function App() {
     };
 
     const Explore2 = () => {
-      const pub = courses.filter(c=>c.pub);
+      const pub = localizedCourses.filter(c=>c.pub);
       const T = TL();
       return React.createElement("div",{style:{maxWidth:1100,margin:"0 auto",
     padding:"40px clamp(16px,4vw,40px) 80px"}},
@@ -3377,7 +3409,7 @@ function App() {
         React.createElement("div", { style: { padding: "0 18px 16px", borderBottom: "0.5px solid rgba(0,0,0,.06)", marginBottom: 4 } },
             React.createElement("div", { style: { fontSize: 16, fontWeight: 600, background: G, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" } }, "NeuroLearn"),
             React.createElement("div", { style: { fontSize: 9, fontWeight: 600, color: "#86868B", textTransform: "uppercase", letterSpacing: ".08em", marginTop: 2 } }, "Gest\u00E3o")),
-        [["dashboard", "▣", "Dashboard"], ["courses", "◎", t("stats.courses","ui")||"Cursos"], ["students", "◉", t("stats.students","ui")||"Alunos"], ["analytics", "◈", "Analytics"], ["evals", "📋", "Avaliações"], ["adminNotifs", "🔔", "Notificações"], ["agent", "✦", "AI Agent"], ["settings", "⚙", "Definições"]].map(([k, ic, l]) => {
+        [["dashboard", "▣", "Dashboard"], ["courses", "◎", t("stats.courses","ui")||"Cursos"], ["students", "◉", t("stats.students","ui")||"Alunos"], ["analytics", "◈", "Analytics"], ["evals", "📋", "Avaliações"], ["adminNotifs", "🔔", "Notificações"], ["agent", "✦", "AI Agent"], ["config", "🏢", "Empresa"], ["settings", "⚙", "Definições"]].map(([k, ic, l]) => {
             const isNotifs = k === "adminNotifs";
             const unreadCount = isNotifs ? adminNotifs.filter(n => !n.read).length : 0;
             return (React.createElement("div", { key: k, style: Object.assign(Object.assign({}, fc), { gap: 8, padding: "9px 18px", fontSize: 13, fontWeight: aView === k ? 600 : 400, color: aView === k ? "#0071E3" : "#6E6E73", cursor: "pointer", background: aView === k ? "#0071E310" : "transparent", borderRight: aView === k ? "3px solid #0071E3" : "3px solid transparent" }), onClick: () => setAView(k) },
@@ -3938,6 +3970,114 @@ function App() {
                         React.createElement("button", { style: Object.assign(Object.assign({}, B(false, true)), { fontSize: 10, padding: "2px 8px", marginLeft: 4 }), onClick: () => validateQuizResult(r.id, null, "") }, "Rever")))));
             })));
     };
+    const AConfig = () => {
+        const cfg = cfgDraft, setCfg = setCfgDraft, saving = cfgSaving, setSaving = setCfgSaving;
+        const msg = cfgMsg, setMsg = setCfgMsg, translating = cfgTranslating, setTranslating = setCfgTranslating;
+        const getVal = (k) => (cfg[k] && cfg[k].value) || "";
+        const setVal = (k, v) => setCfg(Object.assign({}, cfg, { [k]: Object.assign({}, cfg[k] || {}, { value: v }) }));
+        const saveField = async (key) => {
+            setSaving(true); setMsg("");
+            try {
+                const { error } = await window._SB.from("nl_platform_config").upsert({ key, value: getVal(key), updated_at: new Date().toISOString() }, { onConflict: "key" });
+                if (error) throw error;
+                setPlatformConfig(Object.assign({}, platformConfig, { [key]: Object.assign({}, platformConfig[key] || {}, { value: getVal(key) }) }));
+                setMsg("\u2705 " + key + " guardado"); setTimeout(() => setMsg(""), 2500);
+            } catch (e) { setMsg("\u274C " + (e.message || "Erro")); }
+            setSaving(false);
+        };
+        const saveAll = async () => {
+            setSaving(true); setMsg("");
+            try {
+                const rows = Object.keys(cfg).map(k => ({ key: k, value: getVal(k), updated_at: new Date().toISOString() }));
+                const { error } = await window._SB.from("nl_platform_config").upsert(rows, { onConflict: "key" });
+                if (error) throw error;
+                setPlatformConfig(cfg); setMsg("\u2705 Todas as defini\u00E7\u00F5es guardadas"); setTimeout(() => setMsg(""), 3000);
+            } catch (e) { setMsg("\u274C " + (e.message || "Erro")); }
+            setSaving(false);
+        };
+        const translateCourse = async (courseId) => {
+            setTranslating(courseId); setMsg("");
+            try {
+                const course = courses.find(c => c.id === courseId);
+                if (!course) throw new Error("Curso n\u00E3o encontrado");
+                const resp = await fetch("https://obpezocujzdaznrdgwoo.supabase.co/functions/v1/translate-course", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ course, targetLangs: ["es", "fr", "en"] }) });
+                const data = await resp.json();
+                if (!data.ok) throw new Error(data.error || "Erro");
+                setMsg("\u2705 Curso traduzido para ES/FR/EN"); await ldTranslationsAndConfig();
+            } catch (e) { setMsg("\u274C " + e.message); }
+            setTranslating(null); setTimeout(() => setMsg(""), 4000);
+        };
+        const sections = [
+            { title: "\uD83C\uDFE2 Dados da Empresa", desc: "Informa\u00E7\u00E3o em facturas, contratos e comunica\u00E7\u00F5es.", fields: [
+                { key: "company_name", label: "Nome da empresa", placeholder: "NeuroLearn, Lda." },
+                { key: "vat_number", label: "NIF / NIPC", placeholder: "PT123456789" },
+                { key: "company_country", label: "Pa\u00EDs", placeholder: "PT" },
+                { key: "company_address", label: "Morada fiscal", placeholder: "Rua, n\u00BA, c\u00F3digo postal, cidade, pa\u00EDs", textarea: true },
+                { key: "company_registration", label: "Registo comercial", placeholder: "Conservat\u00F3ria do Registo Comercial" }
+            ] },
+            { title: "\uD83D\uDCE7 Contactos", desc: "Emails em comunica\u00E7\u00F5es autom\u00E1ticas.", fields: [
+                { key: "company_email", label: "Email geral", placeholder: "info@neurolearn.pt" },
+                { key: "support_email", label: "Suporte", placeholder: "suporte@neurolearn.pt" },
+                { key: "legal_email", label: "Legal", placeholder: "legal@neurolearn.pt" },
+                { key: "refunds_email", label: "Reembolsos", placeholder: "reembolsos@neurolearn.pt" },
+                { key: "gdpr_dpo_email", label: "DPO (RGPD)", placeholder: "privacidade@neurolearn.pt" }
+            ] },
+            { title: "\uD83D\uDCB6 Comercial", desc: "Pre\u00E7os e pagamentos.", fields: [
+                { key: "default_currency", label: "Moeda padr\u00E3o", placeholder: "eur" },
+                { key: "supported_currencies", label: "Moedas suportadas (CSV)", placeholder: "eur,usd,gbp,brl" },
+                { key: "refund_window_days", label: "Janela de reembolso (dias)", placeholder: "14" }
+            ] },
+            { title: "\uD83C\uDF10 Site & Modo", desc: "Configura\u00E7\u00F5es gerais.", fields: [
+                { key: "site_url", label: "URL do site", placeholder: "https://neurolearn.pt" },
+                { key: "cookie_banner_enabled", label: "Banner de cookies (true/false)", placeholder: "true" },
+                { key: "maintenance_mode", label: "Modo manuten\u00E7\u00E3o (true/false)", placeholder: "false" }
+            ] }
+        ];
+        return React.createElement("div", { style: { maxWidth: 900 } },
+            React.createElement("style", null, anim),
+            React.createElement("div", { style: { marginBottom: 24 } },
+                React.createElement("h1", { style: { fontSize: 26, fontWeight: 700, letterSpacing: "-0.03em", marginBottom: 6 } }, "Empresa"),
+                React.createElement("p", { style: { fontSize: 14, color: "#6E6E73" } }, "Dados fiscais, legais e de contacto. Altera\u00E7\u00F5es aplicadas em toda a plataforma.")
+            ),
+            msg && React.createElement("div", { style: { padding: "10px 14px", borderRadius: 10, marginBottom: 16, background: msg.startsWith("\u2705") ? "#16A34A10" : "#DC262610", color: msg.startsWith("\u2705") ? "#16A34A" : "#DC2626", border: "1px solid " + (msg.startsWith("\u2705") ? "#16A34A30" : "#DC262630"), fontSize: 13, fontWeight: 500 } }, msg),
+            sections.map((section, si) => React.createElement("div", { key: si, style: { background: "#fff", borderRadius: 14, border: "1px solid rgba(0,0,0,.08)", padding: 20, marginBottom: 16 } },
+                React.createElement("div", { style: { marginBottom: 16 } },
+                    React.createElement("h3", { style: { fontSize: 15, fontWeight: 700, marginBottom: 4 } }, section.title),
+                    React.createElement("p", { style: { fontSize: 12, color: "#86868B", margin: 0 } }, section.desc)
+                ),
+                React.createElement("div", { style: { display: "grid", gap: 12 } },
+                    section.fields.map(f => React.createElement("div", { key: f.key, style: { display: "flex", gap: 8, alignItems: "flex-start" } },
+                        React.createElement("div", { style: { flex: 1 } },
+                            React.createElement("label", { style: { fontSize: 12, fontWeight: 500, color: "#86868B", display: "block", marginBottom: 4 } }, f.label),
+                            f.textarea ? React.createElement("textarea", { value: getVal(f.key), onChange: e => setVal(f.key, e.target.value), placeholder: f.placeholder, rows: 2, style: { width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid #E5E5EA", fontSize: 13, fontFamily: F, outline: "none", boxSizing: "border-box", resize: "vertical" } }) : React.createElement("input", { value: getVal(f.key), onChange: e => setVal(f.key, e.target.value), placeholder: f.placeholder, style: { width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid #E5E5EA", fontSize: 13, fontFamily: F, outline: "none", boxSizing: "border-box" } })
+                        ),
+                        React.createElement("button", { onClick: () => saveField(f.key), disabled: saving, style: { marginTop: 19, padding: "8px 12px", borderRadius: 8, background: "#0071E3", color: "#fff", border: "none", fontSize: 11, fontWeight: 600, cursor: saving ? "wait" : "pointer", fontFamily: F, whiteSpace: "nowrap", flexShrink: 0 } }, saving ? "..." : "Guardar")
+                    ))
+                )
+            )),
+            React.createElement("div", { style: { background: "linear-gradient(135deg,#7C3AED08,#2563EB08)", borderRadius: 14, border: "1px solid #7C3AED30", padding: 20, marginTop: 24 } },
+                React.createElement("h3", { style: { fontSize: 15, fontWeight: 700, marginBottom: 4 } }, "\uD83C\uDF0D Tradu\u00E7\u00F5es de Cursos"),
+                React.createElement("p", { style: { fontSize: 12, color: "#6E6E73", marginBottom: 16 } }, "Gera tradu\u00E7\u00F5es ES/FR/EN para cursos. Usa Claude Haiku."),
+                React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 8 } },
+                    courses.map(c => {
+                        const langs = Object.keys(courseTranslations[c.id] || {});
+                        const missing = ["pt", "es", "fr", "en"].filter(l => !langs.includes(l));
+                        return React.createElement("div", { key: c.id, style: { display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", borderRadius: 10, background: "#fff", border: "1px solid rgba(0,0,0,.06)" } },
+                            React.createElement("span", { style: { fontSize: 20 } }, c.emoji),
+                            React.createElement("div", { style: { flex: 1, minWidth: 0 } },
+                                React.createElement("div", { style: { fontSize: 13, fontWeight: 600, marginBottom: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, c.title),
+                                React.createElement("div", { style: { fontSize: 11, color: "#86868B" } }, langs.length > 0 ? "\u2713 " + langs.join(", ").toUpperCase() + (missing.length ? " \u00B7 Falta: " + missing.join(",").toUpperCase() : "") : "Sem tradu\u00E7\u00F5es")
+                            ),
+                            React.createElement("button", { onClick: () => translateCourse(c.id), disabled: translating === c.id, style: { padding: "7px 14px", borderRadius: 8, background: translating === c.id ? "#86868B" : "#7C3AED", color: "#fff", border: "none", fontSize: 11, fontWeight: 600, cursor: translating === c.id ? "wait" : "pointer", fontFamily: F, whiteSpace: "nowrap" } }, translating === c.id ? "A traduzir..." : "\u2728 Traduzir")
+                        );
+                    })
+                )
+            ),
+            React.createElement("div", { style: { display: "flex", justifyContent: "flex-end", marginTop: 24, paddingTop: 20, borderTop: "1px solid rgba(0,0,0,.06)" } },
+                React.createElement("button", { onClick: saveAll, disabled: saving, style: { padding: "11px 24px", borderRadius: 10, background: saving ? "#86868B" : "#16A34A", color: "#fff", border: "none", fontSize: 13, fontWeight: 600, cursor: saving ? "wait" : "pointer", fontFamily: F } }, saving ? "A guardar..." : "\uD83D\uDCBE Guardar tudo")
+            )
+        );
+    };
     const ASettings = () => (React.createElement("div", null,
         React.createElement("style", null, anim),
         React.createElement("h1", { style: { fontSize: 26, fontWeight: 700, marginBottom: 24 } }, "Defini\u00E7\u00F5es"),
@@ -4126,7 +4266,7 @@ function App() {
                 aView === "analytics" && React.createElement(AAnalytics, null),
                 aView === "evals" && React.createElement(AEvals, null),
                 aView === "adminNotifs" && React.createElement(AAdminNotifs, null),
-                aView === "settings" && React.createElement(ASettings, null)),
+                aView === "config" && React.createElement(AConfig, null), aView === "settings" && React.createElement(ASettings, null)),
             renderDocViewer(),
             renderCoursePreview(),
             renderToast()));
