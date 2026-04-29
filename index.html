@@ -2955,10 +2955,10 @@ const renderMarkdown = (md) => {
             color:'rgba(255,255,255,.25)',marginBottom:14}},col.h),
           col.ls.map((l,li)=>React.createElement('div',{key:li,style:{marginBottom:9}},
             React.createElement('span',{
-              onClick:colActions[ci][0]?()=>colActions[ci][0](l,li):undefined,
-              style:{fontSize:13,cursor:colActions[ci][0]?'pointer':'default',
+              onClick:colActions[ci][li]?()=>colActions[ci][li](l,li):undefined,
+              style:{fontSize:13,cursor:colActions[ci][li]?'pointer':'default',
                 transition:'color .15s',lineHeight:1},
-              onMouseEnter:e=>{if(colActions[ci][0])e.target.style.color='#fff';},
+              onMouseEnter:e=>{if(colActions[ci][li])e.target.style.color='#fff';},
               onMouseLeave:e=>{e.target.style.color='';}},l)
           ))
         ))
