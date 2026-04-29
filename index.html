@@ -514,6 +514,13 @@ const renderMarkdown = (md) => {
     const [regMode, setRegMode] = useState(false);
     const [regName, setRegName] = useState("");
     const [resetMode, setResetMode] = useState(false);
+    const [resetEmailDraft, setResetEmailDraft] = useState("");
+    const [resetSubmitting, setResetSubmitting] = useState(false);
+    const [resetSent, setResetSent] = useState(false);
+    const [resetTokenFromURL, setResetTokenFromURL] = useState(null);
+    const [resetNewPass, setResetNewPass] = useState("");
+    const [resetNewPass2, setResetNewPass2] = useState("");
+    const [resetSuccess, setResetSuccess] = useState(false);
     const [cardName, setCardName] = useState("");
     const [cardNum, setCardNum] = useState("");
     const [cardExp, setCardExp] = useState("");
@@ -554,7 +561,7 @@ const renderMarkdown = (md) => {
     notifsRef.current = notifs;
     const lcRef = useRef(lessonContent);
     lcRef.current = lessonContent;
-    useEffect(() => { setMounted(true); ld(); ldTranslationsAndConfig(); }, []);
+    useEffect(() => { setMounted(true); ld(); ldTranslationsAndConfig(); try { const p = new URLSearchParams(window.location.search); const t = p.get("reset_token"); if (t) { setResetTokenFromURL(t); setZone("stuLogin"); } } catch(e) {} }, []);
     useEffect(() => { setCfgDraft(platformConfig || {}); }, [platformConfig]);
     const ldLegalPages = async () => {
       try {
@@ -3175,19 +3182,63 @@ const renderMarkdown = (md) => {
           )
         ),
     
-        resetMode && React.createElement('div',{style:{
-          padding:'14px 16px',borderRadius:'var(--r10)',
-          background:'#EFF6FF',border:'1px solid #BFDBFE',
-          fontSize:13,color:'#1D4ED8',lineHeight:1.65,marginBottom:20
-        }},
-          T.reset,
-          React.createElement('br',null),
-          React.createElement('strong',null,'suporte@neurolearn.pt'),
-          React.createElement('br',null),
-          React.createElement('button',{onClick:()=>setResetMode(false),
-            style:{background:'none',border:'none',cursor:'pointer',
-              fontSize:12,color:'var(--blue)',fontFamily:'var(--font)',
-              padding:'6px 0 0',textDecoration:'underline'}},T.back)
+        resetMode && !resetTokenFromURL && React.createElement('div',{style:{marginBottom:20}},
+          !resetSent ? React.createElement('div',null,
+            React.createElement('div',{style:{padding:'14px 16px',borderRadius:'var(--r10)',background:'#EFF6FF',border:'1px solid #BFDBFE',fontSize:13,color:'#1D4ED8',lineHeight:1.55,marginBottom:14}},
+              ({pt:'Indica o teu email e enviamos-te um link para repor a password.',es:'Indica tu email y te enviaremos un enlace para restablecer la contraseña.',fr:'Indique ton email et nous t\u0027enverrons un lien pour réinitialiser le mot de passe.',en:'Enter your email and we will send you a link to reset your password.'}[_lang]||'Enter email to reset password.')
+            ),
+            React.createElement('input',{
+              type:'email',value:resetEmailDraft,
+              onChange:e=>setResetEmailDraft(e.target.value),
+              placeholder:T.email,autoFocus:true,
+              style:{width:'100%',padding:'11px 14px',borderRadius:'var(--r10)',border:'1px solid var(--border)',fontSize:14,fontFamily:'var(--font)',outline:'none',boxSizing:'border-box',marginBottom:12}
+            }),
+            React.createElement(BtnP,{size:'lg',loading:resetSubmitting,style:{width:'100%',justifyContent:'center',borderRadius:'var(--r10)',marginBottom:10},
+              onClick:async()=>{
+                if (!resetEmailDraft.trim()) { setLErr(({pt:'Email obrigatório',es:'Email obligatorio',fr:'Email obligatoire',en:'Email required'}[_lang]||'Email required')); return; }
+                setResetSubmitting(true); setLErr('');
+                try {
+                  const r = await fetch('https://obpezocujzdaznrdgwoo.supabase.co/functions/v1/auth-user',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'request_password_reset',email:resetEmailDraft.trim(),lang:_lang})});
+                  const d = await r.json();
+                  if (d.ok) { setResetSent(true); }
+                  else { setLErr(d.error||'Erro'); }
+                } catch(e) { setLErr('Erro de conexão'); }
+                setResetSubmitting(false);
+              }
+            },({pt:'Enviar instruções',es:'Enviar instrucciones',fr:'Envoyer les instructions',en:'Send instructions'}[_lang]||'Send')),
+            React.createElement('button',{onClick:()=>{setResetMode(false);setLErr('');},style:{background:'none',border:'none',cursor:'pointer',fontSize:13,color:'var(--ink3)',fontFamily:'var(--font)',width:'100%',textAlign:'center',padding:'8px 0'}},T.back)
+          ) : React.createElement('div',{style:{padding:'18px 16px',borderRadius:'var(--r10)',background:'#ECFDF5',border:'1px solid #A7F3D0',color:'#065F46',textAlign:'center'}},
+            React.createElement('div',{style:{fontSize:32,marginBottom:8}},'✉️'),
+            React.createElement('div',{style:{fontSize:14,fontWeight:600,marginBottom:6}},({pt:'Email enviado',es:'Email enviado',fr:'Email envoyé',en:'Email sent'}[_lang]||'Sent')),
+            React.createElement('div',{style:{fontSize:13,lineHeight:1.5,marginBottom:14}},({pt:'Se o email existir na nossa base de dados, vais receber instruções em breve. Verifica o spam.',es:'Si el email existe en nuestra base de datos, recibirás instrucciones en breve. Verifica el spam.',fr:'Si l\u0027email existe dans notre base de données, vous recevrez des instructions sous peu. Vérifiez le spam.',en:'If the email exists in our database, you will receive instructions shortly. Check spam.'}[_lang]||'')),
+            React.createElement('button',{onClick:()=>{setResetMode(false);setResetSent(false);setResetEmailDraft('');setLErr('');},style:{background:'var(--blue)',color:'#fff',border:'none',cursor:'pointer',fontSize:13,fontWeight:600,padding:'10px 20px',borderRadius:'var(--r10)',fontFamily:'var(--font)'}},({pt:'Voltar ao login',es:'Volver al login',fr:'Retour à la connexion',en:'Back to login'}[_lang]||'Back'))
+          )
+        ),
+        resetTokenFromURL && React.createElement('div',{style:{marginBottom:20}},
+          !resetSuccess ? React.createElement('div',null,
+            React.createElement('div',{style:{padding:'14px 16px',borderRadius:'var(--r10)',background:'#EFF6FF',border:'1px solid #BFDBFE',fontSize:13,color:'#1D4ED8',lineHeight:1.55,marginBottom:14}},({pt:'Define a tua nova password.',es:'Define tu nueva contraseña.',fr:'Définis ton nouveau mot de passe.',en:'Set your new password.'}[_lang]||'Set new password.')),
+            React.createElement('input',{type:'password',value:resetNewPass,onChange:e=>setResetNewPass(e.target.value),placeholder:({pt:'Nova password',es:'Nueva contraseña',fr:'Nouveau mot de passe',en:'New password'}[_lang]||'New password'),style:{width:'100%',padding:'11px 14px',borderRadius:'var(--r10)',border:'1px solid var(--border)',fontSize:14,fontFamily:'var(--font)',outline:'none',boxSizing:'border-box',marginBottom:10}}),
+            React.createElement('input',{type:'password',value:resetNewPass2,onChange:e=>setResetNewPass2(e.target.value),placeholder:({pt:'Confirmar password',es:'Confirmar contraseña',fr:'Confirmer mot de passe',en:'Confirm password'}[_lang]||'Confirm'),style:{width:'100%',padding:'11px 14px',borderRadius:'var(--r10)',border:'1px solid var(--border)',fontSize:14,fontFamily:'var(--font)',outline:'none',boxSizing:'border-box',marginBottom:12}}),
+            React.createElement(BtnP,{size:'lg',loading:resetSubmitting,style:{width:'100%',justifyContent:'center',borderRadius:'var(--r10)'},
+              onClick:async()=>{
+                if (resetNewPass.length < 6) { setLErr(({pt:'Mínimo 6 caracteres',es:'Mínimo 6 caracteres',fr:'Minimum 6 caractères',en:'Minimum 6 characters'}[_lang]||'Min 6 chars')); return; }
+                if (resetNewPass !== resetNewPass2) { setLErr(({pt:'Passwords não coincidem',es:'Las contraseñas no coinciden',fr:'Les mots de passe ne correspondent pas',en:'Passwords do not match'}[_lang]||'Mismatch')); return; }
+                setResetSubmitting(true); setLErr('');
+                try {
+                  const r = await fetch('https://obpezocujzdaznrdgwoo.supabase.co/functions/v1/auth-user',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'reset_password',reset_token:resetTokenFromURL,new_password:resetNewPass})});
+                  const d = await r.json();
+                  if (d.ok) { setResetSuccess(true); try { window.history.replaceState({},'',window.location.pathname); } catch(e) {} }
+                  else { setLErr(d.error||'Erro'); }
+                } catch(e) { setLErr('Erro de conexão'); }
+                setResetSubmitting(false);
+              }
+            },({pt:'Definir nova password',es:'Establecer nueva contraseña',fr:'Définir le mot de passe',en:'Set new password'}[_lang]||'Set'))
+          ) : React.createElement('div',{style:{padding:'18px 16px',borderRadius:'var(--r10)',background:'#ECFDF5',border:'1px solid #A7F3D0',color:'#065F46',textAlign:'center'}},
+            React.createElement('div',{style:{fontSize:32,marginBottom:8}},'✓'),
+            React.createElement('div',{style:{fontSize:14,fontWeight:600,marginBottom:6}},({pt:'Password alterada',es:'Contraseña actualizada',fr:'Mot de passe modifié',en:'Password updated'}[_lang]||'Updated')),
+            React.createElement('div',{style:{fontSize:13,lineHeight:1.5,marginBottom:14}},({pt:'Já podes fazer login com a nova password.',es:'Ya puedes iniciar sesión.',fr:'Tu peux maintenant te connecter.',en:'You can now log in.'}[_lang]||'')),
+            React.createElement('button',{onClick:()=>{setResetTokenFromURL(null);setResetSuccess(false);setResetNewPass('');setResetNewPass2('');},style:{background:'var(--blue)',color:'#fff',border:'none',cursor:'pointer',fontSize:13,fontWeight:600,padding:'10px 20px',borderRadius:'var(--r10)',fontFamily:'var(--font)'}},({pt:'Iniciar sessão',es:'Iniciar sesión',fr:'Se connecter',en:'Sign in'}[_lang]||'Login'))
+          )
         ),
     
         lErr && React.createElement('div',{style:{
