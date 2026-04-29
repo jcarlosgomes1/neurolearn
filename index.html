@@ -561,7 +561,67 @@ const renderMarkdown = (md) => {
     notifsRef.current = notifs;
     const lcRef = useRef(lessonContent);
     lcRef.current = lessonContent;
-    useEffect(() => { setMounted(true); ld(); ldTranslationsAndConfig(); try { const p = new URLSearchParams(window.location.search); const t = p.get("reset_token"); if (t) { setResetTokenFromURL(t); setZone("stuLogin"); } } catch(e) {} }, []);
+    useEffect(() => { setMounted(true); ld(); ldTranslationsAndConfig();
+      try {
+        const p = new URLSearchParams(window.location.search);
+        const t = p.get("reset_token");
+        if (t) { setResetTokenFromURL(t); setZone("stuLogin"); }
+        // Initialize view from URL hash (e.g. #privacy, #courses)
+        const initHash = (window.location.hash || "").replace(/^#/, "");
+        const validViews = ["home","courses","pricing","detail","privacy","terms","refunds","cookies","legal-notice","faq","about-page"];
+        if (initHash && validViews.includes(initHash)) {
+          setView(initHash);
+          setZone("public");
+        }
+      } catch(e) {}
+      // Listen for browser back/forward
+      const onPop = (e) => {
+        try {
+          const s = e.state || {};
+          if (s.zone) setZone(s.zone);
+          if (s.view !== undefined) setView(s.view || "home");
+          if (s.aView) setAView(s.aView);
+          if (s.sView) setSView(s.sView);
+          // If no state, derive from hash
+          if (!s.zone && !s.view) {
+            const h = (window.location.hash || "").replace(/^#/, "");
+            const validViews = ["home","courses","pricing","detail","privacy","terms","refunds","cookies","legal-notice","faq","about-page"];
+            if (validViews.includes(h)) { setView(h); setZone("public"); }
+            else { setView("home"); setZone("public"); }
+          }
+        } catch(err) {}
+      };
+      window.addEventListener("popstate", onPop);
+      return () => window.removeEventListener("popstate", onPop);
+    }, []);
+    // Sync URL with view/zone changes (push to history so back button works)
+    useEffect(() => {
+      try {
+        if (zone === "public") {
+          const newHash = view && view !== "home" ? "#" + view : "";
+          const newURL = window.location.pathname + window.location.search + newHash;
+          // Only push if hash actually changed — avoids polluting history on initial render
+          if (newHash !== window.location.hash) {
+            window.history.pushState({ zone, view, aView, sView }, "", newURL);
+          }
+        } else if (zone === "stuLogin") {
+          const newURL = window.location.pathname + window.location.search + "#login";
+          if (window.location.hash !== "#login") {
+            window.history.pushState({ zone, view, aView, sView }, "", newURL);
+          }
+        } else if (zone === "student") {
+          const target = sView ? "#student-" + sView : "#student";
+          if (window.location.hash !== target) {
+            window.history.pushState({ zone, view, aView, sView }, "", window.location.pathname + window.location.search + target);
+          }
+        } else if (zone === "admin") {
+          const target = aView ? "#admin-" + aView : "#admin";
+          if (window.location.hash !== target) {
+            window.history.pushState({ zone, view, aView, sView }, "", window.location.pathname + window.location.search + target);
+          }
+        }
+      } catch(e) {}
+    }, [view, zone, aView, sView]);
     useEffect(() => { setCfgDraft(platformConfig || {}); }, [platformConfig]);
     const ldLegalPages = async () => {
       try {
