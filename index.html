@@ -3509,7 +3509,7 @@ const renderMarkdown = (md) => {
         React.createElement("div", { style: { padding: "0 18px 16px", borderBottom: "0.5px solid rgba(0,0,0,.06)", marginBottom: 4 } },
             React.createElement("div", { style: { fontSize: 16, fontWeight: 600, background: G, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" } }, "NeuroLearn"),
             React.createElement("div", { style: { fontSize: 9, fontWeight: 600, color: "#86868B", textTransform: "uppercase", letterSpacing: ".08em", marginTop: 2 } }, "Gest\u00E3o")),
-        [["dashboard", "▣", "Dashboard"], ["courses", "◎", t("stats.courses","ui")||"Cursos"], ["students", "◉", t("stats.students","ui")||"Alunos"], ["analytics", "◈", "Analytics"], ["evals", "📋", "Avaliações"], ["adminNotifs", "🔔", "Notificações"], ["agent", "✦", "AI Agent"], ["config", "🏢", "Empresa"], ["settings", "⚙", "Definições"]].map(([k, ic, l]) => {
+        [["dashboard", "▣", "Dashboard"], ["courses", "◎", t("stats.courses","ui")||"Cursos"], ["students", "◉", t("stats.students","ui")||"Alunos"], ["analytics", "◈", "Analytics"], ["evals", "📋", "Avaliações"], ["adminNotifs", "🔔", "Notificações"], ["agent", "✦", "AI Agent"], ["instructors", "👨‍🏫", "Instrutores"], ["transactions", "💰", "Transacções"], ["legal_pages", "📜", "Páginas Legais"], ["config", "🏢", "Empresa"], ["settings", "⚙", "Definições"]].map(([k, ic, l]) => {
             const isNotifs = k === "adminNotifs";
             const unreadCount = isNotifs ? adminNotifs.filter(n => !n.read).length : 0;
             return (React.createElement("div", { key: k, style: Object.assign(Object.assign({}, fc), { gap: 8, padding: "9px 18px", fontSize: 13, fontWeight: aView === k ? 600 : 400, color: aView === k ? "#0071E3" : "#6E6E73", cursor: "pointer", background: aView === k ? "#0071E310" : "transparent", borderRight: aView === k ? "3px solid #0071E3" : "3px solid transparent" }), onClick: () => setAView(k) },
@@ -4070,6 +4070,163 @@ const renderMarkdown = (md) => {
                         React.createElement("button", { style: Object.assign(Object.assign({}, B(false, true)), { fontSize: 10, padding: "2px 8px", marginLeft: 4 }), onClick: () => validateQuizResult(r.id, null, "") }, "Rever")))));
             })));
     };
+    const AInstructors = () => {
+        const [list, setList] = useState([]);
+        const [loading, setLoading] = useState(true);
+        const [editing, setEditing] = useState(null);
+        useEffect(() => { (async () => {
+          try {
+            const { data } = await window._SB.from("nl_instructors").select("*").order("created_at", { ascending: false });
+            setList(data || []);
+          } catch(e) { console.warn(e); }
+          setLoading(false);
+        })(); }, []);
+        const updateStatus = async (id, status) => {
+          await window._SB.from("nl_instructors").update({ status, approved_at: status === "approved" ? new Date().toISOString() : null }).eq("id", id);
+          setList(prev => prev.map(i => i.id === id ? { ...i, status } : i));
+        };
+        return React.createElement("div", { style: { maxWidth: 1100 } },
+          React.createElement("h1", { style: { fontSize: 26, fontWeight: 700, marginBottom: 8 } }, "Instrutores"),
+          React.createElement("p", { style: { fontSize: 14, color: "#6E6E73", marginBottom: 24 } }, "Geriu instrutores, partilhas de receita e estados de aprovação."),
+          loading ? React.createElement("div", { style: { padding: 40, textAlign: "center", color: "#86868B" } }, "A carregar...") :
+          list.length === 0 ? React.createElement("div", { style: { padding: 40, textAlign: "center", background: "#F5F5F7", borderRadius: 14, color: "#86868B" } }, "Sem instrutores registados ainda. Crie um utilizador com role=\"instructor\" para começar.") :
+          React.createElement("div", { style: { background: "#fff", borderRadius: 14, border: "1px solid rgba(0,0,0,.08)", overflow: "hidden" } },
+            React.createElement("div", { style: { display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr 120px", gap: 12, padding: "12px 18px", background: "#FAFAFA", borderBottom: "1px solid rgba(0,0,0,.06)", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".05em", color: "#86868B" } },
+              React.createElement("div", null, "Instrutor"),
+              React.createElement("div", null, "Estado"),
+              React.createElement("div", null, "Receita"),
+              React.createElement("div", null, "% Share"),
+              React.createElement("div", null, "Alunos"),
+              React.createElement("div", null, "Acções")
+            ),
+            list.map(i => React.createElement("div", { key: i.id, style: { display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr 120px", gap: 12, padding: "14px 18px", borderBottom: "1px solid rgba(0,0,0,.04)", alignItems: "center", fontSize: 13 } },
+              React.createElement("div", null,
+                React.createElement("div", { style: { fontWeight: 600 } }, i.display_name),
+                React.createElement("div", { style: { fontSize: 11, color: "#86868B" } }, i.id.slice(0, 8))
+              ),
+              React.createElement("span", { style: { fontSize: 11, fontWeight: 600, padding: "3px 8px", borderRadius: 6, background: i.status === "approved" ? "#16A34A20" : i.status === "pending" ? "#D9770620" : "#DC262620", color: i.status === "approved" ? "#16A34A" : i.status === "pending" ? "#D97706" : "#DC2626", display: "inline-block" } }, i.status),
+              React.createElement("div", { style: { fontWeight: 600 } }, "€" + ((i.total_revenue_cents || 0) / 100).toFixed(2)),
+              React.createElement("div", null, (i.revenue_share_pct || 50) + "%"),
+              React.createElement("div", null, i.total_students || 0),
+              React.createElement("div", { style: { display: "flex", gap: 6 } },
+                i.status !== "approved" && React.createElement("button", { onClick: () => updateStatus(i.id, "approved"), style: { padding: "5px 10px", borderRadius: 6, background: "#16A34A", color: "#fff", border: "none", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: F } }, "✓"),
+                i.status !== "suspended" && React.createElement("button", { onClick: () => updateStatus(i.id, "suspended"), style: { padding: "5px 10px", borderRadius: 6, background: "#DC2626", color: "#fff", border: "none", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: F } }, "✕")
+              )
+            ))
+          )
+        );
+    };
+    const ATransactions = () => {
+        const [list, setList] = useState([]);
+        const [loading, setLoading] = useState(true);
+        const [stats, setStats] = useState({ total: 0, count: 0, refunded: 0 });
+        useEffect(() => { (async () => {
+          try {
+            const { data } = await window._SB.from("nl_transactions").select("*").order("created_at", { ascending: false }).limit(100);
+            setList(data || []);
+            const total = (data || []).filter(t => t.status === "succeeded").reduce((s, t) => s + (t.amount_cents || 0), 0);
+            const refunded = (data || []).filter(t => t.status === "refunded").reduce((s, t) => s + (t.amount_cents || 0), 0);
+            setStats({ total, count: (data || []).length, refunded });
+          } catch(e) { console.warn(e); }
+          setLoading(false);
+        })(); }, []);
+        return React.createElement("div", { style: { maxWidth: 1100 } },
+          React.createElement("h1", { style: { fontSize: 26, fontWeight: 700, marginBottom: 8 } }, "Transacções"),
+          React.createElement("p", { style: { fontSize: 14, color: "#6E6E73", marginBottom: 24 } }, "Histórico de pagamentos. Sincronizado pelo webhook do Stripe."),
+          React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 16, marginBottom: 24 } },
+            React.createElement("div", { style: { background: "#fff", borderRadius: 14, padding: 18, border: "1px solid rgba(0,0,0,.08)" } },
+              React.createElement("div", { style: { fontSize: 12, color: "#86868B", marginBottom: 4 } }, "Receita Total"),
+              React.createElement("div", { style: { fontSize: 24, fontWeight: 700, letterSpacing: "-0.03em" } }, "€" + (stats.total / 100).toFixed(2))
+            ),
+            React.createElement("div", { style: { background: "#fff", borderRadius: 14, padding: 18, border: "1px solid rgba(0,0,0,.08)" } },
+              React.createElement("div", { style: { fontSize: 12, color: "#86868B", marginBottom: 4 } }, "Transacções"),
+              React.createElement("div", { style: { fontSize: 24, fontWeight: 700, letterSpacing: "-0.03em" } }, stats.count)
+            ),
+            React.createElement("div", { style: { background: "#fff", borderRadius: 14, padding: 18, border: "1px solid rgba(0,0,0,.08)" } },
+              React.createElement("div", { style: { fontSize: 12, color: "#86868B", marginBottom: 4 } }, "Reembolsos"),
+              React.createElement("div", { style: { fontSize: 24, fontWeight: 700, letterSpacing: "-0.03em", color: "#DC2626" } }, "€" + (stats.refunded / 100).toFixed(2))
+            )
+          ),
+          loading ? React.createElement("div", { style: { padding: 40, textAlign: "center", color: "#86868B" } }, "A carregar...") :
+          list.length === 0 ? React.createElement("div", { style: { padding: 40, textAlign: "center", background: "#F5F5F7", borderRadius: 14, color: "#86868B" } }, "Sem transacções ainda. Quando o Stripe webhook estiver activo, aparecerão aqui.") :
+          React.createElement("div", { style: { background: "#fff", borderRadius: 14, border: "1px solid rgba(0,0,0,.08)", overflow: "hidden" } },
+            React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1.5fr 2fr 1fr 1fr 1fr", gap: 12, padding: "12px 18px", background: "#FAFAFA", borderBottom: "1px solid rgba(0,0,0,.06)", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".05em", color: "#86868B" } },
+              React.createElement("div", null, "Data"),
+              React.createElement("div", null, "Cliente"),
+              React.createElement("div", null, "Curso"),
+              React.createElement("div", null, "Valor"),
+              React.createElement("div", null, "Estado")
+            ),
+            list.map(t => React.createElement("div", { key: t.id, style: { display: "grid", gridTemplateColumns: "1.5fr 2fr 1fr 1fr 1fr", gap: 12, padding: "12px 18px", borderBottom: "1px solid rgba(0,0,0,.04)", alignItems: "center", fontSize: 12 } },
+              React.createElement("div", null, new Date(t.created_at).toLocaleDateString()),
+              React.createElement("div", { style: { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, t.user_email || t.user_id?.slice(0, 8) || "—"),
+              React.createElement("div", null, t.course_id || t.subscription_plan || "—"),
+              React.createElement("div", { style: { fontWeight: 600 } }, "€" + ((t.amount_cents || 0) / 100).toFixed(2)),
+              React.createElement("span", { style: { fontSize: 11, fontWeight: 600, padding: "3px 8px", borderRadius: 6, background: t.status === "succeeded" ? "#16A34A20" : t.status === "refunded" ? "#DC262620" : "#86868B20", color: t.status === "succeeded" ? "#16A34A" : t.status === "refunded" ? "#DC2626" : "#86868B", display: "inline-block" } }, t.status)
+            ))
+          )
+        );
+    };
+    const ALegalPages = () => {
+        const [list, setList] = useState([]);
+        const [loading, setLoading] = useState(true);
+        const [editing, setEditing] = useState(null);
+        const [draftMd, setDraftMd] = useState("");
+        const [draftTitle, setDraftTitle] = useState("");
+        const [saving, setSaving] = useState(false);
+        const [msg, setMsg] = useState("");
+        const refresh = async () => {
+          setLoading(true);
+          const { data } = await window._SB.from("nl_legal_pages").select("*").order("page_slug").order("lang_code");
+          setList(data || []);
+          setLoading(false);
+        };
+        useEffect(() => { refresh(); }, []);
+        const startEdit = (p) => { setEditing(p); setDraftMd(p.content_md); setDraftTitle(p.title); setMsg(""); };
+        const save = async () => {
+          setSaving(true); setMsg("");
+          try {
+            const { error } = await window._SB.from("nl_legal_pages").update({ title: draftTitle, content_md: draftMd, updated_at: new Date().toISOString() }).eq("id", editing.id);
+            if (error) throw error;
+            setMsg("✅ Guardado");
+            await refresh();
+            await ldLegalPages();
+            setTimeout(() => { setEditing(null); setMsg(""); }, 1000);
+          } catch(e) { setMsg("❌ " + e.message); }
+          setSaving(false);
+        };
+        if (editing) {
+          return React.createElement("div", { style: { maxWidth: 900 } },
+            React.createElement("button", { onClick: () => setEditing(null), style: { background: "none", border: "1px solid #E5E5EA", padding: "6px 12px", borderRadius: 8, cursor: "pointer", marginBottom: 16, fontSize: 12, fontFamily: F } }, "← Voltar"),
+            React.createElement("h1", { style: { fontSize: 22, fontWeight: 700, marginBottom: 4 } }, "Editar: " + editing.page_slug + " · " + editing.lang_code.toUpperCase()),
+            React.createElement("p", { style: { fontSize: 12, color: "#86868B", marginBottom: 16 } }, "Markdown · Tokens disponíveis: {{COMPANY_NAME}}, {{VAT}}, {{ADDRESS}}, {{COUNTRY}}, {{COMPANY_EMAIL}}, {{SUPPORT_EMAIL}}, {{LEGAL_EMAIL}}, {{REFUNDS_EMAIL}}, {{DPO_EMAIL}}, {{SITE_URL}}, {{REFUND_DAYS}}, {{LAST_UPDATED}}"),
+            React.createElement("input", { value: draftTitle, onChange: e => setDraftTitle(e.target.value), placeholder: "Título", style: { width: "100%", padding: "10px 14px", borderRadius: 8, border: "1px solid #E5E5EA", fontSize: 14, fontFamily: F, marginBottom: 12, boxSizing: "border-box" } }),
+            React.createElement("textarea", { value: draftMd, onChange: e => setDraftMd(e.target.value), rows: 24, style: { width: "100%", padding: "12px 14px", borderRadius: 8, border: "1px solid #E5E5EA", fontSize: 13, fontFamily: "monospace", lineHeight: 1.6, resize: "vertical", boxSizing: "border-box" } }),
+            msg && React.createElement("div", { style: { padding: "8px 12px", marginTop: 12, borderRadius: 8, background: msg.startsWith("✅") ? "#16A34A10" : "#DC262610", color: msg.startsWith("✅") ? "#16A34A" : "#DC2626", fontSize: 13 } }, msg),
+            React.createElement("div", { style: { marginTop: 16, display: "flex", gap: 8 } },
+              React.createElement("button", { onClick: save, disabled: saving, style: { padding: "10px 20px", borderRadius: 10, background: saving ? "#86868B" : "#16A34A", color: "#fff", border: "none", fontWeight: 600, cursor: saving ? "wait" : "pointer", fontFamily: F } }, saving ? "A guardar..." : "💾 Guardar"),
+              React.createElement("button", { onClick: () => setEditing(null), style: { padding: "10px 20px", borderRadius: 10, background: "#fff", color: "#1d1d1f", border: "1px solid #E5E5EA", fontWeight: 500, cursor: "pointer", fontFamily: F } }, "Cancelar")
+            )
+          );
+        }
+        const grouped = {};
+        list.forEach(p => { if (!grouped[p.page_slug]) grouped[p.page_slug] = []; grouped[p.page_slug].push(p); });
+        return React.createElement("div", { style: { maxWidth: 1100 } },
+          React.createElement("h1", { style: { fontSize: 26, fontWeight: 700, marginBottom: 8 } }, "Páginas Legais"),
+          React.createElement("p", { style: { fontSize: 14, color: "#6E6E73", marginBottom: 24 } }, "Edita páginas legais por slug e idioma. Os tokens de empresa são substituídos automaticamente em tempo de visualização."),
+          loading ? React.createElement("div", { style: { padding: 40, textAlign: "center" } }, "A carregar...") :
+          Object.keys(grouped).map(slug => React.createElement("div", { key: slug, style: { background: "#fff", borderRadius: 14, border: "1px solid rgba(0,0,0,.08)", padding: 18, marginBottom: 12 } },
+            React.createElement("h3", { style: { fontSize: 14, fontWeight: 700, marginBottom: 12, textTransform: "uppercase", letterSpacing: ".05em", color: "#1d1d1f" } }, slug),
+            React.createElement("div", { style: { display: "flex", gap: 8, flexWrap: "wrap" } },
+              grouped[slug].map(p => React.createElement("button", { key: p.id, onClick: () => startEdit(p), style: { padding: "8px 14px", borderRadius: 8, background: "#F5F5F7", border: "1px solid #E5E5EA", fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: F, display: "flex", alignItems: "center", gap: 6 } },
+                React.createElement("span", { style: { fontSize: 11, fontWeight: 700, color: "#86868B" } }, p.lang_code.toUpperCase()),
+                React.createElement("span", null, p.title),
+                React.createElement("span", { style: { color: "#0071E3" } }, "✎")
+              ))
+            )
+          ))
+        );
+    };
     const AConfig = () => {
         const cfg = cfgDraft, setCfg = setCfgDraft, saving = cfgSaving, setSaving = setCfgSaving;
         const msg = cfgMsg, setMsg = setCfgMsg, translating = cfgTranslating, setTranslating = setCfgTranslating;
@@ -4366,7 +4523,7 @@ const renderMarkdown = (md) => {
                 aView === "analytics" && React.createElement(AAnalytics, null),
                 aView === "evals" && React.createElement(AEvals, null),
                 aView === "adminNotifs" && React.createElement(AAdminNotifs, null),
-                aView === "config" && React.createElement(AConfig, null), aView === "settings" && React.createElement(ASettings, null)),
+                aView === "instructors" && React.createElement(AInstructors, null), aView === "transactions" && React.createElement(ATransactions, null), aView === "legal_pages" && React.createElement(ALegalPages, null), aView === "config" && React.createElement(AConfig, null), aView === "settings" && React.createElement(ASettings, null)),
             renderDocViewer(),
             renderCoursePreview(),
             renderToast()));
