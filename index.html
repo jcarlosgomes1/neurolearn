@@ -3816,7 +3816,7 @@ const renderMarkdown = (md) => {
         React.createElement("div", { style: { padding: "0 18px 16px", borderBottom: "0.5px solid rgba(0,0,0,.06)", marginBottom: 4 } },
             React.createElement("div", { style: { fontSize: 16, fontWeight: 600, background: G, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" } }, "NeuroLearn"),
             React.createElement("div", { style: { fontSize: 9, fontWeight: 600, color: "#86868B", textTransform: "uppercase", letterSpacing: ".08em", marginTop: 2 } }, "Gest\u00E3o")),
-        [["dashboard", "▣", "Dashboard"], ["courses", "◎", t("stats.courses","ui")||"Cursos"], ["students", "◉", t("stats.students","ui")||"Alunos"], ["analytics", "◈", "Analytics"], ["evals", "📋", "Avaliações"], ["adminNotifs", "🔔", "Notificações"], ["agent", "✦", "AI Agent"], ["instructors", "👨‍🏫", "Instrutores"], ["transactions", "💰", "Transacções"], ["legal_pages", "📜", "Páginas Legais"], ["config", "🏢", "Empresa"], ["settings", "⚙", "Definições"]].map(([k, ic, l]) => {
+        [["dashboard", "▣", "Dashboard"], ["courses", "◎", t("stats.courses","ui")||"Cursos"], ["students", "◉", t("stats.students","ui")||"Alunos"], ["analytics", "◈", "Analytics"], ["evals", "📋", "Avaliações"], ["adminNotifs", "🔔", "Notificações"], ["agent", "✦", "AI Agent"], ["applications", "📥", "Aplicações"], ["instructors", "👨‍🏫", "Instrutores"], ["transactions", "💰", "Transacções"], ["legal_pages", "📜", "Páginas Legais"], ["config", "🏢", "Empresa"], ["settings", "⚙", "Definições"]].map(([k, ic, l]) => {
             const isNotifs = k === "adminNotifs";
             const unreadCount = isNotifs ? adminNotifs.filter(n => !n.read).length : 0;
             return (React.createElement("div", { key: k, style: Object.assign(Object.assign({}, fc), { gap: 8, padding: "9px 18px", fontSize: 13, fontWeight: aView === k ? 600 : 400, color: aView === k ? "#0071E3" : "#6E6E73", cursor: "pointer", background: aView === k ? "#0071E310" : "transparent", borderRight: aView === k ? "3px solid #0071E3" : "3px solid transparent" }), onClick: () => setAView(k) },
@@ -4582,6 +4582,206 @@ const renderMarkdown = (md) => {
           )
         );
     };
+    const AApplications = () => {
+      const refresh = async () => {
+        setAdminAppsLoading(true);
+        try {
+          const { data } = await window._SB.from("nl_instructor_applications").select("*").order("applied_at", { ascending: false });
+          setAdminApps(data || []);
+        } catch(e) { console.warn(e); }
+        setAdminAppsLoading(false);
+      };
+      useEffect(() => { refresh(); }, []);
+      const filtered = adminAppFilter === "all" ? adminApps : adminApps.filter(a => a.status === adminAppFilter);
+      const counts = adminApps.reduce((acc, a) => { acc[a.status] = (acc[a.status] || 0) + 1; return acc; }, {});
+      const statusColor = (s) => ({
+        submitted: ["#2563EB", "#EFF6FF"], shortlisted: ["#16A34A", "#ECFDF5"],
+        screening_passed: ["#0891B2", "#ECFEFF"], under_review: ["#7C3AED", "#F3E8FF"],
+        interview_scheduled: ["#D97706", "#FFFBEB"], approved: ["#16A34A", "#ECFDF5"],
+        rejected: ["#DC2626", "#FEE2E2"], auto_rejected: ["#DC2626", "#FEE2E2"],
+        waitlisted: ["#86868B", "#F5F5F7"], withdrawn: ["#86868B", "#F5F5F7"]
+      }[s] || ["#86868B", "#F5F5F7"]);
+      const Pill = ({ status }) => { const [c, bg] = statusColor(status); return React.createElement("span", { style: { fontSize: 11, fontWeight: 600, padding: "3px 9px", borderRadius: 6, background: bg, color: c, display: "inline-block", textTransform: "uppercase", letterSpacing: ".03em" } }, status); };
+      const ScoreBar = ({ value, label }) => React.createElement("div", { style: { marginBottom: 8 } },
+        React.createElement("div", { style: { display: "flex", justifyContent: "space-between", fontSize: 11, marginBottom: 3 } },
+          React.createElement("span", { style: { color: "#86868B" } }, label),
+          React.createElement("span", { style: { fontWeight: 600 } }, (value || 0) + "/100")
+        ),
+        React.createElement("div", { style: { height: 5, background: "#F5F5F7", borderRadius: 3, overflow: "hidden" } },
+          React.createElement("div", { style: { height: "100%", width: (value || 0) + "%", background: value >= 80 ? "#16A34A" : value >= 60 ? "#D97706" : "#DC2626" } })
+        )
+      );
+      const callAction = async (action, payload) => {
+        try {
+          const session = window._SB && window._SB.auth ? (await window._SB.auth.getSession()).data.session : null;
+          const token = session?.access_token || (curStu && curStu.access_token) || "";
+          const r = await fetch("https://obpezocujzdaznrdgwoo.supabase.co/functions/v1/instructor-applications", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+            body: JSON.stringify(Object.assign({ action }, payload))
+          });
+          const d = await r.json();
+          if (!d.ok) alert("Erro: " + (d.error || "desconhecido"));
+          await refresh();
+          if (adminAppSelected) {
+            const fresh = (await window._SB.from("nl_instructor_applications").select("*").eq("id", adminAppSelected.id).single()).data;
+            if (fresh) setAdminAppSelected(fresh);
+          }
+          return d;
+        } catch(e) { alert("Erro de conexão: " + e.message); }
+      };
+      const approve = async (app) => {
+        const sharePct = prompt("Revenue share % para este instrutor (default 50):", "50");
+        if (sharePct === null) return;
+        const pct = parseInt(sharePct, 10);
+        if (isNaN(pct) || pct < 0 || pct > 100) { alert("Valor inválido"); return; }
+        await callAction("approve", { application_id: app.id, revenue_share_pct: pct });
+      };
+      const reject = async (app) => {
+        const reason = prompt("Razão da rejeição (opcional, será visível ao candidato em emails futuros):");
+        if (reason === null) return;
+        await callAction("reject", { application_id: app.id, decision_reason: reason });
+      };
+      const setStatus = async (app, status) => {
+        await callAction("set_status", { application_id: app.id, status });
+      };
+      const rescore = async (app) => {
+        const r = await callAction("rescore", { application_id: app.id });
+        if (r && r.ok) alert("Re-scored: " + r.score.total + "/100");
+      };
+      // Detail panel
+      if (adminAppSelected) {
+        const a = adminAppSelected;
+        return React.createElement("div", { style: { maxWidth: 900 } },
+          React.createElement("button", { onClick: () => setAdminAppSelected(null), style: { background: "none", border: "1px solid #E5E5EA", padding: "6px 12px", borderRadius: 8, cursor: "pointer", marginBottom: 16, fontSize: 12, fontFamily: F } }, "← Voltar à lista"),
+          React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 12, marginBottom: 4, flexWrap: "wrap" } },
+            React.createElement("h1", { style: { fontSize: 24, fontWeight: 700, letterSpacing: "-0.02em", margin: 0 } }, a.full_name),
+            React.createElement(Pill, { status: a.status })
+          ),
+          React.createElement("p", { style: { fontSize: 13, color: "#86868B", marginBottom: 24 } }, a.email + " · " + a.country + (a.city ? ", " + a.city : "") + " · Aplicou em " + new Date(a.applied_at).toLocaleDateString()),
+          // AI Score panel
+          a.ai_score_total != null && React.createElement("div", { style: { background: "linear-gradient(135deg,#7C3AED08,#2563EB08)", borderRadius: 14, border: "1px solid #7C3AED30", padding: 20, marginBottom: 16 } },
+            React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 } },
+              React.createElement("div", null,
+                React.createElement("div", { style: { fontSize: 11, color: "#7C3AED", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 4 } }, "🤖 Score IA"),
+                React.createElement("div", { style: { fontSize: 32, fontWeight: 700, letterSpacing: "-0.03em" } }, a.ai_score_total + "/100")
+              ),
+              React.createElement("button", { onClick: () => rescore(a), style: { padding: "6px 14px", borderRadius: 8, background: "transparent", color: "#7C3AED", border: "1px solid #7C3AED", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: F } }, "Re-score")
+            ),
+            a.ai_summary && React.createElement("p", { style: { fontSize: 13, lineHeight: 1.6, marginBottom: 16, color: "#1d1d1f" } }, a.ai_summary),
+            React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 } },
+              React.createElement("div", null,
+                React.createElement(ScoreBar, { value: a.ai_score_credibility, label: "Credibilidade" }),
+                React.createElement(ScoreBar, { value: a.ai_score_pedagogy, label: "Pedagógica" }),
+                React.createElement(ScoreBar, { value: a.ai_score_differentiation, label: "Diferenciação" })
+              ),
+              React.createElement("div", null,
+                React.createElement(ScoreBar, { value: a.ai_score_format, label: "Formato" }),
+                React.createElement(ScoreBar, { value: a.ai_score_language_quality, label: "Qualidade Linguística" })
+              )
+            ),
+            ((a.ai_strengths || []).length > 0 || (a.ai_red_flags || []).length > 0) && React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginTop: 12, paddingTop: 12, borderTop: "1px solid rgba(124,58,237,.15)" } },
+              React.createElement("div", null,
+                React.createElement("div", { style: { fontSize: 11, fontWeight: 700, color: "#16A34A", marginBottom: 6 } }, "✓ Pontos fortes"),
+                React.createElement("ul", { style: { fontSize: 12, paddingLeft: 18, margin: 0, color: "#1d1d1f" } }, (a.ai_strengths || []).map((s, i) => React.createElement("li", { key: i, style: { marginBottom: 3 } }, s)))
+              ),
+              React.createElement("div", null,
+                React.createElement("div", { style: { fontSize: 11, fontWeight: 700, color: "#DC2626", marginBottom: 6 } }, "⚠ Red flags"),
+                React.createElement("ul", { style: { fontSize: 12, paddingLeft: 18, margin: 0, color: "#1d1d1f" } }, (a.ai_red_flags || []).map((s, i) => React.createElement("li", { key: i, style: { marginBottom: 3 } }, s)))
+              )
+            )
+          ),
+          // Application data
+          React.createElement("div", { style: { background: "#fff", borderRadius: 14, border: "1px solid rgba(0,0,0,.08)", padding: 20, marginBottom: 16 } },
+            React.createElement("h3", { style: { fontSize: 15, fontWeight: 700, marginBottom: 14 } }, "Dados pessoais"),
+            React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, fontSize: 13 } },
+              React.createElement("div", null, React.createElement("div", { style: { fontSize: 11, color: "#86868B", marginBottom: 2 } }, "LinkedIn"), a.linkedin_url ? React.createElement("a", { href: a.linkedin_url, target: "_blank", rel: "noopener", style: { color: "#0071E3", wordBreak: "break-all" } }, a.linkedin_url) : "—"),
+              React.createElement("div", null, React.createElement("div", { style: { fontSize: 11, color: "#86868B", marginBottom: 2 } }, "Website"), a.website_url ? React.createElement("a", { href: a.website_url, target: "_blank", rel: "noopener", style: { color: "#0071E3", wordBreak: "break-all" } }, a.website_url) : "—"),
+              React.createElement("div", null, React.createElement("div", { style: { fontSize: 11, color: "#86868B", marginBottom: 2 } }, "GitHub"), a.github_url ? React.createElement("a", { href: a.github_url, target: "_blank", rel: "noopener", style: { color: "#0071E3" } }, a.github_url) : "—"),
+              React.createElement("div", null, React.createElement("div", { style: { fontSize: 11, color: "#86868B", marginBottom: 2 } }, "Telefone"), a.phone || "—")
+            )
+          ),
+          React.createElement("div", { style: { background: "#fff", borderRadius: 14, border: "1px solid rgba(0,0,0,.08)", padding: 20, marginBottom: 16 } },
+            React.createElement("h3", { style: { fontSize: 15, fontWeight: 700, marginBottom: 14 } }, "Experiência"),
+            React.createElement("div", { style: { fontSize: 13, marginBottom: 8 } }, React.createElement("strong", null, "Cargo: "), (a.job_title || "—") + (a.current_company ? " @ " + a.current_company : "")),
+            React.createElement("div", { style: { fontSize: 13, marginBottom: 8 } }, React.createElement("strong", null, "Anos exp: "), a.years_experience || "—"),
+            React.createElement("div", { style: { fontSize: 13, marginBottom: 12 } }, React.createElement("strong", null, "Áreas: "), (a.expertise || []).join(", ") || "—"),
+            a.teaching_experience && React.createElement("div", { style: { fontSize: 13, lineHeight: 1.6, padding: 12, background: "#FAFAFA", borderRadius: 8, color: "#1d1d1f" } }, React.createElement("strong", null, "Experiência leccionando: "), a.teaching_experience)
+          ),
+          React.createElement("div", { style: { background: "#fff", borderRadius: 14, border: "1px solid rgba(0,0,0,.08)", padding: 20, marginBottom: 16 } },
+            React.createElement("h3", { style: { fontSize: 15, fontWeight: 700, marginBottom: 14 } }, "Curso proposto"),
+            React.createElement("div", { style: { fontSize: 16, fontWeight: 600, marginBottom: 6 } }, a.proposed_course_title || "—"),
+            React.createElement("div", { style: { fontSize: 13, color: "#86868B", marginBottom: 12 } }, [a.proposed_course_format, a.proposed_course_language && a.proposed_course_language.toUpperCase(), a.proposed_course_duration, a.proposed_course_price_eur && "€" + a.proposed_course_price_eur].filter(Boolean).join(" · ")),
+            a.proposed_course_description && React.createElement("p", { style: { fontSize: 13, lineHeight: 1.6, marginBottom: 12 } }, a.proposed_course_description),
+            a.proposed_target_audience && React.createElement("div", { style: { fontSize: 12, padding: 10, background: "#FAFAFA", borderRadius: 8, marginBottom: 12 } }, React.createElement("strong", null, "Público-alvo: "), a.proposed_target_audience),
+            (a.proposed_course_outline || []).length > 0 && React.createElement("div", null,
+              React.createElement("div", { style: { fontSize: 12, fontWeight: 600, marginBottom: 6, color: "#86868B" } }, "OUTLINE"),
+              React.createElement("ol", { style: { paddingLeft: 20, fontSize: 13, margin: 0 } }, (a.proposed_course_outline || []).map((m, i) => React.createElement("li", { key: i, style: { marginBottom: 6 } },
+                React.createElement("strong", null, m.title),
+                m.topics && m.topics.length > 0 && React.createElement("div", { style: { fontSize: 12, color: "#86868B", marginTop: 2 } }, m.topics.join(", "))
+              )))
+            )
+          ),
+          React.createElement("div", { style: { background: "#fff", borderRadius: 14, border: "1px solid rgba(0,0,0,.08)", padding: 20, marginBottom: 16 } },
+            React.createElement("h3", { style: { fontSize: 15, fontWeight: 700, marginBottom: 14 } }, "Prova de qualidade"),
+            a.demo_video_url && React.createElement("div", { style: { marginBottom: 8, fontSize: 13 } }, React.createElement("strong", null, "Vídeo demo: "), React.createElement("a", { href: a.demo_video_url, target: "_blank", rel: "noopener", style: { color: "#0071E3" } }, a.demo_video_url)),
+            a.sample_lesson_url && React.createElement("div", { style: { marginBottom: 8, fontSize: 13 } }, React.createElement("strong", null, "Lição exemplo: "), React.createElement("a", { href: a.sample_lesson_url, target: "_blank", rel: "noopener", style: { color: "#0071E3" } }, a.sample_lesson_url)),
+            (a.portfolio_links || []).length > 0 && React.createElement("div", { style: { marginTop: 12, fontSize: 13 } }, React.createElement("strong", null, "Portfolio:"), React.createElement("ul", { style: { paddingLeft: 18, margin: "6px 0 0", fontSize: 12 } }, (a.portfolio_links || []).map((p, i) => React.createElement("li", { key: i }, React.createElement("a", { href: p.url, target: "_blank", rel: "noopener", style: { color: "#0071E3", wordBreak: "break-all" } }, p.url))))),
+            a.references_text && React.createElement("div", { style: { marginTop: 12, fontSize: 13, padding: 10, background: "#FAFAFA", borderRadius: 8 } }, React.createElement("strong", null, "Referências: "), a.references_text),
+            !a.demo_video_url && !a.sample_lesson_url && (a.portfolio_links || []).length === 0 && React.createElement("p", { style: { fontSize: 12, color: "#86868B", fontStyle: "italic", margin: 0 } }, "Sem prova de qualidade fornecida.")
+          ),
+          // Decision panel
+          React.createElement("div", { style: { position: "sticky", bottom: 0, background: "#fff", borderRadius: 14, border: "1px solid rgba(0,0,0,.12)", padding: 16, boxShadow: "0 -4px 20px rgba(0,0,0,.06)" } },
+            React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 8 } },
+              !["approved", "rejected"].includes(a.status) && React.createElement("button", { onClick: () => approve(a), style: { padding: "9px 18px", borderRadius: 10, background: "#16A34A", color: "#fff", border: "none", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: F } }, "✓ Aprovar"),
+              !["approved", "rejected"].includes(a.status) && React.createElement("button", { onClick: () => reject(a), style: { padding: "9px 18px", borderRadius: 10, background: "#DC2626", color: "#fff", border: "none", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: F } }, "✕ Rejeitar"),
+              !["approved", "rejected"].includes(a.status) && a.status !== "interview_scheduled" && React.createElement("button", { onClick: () => setStatus(a, "interview_scheduled"), style: { padding: "9px 18px", borderRadius: 10, background: "#fff", color: "#D97706", border: "1px solid #D97706", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: F } }, "📅 Marcar entrevista"),
+              !["approved", "rejected"].includes(a.status) && a.status !== "waitlisted" && React.createElement("button", { onClick: () => setStatus(a, "waitlisted"), style: { padding: "9px 18px", borderRadius: 10, background: "#fff", color: "#86868B", border: "1px solid #86868B", fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: F } }, "⏸ Lista de espera"),
+              !["approved", "rejected"].includes(a.status) && a.status !== "under_review" && React.createElement("button", { onClick: () => setStatus(a, "under_review"), style: { padding: "9px 18px", borderRadius: 10, background: "#fff", color: "#7C3AED", border: "1px solid #7C3AED", fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: F } }, "👁 Em análise")
+            )
+          )
+        );
+      }
+      // List view
+      const filterOpts = [
+        ["all", "Todas", adminApps.length],
+        ["shortlisted", "🔥 Shortlist", counts.shortlisted || 0],
+        ["screening_passed", "Screened", counts.screening_passed || 0],
+        ["under_review", "Em análise", counts.under_review || 0],
+        ["interview_scheduled", "Entrevista", counts.interview_scheduled || 0],
+        ["waitlisted", "Espera", counts.waitlisted || 0],
+        ["approved", "Aprovadas", counts.approved || 0],
+        ["rejected", "Rejeitadas", (counts.rejected || 0) + (counts.auto_rejected || 0)]
+      ];
+      return React.createElement("div", { style: { maxWidth: 1200 } },
+        React.createElement("h1", { style: { fontSize: 26, fontWeight: 700, marginBottom: 4 } }, "Aplicações de Instrutores"),
+        React.createElement("p", { style: { fontSize: 14, color: "#6E6E73", marginBottom: 20 } }, adminApps.length + " candidatos · auto-screening por IA · revisão manual"),
+        React.createElement("div", { style: { display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" } },
+          filterOpts.map(([k, label, count]) => React.createElement("button", {
+            key: k, onClick: () => setAdminAppFilter(k),
+            style: { padding: "7px 14px", borderRadius: 980, fontSize: 12, fontWeight: adminAppFilter === k ? 600 : 500, background: adminAppFilter === k ? "#0071E3" : "rgba(0,0,0,.04)", color: adminAppFilter === k ? "#fff" : "#1d1d1f", border: "none", cursor: "pointer", fontFamily: F }
+          }, label + " (" + count + ")"))
+        ),
+        adminAppsLoading ? React.createElement("div", { style: { padding: 40, textAlign: "center" } }, "A carregar...") :
+        filtered.length === 0 ? React.createElement("div", { style: { padding: 40, textAlign: "center", background: "#fff", borderRadius: 14, color: "#86868B" } }, "Sem aplicações nesta categoria.") :
+        React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 8 } },
+          filtered.map(a => React.createElement("div", { key: a.id, onClick: () => setAdminAppSelected(a),
+            style: { background: "#fff", borderRadius: 12, border: "1px solid rgba(0,0,0,.08)", padding: 16, cursor: "pointer", transition: "all .15s", display: "grid", gridTemplateColumns: isMobile ? "1fr 60px" : "60px 2fr 1.5fr 80px 100px", gap: 14, alignItems: "center" },
+            onMouseEnter: e => e.currentTarget.style.borderColor = "#0071E3",
+            onMouseLeave: e => e.currentTarget.style.borderColor = "rgba(0,0,0,.08)"
+          },
+            !isMobile && (a.ai_score_total != null ? React.createElement("div", { style: { width: 50, height: 50, borderRadius: 25, background: a.ai_score_total >= 80 ? "#16A34A" : a.ai_score_total >= 60 ? "#D97706" : "#DC2626", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 14, flexShrink: 0 } }, a.ai_score_total) : React.createElement("div", { style: { width: 50, height: 50, borderRadius: 25, background: "#F5F5F7", color: "#86868B", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 } }, "?")),
+            React.createElement("div", { style: { minWidth: 0 } },
+              React.createElement("div", { style: { fontSize: 14, fontWeight: 600, marginBottom: 2 } }, a.full_name),
+              React.createElement("div", { style: { fontSize: 12, color: "#86868B", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, a.email)
+            ),
+            !isMobile && React.createElement("div", { style: { fontSize: 12, color: "#1d1d1f", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, a.proposed_course_title || "—"),
+            !isMobile && React.createElement("div", { style: { fontSize: 11, color: "#86868B" } }, new Date(a.applied_at).toLocaleDateString()),
+            React.createElement(Pill, { status: a.status })
+          ))
+        )
+      );
+    };
     const AInstructors = () => {
         const [list, setList] = useState([]);
         const [loading, setLoading] = useState(true);
@@ -5037,7 +5237,7 @@ const renderMarkdown = (md) => {
                 aView === "analytics" && React.createElement(AAnalytics, null),
                 aView === "evals" && React.createElement(AEvals, null),
                 aView === "adminNotifs" && React.createElement(AAdminNotifs, null),
-                aView === "instructors" && React.createElement(AInstructors, null), aView === "transactions" && React.createElement(ATransactions, null), aView === "legal_pages" && React.createElement(ALegalPages, null), aView === "config" && React.createElement(AConfig, null), aView === "settings" && React.createElement(ASettings, null)),
+                aView === "applications" && React.createElement(AApplications, null), aView === "instructors" && React.createElement(AInstructors, null), aView === "transactions" && React.createElement(ATransactions, null), aView === "legal_pages" && React.createElement(ALegalPages, null), aView === "config" && React.createElement(AConfig, null), aView === "settings" && React.createElement(ASettings, null)),
             renderDocViewer(),
             renderCoursePreview(),
             renderToast()));
