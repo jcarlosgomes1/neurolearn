@@ -455,6 +455,17 @@ const renderMarkdown = (md) => {
     const [view, setView] = useState("home");
     const [aView, setAView] = useState("dashboard");
     const [iView, setIView] = useState("dashboard");
+    // Instructor application form state
+    const [appStep, setAppStep] = useState(1);
+    const [appData, setAppData] = useState({});
+    const [appSubmitting, setAppSubmitting] = useState(false);
+    const [appSubmitted, setAppSubmitted] = useState(false);
+    const [appError, setAppError] = useState("");
+    // Admin: applications list
+    const [adminApps, setAdminApps] = useState([]);
+    const [adminAppsLoading, setAdminAppsLoading] = useState(false);
+    const [adminAppFilter, setAdminAppFilter] = useState("all");
+    const [adminAppSelected, setAdminAppSelected] = useState(null);
     const [instructorProfile, setInstructorProfile] = useState(null);
     const [instructorCourses, setInstructorCourses] = useState([]);
     const [instructorTransactions, setInstructorTransactions] = useState([]);
@@ -574,7 +585,7 @@ const renderMarkdown = (md) => {
         if (t) { setResetTokenFromURL(t); setZone("stuLogin"); }
         // Initialize view from URL hash (e.g. #privacy, #courses)
         const initHash = (window.location.hash || "").replace(/^#/, "");
-        const validViews = ["home","courses","pricing","detail","privacy","terms","refunds","cookies","legal-notice","faq","about-page"];
+        const validViews = ["home","courses","pricing","detail","privacy","terms","refunds","cookies","legal-notice","faq","about-page","apply-instructor"];
         if (initHash && validViews.includes(initHash)) {
           setView(initHash);
           setZone("public");
@@ -591,7 +602,7 @@ const renderMarkdown = (md) => {
           // If no state, derive from hash
           if (!s.zone && !s.view) {
             const h = (window.location.hash || "").replace(/^#/, "");
-            const validViews = ["home","courses","pricing","detail","privacy","terms","refunds","cookies","legal-notice","faq","about-page"];
+            const validViews = ["home","courses","pricing","detail","privacy","terms","refunds","cookies","legal-notice","faq","about-page","apply-instructor"];
             if (validViews.includes(h)) { setView(h); setZone("public"); }
             else { setView("home"); setZone("public"); }
           }
@@ -3025,7 +3036,7 @@ const renderMarkdown = (md) => {
       const supportEmail = (platformConfig.support_email && platformConfig.support_email.value) || "suporte@neurolearn.pt";
       const goRoute = (route) => { setView(route); window.scrollTo(0,0); };
       const colActions = [
-        [(v,i)=>goRoute(["courses","pricing","about-page","faq","home"][i]||"home"), (v,i)=>goRoute(["courses","pricing","about-page","faq","home"][i]||"home"), (v,i)=>goRoute(["courses","pricing","about-page","faq","home"][i]||"home"), (v,i)=>goRoute(["courses","pricing","about-page","faq","home"][i]||"home"), (v,i)=>goRoute(["courses","pricing","about-page","faq","home"][i]||"home")],
+        [(v,i)=>goRoute(["courses","pricing","about-page","faq","apply-instructor"][i]||"home"), (v,i)=>goRoute(["courses","pricing","about-page","faq","apply-instructor"][i]||"home"), (v,i)=>goRoute(["courses","pricing","about-page","faq","apply-instructor"][i]||"home"), (v,i)=>goRoute(["courses","pricing","about-page","faq","apply-instructor"][i]||"home"), (v,i)=>goRoute(["courses","pricing","about-page","faq","apply-instructor"][i]||"home")],
         [(v,i)=>goStuLogin(), (v,i)=>goStuLogin(), (v,i)=>{ if(curStu){ setZone("student"); setSView("my"); } else goStuLogin(); }, (v,i)=>{ if(curStu){ setZone("student"); setSView("profile"); } else goStuLogin(); }, (v,i)=>window.open("mailto:" + supportEmail)],
         [(v,i)=>goRoute("privacy"), (v,i)=>goRoute("terms"), (v,i)=>goRoute("refunds"), (v,i)=>goRoute("cookies"), (v,i)=>goRoute("legal-notice")],
       ];
@@ -3103,6 +3114,146 @@ const renderMarkdown = (md) => {
     };
 
     // ── LOGIN / REGISTER ─────────────────────────────────────────────────────
+    const ApplyInstructor = () => {
+      const langKey = _lang || "pt";
+      const T = ({pt:{title:"Candidata-te a Instrutor",sub:"Junta-te a uma plataforma curada de instrutores especialistas. Aplicações revistas semanalmente.",step:"Passo",of:"de",next:"Continuar",back:"Voltar",submit:"Submeter aplicação",submitting:"A submeter...",sent:"Aplicação recebida!",sentSub:"Vamos analisar a tua candidatura nos próximos 5-10 dias úteis. Receberás resposta por email.",sentBack:"Voltar ao site",errReq:"Campos obrigatórios em falta",s1t:"Sobre ti",s2t:"Experiência e expertise",s3t:"O curso que queres lecionar",s4t:"Prova de qualidade",fname:"Nome completo",email:"Email",phone:"Telefone (opcional)",country:"País",city:"Cidade",linkedin:"LinkedIn (recomendado)",website:"Website ou portfolio",github:"GitHub (opcional)",lang:"Idioma preferido",exp:"Áreas de expertise (separadas por vírgula)",years:"Anos de experiência",role:"Cargo actual",company:"Empresa actual",teach:"Onde já leccionaste? (universidades, bootcamps, empresas, online…)",ctitle:"Título do curso proposto",cdesc:"Descrição em 2-3 frases",cformat:"Formato",fmt_self:"Self-paced (assíncrono)",fmt_cohort:"Cohort (turmas com datas)",fmt_live:"Workshop ao vivo",fmt_hybrid:"Híbrido (vídeo + sessões live)",clang:"Idioma do curso",ctarget:"Público-alvo",coutline:"Outline (1 módulo por linha, format: Título do módulo | tópico1, tópico2)",cdur:"Duração estimada",cprice:"Preço sugerido (€)",demo:"Vídeo demo (link YouTube/Vimeo unlisted, 3-5 min)",sample:"Lição exemplo (link Google Doc, PDF público, etc)",portf:"Portfolio (1 link por linha)",refs:"Referências profissionais (opcional)"},es:{title:"Postula como Instructor",sub:"Únete a una plataforma curada de instructores expertos.",step:"Paso",of:"de",next:"Continuar",back:"Volver",submit:"Enviar postulación",submitting:"Enviando...",sent:"¡Postulación recibida!",sentSub:"Revisaremos tu candidatura en 5-10 días hábiles.",sentBack:"Volver al sitio",errReq:"Faltan campos obligatorios",s1t:"Sobre ti",s2t:"Experiencia",s3t:"Tu curso",s4t:"Prueba de calidad",fname:"Nombre completo",email:"Email",phone:"Teléfono",country:"País",city:"Ciudad",linkedin:"LinkedIn (recomendado)",website:"Sitio web o portfolio",github:"GitHub",lang:"Idioma preferido",exp:"Expertise (separadas por coma)",years:"Años de experiencia",role:"Cargo actual",company:"Empresa actual",teach:"¿Dónde has enseñado?",ctitle:"Título del curso",cdesc:"Descripción 2-3 frases",cformat:"Formato",fmt_self:"Asíncrono",fmt_cohort:"Cohort",fmt_live:"Workshop en vivo",fmt_hybrid:"Híbrido",clang:"Idioma del curso",ctarget:"Audiencia objetivo",coutline:"Outline (1 módulo por línea)",cdur:"Duración estimada",cprice:"Precio sugerido (€)",demo:"Video demo (link)",sample:"Lección ejemplo",portf:"Portfolio",refs:"Referencias"},fr:{title:"Postule comme Instructeur",sub:"Rejoins une plateforme curated d'instructeurs experts.",step:"Étape",of:"sur",next:"Continuer",back:"Retour",submit:"Soumettre",submitting:"Envoi...",sent:"Candidature reçue !",sentSub:"Nous examinons sous 5-10 jours.",sentBack:"Retour au site",errReq:"Champs obligatoires manquants",s1t:"À propos",s2t:"Expérience",s3t:"Ton cours",s4t:"Preuves",fname:"Nom complet",email:"Email",phone:"Téléphone",country:"Pays",city:"Ville",linkedin:"LinkedIn (recommandé)",website:"Site web",github:"GitHub",lang:"Langue préférée",exp:"Expertise (séparées par virgule)",years:"Années d'expérience",role:"Poste actuel",company:"Entreprise",teach:"Où as-tu enseigné ?",ctitle:"Titre du cours",cdesc:"Description 2-3 phrases",cformat:"Format",fmt_self:"Asynchrone",fmt_cohort:"Cohorte",fmt_live:"Workshop live",fmt_hybrid:"Hybride",clang:"Langue du cours",ctarget:"Public cible",coutline:"Outline (1 module par ligne)",cdur:"Durée estimée",cprice:"Prix suggéré (€)",demo:"Vidéo demo (lien)",sample:"Leçon exemple",portf:"Portfolio",refs:"Références"},en:{title:"Apply as Instructor",sub:"Join a curated platform of expert instructors. Applications reviewed weekly.",step:"Step",of:"of",next:"Continue",back:"Back",submit:"Submit application",submitting:"Submitting...",sent:"Application received!",sentSub:"We'll review your application within 5-10 business days. You'll hear back by email.",sentBack:"Back to site",errReq:"Required fields missing",s1t:"About you",s2t:"Experience and expertise",s3t:"Your proposed course",s4t:"Quality proof",fname:"Full name",email:"Email",phone:"Phone (optional)",country:"Country",city:"City",linkedin:"LinkedIn (recommended)",website:"Website or portfolio",github:"GitHub (optional)",lang:"Preferred language",exp:"Expertise areas (comma-separated)",years:"Years of experience",role:"Current role",company:"Current company",teach:"Where have you taught before?",ctitle:"Proposed course title",cdesc:"Description in 2-3 sentences",cformat:"Format",fmt_self:"Self-paced",fmt_cohort:"Cohort",fmt_live:"Live workshop",fmt_hybrid:"Hybrid",clang:"Course language",ctarget:"Target audience",coutline:"Outline (1 module per line, format: Module title | topic1, topic2)",cdur:"Estimated duration",cprice:"Suggested price (€)",demo:"Demo video (YouTube/Vimeo unlisted, 3-5 min)",sample:"Sample lesson (Google Doc, public PDF, etc)",portf:"Portfolio (1 link per line)",refs:"References (optional)"}}[langKey] || {});
+      const set = (k, v) => setAppData(d => Object.assign({}, d, { [k]: v }));
+      const fld = (label, key, opts) => {
+        opts = opts || {};
+        return React.createElement("div", { style: { marginBottom: 14 } },
+          React.createElement("label", { style: { display: "block", fontSize: 12, fontWeight: 600, color: "var(--ink3)", marginBottom: 5 } }, label + (opts.required ? " *" : "")),
+          opts.textarea ? React.createElement("textarea", {
+            value: appData[key] || "",
+            onChange: e => set(key, e.target.value),
+            placeholder: opts.placeholder || "",
+            rows: opts.rows || 3,
+            style: { width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)", fontSize: 14, fontFamily: "var(--font)", outline: "none", boxSizing: "border-box", resize: "vertical" }
+          }) : opts.select ? React.createElement("select", {
+            value: appData[key] || "",
+            onChange: e => set(key, e.target.value),
+            style: { width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)", fontSize: 14, fontFamily: "var(--font)", outline: "none", background: "#fff", boxSizing: "border-box" }
+          }, opts.select.map(o => React.createElement("option", { key: o.v, value: o.v }, o.l))) : React.createElement("input", {
+            type: opts.type || "text",
+            value: appData[key] || "",
+            onChange: e => set(key, e.target.value),
+            placeholder: opts.placeholder || "",
+            style: { width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)", fontSize: 14, fontFamily: "var(--font)", outline: "none", boxSizing: "border-box" }
+          })
+        );
+      };
+      const submit = async () => {
+        // Required fields validation
+        const required = ["full_name", "email", "expertise", "proposed_course_title", "proposed_course_description"];
+        const missing = required.filter(k => !appData[k] || (typeof appData[k] === "string" && appData[k].trim().length === 0));
+        if (missing.length) { setAppError(T.errReq + ": " + missing.join(", ")); return; }
+        setAppSubmitting(true); setAppError("");
+        try {
+          // Parse expertise / outline / portfolio
+          const expertise = (appData.expertise || "").split(",").map(s => s.trim()).filter(Boolean);
+          const outline = (appData.proposed_course_outline || "").split("\n").map(line => {
+            const [title, topicsRaw] = line.split("|");
+            return { title: (title || "").trim(), topics: (topicsRaw || "").split(",").map(t => t.trim()).filter(Boolean) };
+          }).filter(m => m.title);
+          const portfolio = (appData.portfolio_links_text || "").split("\n").map(s => s.trim()).filter(Boolean).map(url => ({ label: url, url }));
+          const payload = Object.assign({}, appData, {
+            expertise, proposed_course_outline: outline, portfolio_links: portfolio,
+            preferred_lang: langKey,
+            proposed_course_price_eur: appData.proposed_course_price_eur ? parseInt(appData.proposed_course_price_eur, 10) : null,
+            years_experience: appData.years_experience ? parseInt(appData.years_experience, 10) : null,
+          });
+          delete payload.portfolio_links_text;
+          const r = await fetch("https://obpezocujzdaznrdgwoo.supabase.co/functions/v1/instructor-applications", {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "submit", application: payload })
+          });
+          const d = await r.json();
+          if (d.ok) { setAppSubmitted(true); setAppData({}); }
+          else setAppError(d.error || "Erro");
+        } catch(e) { setAppError("Erro de conexão: " + e.message); }
+        setAppSubmitting(false);
+      };
+      if (appSubmitted) {
+        return React.createElement("div", { style: { background: "var(--surface)", minHeight: "calc(100vh - 60px)" } },
+          React.createElement("div", { style: { maxWidth: 560, margin: "0 auto", padding: "80px 24px", textAlign: "center" } },
+            React.createElement("div", { style: { fontSize: 56, marginBottom: 16 } }, "✉️"),
+            React.createElement("h1", { style: { fontSize: 28, fontWeight: 700, marginBottom: 12, letterSpacing: "-0.03em" } }, T.sent),
+            React.createElement("p", { style: { fontSize: 15, color: "var(--ink3)", lineHeight: 1.6, marginBottom: 24 } }, T.sentSub),
+            React.createElement("button", { onClick: () => { setAppSubmitted(false); setView("home"); window.scrollTo(0,0); }, style: { padding: "11px 24px", borderRadius: 10, background: "var(--blue)", color: "#fff", border: "none", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font)" } }, T.sentBack)
+          )
+        );
+      }
+      const totalSteps = 4;
+      const screens = {
+        1: () => React.createElement("div", null,
+          React.createElement("h2", { style: { fontSize: 20, fontWeight: 700, marginBottom: 4, letterSpacing: "-0.02em" } }, T.s1t),
+          React.createElement("p", { style: { fontSize: 13, color: "var(--ink3)", marginBottom: 18 } }, ""),
+          fld(T.fname, "full_name", { required: true }),
+          fld(T.email, "email", { required: true, type: "email" }),
+          fld(T.phone, "phone"),
+          React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 } },
+            fld(T.country, "country", { placeholder: "PT" }),
+            fld(T.city, "city")
+          ),
+          fld(T.linkedin, "linkedin_url", { placeholder: "https://linkedin.com/in/..." }),
+          fld(T.website, "website_url"),
+          fld(T.github, "github_url"),
+          fld(T.lang, "preferred_lang", { select: [{v:"pt",l:"Português"},{v:"es",l:"Español"},{v:"fr",l:"Français"},{v:"en",l:"English"}] })
+        ),
+        2: () => React.createElement("div", null,
+          React.createElement("h2", { style: { fontSize: 20, fontWeight: 700, marginBottom: 18 } }, T.s2t),
+          fld(T.exp, "expertise", { required: true, placeholder: "Machine Learning, Python, Computer Vision" }),
+          React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 } },
+            fld(T.years, "years_experience", { type: "number" }),
+            fld(T.role, "job_title")
+          ),
+          fld(T.company, "current_company"),
+          fld(T.teach, "teaching_experience", { textarea: true, rows: 4 })
+        ),
+        3: () => React.createElement("div", null,
+          React.createElement("h2", { style: { fontSize: 20, fontWeight: 700, marginBottom: 18 } }, T.s3t),
+          fld(T.ctitle, "proposed_course_title", { required: true }),
+          fld(T.cdesc, "proposed_course_description", { required: true, textarea: true, rows: 3 }),
+          React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 } },
+            fld(T.cformat, "proposed_course_format", { select: [{v:"",l:"—"},{v:"self_paced",l:T.fmt_self},{v:"cohort",l:T.fmt_cohort},{v:"live_workshop",l:T.fmt_live},{v:"hybrid",l:T.fmt_hybrid}] }),
+            fld(T.clang, "proposed_course_language", { select: [{v:"",l:"—"},{v:"pt",l:"PT"},{v:"es",l:"ES"},{v:"fr",l:"FR"},{v:"en",l:"EN"}] })
+          ),
+          fld(T.ctarget, "proposed_target_audience"),
+          fld(T.coutline, "proposed_course_outline", { textarea: true, rows: 6, placeholder: "1. Fundamentos | conceito A, conceito B\n2. Aplicação prática | exercício 1, exercício 2" }),
+          React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 } },
+            fld(T.cdur, "proposed_course_duration", { placeholder: "6 semanas, 4h total..." }),
+            fld(T.cprice, "proposed_course_price_eur", { type: "number", placeholder: "99" })
+          )
+        ),
+        4: () => React.createElement("div", null,
+          React.createElement("h2", { style: { fontSize: 20, fontWeight: 700, marginBottom: 18 } }, T.s4t),
+          fld(T.demo, "demo_video_url"),
+          fld(T.sample, "sample_lesson_url"),
+          fld(T.portf, "portfolio_links_text", { textarea: true, rows: 3, placeholder: "https://...\nhttps://..." }),
+          fld(T.refs, "references_text", { textarea: true, rows: 3 })
+        )
+      };
+      return React.createElement("div", { style: { background: "var(--surface)", minHeight: "calc(100vh - 60px)" } },
+        React.createElement("div", { style: { maxWidth: 720, margin: "0 auto", padding: "48px clamp(20px,5vw,32px) 80px" } },
+          React.createElement("button", { onClick: () => { setView("home"); window.scrollTo(0,0); }, style: { background: "none", border: "1px solid var(--border)", padding: "6px 12px", borderRadius: 8, fontSize: 12, color: "var(--ink3)", cursor: "pointer", marginBottom: 24, fontFamily: "var(--font)" } }, "← " + ({pt:"Voltar",es:"Volver",fr:"Retour",en:"Back"}[langKey] || "Back")),
+          React.createElement("div", { style: { marginBottom: 24 } },
+            React.createElement("div", { style: { fontSize: 11, color: "var(--blue)", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 6 } }, T.step + " " + appStep + " " + T.of + " " + totalSteps),
+            React.createElement("h1", { style: { fontSize: "clamp(26px,3.5vw,36px)", fontWeight: 700, letterSpacing: "-0.03em", marginBottom: 6 } }, T.title),
+            React.createElement("p", { style: { fontSize: 14, color: "var(--ink3)" } }, T.sub)
+          ),
+          React.createElement("div", { style: { height: 4, background: "rgba(0,0,0,.06)", borderRadius: 2, marginBottom: 24, overflow: "hidden" } },
+            React.createElement("div", { style: { height: "100%", width: (appStep / totalSteps * 100) + "%", background: "var(--blue)", transition: "width .3s" } })
+          ),
+          React.createElement("div", { style: { background: "#fff", borderRadius: 14, padding: 24, border: "1px solid rgba(0,0,0,.06)" } },
+            (screens[appStep] || screens[1])(),
+            appError && React.createElement("div", { style: { padding: "10px 14px", borderRadius: 8, background: "#FEE2E2", color: "#991B1B", fontSize: 13, marginTop: 12 } }, appError),
+            React.createElement("div", { style: { display: "flex", justifyContent: "space-between", marginTop: 24, paddingTop: 20, borderTop: "1px solid rgba(0,0,0,.06)" } },
+              appStep > 1 ? React.createElement("button", { onClick: () => { setAppStep(s => s - 1); setAppError(""); }, style: { padding: "10px 20px", borderRadius: 10, background: "transparent", color: "var(--ink2)", border: "1px solid var(--border)", fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "var(--font)" } }, "← " + T.back) : React.createElement("div"),
+              appStep < totalSteps ? React.createElement("button", { onClick: () => { setAppStep(s => s + 1); setAppError(""); }, style: { padding: "10px 22px", borderRadius: 10, background: "var(--blue)", color: "#fff", border: "none", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font)" } }, T.next + " →") : React.createElement("button", { onClick: submit, disabled: appSubmitting, style: { padding: "11px 24px", borderRadius: 10, background: appSubmitting ? "#86868B" : "#16A34A", color: "#fff", border: "none", fontSize: 13, fontWeight: 600, cursor: appSubmitting ? "wait" : "pointer", fontFamily: "var(--font)" } }, appSubmitting ? T.submitting : T.submit)
+            )
+          )
+        )
+      );
+    };
     const LegalPage = ({ slug, fallbackTitle }) => {
       const langKey = _lang || "pt";
       const page = (legalPagesCache[slug] || {})[langKey] || (legalPagesCache[slug] || {}).pt || (legalPagesCache[slug] || {}).en;
@@ -4996,6 +5147,7 @@ const renderMarkdown = (md) => {
         view === "legal-notice" && React.createElement(LegalPage, { slug: "legal-notice", fallbackTitle: "Aviso Legal" }),
         view === "faq" && React.createElement(LegalPage, { slug: "faq", fallbackTitle: "FAQ" }),
         view === "about-page" && React.createElement(LegalPage, { slug: "about", fallbackTitle: "Sobre" }),
+        view === "apply-instructor" && React.createElement(ApplyInstructor, null),
         view === "about" && React.createElement("div", { style: { background: "#FBFBFD" } },
             React.createElement("style", null, anim),
             React.createElement("div", { style: { background: "linear-gradient(135deg,#0071E308,#AF52DE06)", borderBottom: bd, padding: "72px clamp(16px,4vw,48px) 60px", textAlign: "center" } },
