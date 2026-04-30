@@ -2230,17 +2230,30 @@ const renderMarkdown = (md) => {
             {pt:'🇵🇹 PT',es:'🇪🇸 ES',fr:'🇫🇷 FR',en:'🇬🇧 EN'}[l]))
         ),
     
-        curStu ? React.createElement('div',{
-          onClick:()=>{setZone('student');setSView('my');},
-          style:{display:'flex',alignItems:'center',gap:8,cursor:'pointer',
-            padding:'5px 12px 5px 6px',borderRadius:980,
-            background:'var(--surface2)',border:'1px solid var(--border)',
-            transition:'all .15s'},
-          onMouseEnter:e=>e.currentTarget.style.borderColor='var(--border2)',
-          onMouseLeave:e=>e.currentTarget.style.borderColor='var(--border)'},
-          React.createElement(Av,{name:curStu.name,size:24,color:'var(--blue)'}),
-          React.createElement('span',{style:{fontSize:13,fontWeight:500,color:'var(--ink2)'}},
-            curStu.name.split(' ')[0])
+        curStu ? React.createElement('div',{style:{display:'flex',alignItems:'center',gap:6}},
+          React.createElement('div',{
+            onClick:()=>{setZone('student');setSView('my');},
+            style:{display:'flex',alignItems:'center',gap:8,cursor:'pointer',
+              padding:'5px 12px 5px 6px',borderRadius:980,
+              background:'var(--surface2)',border:'1px solid var(--border)',
+              transition:'all .15s'},
+            onMouseEnter:e=>e.currentTarget.style.borderColor='var(--border2)',
+            onMouseLeave:e=>e.currentTarget.style.borderColor='var(--border)'},
+            React.createElement(Av,{name:curStu.name,size:24,color:'var(--blue)'}),
+            React.createElement('span',{style:{fontSize:13,fontWeight:500,color:'var(--ink2)'}},
+              curStu.name.split(' ')[0])
+          ),
+          // Quick switch to instructor or admin zone (only shown if user has those roles)
+          (curStu.role === 'instructor' || curStu.role === 'admin' || curStu.role === 'super_admin') && React.createElement('button',{
+            onClick:()=>setZone('instructor'),
+            title:'Zona Instrutor',
+            style:{padding:'6px 10px',borderRadius:8,background:'transparent',border:'1px solid var(--border)',cursor:'pointer',fontSize:14,fontFamily:'var(--font)'}
+          },'👨‍🏫'),
+          (curStu.role === 'admin' || curStu.role === 'super_admin') && React.createElement('button',{
+            onClick:()=>setZone('admin'),
+            title:'Zona Admin',
+            style:{padding:'6px 10px',borderRadius:8,background:'transparent',border:'1px solid var(--border)',cursor:'pointer',fontSize:14,fontFamily:'var(--font)'}
+          },'⚙')
         ) : React.createElement(React.Fragment,null,
           !isMobile && React.createElement('button',{onClick:goStuLogin,
             style:{background:'none',border:'none',cursor:'pointer',
@@ -4212,6 +4225,211 @@ const renderMarkdown = (md) => {
                         r.validated_at && React.createElement("span", { style: { fontSize: 11, color: "#AEAEB2", marginLeft: "auto" } }, new Date(r.validated_at).toLocaleDateString("pt-PT")),
                         React.createElement("button", { style: Object.assign(Object.assign({}, B(false, true)), { fontSize: 10, padding: "2px 8px", marginLeft: 4 }), onClick: () => validateQuizResult(r.id, null, "") }, "Rever")))));
             })));
+    };
+    const IZone = () => {
+        const ip = instructorProfile;
+        const courses = instructorCourses;
+        const txs = instructorTransactions;
+        const payouts = instructorPayouts;
+        const succeededTx = txs.filter(t => t.status === "succeeded");
+        const totalRevenueCents = succeededTx.reduce((s, t) => s + (t.instructor_share_cents || 0), 0);
+        const totalGrossCents = succeededTx.reduce((s, t) => s + (t.amount_cents || 0), 0);
+        const refundedCents = txs.filter(t => t.status === "refunded").reduce((s, t) => s + (t.instructor_share_cents || 0), 0);
+        const paidPayouts = payouts.filter(p => p.status === "paid").reduce((s, p) => s + (p.amount_cents || 0), 0);
+        const pendingPayouts = payouts.filter(p => ["pending","processing"].includes(p.status)).reduce((s, p) => s + (p.amount_cents || 0), 0);
+        const availableBalance = totalRevenueCents - paidPayouts - pendingPayouts;
+        const last30dRevenue = succeededTx.filter(t => new Date(t.created_at) > new Date(Date.now() - 30*24*60*60*1000)).reduce((s, t) => s + (t.instructor_share_cents || 0), 0);
+        const eur = (cents) => "€" + ((cents || 0) / 100).toFixed(2);
+        const navItems = [
+          ["dashboard", "▣", "Dashboard"],
+          ["courses", "📚", "Cursos"],
+          ["revenue", "💰", "Receita"],
+          ["payouts", "💳", "Payouts"],
+          ["profile", "👤", "Perfil"]
+        ];
+        if (instructorLoading || !ip) {
+          return React.createElement("div", { style: { fontFamily: F, background: "#F5F5F7", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" } },
+            React.createElement("div", { style: { textAlign: "center", color: "#86868B" } },
+              React.createElement("div", { style: { fontSize: 32, marginBottom: 8 } }, "👨‍🏫"),
+              React.createElement("div", null, "A carregar zona instrutor...")
+            )
+          );
+        }
+        const ISide = () => React.createElement("aside", { style: { position: "fixed", left: 0, top: 0, width: 200, height: "100vh", background: "#FAFAFA", borderRight: "1px solid rgba(0,0,0,.08)", padding: "20px 14px", display: isMobile ? "none" : "flex", flexDirection: "column", gap: 4 } },
+          React.createElement("div", { style: { padding: "8px 12px 14px", borderBottom: "1px solid rgba(0,0,0,.06)", marginBottom: 12 } },
+            React.createElement("div", { style: { fontSize: 11, fontWeight: 700, color: "#86868B", textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 4 } }, "Instrutor"),
+            React.createElement("div", { style: { fontSize: 14, fontWeight: 600 } }, ip.display_name)
+          ),
+          navItems.map(([k, icon, label]) => React.createElement("button", {
+            key: k, onClick: () => setIView(k),
+            style: { display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderRadius: 8, background: iView === k ? "#0071E315" : "transparent", color: iView === k ? "#0071E3" : "#1D1D1F", border: "none", fontSize: 13, fontWeight: iView === k ? 600 : 500, cursor: "pointer", fontFamily: F, textAlign: "left" }
+          },
+            React.createElement("span", { style: { fontSize: 14 } }, icon),
+            React.createElement("span", null, label)
+          )),
+          React.createElement("div", { style: { marginTop: "auto", paddingTop: 16, borderTop: "1px solid rgba(0,0,0,.06)", display: "flex", flexDirection: "column", gap: 4 } },
+            React.createElement("button", { onClick: () => { setZone("public"); setView("home"); }, style: { padding: "8px 12px", borderRadius: 8, background: "transparent", color: "#0071E3", border: "none", fontSize: 12, fontWeight: 500, cursor: "pointer", fontFamily: F, textAlign: "left" } }, "🌐 Voltar ao site"),
+            curStu && (curStu.role === "admin" || curStu.role === "super_admin") && React.createElement("button", { onClick: () => setZone("admin"), style: { padding: "8px 12px", borderRadius: 8, background: "transparent", color: "#1D1D1F", border: "none", fontSize: 12, fontWeight: 500, cursor: "pointer", fontFamily: F, textAlign: "left" } }, "⚙ Admin"),
+            React.createElement("button", { onClick: goPublic, style: { padding: "8px 12px", borderRadius: 8, background: "transparent", color: "#FF375F", border: "none", fontSize: 12, fontWeight: 500, cursor: "pointer", fontFamily: F, textAlign: "left" } }, "Sair")
+          )
+        );
+        const StatCard = ({ label, value, sub, color }) => React.createElement("div", { style: { background: "#fff", borderRadius: 14, padding: 18, border: "1px solid rgba(0,0,0,.08)" } },
+          React.createElement("div", { style: { fontSize: 11, color: "#86868B", textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 6, fontWeight: 600 } }, label),
+          React.createElement("div", { style: { fontSize: 26, fontWeight: 700, letterSpacing: "-0.03em", color: color || "#1D1D1F", marginBottom: 4 } }, value),
+          sub && React.createElement("div", { style: { fontSize: 11, color: "#86868B" } }, sub)
+        );
+        const tone = (s) => s === "succeeded" || s === "paid" || s === "approved" ? "#16A34A" : s === "refunded" || s === "failed" || s === "suspended" ? "#DC2626" : s === "pending" || s === "processing" ? "#D97706" : "#86868B";
+        const Pill = ({ status }) => React.createElement("span", { style: { fontSize: 11, fontWeight: 600, padding: "3px 8px", borderRadius: 6, background: tone(status) + "20", color: tone(status), display: "inline-block", textTransform: "uppercase", letterSpacing: ".03em" } }, status);
+        const screens = {
+          dashboard: () => React.createElement("div", null,
+            React.createElement("h1", { style: { fontSize: 26, fontWeight: 700, marginBottom: 4, letterSpacing: "-0.03em" } }, "Bem-vindo, " + ip.display_name.split(" ")[0]),
+            React.createElement("p", { style: { fontSize: 14, color: "#6E6E73", marginBottom: 24 } }, "Visão geral do teu negócio na plataforma."),
+            React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 16, marginBottom: 24 } },
+              React.createElement(StatCard, { label: "Receita Total", value: eur(totalRevenueCents), sub: "Comissão " + (ip.revenue_share_pct || 50) + "%" }),
+              React.createElement(StatCard, { label: "Saldo Disponível", value: eur(availableBalance), sub: "Pronto para pagamento", color: "#16A34A" }),
+              React.createElement(StatCard, { label: "Últimos 30 dias", value: eur(last30dRevenue), sub: succeededTx.length + " vendas totais" }),
+              React.createElement(StatCard, { label: "Alunos", value: ip.total_students || 0, sub: "Únicos a comprar" })
+            ),
+            React.createElement("div", { style: { background: "#fff", borderRadius: 14, padding: 20, border: "1px solid rgba(0,0,0,.08)", marginBottom: 16 } },
+              React.createElement("h3", { style: { fontSize: 15, fontWeight: 700, marginBottom: 12 } }, "Vendas recentes"),
+              succeededTx.length === 0 ? React.createElement("div", { style: { padding: 20, textAlign: "center", color: "#86868B", fontSize: 13 } }, "Sem vendas ainda. Os teus cursos publicados aparecem em /courses para os alunos comprarem.") :
+              React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 0 } },
+                succeededTx.slice(0, 6).map(t => {
+                  const c = courses.find(c => c.id === t.course_id);
+                  return React.createElement("div", { key: t.id, style: { display: "grid", gridTemplateColumns: isMobile ? "1fr 80px" : "1fr 1fr 100px 80px", gap: 12, padding: "10px 0", borderBottom: "1px solid rgba(0,0,0,.04)", alignItems: "center", fontSize: 13 } },
+                    React.createElement("div", { style: { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, (c && c.emoji ? c.emoji + " " : "") + (c ? c.title : t.course_id)),
+                    !isMobile && React.createElement("div", { style: { fontSize: 12, color: "#86868B" } }, t.user_email || "—"),
+                    !isMobile && React.createElement("div", { style: { fontSize: 12, color: "#86868B" } }, new Date(t.created_at).toLocaleDateString()),
+                    React.createElement("div", { style: { textAlign: "right", fontWeight: 600, color: "#16A34A" } }, eur(t.instructor_share_cents))
+                  );
+                })
+              )
+            )
+          ),
+          courses: () => React.createElement("div", null,
+            React.createElement("h1", { style: { fontSize: 26, fontWeight: 700, marginBottom: 4 } }, "Os meus cursos"),
+            React.createElement("p", { style: { fontSize: 14, color: "#6E6E73", marginBottom: 24 } }, courses.length + " cursos"),
+            courses.length === 0 ? React.createElement("div", { style: { padding: 40, textAlign: "center", background: "#fff", borderRadius: 14, color: "#86868B" } }, "Ainda não tens cursos. Contacta o administrador para que sejam atribuídos.") :
+            React.createElement("div", { style: { display: "grid", gap: 12 } },
+              courses.map(c => React.createElement("div", { key: c.id, style: { background: "#fff", borderRadius: 12, border: "1px solid rgba(0,0,0,.08)", padding: 16, display: "grid", gridTemplateColumns: isMobile ? "44px 1fr" : "44px 1fr auto auto", gap: 16, alignItems: "center" } },
+                React.createElement("div", { style: { fontSize: 28, width: 44, height: 44, borderRadius: 10, background: (c.color || "#0071E3") + "15", display: "flex", alignItems: "center", justifyContent: "center" } }, c.emoji || "📚"),
+                React.createElement("div", { style: { minWidth: 0 } },
+                  React.createElement("div", { style: { fontSize: 14, fontWeight: 600, marginBottom: 2 } }, c.title),
+                  React.createElement("div", { style: { fontSize: 11, color: "#86868B" } }, (c.enrollments_count || 0) + " alunos · " + (c.rating_avg || "—") + "★ · " + eur(c.price_cents))
+                ),
+                !isMobile && React.createElement(Pill, { status: c.published ? "approved" : "pending" }),
+                !isMobile && React.createElement("button", { onClick: () => { setZone("public"); setView("detail"); setSelC(c); }, style: { padding: "6px 12px", borderRadius: 8, background: "transparent", color: "#0071E3", border: "1px solid #0071E3", fontSize: 12, fontWeight: 500, cursor: "pointer", fontFamily: F } }, "Ver →")
+              ))
+            )
+          ),
+          revenue: () => React.createElement("div", null,
+            React.createElement("h1", { style: { fontSize: 26, fontWeight: 700, marginBottom: 4 } }, "Receita"),
+            React.createElement("p", { style: { fontSize: 14, color: "#6E6E73", marginBottom: 24 } }, "Histórico completo de vendas e reembolsos."),
+            React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 16, marginBottom: 24 } },
+              React.createElement(StatCard, { label: "Bruto Vendido", value: eur(totalGrossCents), sub: succeededTx.length + " transacções" }),
+              React.createElement(StatCard, { label: "A tua parte (" + (ip.revenue_share_pct || 50) + "%)", value: eur(totalRevenueCents), color: "#16A34A" }),
+              React.createElement(StatCard, { label: "Reembolsado", value: eur(refundedCents), color: refundedCents > 0 ? "#DC2626" : "#86868B" })
+            ),
+            React.createElement("div", { style: { background: "#fff", borderRadius: 14, border: "1px solid rgba(0,0,0,.08)", overflow: "hidden" } },
+              React.createElement("div", { style: { display: "grid", gridTemplateColumns: isMobile ? "1.5fr 1fr 80px" : "1fr 1.5fr 1fr 100px 80px", gap: 12, padding: "12px 18px", background: "#FAFAFA", borderBottom: "1px solid rgba(0,0,0,.06)", fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: "#86868B" } },
+                React.createElement("div", null, "Data"),
+                !isMobile && React.createElement("div", null, "Cliente"),
+                React.createElement("div", null, "Curso"),
+                React.createElement("div", null, "Estado"),
+                React.createElement("div", { style: { textAlign: "right" } }, "Recebes")
+              ),
+              txs.length === 0 ? React.createElement("div", { style: { padding: 40, textAlign: "center", color: "#86868B", fontSize: 13 } }, "Sem transacções.") :
+              txs.map(t => {
+                const c = courses.find(c => c.id === t.course_id);
+                return React.createElement("div", { key: t.id, style: { display: "grid", gridTemplateColumns: isMobile ? "1.5fr 1fr 80px" : "1fr 1.5fr 1fr 100px 80px", gap: 12, padding: "12px 18px", borderBottom: "1px solid rgba(0,0,0,.04)", alignItems: "center", fontSize: 12 } },
+                  React.createElement("div", null, new Date(t.created_at).toLocaleDateString()),
+                  !isMobile && React.createElement("div", { style: { fontSize: 11, color: "#86868B", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, t.user_email || "—"),
+                  React.createElement("div", { style: { fontSize: 11, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, c ? c.title : t.course_id),
+                  React.createElement(Pill, { status: t.status }),
+                  React.createElement("div", { style: { textAlign: "right", fontWeight: 600, color: t.status === "refunded" ? "#DC2626" : "#16A34A" } }, (t.status === "refunded" ? "-" : "") + eur(t.instructor_share_cents))
+                );
+              })
+            )
+          ),
+          payouts: () => React.createElement("div", null,
+            React.createElement("h1", { style: { fontSize: 26, fontWeight: 700, marginBottom: 4 } }, "Payouts"),
+            React.createElement("p", { style: { fontSize: 14, color: "#6E6E73", marginBottom: 24 } }, "Histórico de pagamentos da plataforma para a tua conta."),
+            React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 16, marginBottom: 24 } },
+              React.createElement(StatCard, { label: "Saldo Disponível", value: eur(availableBalance), sub: "Pronto para pagamento", color: "#16A34A" }),
+              React.createElement(StatCard, { label: "Em Processamento", value: eur(pendingPayouts), color: "#D97706" }),
+              React.createElement(StatCard, { label: "Pago Total", value: eur(paidPayouts) })
+            ),
+            payouts.length === 0 ? React.createElement("div", { style: { padding: 40, textAlign: "center", background: "#fff", borderRadius: 14, color: "#86868B", fontSize: 13 } }, "Sem payouts ainda. Os payouts são processados pela administração no fim de cada mês.") :
+            React.createElement("div", { style: { background: "#fff", borderRadius: 14, border: "1px solid rgba(0,0,0,.08)", overflow: "hidden" } },
+              payouts.map(p => React.createElement("div", { key: p.id, style: { padding: "16px 20px", borderBottom: "1px solid rgba(0,0,0,.04)", display: "grid", gridTemplateColumns: isMobile ? "1fr auto" : "auto 1fr auto auto", gap: 12, alignItems: "center" } },
+                React.createElement("div", null,
+                  React.createElement("div", { style: { fontSize: 14, fontWeight: 600, marginBottom: 2 } }, p.reference_number),
+                  React.createElement("div", { style: { fontSize: 11, color: "#86868B" } }, p.period_start + " → " + p.period_end + " · " + (p.method || "iban").toUpperCase())
+                ),
+                !isMobile && React.createElement("div", null),
+                React.createElement(Pill, { status: p.status }),
+                React.createElement("div", { style: { fontSize: 16, fontWeight: 700, textAlign: "right" } }, eur(p.amount_cents))
+              ))
+            )
+          ),
+          profile: () => {
+            const [editing, setEditing] = [{}, () => {}]; // placeholder - editing inline below
+            return React.createElement("div", { style: { maxWidth: 720 } },
+              React.createElement("h1", { style: { fontSize: 26, fontWeight: 700, marginBottom: 4 } }, "Perfil de Instrutor"),
+              React.createElement("p", { style: { fontSize: 14, color: "#6E6E73", marginBottom: 24 } }, "Os teus dados públicos e de pagamento."),
+              React.createElement("div", { style: { background: "#fff", borderRadius: 14, padding: 24, border: "1px solid rgba(0,0,0,.08)", marginBottom: 16 } },
+                React.createElement("h3", { style: { fontSize: 14, fontWeight: 700, marginBottom: 16, textTransform: "uppercase", letterSpacing: ".05em", color: "#86868B" } }, "Público"),
+                React.createElement("div", { style: { marginBottom: 12 } },
+                  React.createElement("div", { style: { fontSize: 11, color: "#86868B", marginBottom: 4 } }, "Nome"),
+                  React.createElement("div", { style: { fontSize: 14, fontWeight: 500 } }, ip.display_name)
+                ),
+                React.createElement("div", { style: { marginBottom: 12 } },
+                  React.createElement("div", { style: { fontSize: 11, color: "#86868B", marginBottom: 4 } }, "Bio"),
+                  React.createElement("div", { style: { fontSize: 13, lineHeight: 1.6 } }, ip.bio || "—")
+                ),
+                React.createElement("div", { style: { marginBottom: 12 } },
+                  React.createElement("div", { style: { fontSize: 11, color: "#86868B", marginBottom: 4 } }, "Especialidades"),
+                  React.createElement("div", { style: { display: "flex", gap: 6, flexWrap: "wrap" } },
+                    (ip.expertise || []).map((x, i) => React.createElement("span", { key: i, style: { fontSize: 11, padding: "3px 8px", borderRadius: 6, background: "#0071E315", color: "#0071E3", fontWeight: 600 } }, x))
+                  )
+                )
+              ),
+              React.createElement("div", { style: { background: "#fff", borderRadius: 14, padding: 24, border: "1px solid rgba(0,0,0,.08)", marginBottom: 16 } },
+                React.createElement("h3", { style: { fontSize: 14, fontWeight: 700, marginBottom: 16, textTransform: "uppercase", letterSpacing: ".05em", color: "#86868B" } }, "Pagamentos"),
+                React.createElement("div", { style: { marginBottom: 12 } },
+                  React.createElement("div", { style: { fontSize: 11, color: "#86868B", marginBottom: 4 } }, "Método"),
+                  React.createElement("div", { style: { fontSize: 13, fontWeight: 500 } }, (ip.payout_method || "iban").toUpperCase())
+                ),
+                React.createElement("div", { style: { marginBottom: 12 } },
+                  React.createElement("div", { style: { fontSize: 11, color: "#86868B", marginBottom: 4 } }, "IBAN"),
+                  React.createElement("div", { style: { fontSize: 13, fontWeight: 500, fontFamily: "monospace" } }, ip.payout_iban || "Não definido — contacta admin")
+                ),
+                React.createElement("div", { style: { marginBottom: 12 } },
+                  React.createElement("div", { style: { fontSize: 11, color: "#86868B", marginBottom: 4 } }, "Comissão"),
+                  React.createElement("div", { style: { fontSize: 14, fontWeight: 700, color: "#16A34A" } }, (ip.revenue_share_pct || 50) + "% por venda")
+                ),
+                React.createElement("div", { style: { marginBottom: 12 } },
+                  React.createElement("div", { style: { fontSize: 11, color: "#86868B", marginBottom: 4 } }, "Estado"),
+                  React.createElement(Pill, { status: ip.status })
+                )
+              ),
+              React.createElement("p", { style: { fontSize: 12, color: "#86868B", textAlign: "center" } }, "Para alterar IBAN ou outros dados de pagamento, contacta a administração.")
+            );
+          }
+        };
+        return React.createElement("div", { style: { fontFamily: F, background: "#F5F5F7", minHeight: "100vh", color: "#1D1D1F" } },
+          React.createElement(ISide, null),
+          React.createElement("div", { style: { marginLeft: isMobile ? 0 : 200, padding: isMobile ? "16px" : "24px 32px" } },
+            isMobile && React.createElement("div", { style: { display: "flex", gap: 8, marginBottom: 16, overflowX: "auto", paddingBottom: 4 } },
+              navItems.map(([k, , label]) => React.createElement("button", {
+                key: k, onClick: () => setIView(k),
+                style: { padding: "6px 14px", borderRadius: 980, fontSize: 12, fontWeight: iView === k ? 600 : 400, background: iView === k ? "#0071E3" : "rgba(0,0,0,.04)", color: iView === k ? "#fff" : "#6E6E73", border: "none", cursor: "pointer", whiteSpace: "nowrap", fontFamily: F }
+              }, label)),
+              React.createElement("button", { style: { padding: "6px 14px", borderRadius: 980, fontSize: 12, background: "transparent", color: "#0071E3", border: "none", cursor: "pointer", fontFamily: F, whiteSpace: "nowrap" }, onClick: () => { setZone("public"); setView("home"); } }, "🌐 Site")
+            ),
+            (screens[iView] || screens.dashboard)()
+          )
+        );
     };
     const AInstructors = () => {
         const [list, setList] = useState([]);
