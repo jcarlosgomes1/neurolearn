@@ -454,6 +454,12 @@ const renderMarkdown = (md) => {
     const [zone, setZone] = useState("public");
     const [view, setView] = useState("home");
     const [aView, setAView] = useState("dashboard");
+    const [iView, setIView] = useState("dashboard");
+    const [instructorProfile, setInstructorProfile] = useState(null);
+    const [instructorCourses, setInstructorCourses] = useState([]);
+    const [instructorTransactions, setInstructorTransactions] = useState([]);
+    const [instructorPayouts, setInstructorPayouts] = useState([]);
+    const [instructorLoading, setInstructorLoading] = useState(false);
     const [editCourseId, setEditCourseId] = useState(null);
     const [previewLessonId, setPreviewLessonId] = useState(null);
     const [coursePreview, setCoursePreview] = useState(null); // {course, lessonId|"all"}
@@ -619,10 +625,36 @@ const renderMarkdown = (md) => {
           if (window.location.hash !== target) {
             window.history.pushState({ zone, view, aView, sView }, "", window.location.pathname + window.location.search + target);
           }
+        } else if (zone === "instructor") {
+          const target = iView ? "#instructor-" + iView : "#instructor";
+          if (window.location.hash !== target) {
+            window.history.pushState({ zone, view, aView, sView, iView }, "", window.location.pathname + window.location.search + target);
+          }
         }
       } catch(e) {}
     }, [view, zone, aView, sView]);
     useEffect(() => { setCfgDraft(platformConfig || {}); }, [platformConfig]);
+    const ldInstructorData = async () => {
+      if (!curStu || !curStu.id) return;
+      setInstructorLoading(true);
+      try {
+        // Profile
+        const { data: prof } = await window._SB.from("nl_instructors").select("*").eq("id", curStu.id).maybeSingle();
+        if (prof) setInstructorProfile(prof);
+        // Courses where this user is the instructor
+        const { data: courses } = await window._SB.from("nl_courses").select("*").eq("instructor_id", curStu.id).order("created_at", { ascending: false });
+        setInstructorCourses(courses || []);
+        // Transactions for these courses
+        const { data: txs } = await window._SB.from("nl_transactions").select("*").eq("instructor_id", curStu.id).order("created_at", { ascending: false }).limit(200);
+        setInstructorTransactions(txs || []);
+        // Payouts
+        const { data: payouts } = await window._SB.from("nl_payouts").select("*").eq("instructor_id", curStu.id).order("created_at", { ascending: false });
+        setInstructorPayouts(payouts || []);
+      } catch(e) { console.warn("instructor data load:", e); }
+      setInstructorLoading(false);
+    };
+    // Auto-load when entering instructor zone
+    useEffect(() => { if (zone === "instructor" && curStu) ldInstructorData(); }, [zone, curStu && curStu.id]);
     const ldLegalPages = async () => {
       try {
         const { data: pages } = await window._SB.from("nl_legal_pages").select("page_slug, lang_code, title, content_md, last_updated_label").eq("is_active", true);
@@ -4619,6 +4651,8 @@ const renderMarkdown = (md) => {
         return (React.createElement(React.Fragment, null,
             StuLogin(),
             renderToast()));
+    if (zone === "instructor")
+        return (React.createElement(IZone, null));
     if (zone === "admin")
         return (React.createElement("div", { style: { fontFamily: F, color: "#1D1D1F", background: "#F5F5F7", minHeight: "100vh", opacity: mounted ? 1 : 0, transition: "opacity .4s" } },
             !isMobile && React.createElement(ASide, null),
