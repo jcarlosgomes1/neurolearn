@@ -466,6 +466,11 @@ const renderMarkdown = (md) => {
     const [adminAppsLoading, setAdminAppsLoading] = useState(false);
     const [adminAppFilter, setAdminAppFilter] = useState("all");
     const [adminAppSelected, setAdminAppSelected] = useState(null);
+    const [publicInstructorSlug, setPublicInstructorSlug] = useState(null);
+    const [publicInstructor, setPublicInstructor] = useState(null);
+    const [publicInstructorCourses, setPublicInstructorCourses] = useState([]);
+    const [publicInstructorReviews, setPublicInstructorReviews] = useState([]);
+    const [publicInstructorLoading, setPublicInstructorLoading] = useState(false);
     const [instructorProfile, setInstructorProfile] = useState(null);
     const [instructorCourses, setInstructorCourses] = useState([]);
     const [instructorTransactions, setInstructorTransactions] = useState([]);
@@ -585,8 +590,11 @@ const renderMarkdown = (md) => {
         if (t) { setResetTokenFromURL(t); setZone("stuLogin"); }
         // Initialize view from URL hash (e.g. #privacy, #courses)
         const initHash = (window.location.hash || "").replace(/^#/, "");
-        const validViews = ["home","courses","pricing","detail","privacy","terms","refunds","cookies","legal-notice","faq","about-page","apply-instructor"];
-        if (initHash && validViews.includes(initHash)) {
+        const validViews = ["home","courses","pricing","detail","privacy","terms","refunds","cookies","legal-notice","faq","about-page","apply-instructor","instructor-public"];
+        if (initHash.startsWith("instructor/")) {
+          const slug = initHash.slice("instructor/".length).replace(/[^a-z0-9-]/g, "");
+          if (slug) { setPublicInstructorSlug(slug); setView("instructor-public"); setZone("public"); }
+        } else if (initHash && validViews.includes(initHash)) {
           setView(initHash);
           setZone("public");
         }
@@ -603,7 +611,10 @@ const renderMarkdown = (md) => {
           if (!s.zone && !s.view) {
             const h = (window.location.hash || "").replace(/^#/, "");
             const validViews = ["home","courses","pricing","detail","privacy","terms","refunds","cookies","legal-notice","faq","about-page","apply-instructor"];
-            if (validViews.includes(h)) { setView(h); setZone("public"); }
+            if (h.startsWith("instructor/")) {
+              const slug = h.slice("instructor/".length).replace(/[^a-z0-9-]/g, "");
+              if (slug) { setPublicInstructorSlug(slug); setView("instructor-public"); setZone("public"); }
+            } else if (validViews.includes(h)) { setView(h); setZone("public"); }
             else { setView("home"); setZone("public"); }
           }
         } catch(err) {}
@@ -615,7 +626,9 @@ const renderMarkdown = (md) => {
     useEffect(() => {
       try {
         if (zone === "public") {
-          const newHash = view && view !== "home" ? "#" + view : "";
+          let newHash = "";
+          if (view === "instructor-public" && publicInstructorSlug) newHash = "#instructor/" + publicInstructorSlug;
+          else if (view && view !== "home") newHash = "#" + view;
           const newURL = window.location.pathname + window.location.search + newHash;
           // Only push if hash actually changed — avoids polluting history on initial render
           if (newHash !== window.location.hash) {
@@ -666,6 +679,26 @@ const renderMarkdown = (md) => {
     };
     // Auto-load when entering instructor zone
     useEffect(() => { if (zone === "instructor" && curStu) ldInstructorData(); }, [zone, curStu && curStu.id]);
+    useEffect(() => {
+      if (!publicInstructorSlug) { setPublicInstructor(null); return; }
+      (async () => {
+        setPublicInstructorLoading(true);
+        try {
+          const { data: ins } = await window._SB.from("nl_instructors").select("id, display_name, bio, expertise, social_linkedin, social_twitter, social_github, social_website, profile_picture_url, public_slug, rating_avg, rating_count, total_students").eq("public_slug", publicInstructorSlug).eq("status", "approved").maybeSingle();
+          setPublicInstructor(ins);
+          if (ins) {
+            const { data: cs } = await window._SB.from("nl_courses").select("*").eq("instructor_id", ins.id).eq("published", true).order("enrollments_count", { ascending: false });
+            setPublicInstructorCourses(cs || []);
+            const courseIds = (cs || []).map(c => c.id);
+            if (courseIds.length > 0) {
+              const { data: revs } = await window._SB.from("nl_reviews").select("*").in("course_id", courseIds).eq("is_visible", true).order("created_at", { ascending: false }).limit(20);
+              setPublicInstructorReviews(revs || []);
+            } else { setPublicInstructorReviews([]); }
+          } else { setPublicInstructorCourses([]); setPublicInstructorReviews([]); }
+        } catch(e) { console.warn("public instructor load:", e); }
+        setPublicInstructorLoading(false);
+      })();
+    }, [publicInstructorSlug]);
     const ldLegalPages = async () => {
       try {
         const { data: pages } = await window._SB.from("nl_legal_pages").select("page_slug, lang_code, title, content_md, last_updated_label").eq("is_active", true);
@@ -3114,6 +3147,91 @@ const renderMarkdown = (md) => {
     };
 
     // ── LOGIN / REGISTER ─────────────────────────────────────────────────────
+    const goToInstructorPublic = (slug) => { if (!slug) return; setPublicInstructorSlug(slug); setView("instructor-public"); window.scrollTo(0,0); };
+    const InstructorPublic = () => {
+        const i = publicInstructor;
+        const courses = publicInstructorCourses;
+        const reviews = publicInstructorReviews;
+        if (publicInstructorLoading && !i) {
+          return React.createElement("div", { style: { fontFamily: F, padding: "60px 24px", textAlign: "center", color: "#86868B" } }, "A carregar...");
+        }
+        if (!i) {
+          return React.createElement("div", { style: { fontFamily: F, padding: "60px 24px", textAlign: "center" } },
+            React.createElement("div", { style: { fontSize: 48, marginBottom: 12 } }, "🤔"),
+            React.createElement("h1", { style: { fontSize: 24, fontWeight: 700, marginBottom: 8 } }, "Instrutor não encontrado"),
+            React.createElement("p", { style: { fontSize: 14, color: "#86868B", marginBottom: 16 } }, "O perfil que procuras pode ter sido removido ou ainda não foi aprovado."),
+            React.createElement("button", { onClick: () => { setView("home"); setPublicInstructorSlug(null); window.scrollTo(0,0); }, style: { padding: "10px 20px", borderRadius: 10, background: "#0071E3", color: "#fff", border: "none", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: F } }, "Voltar ao início")
+          );
+        }
+        const eur = (cents) => "€" + ((cents || 0) / 100).toFixed(2);
+        const totalEnrollments = courses.reduce((s, c) => s + (c.enrollments_count || 0), 0);
+        const initials = (i.display_name || "").split(" ").filter(Boolean).slice(0, 2).map(s => s[0]).join("").toUpperCase();
+        const Stars = ({ rating, size = 14 }) => {
+          const r = Math.round((rating || 0) * 2) / 2;
+          return React.createElement("div", { style: { display: "inline-flex", alignItems: "center", gap: 2, fontSize: size, color: "#F59E0B" } },
+            [1,2,3,4,5].map(n => React.createElement("span", { key: n }, n <= r ? "★" : (n - 0.5 === r ? "⯨" : "☆")))
+          );
+        };
+        return React.createElement("div", { style: { fontFamily: F, background: "#fff", minHeight: "calc(100vh - 60px)" } },
+          React.createElement("div", { style: { maxWidth: 980, margin: "0 auto", padding: "40px clamp(20px,5vw,32px) 80px" } },
+            React.createElement("button", { onClick: () => { setPublicInstructorSlug(null); setView("home"); window.scrollTo(0,0); }, style: { background: "none", border: "1px solid #E5E5EA", padding: "6px 12px", borderRadius: 8, fontSize: 12, color: "#6E6E73", cursor: "pointer", marginBottom: 30, fontFamily: F } }, "← Voltar"),
+            React.createElement("div", { style: { display: "flex", alignItems: "flex-start", gap: 24, marginBottom: 30, flexWrap: "wrap" } },
+              i.profile_picture_url ?
+                React.createElement("img", { src: i.profile_picture_url, alt: i.display_name, style: { width: 110, height: 110, borderRadius: 55, objectFit: "cover", flexShrink: 0, border: "1px solid #E5E5EA" }, onError: e => { e.target.style.display = "none"; } }) :
+                React.createElement("div", { style: { width: 110, height: 110, borderRadius: 55, background: "linear-gradient(135deg,#0071E3,#7C3AED)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 38, fontWeight: 700, flexShrink: 0 } }, initials),
+              React.createElement("div", { style: { flex: "1 1 320px", minWidth: 0 } },
+                React.createElement("h1", { style: { fontSize: "clamp(26px,3.5vw,36px)", fontWeight: 700, letterSpacing: "-0.03em", margin: "0 0 6px" } }, i.display_name),
+                React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 16, fontSize: 13, color: "#6E6E73", marginBottom: 14, alignItems: "center" } },
+                  i.rating_avg && React.createElement("span", { style: { display: "inline-flex", alignItems: "center", gap: 6 } }, React.createElement(Stars, { rating: i.rating_avg }), React.createElement("strong", { style: { color: "#1d1d1f" } }, Number(i.rating_avg).toFixed(1)), "(" + (i.rating_count || 0) + " avaliações)"),
+                  totalEnrollments > 0 && React.createElement("span", null, totalEnrollments + " alunos"),
+                  courses.length > 0 && React.createElement("span", null, courses.length + " " + (courses.length === 1 ? "curso" : "cursos"))
+                ),
+                React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 } },
+                  (i.expertise || []).map((x, k) => React.createElement("span", { key: k, style: { fontSize: 11, padding: "4px 10px", borderRadius: 6, background: "#0071E315", color: "#0071E3", fontWeight: 600 } }, x))
+                ),
+                React.createElement("div", { style: { display: "flex", gap: 8, flexWrap: "wrap" } },
+                  i.social_linkedin && React.createElement("a", { href: i.social_linkedin, target: "_blank", rel: "noopener", style: { fontSize: 12, padding: "6px 12px", borderRadius: 6, background: "#FAFAFA", color: "#1d1d1f", border: "1px solid #E5E5EA", textDecoration: "none" } }, "LinkedIn"),
+                  i.social_twitter && React.createElement("a", { href: i.social_twitter, target: "_blank", rel: "noopener", style: { fontSize: 12, padding: "6px 12px", borderRadius: 6, background: "#FAFAFA", color: "#1d1d1f", border: "1px solid #E5E5EA", textDecoration: "none" } }, "X / Twitter"),
+                  i.social_github && React.createElement("a", { href: i.social_github, target: "_blank", rel: "noopener", style: { fontSize: 12, padding: "6px 12px", borderRadius: 6, background: "#FAFAFA", color: "#1d1d1f", border: "1px solid #E5E5EA", textDecoration: "none" } }, "GitHub"),
+                  i.social_website && React.createElement("a", { href: i.social_website, target: "_blank", rel: "noopener", style: { fontSize: 12, padding: "6px 12px", borderRadius: 6, background: "#FAFAFA", color: "#1d1d1f", border: "1px solid #E5E5EA", textDecoration: "none" } }, "Website")
+                )
+              )
+            ),
+            i.bio && React.createElement("div", { style: { padding: 22, background: "#FAFAFA", borderRadius: 14, marginBottom: 30 } },
+              React.createElement("h2", { style: { fontSize: 12, fontWeight: 700, color: "#86868B", textTransform: "uppercase", letterSpacing: ".05em", margin: "0 0 10px" } }, "Sobre"),
+              React.createElement("div", { style: { fontSize: 14, lineHeight: 1.7, color: "#1d1d1f", whiteSpace: "pre-wrap" } }, i.bio)
+            ),
+            courses.length > 0 && React.createElement("div", { style: { marginBottom: 30 } },
+              React.createElement("h2", { style: { fontSize: 18, fontWeight: 700, marginBottom: 14, letterSpacing: "-0.02em" } }, "Cursos de " + i.display_name.split(" ")[0]),
+              React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: 14 } },
+                courses.map(c => React.createElement("div", { key: c.id, onClick: () => { setSelC(c); setView("detail"); window.scrollTo(0,0); }, style: { background: "#fff", border: "1px solid #E5E5EA", borderRadius: 14, padding: 18, cursor: "pointer", transition: "all .15s" }, onMouseEnter: e => e.currentTarget.style.borderColor = "#0071E3", onMouseLeave: e => e.currentTarget.style.borderColor = "#E5E5EA" },
+                  React.createElement("div", { style: { fontSize: 32, width: 50, height: 50, borderRadius: 12, background: (c.color || "#0071E3") + "15", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 } }, c.emoji || "📚"),
+                  React.createElement("div", { style: { fontSize: 14, fontWeight: 600, marginBottom: 4 } }, c.title),
+                  c.subtitle && React.createElement("div", { style: { fontSize: 12, color: "#86868B", marginBottom: 10, lineHeight: 1.4 } }, c.subtitle),
+                  React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 12 } },
+                    React.createElement("span", { style: { color: "#86868B" } }, (c.enrollments_count || 0) + " alunos · " + (c.rating_avg ? Number(c.rating_avg).toFixed(1) + "★" : "—")),
+                    React.createElement("span", { style: { fontWeight: 700, color: "#0071E3" } }, eur(c.price_cents))
+                  )
+                ))
+              )
+            ),
+            reviews.length > 0 && React.createElement("div", null,
+              React.createElement("h2", { style: { fontSize: 18, fontWeight: 700, marginBottom: 14, letterSpacing: "-0.02em" } }, "O que dizem os alunos"),
+              React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(300px,1fr))", gap: 14 } },
+                reviews.slice(0, 6).map(r => React.createElement("div", { key: r.id, style: { background: "#FAFAFA", borderRadius: 12, padding: 16 } },
+                  React.createElement("div", { style: { display: "flex", justifyContent: "space-between", marginBottom: 8 } },
+                    React.createElement(Stars, { rating: r.rating, size: 13 }),
+                    r.is_verified_purchase && React.createElement("span", { style: { fontSize: 10, padding: "2px 6px", borderRadius: 4, background: "#16A34A20", color: "#16A34A", fontWeight: 600 } }, "VERIFICADO")
+                  ),
+                  r.title && React.createElement("div", { style: { fontSize: 13, fontWeight: 600, marginBottom: 4 } }, r.title),
+                  r.body && React.createElement("div", { style: { fontSize: 13, color: "#1d1d1f", lineHeight: 1.5, marginBottom: 8 } }, r.body),
+                  React.createElement("div", { style: { fontSize: 11, color: "#86868B" } }, new Date(r.created_at).toLocaleDateString())
+                ))
+              )
+            )
+          )
+        );
+    };
     const ApplyInstructor = () => {
       const langKey = _lang || "pt";
       const T = ({pt:{title:"Candidata-te a Instrutor",sub:"Junta-te a uma plataforma curada de instrutores especialistas. Aplicações revistas semanalmente.",step:"Passo",of:"de",next:"Continuar",back:"Voltar",submit:"Submeter aplicação",submitting:"A submeter...",sent:"Aplicação recebida!",sentSub:"Vamos analisar a tua candidatura nos próximos 5-10 dias úteis. Receberás resposta por email.",sentBack:"Voltar ao site",errReq:"Campos obrigatórios em falta",s1t:"Sobre ti",s2t:"Experiência e expertise",s3t:"O curso que queres lecionar",s4t:"Prova de qualidade",fname:"Nome completo",email:"Email",phone:"Telefone (opcional)",country:"País",city:"Cidade",linkedin:"LinkedIn (recomendado)",website:"Website ou portfolio",github:"GitHub (opcional)",lang:"Idioma preferido",exp:"Áreas de expertise (separadas por vírgula)",years:"Anos de experiência",role:"Cargo actual",company:"Empresa actual",teach:"Onde já leccionaste? (universidades, bootcamps, empresas, online…)",ctitle:"Título do curso proposto",cdesc:"Descrição em 2-3 frases",cformat:"Formato",fmt_self:"Self-paced (assíncrono)",fmt_cohort:"Cohort (turmas com datas)",fmt_live:"Workshop ao vivo",fmt_hybrid:"Híbrido (vídeo + sessões live)",clang:"Idioma do curso",ctarget:"Público-alvo",coutline:"Outline (1 módulo por linha, format: Título do módulo | tópico1, tópico2)",cdur:"Duração estimada",cprice:"Preço sugerido (€)",demo:"Vídeo demo (link YouTube/Vimeo unlisted, 3-5 min)",sample:"Lição exemplo (link Google Doc, PDF público, etc)",portf:"Portfolio (1 link por linha)",refs:"Referências profissionais (opcional)"},es:{title:"Postula como Instructor",sub:"Únete a una plataforma curada de instructores expertos.",step:"Paso",of:"de",next:"Continuar",back:"Volver",submit:"Enviar postulación",submitting:"Enviando...",sent:"¡Postulación recibida!",sentSub:"Revisaremos tu candidatura en 5-10 días hábiles.",sentBack:"Volver al sitio",errReq:"Faltan campos obligatorios",s1t:"Sobre ti",s2t:"Experiencia",s3t:"Tu curso",s4t:"Prueba de calidad",fname:"Nombre completo",email:"Email",phone:"Teléfono",country:"País",city:"Ciudad",linkedin:"LinkedIn (recomendado)",website:"Sitio web o portfolio",github:"GitHub",lang:"Idioma preferido",exp:"Expertise (separadas por coma)",years:"Años de experiencia",role:"Cargo actual",company:"Empresa actual",teach:"¿Dónde has enseñado?",ctitle:"Título del curso",cdesc:"Descripción 2-3 frases",cformat:"Formato",fmt_self:"Asíncrono",fmt_cohort:"Cohort",fmt_live:"Workshop en vivo",fmt_hybrid:"Híbrido",clang:"Idioma del curso",ctarget:"Audiencia objetivo",coutline:"Outline (1 módulo por línea)",cdur:"Duración estimada",cprice:"Precio sugerido (€)",demo:"Video demo (link)",sample:"Lección ejemplo",portf:"Portfolio",refs:"Referencias"},fr:{title:"Postule comme Instructeur",sub:"Rejoins une plateforme curated d'instructeurs experts.",step:"Étape",of:"sur",next:"Continuer",back:"Retour",submit:"Soumettre",submitting:"Envoi...",sent:"Candidature reçue !",sentSub:"Nous examinons sous 5-10 jours.",sentBack:"Retour au site",errReq:"Champs obligatoires manquants",s1t:"À propos",s2t:"Expérience",s3t:"Ton cours",s4t:"Preuves",fname:"Nom complet",email:"Email",phone:"Téléphone",country:"Pays",city:"Ville",linkedin:"LinkedIn (recommandé)",website:"Site web",github:"GitHub",lang:"Langue préférée",exp:"Expertise (séparées par virgule)",years:"Années d'expérience",role:"Poste actuel",company:"Entreprise",teach:"Où as-tu enseigné ?",ctitle:"Titre du cours",cdesc:"Description 2-3 phrases",cformat:"Format",fmt_self:"Asynchrone",fmt_cohort:"Cohorte",fmt_live:"Workshop live",fmt_hybrid:"Hybride",clang:"Langue du cours",ctarget:"Public cible",coutline:"Outline (1 module par ligne)",cdur:"Durée estimée",cprice:"Prix suggéré (€)",demo:"Vidéo demo (lien)",sample:"Leçon exemple",portf:"Portfolio",refs:"Références"},en:{title:"Apply as Instructor",sub:"Join a curated platform of expert instructors. Applications reviewed weekly.",step:"Step",of:"of",next:"Continue",back:"Back",submit:"Submit application",submitting:"Submitting...",sent:"Application received!",sentSub:"We'll review your application within 5-10 business days. You'll hear back by email.",sentBack:"Back to site",errReq:"Required fields missing",s1t:"About you",s2t:"Experience and expertise",s3t:"Your proposed course",s4t:"Quality proof",fname:"Full name",email:"Email",phone:"Phone (optional)",country:"Country",city:"City",linkedin:"LinkedIn (recommended)",website:"Website or portfolio",github:"GitHub (optional)",lang:"Preferred language",exp:"Expertise areas (comma-separated)",years:"Years of experience",role:"Current role",company:"Current company",teach:"Where have you taught before?",ctitle:"Proposed course title",cdesc:"Description in 2-3 sentences",cformat:"Format",fmt_self:"Self-paced",fmt_cohort:"Cohort",fmt_live:"Live workshop",fmt_hybrid:"Hybrid",clang:"Course language",ctarget:"Target audience",coutline:"Outline (1 module per line, format: Module title | topic1, topic2)",cdur:"Estimated duration",cprice:"Suggested price (€)",demo:"Demo video (YouTube/Vimeo unlisted, 3-5 min)",sample:"Sample lesson (Google Doc, public PDF, etc)",portf:"Portfolio (1 link per line)",refs:"References (optional)"}}[langKey] || {});
@@ -5566,6 +5684,7 @@ const renderMarkdown = (md) => {
         view === "faq" && React.createElement(LegalPage, { slug: "faq", fallbackTitle: "FAQ" }),
         view === "about-page" && React.createElement(LegalPage, { slug: "about", fallbackTitle: "Sobre" }),
         view === "apply-instructor" && React.createElement(ApplyInstructor, null),
+        view === "instructor-public" && React.createElement(InstructorPublic, null),
         view === "about" && React.createElement("div", { style: { background: "#FBFBFD" } },
             React.createElement("style", null, anim),
             React.createElement("div", { style: { background: "linear-gradient(135deg,#0071E308,#AF52DE06)", borderBottom: bd, padding: "72px clamp(16px,4vw,48px) 60px", textAlign: "center" } },
