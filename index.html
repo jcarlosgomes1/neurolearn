@@ -473,6 +473,12 @@ const renderMarkdown = (md) => {
     const [publicInstructorLoading, setPublicInstructorLoading] = useState(false);
     const [allInstructors, setAllInstructors] = useState([]);
     const [allInstructorsLoaded, setAllInstructorsLoaded] = useState(false);
+    const [reviewModalCourse, setReviewModalCourse] = useState(null);
+    const [reviewDraft, setReviewDraft] = useState({ rating: 0, title: "", body: "" });
+    const [reviewSubmitting, setReviewSubmitting] = useState(false);
+    const [reviewError, setReviewError] = useState("");
+    const [myReviews, setMyReviews] = useState({});
+    const [myReviewsLoaded, setMyReviewsLoaded] = useState(false);
     const [instructorProfile, setInstructorProfile] = useState(null);
     const [instructorCourses, setInstructorCourses] = useState([]);
     const [instructorTransactions, setInstructorTransactions] = useState([]);
@@ -681,6 +687,18 @@ const renderMarkdown = (md) => {
     };
     // Auto-load when entering instructor zone
     useEffect(() => { if (zone === "instructor" && curStu) ldInstructorData(); }, [zone, curStu && curStu.id]);
+    useEffect(() => {
+      if (!curStu || myReviewsLoaded) return;
+      (async () => {
+        try {
+          const { data } = await window._SB.from("nl_reviews").select("*").eq("user_id", curStu.id);
+          const map = {};
+          (data || []).forEach(r => { map[r.course_id] = r; });
+          setMyReviews(map);
+          setMyReviewsLoaded(true);
+        } catch(e) { console.warn("my reviews:", e); }
+      })();
+    }, [curStu && curStu.id]);
     useEffect(() => {
       if (!publicInstructorSlug) { setPublicInstructor(null); return; }
       (async () => {
@@ -2840,6 +2858,7 @@ const renderMarkdown = (md) => {
     const MyCourses = () => {
       const T = TL().mycourses;
       const enrCourses = localizedCourses.filter(c=>(curStu?.enr||[]).includes(c.id));
+      const openReview = (course) => { setReviewDraft({ rating: 0, title: "", body: "" }); setReviewError(""); setReviewModalCourse(course); };
   
       const getDone = (cid) => {
     const ls = mkL((courses.find(c=>c.id===cid)||{}).md,cid);
@@ -3150,6 +3169,81 @@ const renderMarkdown = (md) => {
 
     // ── LOGIN / REGISTER ─────────────────────────────────────────────────────
     const goToInstructorPublic = (slug) => { if (!slug) return; setPublicInstructorSlug(slug); setView("instructor-public"); window.scrollTo(0,0); };
+    const ReviewModal = () => {
+      if (!reviewModalCourse) return null;
+      const close = () => { setReviewModalCourse(null); setReviewDraft({ rating: 0, title: "", body: "" }); setReviewError(""); };
+      const submit = async () => {
+        if (reviewDraft.rating < 1 || reviewDraft.rating > 5) { setReviewError("Escolhe uma classificação de 1 a 5 estrelas"); return; }
+        setReviewSubmitting(true); setReviewError("");
+        try {
+          const session = window._SB && window._SB.auth ? (await window._SB.auth.getSession()).data.session : null;
+          const sb = window._SB;
+          if (!sb || !session) { setReviewError("Sessão expirada"); setReviewSubmitting(false); return; }
+          // Auth headers come from supabase client automatically
+          const { data, error } = await sb.from("nl_reviews").upsert({
+            user_id: curStu.id,
+            course_id: reviewModalCourse.id,
+            rating: reviewDraft.rating,
+            title: reviewDraft.title.trim() || null,
+            body: reviewDraft.body.trim() || null,
+            is_verified_purchase: true,
+            is_visible: true,
+          }, { onConflict: "user_id,course_id" }).select().single();
+          if (error) { setReviewError(error.message || "Erro a guardar"); setReviewSubmitting(false); return; }
+          setMyReviews(prev => Object.assign({}, prev, { [reviewModalCourse.id]: data }));
+          close();
+        } catch(e) { setReviewError("Erro: " + (e.message || e)); }
+        setReviewSubmitting(false);
+      };
+      const existing = myReviews[reviewModalCourse.id];
+      if (existing && reviewDraft.rating === 0 && !reviewDraft.title && !reviewDraft.body) {
+        setReviewDraft({ rating: existing.rating, title: existing.title || "", body: existing.body || "" });
+      }
+      return React.createElement("div", { onClick: close, style: { position: "fixed", inset: 0, background: "rgba(0,0,0,.55)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: F } },
+        React.createElement("div", { onClick: e => e.stopPropagation(), style: { background: "#fff", borderRadius: 16, padding: 28, maxWidth: 500, width: "100%", maxHeight: "90vh", overflow: "auto" } },
+          React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 } },
+            React.createElement("h2", { style: { fontSize: 20, fontWeight: 700, letterSpacing: "-0.02em", margin: 0 } }, existing ? "Editar avaliação" : "Avaliar curso"),
+            React.createElement("button", { onClick: close, style: { background: "none", border: "none", fontSize: 22, color: "#86868B", cursor: "pointer", padding: 0, lineHeight: 1 } }, "×")
+          ),
+          React.createElement("p", { style: { fontSize: 13, color: "#6E6E73", marginBottom: 18 } }, reviewModalCourse.emoji + " " + reviewModalCourse.title),
+          React.createElement("div", { style: { marginBottom: 18 } },
+            React.createElement("label", { style: { display: "block", fontSize: 12, fontWeight: 600, color: "#6E6E73", marginBottom: 8 } }, "Classificação *"),
+            React.createElement("div", { style: { display: "flex", gap: 6 } },
+              [1,2,3,4,5].map(n => React.createElement("button", {
+                key: n,
+                onClick: () => setReviewDraft(d => Object.assign({}, d, { rating: n })),
+                style: { background: "none", border: "none", cursor: "pointer", fontSize: 32, padding: 0, color: n <= reviewDraft.rating ? "#F59E0B" : "#E5E5EA", transition: "color .15s" }
+              }, "★"))
+            )
+          ),
+          React.createElement("div", { style: { marginBottom: 14 } },
+            React.createElement("label", { style: { display: "block", fontSize: 12, fontWeight: 600, color: "#6E6E73", marginBottom: 5 } }, "Título (opcional)"),
+            React.createElement("input", {
+              type: "text", value: reviewDraft.title,
+              onChange: e => setReviewDraft(d => Object.assign({}, d, { title: e.target.value.slice(0, 100) })),
+              placeholder: "Resume a tua experiência",
+              style: { width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid #E5E5EA", fontSize: 14, fontFamily: F, outline: "none", boxSizing: "border-box" }
+            })
+          ),
+          React.createElement("div", { style: { marginBottom: 14 } },
+            React.createElement("label", { style: { display: "block", fontSize: 12, fontWeight: 600, color: "#6E6E73", marginBottom: 5 } }, "Comentário (opcional)"),
+            React.createElement("textarea", {
+              value: reviewDraft.body,
+              onChange: e => setReviewDraft(d => Object.assign({}, d, { body: e.target.value.slice(0, 1000) })),
+              placeholder: "Conta-nos o que gostaste, ou o que poderia ser melhor",
+              rows: 5,
+              style: { width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid #E5E5EA", fontSize: 13, fontFamily: F, outline: "none", boxSizing: "border-box", resize: "vertical", lineHeight: 1.5 }
+            }),
+            React.createElement("div", { style: { fontSize: 11, color: "#86868B", marginTop: 4, textAlign: "right" } }, reviewDraft.body.length + " / 1000")
+          ),
+          reviewError && React.createElement("div", { style: { padding: "10px 12px", borderRadius: 8, background: "#FEE2E2", color: "#991B1B", fontSize: 13, marginBottom: 14 } }, reviewError),
+          React.createElement("div", { style: { display: "flex", gap: 8, justifyContent: "flex-end" } },
+            React.createElement("button", { onClick: close, disabled: reviewSubmitting, style: { padding: "10px 18px", borderRadius: 10, background: "transparent", color: "#6E6E73", border: "1px solid #E5E5EA", fontSize: 13, fontWeight: 500, cursor: reviewSubmitting ? "wait" : "pointer", fontFamily: F } }, "Cancelar"),
+            React.createElement("button", { onClick: submit, disabled: reviewSubmitting, style: { padding: "10px 22px", borderRadius: 10, background: reviewSubmitting ? "#86868B" : "#0071E3", color: "#fff", border: "none", fontSize: 13, fontWeight: 600, cursor: reviewSubmitting ? "wait" : "pointer", fontFamily: F } }, reviewSubmitting ? "A guardar..." : (existing ? "Atualizar" : "Publicar"))
+          )
+        )
+      );
+    };
     const InstructorsList = () => {
         useEffect(() => {
           if (allInstructorsLoaded) return;
@@ -5608,7 +5702,7 @@ const renderMarkdown = (md) => {
             StuLogin(),
             renderToast()));
     if (zone === "instructor")
-        return (React.createElement(IZone, null));
+        return (React.createElement(React.Fragment, null, React.createElement(IZone, null), React.createElement(ReviewModal, null)));
     if (zone === "admin")
         return (React.createElement("div", { style: { fontFamily: F, color: "#1D1D1F", background: "#F5F5F7", minHeight: "100vh", opacity: mounted ? 1 : 0, transition: "opacity .4s" } },
             !isMobile && React.createElement(ASide, null),
@@ -5635,6 +5729,7 @@ const renderMarkdown = (md) => {
             sView === "explore" && React.createElement(Explore2, null),
             sView === "play" && React.createElement(Player, null),
             sView === "profile" && React.createElement(Profile, null),
+            React.createElement(ReviewModal, null),
             renderQuizForm(),
             sView === "community" && (() => {
                 var _a, _b;
