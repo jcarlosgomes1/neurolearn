@@ -471,6 +471,8 @@ const renderMarkdown = (md) => {
     const [publicInstructorCourses, setPublicInstructorCourses] = useState([]);
     const [publicInstructorReviews, setPublicInstructorReviews] = useState([]);
     const [publicInstructorLoading, setPublicInstructorLoading] = useState(false);
+    const [allInstructors, setAllInstructors] = useState([]);
+    const [allInstructorsLoaded, setAllInstructorsLoaded] = useState(false);
     const [instructorProfile, setInstructorProfile] = useState(null);
     const [instructorCourses, setInstructorCourses] = useState([]);
     const [instructorTransactions, setInstructorTransactions] = useState([]);
@@ -590,7 +592,7 @@ const renderMarkdown = (md) => {
         if (t) { setResetTokenFromURL(t); setZone("stuLogin"); }
         // Initialize view from URL hash (e.g. #privacy, #courses)
         const initHash = (window.location.hash || "").replace(/^#/, "");
-        const validViews = ["home","courses","pricing","detail","privacy","terms","refunds","cookies","legal-notice","faq","about-page","apply-instructor","instructor-public"];
+        const validViews = ["home","courses","pricing","detail","privacy","terms","refunds","cookies","legal-notice","faq","about-page","apply-instructor","instructor-public","instructors"];
         if (initHash.startsWith("instructor/")) {
           const slug = initHash.slice("instructor/".length).replace(/[^a-z0-9-]/g, "");
           if (slug) { setPublicInstructorSlug(slug); setView("instructor-public"); setZone("public"); }
@@ -3069,7 +3071,7 @@ const renderMarkdown = (md) => {
       const supportEmail = (platformConfig.support_email && platformConfig.support_email.value) || "suporte@neurolearn.pt";
       const goRoute = (route) => { setView(route); window.scrollTo(0,0); };
       const colActions = [
-        [(v,i)=>goRoute(["courses","pricing","about-page","faq","apply-instructor"][i]||"home"), (v,i)=>goRoute(["courses","pricing","about-page","faq","apply-instructor"][i]||"home"), (v,i)=>goRoute(["courses","pricing","about-page","faq","apply-instructor"][i]||"home"), (v,i)=>goRoute(["courses","pricing","about-page","faq","apply-instructor"][i]||"home"), (v,i)=>goRoute(["courses","pricing","about-page","faq","apply-instructor"][i]||"home")],
+        [(v,i)=>goRoute(["courses","instructors","pricing","faq","apply-instructor"][i]||"home"), (v,i)=>goRoute(["courses","instructors","pricing","faq","apply-instructor"][i]||"home"), (v,i)=>goRoute(["courses","instructors","pricing","faq","apply-instructor"][i]||"home"), (v,i)=>goRoute(["courses","instructors","pricing","faq","apply-instructor"][i]||"home"), (v,i)=>goRoute(["courses","instructors","pricing","faq","apply-instructor"][i]||"home")],
         [(v,i)=>goStuLogin(), (v,i)=>goStuLogin(), (v,i)=>{ if(curStu){ setZone("student"); setSView("my"); } else goStuLogin(); }, (v,i)=>{ if(curStu){ setZone("student"); setSView("profile"); } else goStuLogin(); }, (v,i)=>window.open("mailto:" + supportEmail)],
         [(v,i)=>goRoute("privacy"), (v,i)=>goRoute("terms"), (v,i)=>goRoute("refunds"), (v,i)=>goRoute("cookies"), (v,i)=>goRoute("legal-notice")],
       ];
@@ -3148,6 +3150,55 @@ const renderMarkdown = (md) => {
 
     // ── LOGIN / REGISTER ─────────────────────────────────────────────────────
     const goToInstructorPublic = (slug) => { if (!slug) return; setPublicInstructorSlug(slug); setView("instructor-public"); window.scrollTo(0,0); };
+    const InstructorsList = () => {
+        useEffect(() => {
+          if (allInstructorsLoaded) return;
+          (async () => {
+            try {
+              const { data } = await window._SB.from("nl_instructors").select("id, display_name, bio, expertise, profile_picture_url, public_slug, rating_avg, rating_count, total_students").eq("status", "approved").not("public_slug", "is", null).order("rating_avg", { ascending: false, nullsFirst: false });
+              setAllInstructors(data || []);
+              setAllInstructorsLoaded(true);
+            } catch(e) { console.warn(e); }
+          })();
+        }, []);
+        const Stars = ({ rating }) => {
+          const r = Math.round((rating || 0) * 2) / 2;
+          return React.createElement("span", { style: { color: "#F59E0B", fontSize: 12 } }, [1,2,3,4,5].map(n => n <= r ? "★" : (n - 0.5 === r ? "⯨" : "☆")).join(""));
+        };
+        return React.createElement("div", { style: { fontFamily: F, background: "#fff", minHeight: "calc(100vh - 60px)" } },
+          React.createElement("div", { style: { maxWidth: 1100, margin: "0 auto", padding: "48px clamp(20px,5vw,32px) 80px" } },
+            React.createElement("button", { onClick: () => { setView("home"); window.scrollTo(0,0); }, style: { background: "none", border: "1px solid #E5E5EA", padding: "6px 12px", borderRadius: 8, fontSize: 12, color: "#6E6E73", cursor: "pointer", marginBottom: 24, fontFamily: F } }, "← Voltar"),
+            React.createElement("h1", { style: { fontSize: "clamp(28px,4vw,42px)", fontWeight: 700, letterSpacing: "-0.03em", marginBottom: 8 } }, "Os nossos instrutores"),
+            React.createElement("p", { style: { fontSize: 15, color: "#6E6E73", marginBottom: 32, maxWidth: 560 } }, "Profissionais activos no mercado, todos validados por um processo de vetting rigoroso. Cada um traz experiência real e perspectiva única."),
+            allInstructors.length === 0 ? React.createElement("div", { style: { padding: 60, textAlign: "center", color: "#86868B" } }, "A carregar instrutores...") :
+            React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: 18 } },
+              allInstructors.map(ins => {
+                const initials = (ins.display_name || "").split(" ").filter(Boolean).slice(0,2).map(s=>s[0]).join("").toUpperCase();
+                return React.createElement("div", { key: ins.id, onClick: () => goToInstructorPublic(ins.public_slug),
+                  style: { background: "#fff", border: "1px solid #E5E5EA", borderRadius: 14, padding: 22, cursor: "pointer", transition: "all .15s" },
+                  onMouseEnter: e => { e.currentTarget.style.borderColor = "#0071E3"; e.currentTarget.style.transform = "translateY(-2px)"; },
+                  onMouseLeave: e => { e.currentTarget.style.borderColor = "#E5E5EA"; e.currentTarget.style.transform = "translateY(0)"; }
+                },
+                  React.createElement("div", { style: { display: "flex", gap: 14, marginBottom: 12, alignItems: "center" } },
+                    ins.profile_picture_url ?
+                      React.createElement("img", { src: ins.profile_picture_url, alt: ins.display_name, style: { width: 56, height: 56, borderRadius: 28, objectFit: "cover", flexShrink: 0, border: "1px solid #E5E5EA" }, onError: e => { e.target.style.display = "none"; } }) :
+                      React.createElement("div", { style: { width: 56, height: 56, borderRadius: 28, background: "linear-gradient(135deg,#0071E3,#7C3AED)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 700, flexShrink: 0 } }, initials),
+                    React.createElement("div", { style: { minWidth: 0, flex: 1 } },
+                      React.createElement("div", { style: { fontSize: 15, fontWeight: 700, marginBottom: 2 } }, ins.display_name),
+                      ins.rating_avg ? React.createElement("div", { style: { fontSize: 11, color: "#86868B" } }, React.createElement(Stars, { rating: ins.rating_avg }), " " + Number(ins.rating_avg).toFixed(1) + " (" + (ins.rating_count || 0) + ")") : React.createElement("div", { style: { fontSize: 11, color: "#86868B" } }, "Novo na plataforma")
+                    )
+                  ),
+                  ins.bio && React.createElement("p", { style: { fontSize: 13, color: "#1d1d1f", lineHeight: 1.5, marginBottom: 12, display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" } }, ins.bio),
+                  React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 12 } },
+                    (ins.expertise || []).slice(0, 4).map((x, k) => React.createElement("span", { key: k, style: { fontSize: 10, padding: "3px 8px", borderRadius: 5, background: "#F5F5F7", color: "#6E6E73", fontWeight: 500 } }, x))
+                  ),
+                  ins.total_students > 0 && React.createElement("div", { style: { fontSize: 11, color: "#86868B" } }, ins.total_students + " alunos formados")
+                );
+              })
+            )
+          )
+        );
+    };
     const InstructorPublic = () => {
         const i = publicInstructor;
         const courses = publicInstructorCourses;
@@ -5685,6 +5736,7 @@ const renderMarkdown = (md) => {
         view === "about-page" && React.createElement(LegalPage, { slug: "about", fallbackTitle: "Sobre" }),
         view === "apply-instructor" && React.createElement(ApplyInstructor, null),
         view === "instructor-public" && React.createElement(InstructorPublic, null),
+        view === "instructors" && React.createElement(InstructorsList, null),
         view === "about" && React.createElement("div", { style: { background: "#FBFBFD" } },
             React.createElement("style", null, anim),
             React.createElement("div", { style: { background: "linear-gradient(135deg,#0071E308,#AF52DE06)", borderBottom: bd, padding: "72px clamp(16px,4vw,48px) 60px", textAlign: "center" } },
