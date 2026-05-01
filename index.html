@@ -4377,6 +4377,220 @@ const renderMarkdown = (md) => {
                         React.createElement("button", { style: Object.assign(Object.assign({}, B(false, true)), { fontSize: 10, padding: "2px 8px", marginLeft: 4 }), onClick: () => validateQuizResult(r.id, null, "") }, "Rever")))));
             })));
     };
+    const IOnboarding = ({ instructor, onComplete }) => {
+        const [step, setStep] = useState(Math.max(1, (instructor.onboarding_step || 0) + 1));
+        const [data, setData] = useState({
+          display_name: instructor.display_name || "",
+          bio: instructor.bio || "",
+          expertise: (instructor.expertise || []).join(", "),
+          profile_picture_url: instructor.profile_picture_url || "",
+          tax_id: instructor.tax_id || "",
+          tax_country: instructor.tax_country || "PT",
+          billing_address: instructor.billing_address || "",
+          payout_method: instructor.payout_method || "iban",
+          payout_iban: instructor.payout_iban || "",
+          payout_swift: instructor.payout_swift || "",
+          public_slug: instructor.public_slug || "",
+          social_linkedin: instructor.social_linkedin || "",
+          social_twitter: instructor.social_twitter || "",
+          social_github: instructor.social_github || "",
+          social_website: instructor.social_website || "",
+          terms_accepted: false,
+        });
+        const [busy, setBusy] = useState(false);
+        const [err, setErr] = useState("");
+        const [slugStatus, setSlugStatus] = useState(null);
+        const set = (k, v) => setData(d => Object.assign({}, d, { [k]: v }));
+        const callEF = async (action, payload) => {
+          const session = window._SB && window._SB.auth ? (await window._SB.auth.getSession()).data.session : null;
+          const tok = session?.access_token || (curStu && curStu.access_token) || "";
+          const r = await fetch("https://obpezocujzdaznrdgwoo.supabase.co/functions/v1/instructor-onboarding", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Authorization": "Bearer " + tok },
+            body: JSON.stringify(Object.assign({ action }, payload || {}))
+          });
+          return await r.json();
+        };
+        const checkSlug = async (s) => {
+          if (!s || s.length < 3) { setSlugStatus(null); return; }
+          const d = await callEF("check_slug", { slug: s });
+          setSlugStatus(d.ok ? d.available : false);
+        };
+        const saveStep = async (stepNum, payload) => {
+          setBusy(true); setErr("");
+          const d = await callEF("save_step", { step: stepNum, data: payload });
+          setBusy(false);
+          if (!d.ok) { setErr(d.error || "Erro"); return false; }
+          setInstructorProfile(d.instructor);
+          if (d.instructor.public_slug && !data.public_slug) set("public_slug", d.instructor.public_slug);
+          return true;
+        };
+        const next = async () => {
+          let payload = {};
+          if (step === 1) {
+            if (!data.display_name.trim()) { setErr("Nome obrigatório"); return; }
+            payload = {
+              display_name: data.display_name.trim(),
+              bio: data.bio.trim(),
+              expertise: data.expertise.split(",").map(s => s.trim()).filter(Boolean),
+              profile_picture_url: data.profile_picture_url.trim(),
+            };
+          } else if (step === 2) {
+            if (!data.payout_iban.trim() && !data.payout_paypal) { setErr("Indica IBAN ou PayPal para receberes pagamentos"); return; }
+            payload = {
+              tax_id: data.tax_id.trim(),
+              tax_country: data.tax_country,
+              billing_address: data.billing_address.trim(),
+              payout_method: data.payout_method,
+              payout_iban: data.payout_iban.replace(/\s+/g, "").toUpperCase(),
+              payout_swift: data.payout_swift.trim(),
+            };
+          } else if (step === 3) {
+            if (!data.public_slug || data.public_slug.length < 3) { setErr("Slug obrigatório (mínimo 3 caracteres)"); return; }
+            if (slugStatus === false) { setErr("Slug não disponível"); return; }
+            payload = {
+              public_slug: data.public_slug,
+              social_linkedin: data.social_linkedin.trim(),
+              social_twitter: data.social_twitter.trim(),
+              social_github: data.social_github.trim(),
+              social_website: data.social_website.trim(),
+            };
+          } else if (step === 4) {
+            // Step 4 is informational about creating courses; nothing to save
+            setStep(5); return;
+          } else if (step === 5) {
+            if (!data.terms_accepted) { setErr("Tens de aceitar o acordo de instrutor"); return; }
+            payload = { terms_accepted: true };
+            const ok = await saveStep(5, payload);
+            if (ok) onComplete();
+            return;
+          }
+          const ok = await saveStep(step, payload);
+          if (ok) setStep(s => s + 1);
+        };
+        const back = () => { setErr(""); if (step > 1) setStep(s => s - 1); };
+        const stepLabels = ["Perfil", "Pagamentos", "Identidade pública", "Próximos passos", "Acordo"];
+        const fld = (label, key, opts) => {
+          opts = opts || {};
+          return React.createElement("div", { style: { marginBottom: 14 } },
+            React.createElement("label", { style: { display: "block", fontSize: 12, fontWeight: 600, color: "#6E6E73", marginBottom: 5 } }, label + (opts.required ? " *" : "")),
+            opts.textarea ? React.createElement("textarea", {
+              value: data[key] || "", onChange: e => set(key, e.target.value),
+              placeholder: opts.placeholder || "", rows: opts.rows || 3,
+              style: { width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid #E5E5EA", fontSize: 14, fontFamily: F, outline: "none", boxSizing: "border-box", resize: "vertical" }
+            }) : opts.select ? React.createElement("select", {
+              value: data[key] || "", onChange: e => set(key, e.target.value),
+              style: { width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid #E5E5EA", fontSize: 14, fontFamily: F, outline: "none", background: "#fff", boxSizing: "border-box" }
+            }, opts.select.map(o => React.createElement("option", { key: o.v, value: o.v }, o.l))) : React.createElement("input", {
+              type: opts.type || "text", value: data[key] || "",
+              onChange: e => { set(key, e.target.value); if (opts.onChange) opts.onChange(e.target.value); },
+              placeholder: opts.placeholder || "",
+              style: { width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid #E5E5EA", fontSize: 14, fontFamily: F, outline: "none", boxSizing: "border-box" }
+            }),
+            opts.hint && React.createElement("div", { style: { fontSize: 11, color: "#86868B", marginTop: 4 } }, opts.hint)
+          );
+        };
+        const screens = {
+          1: () => React.createElement("div", null,
+            React.createElement("p", { style: { fontSize: 14, color: "#6E6E73", marginBottom: 18, lineHeight: 1.6 } }, "Confirma os teus dados públicos. Estes vão aparecer no teu perfil de instrutor."),
+            fld("Nome a apresentar", "display_name", { required: true, placeholder: "Como queres ser chamado nos cursos" }),
+            fld("Bio profissional", "bio", { textarea: true, rows: 4, placeholder: "2-3 frases sobre ti e a tua experiência. Os alunos vão ler isto.", hint: "Recomendado: descreve o que fazes hoje, anos de experiência, e o que torna o teu ensino único." }),
+            fld("Especialidades", "expertise", { placeholder: "Machine Learning, Python, MLOps", hint: "Separadas por vírgula. Máximo 10 áreas." }),
+            fld("URL da foto de perfil", "profile_picture_url", { placeholder: "https://...", hint: "Recomendamos uma foto profissional. Para já, podes pôr o link do LinkedIn — adicionaremos upload em breve." })
+          ),
+          2: () => React.createElement("div", null,
+            React.createElement("p", { style: { fontSize: 14, color: "#6E6E73", marginBottom: 18, lineHeight: 1.6 } }, "Para te podermos pagar quando vendas cursos. Estes dados são privados e só visíveis à administração."),
+            React.createElement("div", { style: { padding: "10px 14px", background: "#FFF7ED", borderRadius: 8, fontSize: 12, color: "#9A3412", marginBottom: 16, lineHeight: 1.5 } }, "🔒 Dados criptografados e nunca partilhados publicamente."),
+            React.createElement("div", { style: { display: "grid", gridTemplateColumns: "2fr 1fr", gap: 10 } },
+              fld("NIF / Tax ID", "tax_id", { placeholder: "123456789" }),
+              fld("País", "tax_country", { placeholder: "PT" })
+            ),
+            fld("Morada de facturação", "billing_address", { textarea: true, rows: 2, placeholder: "Rua, código postal, cidade" }),
+            fld("Método de pagamento", "payout_method", { select: [{v:"iban",l:"Transferência bancária (IBAN)"},{v:"paypal",l:"PayPal"}] }),
+            data.payout_method === "iban" && React.createElement(React.Fragment, null,
+              fld("IBAN", "payout_iban", { placeholder: "PT50 0000 0000 0000 0000 0000 0", hint: "Sem espaços ou separadores" }),
+              fld("SWIFT/BIC (opcional)", "payout_swift", { placeholder: "BCOMPTPL" })
+            ),
+            data.payout_method === "paypal" && fld("Email PayPal", "payout_paypal", { placeholder: "instrutor@email.com" })
+          ),
+          3: () => React.createElement("div", null,
+            React.createElement("p", { style: { fontSize: 14, color: "#6E6E73", marginBottom: 18, lineHeight: 1.6 } }, "Como os alunos te vão encontrar online. Estes campos são todos públicos."),
+            React.createElement("div", { style: { marginBottom: 14 } },
+              React.createElement("label", { style: { display: "block", fontSize: 12, fontWeight: 600, color: "#6E6E73", marginBottom: 5 } }, "URL pública do perfil *"),
+              React.createElement("div", { style: { display: "flex", alignItems: "center", border: "1px solid #E5E5EA", borderRadius: 8, paddingLeft: 12, fontSize: 13, color: "#86868B", background: "#fff" } },
+                React.createElement("span", null, "neurolearn.app/instructor/"),
+                React.createElement("input", {
+                  value: data.public_slug || "",
+                  onChange: e => { const v = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""); set("public_slug", v); checkSlug(v); },
+                  placeholder: "teu-nome",
+                  style: { flex: 1, border: "none", padding: "10px 12px", fontSize: 14, fontFamily: F, outline: "none", color: "#1d1d1f", background: "transparent" }
+                })
+              ),
+              slugStatus === true && React.createElement("div", { style: { fontSize: 11, color: "#16A34A", marginTop: 4 } }, "✓ Disponível"),
+              slugStatus === false && React.createElement("div", { style: { fontSize: 11, color: "#DC2626", marginTop: 4 } }, "✕ Já em uso"),
+              data.public_slug.length > 0 && data.public_slug.length < 3 && React.createElement("div", { style: { fontSize: 11, color: "#86868B", marginTop: 4 } }, "Mínimo 3 caracteres")
+            ),
+            fld("LinkedIn", "social_linkedin", { placeholder: "https://linkedin.com/in/..." }),
+            fld("Twitter / X", "social_twitter", { placeholder: "https://x.com/..." }),
+            fld("GitHub", "social_github", { placeholder: "https://github.com/..." }),
+            fld("Website pessoal", "social_website", { placeholder: "https://..." })
+          ),
+          4: () => React.createElement("div", null,
+            React.createElement("p", { style: { fontSize: 14, color: "#6E6E73", marginBottom: 18, lineHeight: 1.6 } }, "Estás quase! Algumas coisas para saberes antes de começar:"),
+            React.createElement("div", { style: { display: "grid", gap: 12 } },
+              [
+                ["💰", "Recebes " + (instructor.revenue_share_pct || 50) + "% por cada venda", "Os pagamentos são processados mensalmente. Vais ver o saldo na zona Receita."],
+                ["📚", "Vais poder criar cursos no formato " + (instructor.proposed_course_format || "self-paced"), "Para já, o admin é quem cria. Em breve poderás fazer upload directo."],
+                ["⭐", "Avaliações dos alunos contam", "Acima de 4.5★ podes negociar uma comissão maior. Abaixo de 4.0★, recebes feedback construtivo do admin."],
+                ["📧", "Suporte directo", "Tens canal directo connosco em suporte@neurolearn.pt para qualquer dúvida ou bloqueio."]
+              ].map(([icon, title, desc], i) => React.createElement("div", { key: i, style: { display: "flex", gap: 12, padding: 14, background: "#FAFAFA", borderRadius: 10, alignItems: "flex-start" } },
+                React.createElement("div", { style: { fontSize: 22, flexShrink: 0 } }, icon),
+                React.createElement("div", null,
+                  React.createElement("div", { style: { fontSize: 14, fontWeight: 600, marginBottom: 3 } }, title),
+                  React.createElement("div", { style: { fontSize: 12, color: "#6E6E73", lineHeight: 1.5 } }, desc)
+                )
+              ))
+            )
+          ),
+          5: () => React.createElement("div", null,
+            React.createElement("p", { style: { fontSize: 14, color: "#6E6E73", marginBottom: 18, lineHeight: 1.6 } }, "Lê e aceita o acordo de instrutor para finalizar."),
+            React.createElement("div", { style: { padding: 18, background: "#FAFAFA", borderRadius: 10, fontSize: 13, lineHeight: 1.65, maxHeight: 280, overflowY: "auto", border: "1px solid #E5E5EA", marginBottom: 14 } },
+              React.createElement("h4", { style: { fontSize: 14, fontWeight: 700, marginBottom: 8, marginTop: 0 } }, "Acordo de Instrutor — resumo"),
+              React.createElement("p", { style: { margin: "0 0 10px" } }, React.createElement("strong", null, "1. Conteúdo: "), "Garantes que és o autor original do conteúdo que submetes, ou tens licenças apropriadas. Concedes-nos licença não-exclusiva para distribuir o teu conteúdo na plataforma."),
+              React.createElement("p", { style: { margin: "0 0 10px" } }, React.createElement("strong", null, "2. Qualidade: "), "Comprometes-te a manter qualidade pedagógica. Cursos com avaliação média < 3.5★ podem ser despublicados após revisão."),
+              React.createElement("p", { style: { margin: "0 0 10px" } }, React.createElement("strong", null, "3. Pagamentos: "), "Recebes a percentagem acordada (" + (instructor.revenue_share_pct || 50) + "% líquidos de IVA e fees de processamento). Pagamentos mensais quando o saldo > €25."),
+              React.createElement("p", { style: { margin: "0 0 10px" } }, React.createElement("strong", null, "4. Suspensão: "), "Em caso de plágio, conduta inadequada ou avaliações persistentemente baixas, a plataforma pode suspender a tua conta com 30 dias de notice."),
+              React.createElement("p", { style: { margin: "0 0 10px" } }, React.createElement("strong", null, "5. Saída: "), "Podes sair a qualquer momento. O teu conteúdo permanecerá disponível aos alunos já inscritos durante 12 meses, com royalties pagos normalmente."),
+              React.createElement("p", { style: { margin: 0 } }, React.createElement("strong", null, "6. Lei aplicável: "), "Este acordo rege-se pela lei portuguesa. Litígios são resolvidos em Lisboa.")
+            ),
+            React.createElement("label", { style: { display: "flex", alignItems: "flex-start", gap: 10, padding: 14, background: data.terms_accepted ? "#ECFDF5" : "#fff", border: "1px solid " + (data.terms_accepted ? "#A7F3D0" : "#E5E5EA"), borderRadius: 10, cursor: "pointer", transition: "all .15s" } },
+              React.createElement("input", { type: "checkbox", checked: data.terms_accepted, onChange: e => set("terms_accepted", e.target.checked), style: { marginTop: 2 } }),
+              React.createElement("span", { style: { fontSize: 13, lineHeight: 1.5 } }, "Li e aceito o ", React.createElement("strong", null, "Acordo de Instrutor"), ". Confirmo que sou maior de idade, tenho legitimidade para o assinar, e os dados que forneci são verdadeiros.")
+            )
+          )
+        };
+        return React.createElement("div", { style: { fontFamily: F, background: "#F5F5F7", minHeight: "100vh" } },
+          React.createElement("div", { style: { maxWidth: 640, margin: "0 auto", padding: "48px clamp(20px,5vw,32px) 80px" } },
+            React.createElement("div", { style: { marginBottom: 30 } },
+              React.createElement("div", { style: { fontSize: 11, color: "#0071E3", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 6 } }, "Onboarding · Passo " + step + " de 5"),
+              React.createElement("h1", { style: { fontSize: "clamp(26px,3.5vw,36px)", fontWeight: 700, letterSpacing: "-0.03em", marginBottom: 6 } }, "Bem-vindo, " + (instructor.display_name.split(" ")[0]) + "!"),
+              React.createElement("p", { style: { fontSize: 14, color: "#6E6E73" } }, "Vamos preparar o teu perfil em poucos minutos.")
+            ),
+            React.createElement("div", { style: { display: "flex", gap: 4, marginBottom: 30 } },
+              [1,2,3,4,5].map(i => React.createElement("div", { key: i, style: { flex: 1, height: 4, borderRadius: 2, background: i <= step ? "#0071E3" : "rgba(0,0,0,.08)", transition: "background .25s" } }))
+            ),
+            React.createElement("div", { style: { background: "#fff", borderRadius: 14, padding: 26, border: "1px solid rgba(0,0,0,.06)" } },
+              React.createElement("h2", { style: { fontSize: 20, fontWeight: 700, marginBottom: 14, letterSpacing: "-0.02em" } }, stepLabels[step-1]),
+              (screens[step] || screens[1])(),
+              err && React.createElement("div", { style: { padding: "10px 14px", borderRadius: 8, background: "#FEE2E2", color: "#991B1B", fontSize: 13, marginTop: 14 } }, err),
+              React.createElement("div", { style: { display: "flex", justifyContent: "space-between", marginTop: 22, paddingTop: 18, borderTop: "1px solid rgba(0,0,0,.06)" } },
+                step > 1 ? React.createElement("button", { onClick: back, disabled: busy, style: { padding: "10px 18px", borderRadius: 10, background: "transparent", color: "#6E6E73", border: "1px solid #E5E5EA", fontSize: 13, fontWeight: 500, cursor: busy ? "wait" : "pointer", fontFamily: F } }, "← Voltar") : React.createElement("div"),
+                React.createElement("button", { onClick: next, disabled: busy, style: { padding: "11px 22px", borderRadius: 10, background: busy ? "#86868B" : (step === 5 ? "#16A34A" : "#0071E3"), color: "#fff", border: "none", fontSize: 13, fontWeight: 600, cursor: busy ? "wait" : "pointer", fontFamily: F } }, busy ? "..." : (step === 5 ? "Aceitar e começar →" : "Continuar →"))
+              )
+            )
+          )
+        );
+    };
     const IZone = () => {
         const ip = instructorProfile;
         const courses = instructorCourses;
@@ -4405,6 +4619,10 @@ const renderMarkdown = (md) => {
               React.createElement("div", null, "A carregar zona instrutor...")
             )
           );
+        }
+        // Gate: if onboarding not completed, show wizard
+        if (!ip.onboarding_completed) {
+          return React.createElement(IOnboarding, { instructor: ip, onComplete: () => ldInstructorData() });
         }
         const ISide = () => React.createElement("aside", { style: { position: "fixed", left: 0, top: 0, width: 200, height: "100vh", background: "#FAFAFA", borderRight: "1px solid rgba(0,0,0,.08)", padding: "20px 14px", display: isMobile ? "none" : "flex", flexDirection: "column", gap: 4 } },
           React.createElement("div", { style: { padding: "8px 12px 14px", borderBottom: "1px solid rgba(0,0,0,.06)", marginBottom: 12 } },
