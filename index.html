@@ -281,7 +281,7 @@ window._NL_BOOT = (async () => {
 
 const { useState, useEffect, useRef, useCallback } = React;
 const CK = "nl7-c", SK = "nl7-s", NK = "nl7-n", NOK = "nl7-notes", LCK = "nl7-lc", LVK = "nl7-lv", EMK = "nl7-em", CMK = "nl7-cm", BDK = "nl7-bd", SSK = "nl7-session";
-const PIN = "2026";
+// PIN removed — admin auth via JWT (role check in backend)
 const F = "'SF Pro Display',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif";
 const PAL = ["#0071E3", "#30D158", "#FF9500", "#AF52DE", "#FF375F", "#5AC8FA"];
 const G = "linear-gradient(135deg,#0071E3,#AF52DE)";
@@ -853,7 +853,7 @@ const renderMarkdown = (md) => {
         catch (_e) { }
         // Quiz results
         try {
-            const qr = await fetch("https://obpezocujzdaznrdgwoo.supabase.co/functions/v1/submit-quiz", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "get", student_email: s.email }) });
+            const qr = await fetch("https://obpezocujzdaznrdgwoo.supabase.co/functions/v1/submit-quiz", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": "Bearer " + ((typeof getToken === "function" && getToken()) || "") }, body: JSON.stringify({ action: "get" }) });
             const qd = await qr.json();
             if (qd.ok)
                 setQuizResults(qd.results || []);
@@ -922,7 +922,7 @@ const renderMarkdown = (md) => {
                 await ldStudentData(stuObj);
                 // Load admin notifications
                 if (u.role==="super_admin"||u.role==="admin") {
-                    const an = await ef("submit-quiz",{action:"get_admin_notifs",admin_pin:"2026"}).catch(()=>({ok:false}));
+                    const an = await ef("submit-quiz",{action:"get_admin_notifs"},true).catch(()=>({ok:false}));
                     if (an.ok) setAdminNotifs(an.notifications||[]);
                 }
             }
@@ -1169,8 +1169,9 @@ const renderMarkdown = (md) => {
         if (!curStu)
             return null;
         try {
-            const resp = await fetch(QUIZ_API, { method: "POST", headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ action: "submit", student_email: curStu.email, student_name: curStu.name,
+            const tok = (typeof getToken === "function" && getToken()) || "";
+            const resp = await fetch(QUIZ_API, { method: "POST", headers: { "Content-Type": "application/json", "Authorization": "Bearer " + tok },
+                body: JSON.stringify({ action: "submit",
                     course_id: course.id, course_title: course.title, lesson_id: (lesson === null || lesson === void 0 ? void 0 : lesson.id) || null,
                     lesson_title: (lesson === null || lesson === void 0 ? void 0 : lesson.title) || null, quiz_type: lesson ? "lesson" : "final",
                     answers, score, total }) });
@@ -1197,7 +1198,8 @@ const renderMarkdown = (md) => {
     };
     const loadAdminNotifs = async () => {
         try {
-            const resp = await fetch(QUIZ_API, { method: "POST", headers: { "Content-Type": "application/json" },
+            const tok = (typeof getToken === "function" && getToken()) || "";
+            const resp = await fetch(QUIZ_API, { method: "POST", headers: { "Content-Type": "application/json", "Authorization": "Bearer " + tok },
                 body: JSON.stringify({ action: "get_admin_notifs" }) });
             const data = await resp.json();
             if (data.ok)
@@ -1207,7 +1209,8 @@ const renderMarkdown = (md) => {
     };
     const markAdminNotifRead = async (id, all = false) => {
         try {
-            await fetch(QUIZ_API, { method: "POST", headers: { "Content-Type": "application/json" },
+            const tok = (typeof getToken === "function" && getToken()) || "";
+            await fetch(QUIZ_API, { method: "POST", headers: { "Content-Type": "application/json", "Authorization": "Bearer " + tok },
                 body: JSON.stringify({ action: "mark_read", id, all }) });
             if (all)
                 setAdminNotifs(n => n.map(x => (Object.assign(Object.assign({}, x), { read: true }))));
@@ -1218,7 +1221,8 @@ const renderMarkdown = (md) => {
     };
     const loadAdminQuizResults = async (courseId) => {
         try {
-            const resp = await fetch(QUIZ_API, { method: "POST", headers: { "Content-Type": "application/json" },
+            const tok = (typeof getToken === "function" && getToken()) || "";
+            const resp = await fetch(QUIZ_API, { method: "POST", headers: { "Content-Type": "application/json", "Authorization": "Bearer " + tok },
                 body: JSON.stringify({ action: "get", admin: true, course_id: courseId || undefined }) });
             const data = await resp.json();
             if (data.ok)
@@ -1228,7 +1232,8 @@ const renderMarkdown = (md) => {
     };
     const validateQuizResult = async (id, validated, notes) => {
         try {
-            const resp = await fetch(QUIZ_API, { method: "POST", headers: { "Content-Type": "application/json" },
+            const tok = (typeof getToken === "function" && getToken()) || "";
+            const resp = await fetch(QUIZ_API, { method: "POST", headers: { "Content-Type": "application/json", "Authorization": "Bearer " + tok },
                 body: JSON.stringify({ action: "validate", id, validated_by_admin: validated, admin_notes: notes || "" }) });
             const data = await resp.json();
             if (data.ok) {
@@ -5531,7 +5536,7 @@ const renderMarkdown = (md) => {
     const ASettings = () => (React.createElement("div", null,
         React.createElement("style", null, anim),
         React.createElement("h1", { style: { fontSize: 26, fontWeight: 700, marginBottom: 24 } }, "Defini\u00E7\u00F5es"),
-        React.createElement("div", { style: Object.assign(Object.assign({}, crd), { padding: 24, border: bd, maxWidth: 480, animation: "fu .4s ease both" }) }, [["Plataforma", "NeuroLearn"], ["PIN de gestão", PIN], ["URL", "neurolearn-rosy.vercel.app"], ["Tema", "Apple Clean"], ["Idioma", "Português (PT)"], ["Base de dados", "Supabase (obpezocujzdaznrdgwoo)"]].map(([l, v], i, arr) => (React.createElement("div", { key: i, style: Object.assign(Object.assign({}, fj), { padding: "12px 0", borderBottom: i < arr.length - 1 ? "0.5px solid rgba(0,0,0,.06)" : "none", fontSize: 14 }) },
+        React.createElement("div", { style: Object.assign(Object.assign({}, crd), { padding: 24, border: bd, maxWidth: 480, animation: "fu .4s ease both" }) }, [["Plataforma", "NeuroLearn"], ["URL", "neurolearn-rosy.vercel.app"], ["Tema", "Apple Clean"], ["Idioma", "Português (PT)"], ["Base de dados", "Supabase (obpezocujzdaznrdgwoo)"], ["Autenticação", "JWT + RLS (sem PIN)"]].map(([l, v], i, arr) => (React.createElement("div", { key: i, style: Object.assign(Object.assign({}, fj), { padding: "12px 0", borderBottom: i < arr.length - 1 ? "0.5px solid rgba(0,0,0,.06)" : "none", fontSize: 14 }) },
             React.createElement("span", { style: { color: "#86868B" } }, l),
             React.createElement("span", { style: { fontWeight: 500, fontSize: 12, color: "#1D1D1F" } }, v))))),
         React.createElement("div", { style: Object.assign(Object.assign({}, crd), { padding: 20, border: bd, maxWidth: 480, marginTop: 16, background: "#F9F9FB" }) },
