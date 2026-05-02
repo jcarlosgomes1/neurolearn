@@ -2863,7 +2863,16 @@ const renderMarkdown = (md) => {
     const MyCourses = () => {
       const T = TL().mycourses;
       const enrCourses = localizedCourses.filter(c=>(curStu?.enr||[]).includes(c.id));
-      const openReview = (course) => { setReviewDraft({ rating: 0, title: "", body: "" }); setReviewError(""); setReviewModalCourse(course); };
+      const openReview = (course) => {
+        const existing = myReviews[course.id];
+        if (existing) {
+          setReviewDraft({ rating: existing.rating, title: existing.title || "", body: existing.body || "" });
+        } else {
+          setReviewDraft({ rating: 0, title: "", body: "" });
+        }
+        setReviewError("");
+        setReviewModalCourse(course);
+      };
   
       const getDone = (cid) => {
     const ls = mkL((courses.find(c=>c.id===cid)||{}).md,cid);
@@ -2931,10 +2940,19 @@ const renderMarkdown = (md) => {
                 React.createElement('div',{style:{fontSize:12,color:'var(--ink4)'}},
                   c.mods+' '+{pt:'módulos',es:'módulos',fr:'modules',en:'modules'}[_lang||'pt']+' · '+c.dur)
               ),
-              React.createElement(BtnP,{size:'sm',
-                onClick:()=>{setActC(c);setActL(null);setSView('play');},
-                style:{flexShrink:0,background:pct===100?'var(--green)':'var(--blue)'}},
-                pct===100?'✓ '+T.completed:pct>0?T.continue:T.start)
+              React.createElement('div',{style:{display:'flex',gap:8,flexShrink:0,flexWrap:'wrap'}},
+                pct >= 30 && React.createElement('button',{onClick:()=>openReview(c),
+                  title: myReviews[c.id] ? 'Editar avaliação' : 'Avaliar curso',
+                  style:{padding:'6px 12px',borderRadius:'var(--r10)',background:'transparent',
+                    color:myReviews[c.id]?'var(--green)':'var(--ink2)',
+                    border:'1px solid '+(myReviews[c.id]?'var(--green)':'var(--border)'),
+                    fontSize:12,fontWeight:500,cursor:'pointer',fontFamily:'var(--font)'}},
+                  myReviews[c.id]?'✓ '+myReviews[c.id].rating+'★':'Avaliar'),
+                React.createElement(BtnP,{size:'sm',
+                  onClick:()=>{setActC(c);setActL(null);setSView('play');},
+                  style:{background:pct===100?'var(--green)':'var(--blue)'}},
+                  pct===100?'✓ '+T.completed:pct>0?T.continue:T.start)
+              )
             )
           )
         );
@@ -3201,9 +3219,7 @@ const renderMarkdown = (md) => {
         setReviewSubmitting(false);
       };
       const existing = myReviews[reviewModalCourse.id];
-      if (existing && reviewDraft.rating === 0 && !reviewDraft.title && !reviewDraft.body) {
-        setReviewDraft({ rating: existing.rating, title: existing.title || "", body: existing.body || "" });
-      }
+      // NOTE: draft is populated by openReview() / openReviewEdit() handlers, NEVER inside render.
       return React.createElement("div", { onClick: close, style: { position: "fixed", inset: 0, background: "rgba(0,0,0,.55)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: F } },
         React.createElement("div", { onClick: e => e.stopPropagation(), style: { background: "#fff", borderRadius: 16, padding: 28, maxWidth: 500, width: "100%", maxHeight: "90vh", overflow: "auto" } },
           React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 } },
