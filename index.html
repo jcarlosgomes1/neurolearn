@@ -704,7 +704,7 @@ const renderMarkdown = (md) => {
       (async () => {
         setPublicInstructorLoading(true);
         try {
-          const { data: ins } = await window._SB.from("nl_instructors").select("id, display_name, bio, expertise, social_linkedin, social_twitter, social_github, social_website, profile_picture_url, public_slug, rating_avg, rating_count, total_students").eq("public_slug", publicInstructorSlug).eq("status", "approved").maybeSingle();
+          const { data: ins } = await window._SB.from("nl_instructors_public").select("*").eq("public_slug", publicInstructorSlug).maybeSingle();
           setPublicInstructor(ins);
           if (ins) {
             const { data: cs } = await window._SB.from("nl_courses").select("*").eq("instructor_id", ins.id).eq("published", true).order("enrollments_count", { ascending: false });
@@ -3249,7 +3249,7 @@ const renderMarkdown = (md) => {
           if (allInstructorsLoaded) return;
           (async () => {
             try {
-              const { data } = await window._SB.from("nl_instructors").select("id, display_name, bio, expertise, profile_picture_url, public_slug, rating_avg, rating_count, total_students").eq("status", "approved").not("public_slug", "is", null).order("rating_avg", { ascending: false, nullsFirst: false });
+              const { data } = await window._SB.from("nl_instructors_public").select("*").order("rating_avg", { ascending: false, nullsFirst: false });
               setAllInstructors(data || []);
               setAllInstructorsLoaded(true);
             } catch(e) { console.warn(e); }
