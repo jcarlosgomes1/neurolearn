@@ -474,6 +474,8 @@ const renderMarkdown = (md) => {
     const [allInstructors, setAllInstructors] = useState([]);
     const [allInstructorsLoaded, setAllInstructorsLoaded] = useState(false);
     const [reviewModalCourse, setReviewModalCourse] = useState(null);
+    const [payoutRequesting, setPayoutRequesting] = useState(false);
+    const [payoutMsg, setPayoutMsg] = useState("");
     const [reviewDraft, setReviewDraft] = useState({ rating: 0, title: "", body: "" });
     const [reviewSubmitting, setReviewSubmitting] = useState(false);
     const [reviewError, setReviewError] = useState("");
@@ -5041,6 +5043,35 @@ const renderMarkdown = (md) => {
               React.createElement(StatCard, { label: "Saldo Disponível", value: eur(availableBalance), sub: "Pronto para pagamento", color: "#16A34A" }),
               React.createElement(StatCard, { label: "Em Processamento", value: eur(pendingPayouts), color: "#D97706" }),
               React.createElement(StatCard, { label: "Pago Total", value: eur(paidPayouts) })
+            ),
+            React.createElement("div", { style: { background: "#fff", borderRadius: 14, border: "1px solid rgba(0,0,0,.08)", padding: 18, marginBottom: 18 } },
+              React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 } },
+                React.createElement("div", null,
+                  React.createElement("div", { style: { fontSize: 14, fontWeight: 600, marginBottom: 2 } }, "Solicitar pagamento"),
+                  React.createElement("div", { style: { fontSize: 12, color: "#86868B" } }, availableBalance < 2500 ? ("Mínimo €25.00 — disponível: " + eur(availableBalance)) : payouts.some(p => ["pending","processing"].includes(p.status)) ? "Já tens um pedido em processamento" : "Pedido será processado em até 7 dias úteis")
+                ),
+                React.createElement("button", {
+                  onClick: async () => {
+                    if (payoutRequesting) return;
+                    setPayoutRequesting(true); setPayoutMsg("");
+                    try {
+                      const tok = (typeof getToken === "function" && getToken()) || "";
+                      const r = await fetch("https://obpezocujzdaznrdgwoo.supabase.co/functions/v1/payments", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": "Bearer " + tok }, body: JSON.stringify({ action: "request_payout" }) });
+                      const d = await r.json();
+                      if (d.ok) {
+                        setPayoutMsg("✅ Pedido criado: " + d.reference);
+                        await ldInstructorData();
+                      } else {
+                        setPayoutMsg("❌ " + (d.message || d.error || "Erro"));
+                      }
+                    } catch(e) { setPayoutMsg("❌ " + (e.message || e)); }
+                    setPayoutRequesting(false);
+                  },
+                  disabled: payoutRequesting || availableBalance < 2500 || payouts.some(p => ["pending","processing"].includes(p.status)),
+                  style: { padding: "10px 22px", borderRadius: 10, background: (payoutRequesting || availableBalance < 2500 || payouts.some(p => ["pending","processing"].includes(p.status))) ? "#86868B" : "#0071E3", color: "#fff", border: "none", fontWeight: 600, fontSize: 13, cursor: (payoutRequesting || availableBalance < 2500 || payouts.some(p => ["pending","processing"].includes(p.status))) ? "not-allowed" : "pointer", fontFamily: F }
+                }, payoutRequesting ? "A enviar..." : "Solicitar payout")
+              ),
+              payoutMsg && React.createElement("div", { style: { marginTop: 12, padding: "8px 12px", borderRadius: 8, background: payoutMsg.startsWith("✅") ? "#16A34A15" : "#DC262615", color: payoutMsg.startsWith("✅") ? "#16A34A" : "#DC2626", fontSize: 13 } }, payoutMsg)
             ),
             !eligibleForPayout && !hasPendingPayout && payouts.length === 0 && React.createElement("div", { style: { padding: 14, marginBottom: 16, background: "#FEF3C7", borderRadius: 10, fontSize: 12, color: "#92400E" } },
               !hasPayoutMethod ? "⚠️ Configura primeiro um método de pagamento (IBAN ou PayPal) no separador Perfil." :
