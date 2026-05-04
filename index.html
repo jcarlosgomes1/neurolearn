@@ -141,10 +141,12 @@ const getToken = () => _sess.token;
 function saveSession(d) {
   _sess = { token:d.access_token, refresh:d.refresh_token, exp:d.expires_at, user:d.user };
   try { localStorage.setItem("nl8s", JSON.stringify(_sess)); } catch(_){}
+  try { if (window._SB && d.access_token) window._SB.auth.setSession({ access_token: d.access_token, refresh_token: d.refresh_token }); } catch(_){}
 }
 function clearSession() {
   _sess = { token:null, refresh:null, exp:null, user:null };
   try { localStorage.removeItem("nl8s"); } catch(_){}
+  try { if (window._SB) window._SB.auth.signOut(); } catch(_){}
   ["nl7-session","nl7-n","nl7-notes","nl7-lv","nl7-em","nl7-bd"].forEach(k=>{try{localStorage.removeItem(k);}catch(_){}});
 }
 function loadSession() {
@@ -152,7 +154,9 @@ function loadSession() {
     const s = JSON.parse(localStorage.getItem("nl8s")||"null");
     if (!s?.token||!s?.user) return null;
     if (s.exp && Date.now()/1000 > s.exp - 60) return null;
-    _sess = s; return s;
+    _sess = s;
+    try { if (window._SB) window._SB.auth.setSession({ access_token: s.token, refresh_token: s.refresh }); } catch(_){}
+    return s;
   } catch(_){ return null; }
 }
 
@@ -189,7 +193,7 @@ async function refreshToken() {
   if (_sess.exp && Date.now()/1000 < _sess.exp - 300) return true;
   try {
     const d = await ef("auth-user",{action:"refresh",refresh_token:_sess.refresh});
-    if (d.ok) { _sess.token=d.access_token; _sess.refresh=d.refresh_token; _sess.exp=d.expires_at; return true; }
+    if (d.ok) { _sess.token=d.access_token; _sess.refresh=d.refresh_token; _sess.exp=d.expires_at; try { if (window._SB) window._SB.auth.setSession({ access_token: d.access_token, refresh_token: d.refresh_token }); } catch(_){} return true; }
   } catch(_){}
   clearSession(); return false;
 }
