@@ -5004,15 +5004,50 @@ const renderMarkdown = (md) => {
               })
             )
           ),
-          payouts: () => React.createElement("div", null,
-            React.createElement("h1", { style: { fontSize: 26, fontWeight: 700, marginBottom: 4 } }, "Payouts"),
-            React.createElement("p", { style: { fontSize: 14, color: "#6E6E73", marginBottom: 24 } }, "Histórico de pagamentos da plataforma para a tua conta."),
+          payouts: () => {
+            const MIN_PAYOUT = 2500;
+            const hasPayoutMethod = !!(ip && (ip.payout_iban || ip.payout_paypal));
+            const eligibleForPayout = availableBalance >= MIN_PAYOUT && hasPayoutMethod;
+            const hasPendingPayout = payouts.some(p => p.status === "pending" || p.status === "processing");
+            const requestPayout = async () => {
+              if (!confirm("Confirmas o pedido de payout de " + eur(availableBalance) + " para " + (ip.payout_method||"iban").toUpperCase() + "?")) return;
+              try {
+                const sess = window._SB && window._SB.auth ? (await window._SB.auth.getSession()).data.session : null;
+                if (!sess) { alert("Sessão expirada. Faz login novamente."); return; }
+                const r = await fetch("https://obpezocujzdaznrdgwoo.supabase.co/functions/v1/payments", {
+                  method: "POST",
+                  headers: { "Content-Type":"application/json", "Authorization":"Bearer "+sess.access_token },
+                  body: JSON.stringify({ action: "request_payout" })
+                });
+                const d = await r.json();
+                if (d.ok) { alert("✅ Pedido criado: " + d.reference + ". Receberás o pagamento em breve."); ldInstructorData(); }
+                else { alert("❌ " + (d.message || d.error)); }
+              } catch(e) { alert("Erro: " + e.message); }
+            };
+            return React.createElement("div", null,
+            React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4, flexWrap: "wrap", gap: 12 } },
+              React.createElement("div", null,
+                React.createElement("h1", { style: { fontSize: 26, fontWeight: 700, marginBottom: 4 } }, "Payouts"),
+                React.createElement("p", { style: { fontSize: 14, color: "#6E6E73", marginBottom: 24 } }, "Histórico de pagamentos da plataforma para a tua conta.")
+              ),
+              React.createElement("button", {
+                onClick: requestPayout,
+                disabled: !eligibleForPayout || hasPendingPayout,
+                title: hasPendingPayout ? "Já tens um pedido pendente" : !hasPayoutMethod ? "Configura um método de pagamento no Perfil" : availableBalance < MIN_PAYOUT ? "Saldo mínimo: " + eur(MIN_PAYOUT) : "",
+                style: { padding: "10px 18px", borderRadius: 10, background: (eligibleForPayout && !hasPendingPayout) ? "#16A34A" : "#E5E5EA", color: (eligibleForPayout && !hasPendingPayout) ? "#fff" : "#86868B", border: "none", fontSize: 13, fontWeight: 600, cursor: (eligibleForPayout && !hasPendingPayout) ? "pointer" : "not-allowed", fontFamily: F, whiteSpace: "nowrap" }
+              }, hasPendingPayout ? "⏳ Pedido em curso" : "💳 Solicitar payout")
+            ),
             React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 16, marginBottom: 24 } },
               React.createElement(StatCard, { label: "Saldo Disponível", value: eur(availableBalance), sub: "Pronto para pagamento", color: "#16A34A" }),
               React.createElement(StatCard, { label: "Em Processamento", value: eur(pendingPayouts), color: "#D97706" }),
               React.createElement(StatCard, { label: "Pago Total", value: eur(paidPayouts) })
             ),
-            payouts.length === 0 ? React.createElement("div", { style: { padding: 40, textAlign: "center", background: "#fff", borderRadius: 14, color: "#86868B", fontSize: 13 } }, "Sem payouts ainda. Os payouts são processados pela administração no fim de cada mês.") :
+            !eligibleForPayout && !hasPendingPayout && payouts.length === 0 && React.createElement("div", { style: { padding: 14, marginBottom: 16, background: "#FEF3C7", borderRadius: 10, fontSize: 12, color: "#92400E" } },
+              !hasPayoutMethod ? "⚠️ Configura primeiro um método de pagamento (IBAN ou PayPal) no separador Perfil." :
+              availableBalance < MIN_PAYOUT ? "ℹ️ Saldo actual " + eur(availableBalance) + ". Mínimo para solicitar payout: " + eur(MIN_PAYOUT) + "." :
+              ""
+            ),
+            payouts.length === 0 ? React.createElement("div", { style: { padding: 40, textAlign: "center", background: "#fff", borderRadius: 14, color: "#86868B", fontSize: 13 } }, "Sem payouts ainda. Os payouts são processados pela administração após pedido do instrutor.") :
             React.createElement("div", { style: { background: "#fff", borderRadius: 14, border: "1px solid rgba(0,0,0,.08)", overflow: "hidden" } },
               payouts.map(p => React.createElement("div", { key: p.id, style: { padding: "16px 20px", borderBottom: "1px solid rgba(0,0,0,.04)", display: "grid", gridTemplateColumns: isMobile ? "1fr auto" : "auto 1fr auto auto", gap: 12, alignItems: "center" } },
                 React.createElement("div", null,
@@ -5024,7 +5059,8 @@ const renderMarkdown = (md) => {
                 React.createElement("div", { style: { fontSize: 16, fontWeight: 700, textAlign: "right" } }, eur(p.amount_cents))
               ))
             )
-          ),
+          );
+          },
           profile: () => {
             const [editing, setEditing] = [{}, () => {}]; // placeholder - editing inline below
             return React.createElement("div", { style: { maxWidth: 720 } },
@@ -5334,6 +5370,28 @@ const renderMarkdown = (md) => {
         const [list, setList] = useState([]);
         const [loading, setLoading] = useState(true);
         const [stats, setStats] = useState({ total: 0, count: 0, refunded: 0 });
+        const [selected, setSelected] = useState(null);
+        const [refunding, setRefunding] = useState(false);
+        const refundTransaction = async (tx) => {
+          if (!confirm("Marcar a transacção " + tx.id.slice(0,8) + " como reembolsada? Isto regista o reembolso no sistema (NÃO contacta o Stripe — terás de fazer o reembolso real no painel Stripe).")) return;
+          setRefunding(true);
+          try {
+            const { error } = await window._SB.from("nl_transactions").update({ status: "refunded", updated_at: new Date().toISOString() }).eq("id", tx.id);
+            if (error) throw error;
+            if (tx.user_id && tx.course_id) {
+              const { data: prof } = await window._SB.from("nl_profiles").select("enrolled_courses").eq("id", tx.user_id).maybeSingle();
+              if (prof && Array.isArray(prof.enrolled_courses) && prof.enrolled_courses.includes(tx.course_id)) {
+                const newList = prof.enrolled_courses.filter(c => c !== tx.course_id);
+                await window._SB.from("nl_profiles").update({ enrolled_courses: newList, updated_at: new Date().toISOString() }).eq("id", tx.user_id);
+              }
+            }
+            alert("✅ Transacção marcada como reembolsada. Lembra-te de processar o reembolso no Stripe.");
+            setSelected(null);
+            const { data } = await window._SB.from("nl_transactions").select("*").order("created_at", { ascending: false }).limit(100);
+            setList(data || []);
+          } catch(e) { alert("Erro: " + e.message); }
+          setRefunding(false);
+        };
         useEffect(() => { (async () => {
           try {
             const { data } = await window._SB.from("nl_transactions").select("*").order("created_at", { ascending: false }).limit(100);
@@ -5371,13 +5429,43 @@ const renderMarkdown = (md) => {
               React.createElement("div", null, "Valor"),
               React.createElement("div", null, "Estado")
             ),
-            list.map(t => React.createElement("div", { key: t.id, style: { display: "grid", gridTemplateColumns: "1.5fr 2fr 1fr 1fr 1fr", gap: 12, padding: "12px 18px", borderBottom: "1px solid rgba(0,0,0,.04)", alignItems: "center", fontSize: 12 } },
+            list.map(t => React.createElement("div", { key: t.id, onClick: () => setSelected(t), style: { display: "grid", gridTemplateColumns: "1.5fr 2fr 1fr 1fr 1fr", gap: 12, padding: "12px 18px", borderBottom: "1px solid rgba(0,0,0,.04)", alignItems: "center", fontSize: 12, cursor: "pointer", transition: "background .1s" }, onMouseEnter: e => e.currentTarget.style.background = "#FAFAFA", onMouseLeave: e => e.currentTarget.style.background = "transparent" },
               React.createElement("div", null, new Date(t.created_at).toLocaleDateString()),
               React.createElement("div", { style: { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, t.user_email || t.user_id?.slice(0, 8) || "—"),
               React.createElement("div", null, t.course_id || t.subscription_plan || "—"),
               React.createElement("div", { style: { fontWeight: 600 } }, "€" + ((t.amount_cents || 0) / 100).toFixed(2)),
               React.createElement("span", { style: { fontSize: 11, fontWeight: 600, padding: "3px 8px", borderRadius: 6, background: t.status === "succeeded" ? "#16A34A20" : t.status === "refunded" ? "#DC262620" : "#86868B20", color: t.status === "succeeded" ? "#16A34A" : t.status === "refunded" ? "#DC2626" : "#86868B", display: "inline-block" } }, t.status)
             ))
+          ),
+          selected && React.createElement("div", { onClick: () => setSelected(null), style: { position: "fixed", inset: 0, background: "rgba(0,0,0,.55)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: F } },
+            React.createElement("div", { onClick: e => e.stopPropagation(), style: { background: "#fff", borderRadius: 16, padding: 28, maxWidth: 560, width: "100%", maxHeight: "90vh", overflow: "auto" } },
+              React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 } },
+                React.createElement("div", null,
+                  React.createElement("h2", { style: { fontSize: 20, fontWeight: 700, letterSpacing: "-0.02em", margin: 0 } }, "Detalhe da transacção"),
+                  React.createElement("div", { style: { fontSize: 11, color: "#86868B", fontFamily: "monospace", marginTop: 4 } }, selected.id)
+                ),
+                React.createElement("button", { onClick: () => setSelected(null), style: { background: "none", border: "none", fontSize: 22, color: "#86868B", cursor: "pointer", padding: 0, lineHeight: 1 } }, "×")
+              ),
+              React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 18 } },
+                React.createElement("div", null, React.createElement("div", { style: { fontSize: 11, color: "#86868B", marginBottom: 3 } }, "Data"), React.createElement("div", { style: { fontSize: 13, fontWeight: 500 } }, new Date(selected.created_at).toLocaleString("pt-PT"))),
+                React.createElement("div", null, React.createElement("div", { style: { fontSize: 11, color: "#86868B", marginBottom: 3 } }, "Estado"), React.createElement("div", null, React.createElement("span", { style: { fontSize: 11, fontWeight: 600, padding: "3px 8px", borderRadius: 6, background: selected.status === "succeeded" ? "#16A34A20" : selected.status === "refunded" ? "#DC262620" : "#86868B20", color: selected.status === "succeeded" ? "#16A34A" : selected.status === "refunded" ? "#DC2626" : "#86868B" } }, selected.status))),
+                React.createElement("div", null, React.createElement("div", { style: { fontSize: 11, color: "#86868B", marginBottom: 3 } }, "Cliente"), React.createElement("div", { style: { fontSize: 13, fontWeight: 500, wordBreak: "break-all" } }, selected.user_email || "—")),
+                React.createElement("div", null, React.createElement("div", { style: { fontSize: 11, color: "#86868B", marginBottom: 3 } }, "Curso"), React.createElement("div", { style: { fontSize: 13, fontWeight: 500 } }, selected.course_id || "—")),
+                React.createElement("div", null, React.createElement("div", { style: { fontSize: 11, color: "#86868B", marginBottom: 3 } }, "Valor bruto"), React.createElement("div", { style: { fontSize: 14, fontWeight: 700 } }, "€" + ((selected.amount_cents || 0) / 100).toFixed(2))),
+                React.createElement("div", null, React.createElement("div", { style: { fontSize: 11, color: "#86868B", marginBottom: 3 } }, "IVA (" + (selected.vat_rate || 0) + "%)"), React.createElement("div", { style: { fontSize: 13, fontWeight: 500 } }, "€" + ((selected.vat_cents || 0) / 100).toFixed(2))),
+                React.createElement("div", null, React.createElement("div", { style: { fontSize: 11, color: "#86868B", marginBottom: 3 } }, "Comissão instrutor"), React.createElement("div", { style: { fontSize: 13, fontWeight: 500, color: "#16A34A" } }, "€" + ((selected.instructor_share_cents || 0) / 100).toFixed(2))),
+                React.createElement("div", null, React.createElement("div", { style: { fontSize: 11, color: "#86868B", marginBottom: 3 } }, "Receita plataforma"), React.createElement("div", { style: { fontSize: 13, fontWeight: 500, color: "#0071E3" } }, "€" + ((selected.platform_share_cents || 0) / 100).toFixed(2)))
+              ),
+              selected.stripe_payment_intent && React.createElement("div", { style: { padding: 12, background: "#FAFAFA", borderRadius: 10, marginBottom: 18 } },
+                React.createElement("div", { style: { fontSize: 10, color: "#86868B", textTransform: "uppercase", letterSpacing: ".04em", marginBottom: 4 } }, "Stripe"),
+                React.createElement("div", { style: { fontSize: 11, fontFamily: "monospace", wordBreak: "break-all" } }, selected.stripe_payment_intent),
+                selected.stripe_session_id && React.createElement("div", { style: { fontSize: 11, fontFamily: "monospace", wordBreak: "break-all", color: "#86868B", marginTop: 4 } }, selected.stripe_session_id)
+              ),
+              selected.status === "succeeded" && React.createElement("div", { style: { display: "flex", gap: 8, justifyContent: "flex-end", paddingTop: 12, borderTop: "1px solid #E5E5EA" } },
+                React.createElement("button", { onClick: () => setSelected(null), disabled: refunding, style: { padding: "9px 16px", borderRadius: 10, background: "transparent", color: "#6E6E73", border: "1px solid #E5E5EA", fontSize: 12, fontWeight: 500, cursor: "pointer", fontFamily: F } }, "Fechar"),
+                React.createElement("button", { onClick: () => refundTransaction(selected), disabled: refunding, style: { padding: "9px 16px", borderRadius: 10, background: refunding ? "#86868B" : "#DC2626", color: "#fff", border: "none", fontSize: 12, fontWeight: 600, cursor: refunding ? "wait" : "pointer", fontFamily: F } }, refunding ? "A processar..." : "Marcar como reembolsada")
+              )
+            )
           )
         );
     };
