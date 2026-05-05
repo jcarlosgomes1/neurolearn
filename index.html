@@ -4103,7 +4103,7 @@ const renderMarkdown = (md) => {
         React.createElement("div", { style: { padding: "0 18px 16px", borderBottom: "0.5px solid rgba(0,0,0,.06)", marginBottom: 4 } },
             React.createElement("div", { style: { fontSize: 16, fontWeight: 600, background: G, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" } }, "NeuroLearn"),
             React.createElement("div", { style: { fontSize: 9, fontWeight: 600, color: "#86868B", textTransform: "uppercase", letterSpacing: ".08em", marginTop: 2 } }, "Gest\u00E3o")),
-        [["dashboard", "▣", "Dashboard"], ["courses", "◎", t("stats.courses","ui")||"Cursos"], ["students", "◉", t("stats.students","ui")||"Alunos"], ["analytics", "◈", "Analytics"], ["evals", "📋", "Avaliações"], ["adminNotifs", "🔔", "Notificações"], ["agent", "✦", "AI Agent"], ["applications", "📥", "Aplicações"], ["instructors", "👨‍🏫", "Instrutores"], ["transactions", "💰", "Transacções"], ["legal_pages", "📜", "Páginas Legais"], ["config", "🏢", "Empresa"], ["settings", "⚙", "Definições"]].map(([k, ic, l]) => {
+        [["dashboard", "▣", "Dashboard"], ["courses", "◎", t("stats.courses","ui")||"Cursos"], ["students", "◉", t("stats.students","ui")||"Alunos"], ["analytics", "◈", "Analytics"], ["evals", "📋", "Avaliações"], ["adminNotifs", "🔔", "Notificações"], ["agent", "✦", "AI Agent"], ["promote", "✨", "Promover Instrutor"], ["instructors", "👨‍🏫", "Instrutores"], ["transactions", "💰", "Transacções"], ["legal_pages", "📜", "Páginas Legais"], ["config", "🏢", "Empresa"], ["settings", "⚙", "Definições"]].map(([k, ic, l]) => {
             const isNotifs = k === "adminNotifs";
             const unreadCount = isNotifs ? adminNotifs.filter(n => !n.read).length : 0;
             return (React.createElement("div", { key: k, style: Object.assign(Object.assign({}, fc), { gap: 8, padding: "9px 18px", fontSize: 13, fontWeight: aView === k ? 600 : 400, color: aView === k ? "#0071E3" : "#6E6E73", cursor: "pointer", background: aView === k ? "#0071E310" : "transparent", borderRight: aView === k ? "3px solid #0071E3" : "3px solid transparent" }), onClick: () => setAView(k) },
@@ -5173,6 +5173,154 @@ const renderMarkdown = (md) => {
           )
         );
     };
+    const APromote = () => {
+      const [students, setStudents] = useState([]);
+      const [loading, setLoading] = useState(true);
+      const [search, setSearch] = useState("");
+      const [selected, setSelected] = useState(null);
+      const [draft, setDraft] = useState({ display_name: "", expertise: "", revenue_share_pct: 60 });
+      const [submitting, setSubmitting] = useState(false);
+      const [msg, setMsg] = useState("");
+
+      const refresh = async () => {
+        setLoading(true);
+        try {
+          const { data, error } = await window._SB.from("nl_profiles")
+            .select("id, name, role, joined_at, enrolled_courses")
+            .eq("role", "student")
+            .order("joined_at", { ascending: false });
+          if (error) throw error;
+          // Get emails from auth.users via RPC or direct join (need a separate query)
+          const ids = (data || []).map(s => s.id);
+          let emailMap = {};
+          if (ids.length > 0) {
+            // Try to fetch emails via auth admin - we use a simple approach: ask service via RPC
+            // For now, show without email if not available
+          }
+          setStudents((data || []).map(s => Object.assign({}, s, { email: emailMap[s.id] || null })));
+        } catch(e) { console.warn("Load students:", e); setStudents([]); }
+        setLoading(false);
+      };
+      useEffect(() => { refresh(); }, []);
+
+      const openPromote = (s) => {
+        setSelected(s);
+        setDraft({ display_name: s.name || "", expertise: "", revenue_share_pct: 60 });
+        setMsg("");
+      };
+      const closeModal = () => { setSelected(null); setMsg(""); setSubmitting(false); };
+
+      const promote = async () => {
+        if (!selected) return;
+        if (!draft.display_name.trim()) { setMsg("❌ Nome público obrigatório"); return; }
+        const pct = Number(draft.revenue_share_pct);
+        if (isNaN(pct) || pct < 10 || pct > 90) { setMsg("❌ Comissão deve estar entre 10 e 90%"); return; }
+        setSubmitting(true); setMsg("");
+        try {
+          // 1. Update profile role
+          const { error: e1 } = await window._SB.from("nl_profiles")
+            .update({ role: "instructor", updated_at: new Date().toISOString() })
+            .eq("id", selected.id);
+          if (e1) throw e1;
+
+          // 2. Generate slug from display_name
+          const slug = draft.display_name.toLowerCase()
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+            .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
+            .slice(0, 60);
+
+          const expertiseArr = draft.expertise.split(",").map(s => s.trim()).filter(Boolean);
+
+          // 3. Upsert into nl_instructors (trigger may have created a pending row, so we update)
+          const { error: e2 } = await window._SB.from("nl_instructors").upsert({
+            id: selected.id,
+            display_name: draft.display_name.trim(),
+            expertise: expertiseArr,
+            status: "approved",
+            approved_at: new Date().toISOString(),
+            approved_by: curStu.id,
+            revenue_share_pct: pct,
+            onboarding_completed: false,
+            public_slug: slug,
+            updated_at: new Date().toISOString(),
+          }, { onConflict: "id" });
+          if (e2) throw e2;
+
+          setMsg("✅ Promovido. " + draft.display_name + " agora vê a zona Instrutor no próximo login. Vai precisar de completar o onboarding (IBAN, bio, etc) na primeira entrada.");
+          await refresh();
+          setTimeout(closeModal, 4000);
+        } catch(e) { setMsg("❌ " + (e.message || e)); }
+        setSubmitting(false);
+      };
+
+      const filtered = students.filter(s => {
+        if (!search) return true;
+        const q = search.toLowerCase();
+        return (s.name || "").toLowerCase().includes(q) || (s.id || "").toLowerCase().includes(q);
+      });
+
+      return React.createElement("div", { style: { maxWidth: 900 } },
+        React.createElement("h1", { style: { fontSize: 26, fontWeight: 700, marginBottom: 8 } }, "Promover Instrutor"),
+        React.createElement("p", { style: { fontSize: 14, color: "#6E6E73", marginBottom: 24, lineHeight: 1.5 } }, "Selecciona um aluno para promover a instrutor. Após promoção, esse utilizador vê a zona Instrutor no próximo login e tem de completar o onboarding (IBAN, bio, etc.)."),
+        React.createElement("input", {
+          type: "search", value: search, onChange: e => setSearch(e.target.value),
+          placeholder: "Pesquisar por nome ou ID…",
+          style: { width: "100%", padding: "10px 14px", borderRadius: 10, border: "1px solid #E5E5EA", fontSize: 14, fontFamily: F, outline: "none", marginBottom: 16, boxSizing: "border-box" }
+        }),
+        loading ? React.createElement("div", { style: { padding: 40, textAlign: "center", color: "#86868B" } }, "A carregar...") :
+        filtered.length === 0 ? React.createElement("div", { style: { padding: 40, textAlign: "center", background: "#FAFAFA", borderRadius: 14, color: "#86868B" } }, search ? "Nenhum aluno encontrado." : "Sem alunos registados ainda.") :
+        React.createElement("div", { style: { background: "#fff", borderRadius: 14, border: "1px solid rgba(0,0,0,.08)", overflow: "hidden" } },
+          filtered.map((s, i) => React.createElement("div", { key: s.id, style: { display: "grid", gridTemplateColumns: "1fr auto", gap: 12, padding: "14px 18px", borderBottom: i < filtered.length - 1 ? "1px solid rgba(0,0,0,.04)" : "none", alignItems: "center" } },
+            React.createElement("div", null,
+              React.createElement("div", { style: { fontSize: 14, fontWeight: 600, marginBottom: 2 } }, s.name || "(sem nome)"),
+              React.createElement("div", { style: { fontSize: 12, color: "#86868B" } }, "Registado " + new Date(s.joined_at).toLocaleDateString("pt-PT") + " · " + ((s.enrolled_courses || []).length) + " cursos inscritos")
+            ),
+            React.createElement("button", { onClick: () => openPromote(s), style: { padding: "8px 16px", borderRadius: 10, background: "#0071E3", color: "#fff", border: "none", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: F } }, "Promover")
+          ))
+        ),
+        selected && React.createElement("div", { onClick: closeModal, style: { position: "fixed", inset: 0, background: "rgba(0,0,0,.55)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: F } },
+          React.createElement("div", { onClick: e => e.stopPropagation(), style: { background: "#fff", borderRadius: 16, padding: 28, maxWidth: 480, width: "100%", maxHeight: "90vh", overflow: "auto" } },
+            React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 18 } },
+              React.createElement("h2", { style: { fontSize: 20, fontWeight: 700, letterSpacing: "-0.02em", margin: 0 } }, "Promover " + (selected.name || "aluno")),
+              React.createElement("button", { onClick: closeModal, style: { background: "none", border: "none", fontSize: 22, color: "#86868B", cursor: "pointer", padding: 0, lineHeight: 1 } }, "×")
+            ),
+            React.createElement("div", { style: { marginBottom: 14 } },
+              React.createElement("label", { style: { display: "block", fontSize: 12, fontWeight: 600, color: "#6E6E73", marginBottom: 5 } }, "Nome público *"),
+              React.createElement("input", {
+                type: "text", value: draft.display_name,
+                onChange: e => setDraft(d => Object.assign({}, d, { display_name: e.target.value })),
+                placeholder: "Nome a mostrar no perfil público",
+                style: { width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid #E5E5EA", fontSize: 14, fontFamily: F, outline: "none", boxSizing: "border-box" }
+              })
+            ),
+            React.createElement("div", { style: { marginBottom: 14 } },
+              React.createElement("label", { style: { display: "block", fontSize: 12, fontWeight: 600, color: "#6E6E73", marginBottom: 5 } }, "Áreas de expertise (separadas por vírgula)"),
+              React.createElement("input", {
+                type: "text", value: draft.expertise,
+                onChange: e => setDraft(d => Object.assign({}, d, { expertise: e.target.value })),
+                placeholder: "ex: Python, Machine Learning, Data Science",
+                style: { width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid #E5E5EA", fontSize: 14, fontFamily: F, outline: "none", boxSizing: "border-box" }
+              })
+            ),
+            React.createElement("div", { style: { marginBottom: 18 } },
+              React.createElement("label", { style: { display: "block", fontSize: 12, fontWeight: 600, color: "#6E6E73", marginBottom: 5 } }, "Comissão do instrutor (%)"),
+              React.createElement("input", {
+                type: "number", value: draft.revenue_share_pct, min: 10, max: 90,
+                onChange: e => setDraft(d => Object.assign({}, d, { revenue_share_pct: e.target.value })),
+                style: { width: 100, padding: "10px 12px", borderRadius: 8, border: "1px solid #E5E5EA", fontSize: 14, fontFamily: F, outline: "none", boxSizing: "border-box" }
+              }),
+              React.createElement("span", { style: { fontSize: 12, color: "#86868B", marginLeft: 10 } }, "Plataforma: " + (100 - Number(draft.revenue_share_pct || 0)) + "%")
+            ),
+            React.createElement("div", { style: { padding: 12, background: "#FAFAFA", borderRadius: 8, marginBottom: 14, fontSize: 12, color: "#6E6E73", lineHeight: 1.5 } }, "ⓘ Após promoção, o utilizador irá ter de completar o onboarding (IBAN, bio, foto, aceitação dos termos) na próxima vez que aceder à zona Instrutor."),
+            msg && React.createElement("div", { style: { padding: "10px 12px", borderRadius: 8, background: msg.startsWith("✅") ? "#16A34A15" : "#DC262615", color: msg.startsWith("✅") ? "#16A34A" : "#DC2626", fontSize: 13, marginBottom: 14, lineHeight: 1.5 } }, msg),
+            React.createElement("div", { style: { display: "flex", gap: 8, justifyContent: "flex-end" } },
+              React.createElement("button", { onClick: closeModal, disabled: submitting, style: { padding: "10px 18px", borderRadius: 10, background: "transparent", color: "#6E6E73", border: "1px solid #E5E5EA", fontSize: 13, fontWeight: 500, cursor: submitting ? "wait" : "pointer", fontFamily: F } }, "Cancelar"),
+              React.createElement("button", { onClick: promote, disabled: submitting, style: { padding: "10px 22px", borderRadius: 10, background: submitting ? "#86868B" : "#0071E3", color: "#fff", border: "none", fontSize: 13, fontWeight: 600, cursor: submitting ? "wait" : "pointer", fontFamily: F } }, submitting ? "A promover..." : "Confirmar promoção")
+            )
+          )
+        )
+      );
+    };
     const AApplications = () => {
       const refresh = async () => {
         setAdminAppsLoading(true);
@@ -5928,7 +6076,7 @@ const renderMarkdown = (md) => {
             !isMobile && React.createElement(ASide, null),
             React.createElement("div", { style: { marginLeft: isMobile ? 0 : 200, padding: isMobile ? "16px" : "24px 32px", minHeight: "100vh" } },
                 isMobile && React.createElement("div", { style: { display: "flex", gap: 8, marginBottom: 16, overflowX: "auto", paddingBottom: 4 } },
-                    [["dashboard", "Dashboard"], ["courses", t("stats.courses","ui")||"Cursos"], ["students", t("stats.students","ui")||"Alunos"], ["analytics", "Analytics"], ["evals", "Aval."], ["adminNotifs", "🔔"], ["agent", "Agent"], ["settings", "Def."]].map(([k, l]) => (React.createElement("button", { key: k, style: { padding: "6px 14px", borderRadius: 980, fontSize: 12, fontWeight: aView === k ? 600 : 400, background: aView === k ? "#0071E3" : "rgba(0,0,0,.04)", color: aView === k ? "#fff" : "#6E6E73", border: "none", cursor: "pointer", whiteSpace: "nowrap", fontFamily: F }, onClick: () => setAView(k) }, l))),
+                    [["dashboard", "Dashboard"], ["promote", "✨"], ["courses", t("stats.courses","ui")||"Cursos"], ["students", t("stats.students","ui")||"Alunos"], ["analytics", "Analytics"], ["evals", "Aval."], ["adminNotifs", "🔔"], ["agent", "Agent"], ["settings", "Def."]].map(([k, l]) => (React.createElement("button", { key: k, style: { padding: "6px 14px", borderRadius: 980, fontSize: 12, fontWeight: aView === k ? 600 : 400, background: aView === k ? "#0071E3" : "rgba(0,0,0,.04)", color: aView === k ? "#fff" : "#6E6E73", border: "none", cursor: "pointer", whiteSpace: "nowrap", fontFamily: F }, onClick: () => setAView(k) }, l))),
                     React.createElement("button", { style: { padding: "6px 14px", borderRadius: 980, fontSize: 12, background: "transparent", color: "#0071E3", border: "none", cursor: "pointer", fontFamily: F, whiteSpace: "nowrap" }, onClick: goPublic }, "\uD83C\uDF10 Site"),
                     React.createElement("button", { style: { padding: "6px 14px", borderRadius: 980, fontSize: 12, background: "transparent", color: "#FF375F", border: "none", cursor: "pointer", fontFamily: F }, onClick: goPublic }, "Sair")),
                 aView === "dashboard" && React.createElement(ADash, null),
@@ -5938,7 +6086,7 @@ const renderMarkdown = (md) => {
                 aView === "analytics" && React.createElement(AAnalytics, null),
                 aView === "evals" && React.createElement(AEvals, null),
                 aView === "adminNotifs" && React.createElement(AAdminNotifs, null),
-                aView === "applications" && React.createElement(AApplications, null), aView === "instructors" && React.createElement(AInstructors, null), aView === "transactions" && React.createElement(ATransactions, null), aView === "legal_pages" && React.createElement(ALegalPages, null), aView === "config" && React.createElement(AConfig, null), aView === "settings" && React.createElement(ASettings, null)),
+                aView === "promote" && React.createElement(APromote, null), aView === "instructors" && React.createElement(AInstructors, null), aView === "transactions" && React.createElement(ATransactions, null), aView === "legal_pages" && React.createElement(ALegalPages, null), aView === "config" && React.createElement(AConfig, null), aView === "settings" && React.createElement(ASettings, null)),
             renderDocViewer(),
             renderCoursePreview(),
             renderToast()));
