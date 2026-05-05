@@ -5246,6 +5246,37 @@ const renderMarkdown = (md) => {
           }, { onConflict: "id" });
           if (e2) throw e2;
 
+          // 4. Audit log
+          await window._SB.from("nl_role_history").insert({
+            user_id: selected.id,
+            user_name: selected.name,
+            action: "promote_to_instructor",
+            notes: "Promovido por " + (curStu.name || "admin") + ". Nome público: " + draft.display_name + ". Comissão: " + pct + "%.",
+            metadata: { display_name: draft.display_name, expertise: expertiseArr, revenue_share_pct: pct, public_slug: slug },
+            performed_by: curStu.id,
+            performed_by_name: curStu.name
+          });
+
+          // 5. In-app notification to the promoted user (visible on next login in student zone)
+          try {
+            const studentEmail = (selected.email || "").toLowerCase();
+            if (studentEmail) {
+              await window._SB.from("nl_student_data").upsert({
+                student_email: studentEmail,
+                key: "nl7-notif-promo-" + Date.now(),
+                data: {
+                  id: Date.now(),
+                  msg: "🎉 Foste promovido a Instrutor! Acede à tua nova zona pelo ícone 👨‍🏫 no avatar. Vais ter de completar o onboarding (IBAN, bio, foto) na primeira entrada.",
+                  type: "success",
+                  time: new Date().toLocaleString("pt-PT"),
+                  read: false,
+                  promotion: true
+                },
+                updated_at: new Date().toISOString()
+              }, { onConflict: "student_email,key" });
+            }
+          } catch(e) { console.warn("Notification insert failed (non-critical):", e); }
+
           setMsg("✅ Promovido. " + draft.display_name + " agora vê a zona Instrutor no próximo login. Vai precisar de completar o onboarding (IBAN, bio, etc) na primeira entrada.");
           await refresh();
           setTimeout(closeModal, 4000);
@@ -5533,7 +5564,18 @@ const renderMarkdown = (md) => {
           setLoading(false);
         })(); }, []);
         const updateStatus = async (id, status) => {
+          const prevInstructor = list.find(i => i.id === id);
           await window._SB.from("nl_instructors").update({ status, approved_at: status === "approved" ? new Date().toISOString() : null }).eq("id", id);
+          // Audit log
+          await window._SB.from("nl_role_history").insert({
+            user_id: id,
+            user_name: prevInstructor ? prevInstructor.display_name : null,
+            action: status === "suspended" ? "suspend" : status === "approved" ? "approve" : "reactivate",
+            notes: "Estado alterado para \"" + status + "\" por " + (curStu.name || "admin") + ".",
+            metadata: { previous_status: prevInstructor ? prevInstructor.status : null, new_status: status },
+            performed_by: curStu.id,
+            performed_by_name: curStu.name
+          });
           setList(prev => prev.map(i => i.id === id ? { ...i, status } : i));
         };
         const demoteToStudent = async (instructor) => {
@@ -5541,6 +5583,16 @@ const renderMarkdown = (md) => {
           try {
             await window._SB.from("nl_instructors").update({ status: "suspended", updated_at: new Date().toISOString() }).eq("id", instructor.id);
             await window._SB.from("nl_profiles").update({ role: "student", updated_at: new Date().toISOString() }).eq("id", instructor.id);
+            // Audit log
+            await window._SB.from("nl_role_history").insert({
+              user_id: instructor.id,
+              user_name: instructor.display_name,
+              action: "demote_to_student",
+              notes: "Despromovido por " + (curStu.name || "admin") + ".",
+              metadata: { previous_status: instructor.status, revenue_share_pct: instructor.revenue_share_pct },
+              performed_by: curStu.id,
+              performed_by_name: curStu.name
+            });
             setList(prev => prev.map(i => i.id === instructor.id ? { ...i, status: "suspended" } : i));
             alert("✅ " + (instructor.display_name || "Instrutor") + " foi despromovido a aluno. Tem de fazer logout/login para ver a mudança.");
           } catch(e) { alert("Erro: " + (e.message || e)); }
