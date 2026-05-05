@@ -604,7 +604,7 @@ const renderMarkdown = (md) => {
         if (t) { setResetTokenFromURL(t); setZone("stuLogin"); }
         // Initialize view from URL hash (e.g. #privacy, #courses)
         const initHash = (window.location.hash || "").replace(/^#/, "");
-        const validViews = ["home","courses","pricing","detail","privacy","terms","refunds","cookies","legal-notice","faq","about-page","apply-instructor","instructor-public","instructors"];
+        const validViews = ["home","courses","pricing","detail","privacy","terms","refunds","cookies","legal-notice","faq","about-page","instructor-public"];
         if (initHash.startsWith("instructor/")) {
           const slug = initHash.slice("instructor/".length).replace(/[^a-z0-9-]/g, "");
           if (slug) { setPublicInstructorSlug(slug); setView("instructor-public"); setZone("public"); }
@@ -624,7 +624,7 @@ const renderMarkdown = (md) => {
           // If no state, derive from hash
           if (!s.zone && !s.view) {
             const h = (window.location.hash || "").replace(/^#/, "");
-            const validViews = ["home","courses","pricing","detail","privacy","terms","refunds","cookies","legal-notice","faq","about-page","apply-instructor"];
+            const validViews = ["home","courses","pricing","detail","privacy","terms","refunds","cookies","legal-notice","faq","about-page"];
             if (h.startsWith("instructor/")) {
               const slug = h.slice("instructor/".length).replace(/[^a-z0-9-]/g, "");
               if (slug) { setPublicInstructorSlug(slug); setView("instructor-public"); setZone("public"); }
@@ -3119,7 +3119,7 @@ const renderMarkdown = (md) => {
       const supportEmail = (platformConfig.support_email && platformConfig.support_email.value) || "suporte@neurolearn.pt";
       const goRoute = (route) => { setView(route); window.scrollTo(0,0); };
       const colActions = [
-        [(v,i)=>goRoute(["courses","instructors","pricing","faq","apply-instructor"][i]||"home"), (v,i)=>goRoute(["courses","instructors","pricing","faq","apply-instructor"][i]||"home"), (v,i)=>goRoute(["courses","instructors","pricing","faq","apply-instructor"][i]||"home"), (v,i)=>goRoute(["courses","instructors","pricing","faq","apply-instructor"][i]||"home"), (v,i)=>goRoute(["courses","instructors","pricing","faq","apply-instructor"][i]||"home")],
+        [(v,i)=>goRoute(["courses","pricing","faq","about-page","privacy"][i]||"home"), (v,i)=>goRoute(["courses","pricing","faq","about-page","privacy"][i]||"home"), (v,i)=>goRoute(["courses","pricing","faq","about-page","privacy"][i]||"home"), (v,i)=>goRoute(["courses","pricing","faq","about-page","privacy"][i]||"home"), (v,i)=>goRoute(["courses","pricing","faq","about-page","privacy"][i]||"home")],
         [(v,i)=>goStuLogin(), (v,i)=>goStuLogin(), (v,i)=>{ if(curStu){ setZone("student"); setSView("my"); } else goStuLogin(); }, (v,i)=>{ if(curStu){ setZone("student"); setSView("profile"); } else goStuLogin(); }, (v,i)=>window.open("mailto:" + supportEmail)],
         [(v,i)=>goRoute("privacy"), (v,i)=>goRoute("terms"), (v,i)=>goRoute("refunds"), (v,i)=>goRoute("cookies"), (v,i)=>goRoute("legal-notice")],
       ];
@@ -4913,11 +4913,8 @@ const renderMarkdown = (md) => {
             React.createElement("div", { style: { textAlign: "center", maxWidth: 420, padding: 32, background: "#fff", borderRadius: 16, border: "1px solid rgba(0,0,0,.08)" } },
               React.createElement("div", { style: { fontSize: 40, marginBottom: 12 } }, "🔒"),
               React.createElement("h2", { style: { fontSize: 20, fontWeight: 700, marginBottom: 8, letterSpacing: "-0.02em" } }, "Sem acesso à zona Instrutor"),
-              React.createElement("p", { style: { fontSize: 14, color: "#6E6E73", marginBottom: 20, lineHeight: 1.5 } }, "Esta área é exclusiva para instrutores aprovados na plataforma. Se queres tornar-te instrutor, candidata-te através da página de aplicação."),
-              React.createElement("div", { style: { display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" } },
-                React.createElement("button", { onClick: () => { setZone("public"); setView("home"); }, style: { padding: "10px 20px", borderRadius: 10, background: "transparent", color: "#6E6E73", border: "1px solid #E5E5EA", fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: F } }, "Voltar ao início"),
-                React.createElement("button", { onClick: () => { setZone("public"); setView("apply-instructor"); }, style: { padding: "10px 20px", borderRadius: 10, background: "#0071E3", color: "#fff", border: "none", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: F } }, "Candidatar-me")
-              )
+              React.createElement("p", { style: { fontSize: 14, color: "#6E6E73", marginBottom: 20, lineHeight: 1.5 } }, "Esta área é exclusiva. Se acreditas que devias ter acesso, contacta o suporte."),
+              React.createElement("button", { onClick: () => { setZone("public"); setView("home"); }, style: { padding: "10px 22px", borderRadius: 10, background: "#0071E3", color: "#fff", border: "none", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: F } }, "Voltar ao início")
             )
           );
         }
@@ -6052,9 +6049,8 @@ const renderMarkdown = (md) => {
         view === "legal-notice" && React.createElement(LegalPage, { slug: "legal-notice", fallbackTitle: "Aviso Legal" }),
         view === "faq" && React.createElement(LegalPage, { slug: "faq", fallbackTitle: "FAQ" }),
         view === "about-page" && React.createElement(LegalPage, { slug: "about", fallbackTitle: "Sobre" }),
-        view === "apply-instructor" && React.createElement(ApplyInstructor, null),
+        /* apply-instructor route removed — promotion is admin-driven only */
         view === "instructor-public" && React.createElement(InstructorPublic, null),
-        view === "instructors" && React.createElement(InstructorsList, null),
         view === "about" && React.createElement("div", { style: { background: "#FBFBFD" } },
             React.createElement("style", null, anim),
             React.createElement("div", { style: { background: "linear-gradient(135deg,#0071E308,#AF52DE06)", borderBottom: bd, padding: "72px clamp(16px,4vw,48px) 60px", textAlign: "center" } },
