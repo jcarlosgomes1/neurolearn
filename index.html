@@ -5428,6 +5428,8 @@ const renderMarkdown = (md) => {
         const [stats, setStats] = useState({ total: 0, count: 0, refunded: 0 });
         const [selected, setSelected] = useState(null);
         const [refunding, setRefunding] = useState(false);
+        const [filterStatus, setFilterStatus] = useState("all");
+        const [searchTerm, setSearchTerm] = useState("");
         const refundTransaction = async (tx) => {
           if (!confirm("Marcar a transacção " + tx.id.slice(0,8) + " como reembolsada? Isto regista o reembolso no sistema (NÃO contacta o Stripe — terás de fazer o reembolso real no painel Stripe).")) return;
           setRefunding(true);
@@ -5477,7 +5479,61 @@ const renderMarkdown = (md) => {
           ),
           loading ? React.createElement("div", { style: { padding: 40, textAlign: "center", color: "#86868B" } }, "A carregar...") :
           list.length === 0 ? React.createElement("div", { style: { padding: 40, textAlign: "center", background: "#F5F5F7", borderRadius: 14, color: "#86868B" } }, "Sem transacções ainda. Quando o Stripe webhook estiver activo, aparecerão aqui.") :
-          React.createElement("div", { style: { background: "#fff", borderRadius: 14, border: "1px solid rgba(0,0,0,.08)", overflow: "hidden" } },
+          (() => {
+            const search = searchTerm.toLowerCase().trim();
+            const filtered = list.filter(t => {
+              if (filterStatus !== "all" && t.status !== filterStatus) return false;
+              if (search) {
+                const email = (t.user_email || "").toLowerCase();
+                const course = (t.course_id || "").toLowerCase();
+                const intent = (t.stripe_payment_intent || "").toLowerCase();
+                if (!email.includes(search) && !course.includes(search) && !intent.includes(search)) return false;
+              }
+              return true;
+            });
+            const exportCSV = () => {
+              const headers = ["Data","Email","Curso","Valor","IVA","Comissão Instrutor","Comissão Plataforma","Estado","Stripe Intent"];
+              const rows = filtered.map(t => [
+                new Date(t.created_at).toISOString(),
+                t.user_email || "",
+                t.course_id || "",
+                ((t.amount_cents||0)/100).toFixed(2),
+                ((t.vat_cents||0)/100).toFixed(2),
+                ((t.instructor_share_cents||0)/100).toFixed(2),
+                ((t.platform_share_cents||0)/100).toFixed(2),
+                t.status || "",
+                t.stripe_payment_intent || ""
+              ].map(v => "\"" + String(v).replace(/"/g, "\"\"") + "\"").join(","));
+              const csv = "\ufeff" + headers.join(",") + "\n" + rows.join("\n");
+              const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url; a.download = "transacoes-" + new Date().toISOString().slice(0,10) + ".csv";
+              document.body.appendChild(a); a.click(); document.body.removeChild(a);
+              URL.revokeObjectURL(url);
+            };
+            return React.createElement("div", null,
+              React.createElement("div", { style: { display: "flex", gap: 10, marginBottom: 14, flexWrap: "wrap", alignItems: "center" } },
+                React.createElement("input", {
+                  type: "search", value: searchTerm,
+                  onChange: e => setSearchTerm(e.target.value),
+                  placeholder: "Pesquisar por email, curso, ou Stripe ID…",
+                  style: { flex: "1 1 240px", minWidth: 200, padding: "8px 12px", borderRadius: 8, border: "1px solid #E5E5EA", fontSize: 13, fontFamily: F, outline: "none" }
+                }),
+                React.createElement("div", { style: { display: "flex", gap: 4 } },
+                  ["all","succeeded","refunded","failed","pending"].map(s => React.createElement("button", {
+                    key: s, onClick: () => setFilterStatus(s),
+                    style: { padding: "6px 12px", borderRadius: 8, fontSize: 12, fontWeight: filterStatus === s ? 600 : 500, background: filterStatus === s ? "#0071E3" : "transparent", color: filterStatus === s ? "#fff" : "#6E6E73", border: filterStatus === s ? "none" : "1px solid #E5E5EA", cursor: "pointer", fontFamily: F }
+                  }, s === "all" ? "Todas" : s))
+                ),
+                React.createElement("button", {
+                  onClick: exportCSV,
+                  disabled: filtered.length === 0,
+                  style: { padding: "8px 14px", borderRadius: 8, fontSize: 12, fontWeight: 600, background: "transparent", color: filtered.length === 0 ? "#86868B" : "#0071E3", border: "1px solid " + (filtered.length === 0 ? "#E5E5EA" : "#0071E3"), cursor: filtered.length === 0 ? "not-allowed" : "pointer", fontFamily: F }
+                }, "↓ CSV (" + filtered.length + ")")
+              ),
+              filtered.length === 0 ? React.createElement("div", { style: { padding: 40, textAlign: "center", color: "#86868B", background: "#FAFAFA", borderRadius: 12 } }, "Sem resultados para os filtros aplicados.") :
+              React.createElement("div", { style: { background: "#fff", borderRadius: 14, border: "1px solid rgba(0,0,0,.08)", overflow: "hidden" } },
             React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1.5fr 2fr 1fr 1fr 1fr", gap: 12, padding: "12px 18px", background: "#FAFAFA", borderBottom: "1px solid rgba(0,0,0,.06)", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".05em", color: "#86868B" } },
               React.createElement("div", null, "Data"),
               React.createElement("div", null, "Cliente"),
@@ -5485,14 +5541,16 @@ const renderMarkdown = (md) => {
               React.createElement("div", null, "Valor"),
               React.createElement("div", null, "Estado")
             ),
-            list.map(t => React.createElement("div", { key: t.id, onClick: () => setSelected(t), style: { display: "grid", gridTemplateColumns: "1.5fr 2fr 1fr 1fr 1fr", gap: 12, padding: "12px 18px", borderBottom: "1px solid rgba(0,0,0,.04)", alignItems: "center", fontSize: 12, cursor: "pointer", transition: "background .1s" }, onMouseEnter: e => e.currentTarget.style.background = "#FAFAFA", onMouseLeave: e => e.currentTarget.style.background = "transparent" },
+            filtered.map(t => React.createElement("div", { key: t.id, onClick: () => setSelected(t), style: { display: "grid", gridTemplateColumns: "1.5fr 2fr 1fr 1fr 1fr", gap: 12, padding: "12px 18px", borderBottom: "1px solid rgba(0,0,0,.04)", alignItems: "center", fontSize: 12, cursor: "pointer", transition: "background .1s" }, onMouseEnter: e => e.currentTarget.style.background = "#FAFAFA", onMouseLeave: e => e.currentTarget.style.background = "transparent" },
               React.createElement("div", null, new Date(t.created_at).toLocaleDateString()),
               React.createElement("div", { style: { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, t.user_email || t.user_id?.slice(0, 8) || "—"),
               React.createElement("div", null, t.course_id || t.subscription_plan || "—"),
               React.createElement("div", { style: { fontWeight: 600 } }, "€" + ((t.amount_cents || 0) / 100).toFixed(2)),
               React.createElement("span", { style: { fontSize: 11, fontWeight: 600, padding: "3px 8px", borderRadius: 6, background: t.status === "succeeded" ? "#16A34A20" : t.status === "refunded" ? "#DC262620" : "#86868B20", color: t.status === "succeeded" ? "#16A34A" : t.status === "refunded" ? "#DC2626" : "#86868B", display: "inline-block" } }, t.status)
             ))
-          ),
+          )
+            );
+          })(),
           selected && React.createElement("div", { onClick: () => setSelected(null), style: { position: "fixed", inset: 0, background: "rgba(0,0,0,.55)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: F } },
             React.createElement("div", { onClick: e => e.stopPropagation(), style: { background: "#fff", borderRadius: 16, padding: 28, maxWidth: 560, width: "100%", maxHeight: "90vh", overflow: "auto" } },
               React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 } },
