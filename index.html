@@ -5570,7 +5570,8 @@ const renderMarkdown = (md) => {
               React.createElement("div", null, i.total_students || 0),
               React.createElement("div", { style: { display: "flex", gap: 6 } },
                 i.status !== "approved" && React.createElement("button", { onClick: () => updateStatus(i.id, "approved"), style: { padding: "5px 10px", borderRadius: 6, background: "#16A34A", color: "#fff", border: "none", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: F } }, "✓"),
-                i.status !== "suspended" && React.createElement("button", { onClick: () => updateStatus(i.id, "suspended"), style: { padding: "5px 10px", borderRadius: 6, background: "#DC2626", color: "#fff", border: "none", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: F } }, "✕")
+                i.status !== "suspended" && React.createElement("button", { onClick: () => updateStatus(i.id, "suspended"), style: { padding: "5px 10px", borderRadius: 6, background: "#DC2626", color: "#fff", border: "none", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: F }, title: "Suspender (mantém perfil)" }, "✕"),
+                React.createElement("button", { onClick: () => demoteToStudent(i), style: { padding: "5px 10px", borderRadius: 6, background: "transparent", color: "#6E6E73", border: "1px solid #E5E5EA", fontSize: 11, fontWeight: 500, cursor: "pointer", fontFamily: F }, title: "Despromover de volta a aluno" }, "↓ Aluno")
               )
             ))
           )
