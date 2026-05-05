@@ -4914,11 +4914,7 @@ const renderMarkdown = (md) => {
         if (!ip.onboarding_completed) {
           return React.createElement(IOnboarding, { instructor: ip, onComplete: () => ldInstructorData() });
         }
-        const ISide = () => React.createElement("aside", { style: { position: "fixed", left: 0, top: 0, width: 200, height: "100vh", background: "#FAFAFA", borderRight: "1px solid rgba(0,0,0,.08)", padding: "20px 14px", display: isMobile ? "none" : "flex", flexDirection: "column", gap: 4 } },
-          React.createElement("div", { style: { padding: "8px 12px 14px", borderBottom: "1px solid rgba(0,0,0,.06)", marginBottom: 12 } },
-            React.createElement("div", { style: { fontSize: 11, fontWeight: 700, color: "#86868B", textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 4 } }, "Instrutor"),
-            React.createElement("div", { style: { fontSize: 14, fontWeight: 600 } }, ip.display_name)
-          ),
+        const ISide = () => React.createElement("aside", { style: { position: "fixed", left: 0, top: 54, width: 200, height: "calc(100vh - 54px)", background: "#FAFAFA", borderRight: "1px solid rgba(0,0,0,.08)", padding: "20px 14px", display: isMobile ? "none" : "flex", flexDirection: "column", gap: 4 } },
           navItems.map(([k, icon, label]) => React.createElement("button", {
             key: k, onClick: () => setIView(k),
             style: { display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderRadius: 8, background: iView === k ? "#0071E315" : "transparent", color: iView === k ? "#0071E3" : "#1D1D1F", border: "none", fontSize: 13, fontWeight: iView === k ? 600 : 500, cursor: "pointer", fontFamily: F, textAlign: "left" }
@@ -5141,9 +5137,23 @@ const renderMarkdown = (md) => {
             );
           }
         };
+        const ITopBar = () => React.createElement("nav", { style: { position: "sticky", top: 0, zIndex: 200, height: 54, background: "rgba(255,255,255,.95)", backdropFilter: "saturate(200%) blur(20px)", WebkitBackdropFilter: "saturate(200%) blur(20px)", borderBottom: "1px solid rgba(0,0,0,.08)", marginBottom: 16 } },
+          React.createElement("div", { style: { maxWidth: 1200, margin: "0 auto", height: "100%", padding: "0 clamp(16px,4vw,32px)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 } },
+            React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }, onClick: () => { setZone("public"); setView("home"); } },
+              React.createElement("div", { style: { width: 26, height: 26, borderRadius: 7, background: "linear-gradient(135deg,#0071E3,#7C3AED)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: "#fff" } }, "N"),
+              React.createElement("span", { style: { fontSize: 15, fontWeight: 700, color: "#1D1D1F", letterSpacing: "-0.03em" } }, "NeuroLearn"),
+              React.createElement("span", { style: { fontSize: 10, fontWeight: 700, color: "#7C3AED", textTransform: "uppercase", letterSpacing: ".08em", padding: "3px 8px", borderRadius: 6, background: "#7C3AED15", border: "1px solid #7C3AED30" } }, "Instrutor")
+            ),
+            React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 10 } },
+              !isMobile && React.createElement("div", { style: { fontSize: 13, fontWeight: 500, color: "#1D1D1F" } }, ip.display_name),
+              React.createElement("div", { style: { width: 32, height: 32, borderRadius: 16, background: "linear-gradient(135deg,#0071E3,#7C3AED)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700 } }, (ip.display_name || "?").split(" ").filter(Boolean).slice(0, 2).map(s => s[0]).join("").toUpperCase())
+            )
+          )
+        );
         return React.createElement("div", { style: { fontFamily: F, background: "#F5F5F7", minHeight: "100vh", color: "#1D1D1F" } },
+          React.createElement(ITopBar, null),
           React.createElement(ISide, null),
-          React.createElement("div", { style: { marginLeft: isMobile ? 0 : 200, padding: isMobile ? "16px" : "24px 32px" } },
+          React.createElement("div", { style: { marginLeft: isMobile ? 0 : 200, padding: isMobile ? "0 16px 16px" : "0 32px 24px" } },
             isMobile && React.createElement("div", { style: { display: "flex", gap: 8, marginBottom: 16, overflowX: "auto", paddingBottom: 4 } },
               navItems.map(([k, , label]) => React.createElement("button", {
                 key: k, onClick: () => setIView(k),
