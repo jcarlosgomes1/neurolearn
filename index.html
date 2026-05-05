@@ -3924,10 +3924,7 @@ const renderMarkdown = (md) => {
           fontSize:12,fontWeight:700,color:"#fff"}},"N"),
         React.createElement("span",{style:{fontSize:15,fontWeight:700,color:"var(--ink)",
           letterSpacing:"-0.03em"}},!isMobile&&"NeuroLearn"),
-        React.createElement("span",{style:{fontSize:10,fontWeight:600,color:"var(--ink4)",
-          textTransform:"uppercase",letterSpacing:".08em",
-          paddingLeft:8,borderLeft:"1px solid var(--border2)"}},
-          !isMobile&&{pt:"Aluno",es:"Alumno",fr:"Apprenant",en:"Student"}[_lang||"pt"])
+        !isMobile && React.createElement("span", { style: { fontSize: 10, fontWeight: 700, color: "#0071E3", textTransform: "uppercase", letterSpacing: ".08em", padding: "3px 8px", borderRadius: 6, background: "#0071E315", border: "1px solid #0071E330" } }, {pt:"Aluno",es:"Alumno",fr:"Apprenant",en:"Student"}[_lang||"pt"])
       ),
       React.createElement("div",{style:{display:"flex",gap:2,alignItems:"center",overflowX:"auto"}},
         navItems.map(([k,l])=>React.createElement("button",{key:k,
@@ -4902,11 +4899,25 @@ const renderMarkdown = (md) => {
           ["payouts", "💳", "Payouts"],
           ["profile", "👤", "Perfil"]
         ];
-        if (instructorLoading || !ip) {
+        if (instructorLoading) {
           return React.createElement("div", { style: { fontFamily: F, background: "#F5F5F7", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" } },
             React.createElement("div", { style: { textAlign: "center", color: "#86868B" } },
               React.createElement("div", { style: { fontSize: 32, marginBottom: 8 } }, "👨‍🏫"),
               React.createElement("div", null, "A carregar zona instrutor...")
+            )
+          );
+        }
+        // No instructor profile → user is not an instructor, redirect with explanation
+        if (!ip) {
+          return React.createElement("div", { style: { fontFamily: F, background: "#F5F5F7", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 } },
+            React.createElement("div", { style: { textAlign: "center", maxWidth: 420, padding: 32, background: "#fff", borderRadius: 16, border: "1px solid rgba(0,0,0,.08)" } },
+              React.createElement("div", { style: { fontSize: 40, marginBottom: 12 } }, "🔒"),
+              React.createElement("h2", { style: { fontSize: 20, fontWeight: 700, marginBottom: 8, letterSpacing: "-0.02em" } }, "Sem acesso à zona Instrutor"),
+              React.createElement("p", { style: { fontSize: 14, color: "#6E6E73", marginBottom: 20, lineHeight: 1.5 } }, "Esta área é exclusiva para instrutores aprovados na plataforma. Se queres tornar-te instrutor, candidata-te através da página de aplicação."),
+              React.createElement("div", { style: { display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" } },
+                React.createElement("button", { onClick: () => { setZone("public"); setView("home"); }, style: { padding: "10px 20px", borderRadius: 10, background: "transparent", color: "#6E6E73", border: "1px solid #E5E5EA", fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: F } }, "Voltar ao início"),
+                React.createElement("button", { onClick: () => { setZone("public"); setView("apply-instructor"); }, style: { padding: "10px 20px", borderRadius: 10, background: "#0071E3", color: "#fff", border: "none", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: F } }, "Candidatar-me")
+              )
             )
           );
         }
