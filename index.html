@@ -5536,6 +5536,15 @@ const renderMarkdown = (md) => {
           await window._SB.from("nl_instructors").update({ status, approved_at: status === "approved" ? new Date().toISOString() : null }).eq("id", id);
           setList(prev => prev.map(i => i.id === id ? { ...i, status } : i));
         };
+        const demoteToStudent = async (instructor) => {
+          if (!confirm("Despromover " + (instructor.display_name || "instrutor") + " de volta a aluno? O perfil será suspenso (não apagado) e o utilizador deixa de ver a zona Instrutor. Cursos e histórico de receita são preservados.")) return;
+          try {
+            await window._SB.from("nl_instructors").update({ status: "suspended", updated_at: new Date().toISOString() }).eq("id", instructor.id);
+            await window._SB.from("nl_profiles").update({ role: "student", updated_at: new Date().toISOString() }).eq("id", instructor.id);
+            setList(prev => prev.map(i => i.id === instructor.id ? { ...i, status: "suspended" } : i));
+            alert("✅ " + (instructor.display_name || "Instrutor") + " foi despromovido a aluno. Tem de fazer logout/login para ver a mudança.");
+          } catch(e) { alert("Erro: " + (e.message || e)); }
+        };
         return React.createElement("div", { style: { maxWidth: 1100 } },
           React.createElement("h1", { style: { fontSize: 26, fontWeight: 700, marginBottom: 8 } }, "Instrutores"),
           React.createElement("p", { style: { fontSize: 14, color: "#6E6E73", marginBottom: 24 } }, "Geriu instrutores, partilhas de receita e estados de aprovação."),
