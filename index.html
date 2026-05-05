@@ -5558,12 +5558,21 @@ const renderMarkdown = (md) => {
         const [list, setList] = useState([]);
         const [loading, setLoading] = useState(true);
         const [editing, setEditing] = useState(null);
+        const [history, setHistory] = useState([]);
+        const [showHistory, setShowHistory] = useState(false);
+        const loadHistory = async () => {
+          try {
+            const { data } = await window._SB.from("nl_role_history").select("*").order("performed_at", { ascending: false }).limit(50);
+            setHistory(data || []);
+          } catch(e) { console.warn("History load:", e); }
+        };
         useEffect(() => { (async () => {
           try {
             const { data } = await window._SB.from("nl_instructors").select("*").order("created_at", { ascending: false });
             setList(data || []);
           } catch(e) { console.warn(e); }
           setLoading(false);
+          loadHistory();
         })(); }, []);
         const updateStatus = async (id, status) => {
           const prevInstructor = list.find(i => i.id === id);
@@ -5628,6 +5637,33 @@ const renderMarkdown = (md) => {
                 React.createElement("button", { onClick: () => demoteToStudent(i), style: { padding: "5px 10px", borderRadius: 6, background: "transparent", color: "#6E6E73", border: "1px solid #E5E5EA", fontSize: 11, fontWeight: 500, cursor: "pointer", fontFamily: F }, title: "Despromover de volta a aluno" }, "↓ Aluno")
               )
             ))
+          ),
+          // History toggle + section
+          React.createElement("div", { style: { marginTop: 28 } },
+            React.createElement("button", {
+              onClick: () => { if (!showHistory) loadHistory(); setShowHistory(!showHistory); },
+              style: { background: "transparent", border: "1px solid #E5E5EA", padding: "8px 16px", borderRadius: 8, fontSize: 12, fontWeight: 500, color: "#6E6E73", cursor: "pointer", fontFamily: F, display: "flex", alignItems: "center", gap: 8 }
+            }, showHistory ? "▼" : "▶", "Histórico de alterações", history.length > 0 ? React.createElement("span", { style: { fontSize: 10, padding: "2px 8px", borderRadius: 980, background: "#0071E315", color: "#0071E3", fontWeight: 700 } }, history.length) : null),
+            showHistory && React.createElement("div", { style: { marginTop: 14, background: "#fff", borderRadius: 14, border: "1px solid rgba(0,0,0,.08)", overflow: "hidden" } },
+              history.length === 0 ? React.createElement("div", { style: { padding: 32, textAlign: "center", color: "#86868B", fontSize: 13 } }, "Sem registos de alterações ainda.") :
+              history.map((h, i) => {
+                const actionLabel = {
+                  promote_to_instructor: { label: "Promovido a Instrutor", color: "#16A34A", icon: "✨" },
+                  demote_to_student: { label: "Despromovido a Aluno", color: "#D97706", icon: "↓" },
+                  suspend: { label: "Suspenso", color: "#DC2626", icon: "✕" },
+                  reactivate: { label: "Reativado", color: "#0071E3", icon: "↻" },
+                  approve: { label: "Aprovado", color: "#16A34A", icon: "✓" }
+                }[h.action] || { label: h.action, color: "#86868B", icon: "•" };
+                return React.createElement("div", { key: h.id, style: { padding: "12px 18px", borderBottom: i < history.length - 1 ? "1px solid rgba(0,0,0,.04)" : "none", display: "grid", gridTemplateColumns: "auto 1fr auto", gap: 14, alignItems: "center" } },
+                  React.createElement("div", { style: { width: 32, height: 32, borderRadius: 16, background: actionLabel.color + "15", color: actionLabel.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700 } }, actionLabel.icon),
+                  React.createElement("div", { style: { minWidth: 0 } },
+                    React.createElement("div", { style: { fontSize: 13, fontWeight: 600, marginBottom: 2 } }, actionLabel.label, " · ", React.createElement("span", { style: { fontWeight: 500, color: "#6E6E73" } }, h.user_name || h.user_id.slice(0, 8))),
+                    h.notes && React.createElement("div", { style: { fontSize: 11, color: "#86868B", lineHeight: 1.4 } }, h.notes)
+                  ),
+                  React.createElement("div", { style: { textAlign: "right", fontSize: 11, color: "#86868B", whiteSpace: "nowrap" } }, new Date(h.performed_at).toLocaleString("pt-PT"))
+                );
+              })
+            )
           )
         );
     };
