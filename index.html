@@ -4944,7 +4944,27 @@ const renderMarkdown = (md) => {
         const tone = (s) => s === "succeeded" || s === "paid" || s === "approved" ? "#16A34A" : s === "refunded" || s === "failed" || s === "suspended" ? "#DC2626" : s === "pending" || s === "processing" ? "#D97706" : "#86868B";
         const Pill = ({ status }) => React.createElement("span", { style: { fontSize: 11, fontWeight: 600, padding: "3px 8px", borderRadius: 6, background: tone(status) + "20", color: tone(status), display: "inline-block", textTransform: "uppercase", letterSpacing: ".03em" } }, status);
         const screens = {
-          dashboard: () => React.createElement("div", null,
+          dashboard: () => {
+          const welcomeKey = "nl-instructor-welcome-" + ip.id;
+          const [welcomeDismissed, setWelcomeDismissed] = useState(() => {
+            try { return localStorage.getItem(welcomeKey) === "1"; } catch(_) { return false; }
+          });
+          const dismissWelcome = () => {
+            try { localStorage.setItem(welcomeKey, "1"); } catch(_){}
+            setWelcomeDismissed(true);
+          };
+          return React.createElement("div", null,
+            !welcomeDismissed && React.createElement("div", { style: { background: "linear-gradient(135deg,#0071E3,#7C3AED)", borderRadius: 16, padding: "22px 24px", marginBottom: 22, color: "#fff", position: "relative" } },
+              React.createElement("button", { onClick: dismissWelcome, style: { position: "absolute", top: 12, right: 14, background: "rgba(255,255,255,.2)", color: "#fff", border: "none", width: 28, height: 28, borderRadius: 14, fontSize: 14, cursor: "pointer", fontFamily: F }, title: "Dispensar" }, "×"),
+              React.createElement("div", { style: { fontSize: 12, fontWeight: 700, opacity: .8, textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 6 } }, "🎉 Bem-vindo a Instrutor"),
+              React.createElement("h2", { style: { fontSize: 20, fontWeight: 700, marginBottom: 6, letterSpacing: "-0.02em" } }, "Esta é a tua zona, " + ip.display_name.split(" ")[0] + "."),
+              React.createElement("p", { style: { fontSize: 14, opacity: .92, lineHeight: 1.5, marginBottom: 14, maxWidth: 600 } }, "Aqui geres os teus cursos, vês receita em tempo real, solicitas pagamentos e personalizas o teu perfil público."),
+              React.createElement("div", { style: { display: "flex", gap: 8, flexWrap: "wrap" } },
+                !ip.onboarding_completed && React.createElement("button", { onClick: () => setIView("profile"), style: { padding: "8px 16px", borderRadius: 8, background: "#fff", color: "#0071E3", border: "none", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: F } }, "Completar perfil →"),
+                React.createElement("button", { onClick: () => setIView("courses"), style: { padding: "8px 16px", borderRadius: 8, background: "rgba(255,255,255,.2)", color: "#fff", border: "1px solid rgba(255,255,255,.3)", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: F } }, "Os meus cursos"),
+                React.createElement("button", { onClick: dismissWelcome, style: { padding: "8px 16px", borderRadius: 8, background: "transparent", color: "rgba(255,255,255,.85)", border: "none", fontSize: 12, fontWeight: 500, cursor: "pointer", fontFamily: F } }, "Já entendi")
+              )
+            ),
             React.createElement("h1", { style: { fontSize: 26, fontWeight: 700, marginBottom: 4, letterSpacing: "-0.03em" } }, "Bem-vindo, " + ip.display_name.split(" ")[0]),
             React.createElement("p", { style: { fontSize: 14, color: "#6E6E73", marginBottom: 24 } }, "Visão geral do teu negócio na plataforma."),
             React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 16, marginBottom: 24 } },
@@ -4968,7 +4988,8 @@ const renderMarkdown = (md) => {
                 })
               )
             )
-          ),
+          );
+          },
           courses: () => React.createElement("div", null,
             React.createElement("h1", { style: { fontSize: 26, fontWeight: 700, marginBottom: 4 } }, "Os meus cursos"),
             React.createElement("p", { style: { fontSize: 14, color: "#6E6E73", marginBottom: 24 } }, courses.length + " cursos"),
@@ -5560,6 +5581,8 @@ const renderMarkdown = (md) => {
         const [editing, setEditing] = useState(null);
         const [history, setHistory] = useState([]);
         const [showHistory, setShowHistory] = useState(false);
+        const [historyFilter, setHistoryFilter] = useState("all");
+        const [historySearch, setHistorySearch] = useState("");
         const loadHistory = async () => {
           try {
             const { data } = await window._SB.from("nl_role_history").select("*").order("performed_at", { ascending: false }).limit(50);
@@ -5644,9 +5667,28 @@ const renderMarkdown = (md) => {
               onClick: () => { if (!showHistory) loadHistory(); setShowHistory(!showHistory); },
               style: { background: "transparent", border: "1px solid #E5E5EA", padding: "8px 16px", borderRadius: 8, fontSize: 12, fontWeight: 500, color: "#6E6E73", cursor: "pointer", fontFamily: F, display: "flex", alignItems: "center", gap: 8 }
             }, showHistory ? "▼" : "▶", "Histórico de alterações", history.length > 0 ? React.createElement("span", { style: { fontSize: 10, padding: "2px 8px", borderRadius: 980, background: "#0071E315", color: "#0071E3", fontWeight: 700 } }, history.length) : null),
-            showHistory && React.createElement("div", { style: { marginTop: 14, background: "#fff", borderRadius: 14, border: "1px solid rgba(0,0,0,.08)", overflow: "hidden" } },
-              history.length === 0 ? React.createElement("div", { style: { padding: 32, textAlign: "center", color: "#86868B", fontSize: 13 } }, "Sem registos de alterações ainda.") :
-              history.map((h, i) => {
+            showHistory && React.createElement("div", { style: { marginTop: 14 } },
+              React.createElement("div", { style: { display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap", alignItems: "center" } },
+                React.createElement("input", { type: "search", value: historySearch, onChange: e => setHistorySearch(e.target.value), placeholder: "Pesquisar por nome ou autor…", style: { flex: "1 1 220px", minWidth: 180, padding: "7px 10px", borderRadius: 8, border: "1px solid #E5E5EA", fontSize: 12, fontFamily: F, outline: "none" } }),
+                React.createElement("div", { style: { display: "flex", gap: 4, flexWrap: "wrap" } },
+                  [["all","Todas"],["promote_to_instructor","Promovido"],["demote_to_student","Despromovido"],["suspend","Suspenso"],["approve","Aprovado"]].map(([k, l]) => React.createElement("button", { key: k, onClick: () => setHistoryFilter(k), style: { padding: "5px 10px", borderRadius: 6, fontSize: 11, fontWeight: historyFilter === k ? 600 : 500, background: historyFilter === k ? "#0071E3" : "transparent", color: historyFilter === k ? "#fff" : "#6E6E73", border: historyFilter === k ? "none" : "1px solid #E5E5EA", cursor: "pointer", fontFamily: F } }, l))
+                )
+              ),
+              React.createElement("div", { style: { background: "#fff", borderRadius: 14, border: "1px solid rgba(0,0,0,.08)", overflow: "hidden" } },
+              (() => {
+                const q = historySearch.toLowerCase().trim();
+                const filteredHist = history.filter(h => {
+                  if (historyFilter !== "all" && h.action !== historyFilter) return false;
+                  if (q) {
+                    const inName = (h.user_name || "").toLowerCase().includes(q);
+                    const inAuthor = (h.performed_by_name || "").toLowerCase().includes(q);
+                    const inNotes = (h.notes || "").toLowerCase().includes(q);
+                    if (!inName && !inAuthor && !inNotes) return false;
+                  }
+                  return true;
+                });
+                if (filteredHist.length === 0) return React.createElement("div", { style: { padding: 32, textAlign: "center", color: "#86868B", fontSize: 13 } }, history.length === 0 ? "Sem registos de alterações ainda." : "Sem resultados para os filtros aplicados.");
+                return filteredHist.map((h, i) => {
                 const actionLabel = {
                   promote_to_instructor: { label: "Promovido a Instrutor", color: "#16A34A", icon: "✨" },
                   demote_to_student: { label: "Despromovido a Aluno", color: "#D97706", icon: "↓" },
@@ -5662,7 +5704,9 @@ const renderMarkdown = (md) => {
                   ),
                   React.createElement("div", { style: { textAlign: "right", fontSize: 11, color: "#86868B", whiteSpace: "nowrap" } }, new Date(h.performed_at).toLocaleString("pt-PT"))
                 );
-              })
+              });
+              })()
+              )
             )
           )
         );
