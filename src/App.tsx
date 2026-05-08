@@ -11,6 +11,7 @@ import CoursesPage from './pages/CoursesPage'
 import LessonsPage from './pages/LessonsPage'
 import AdminPage from './pages/AdminPage'
 import SettingsPage from './pages/SettingsPage'
+import TestPage from './pages/TestPage'
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
           <BrowserRouter>
             <Routes>
               <Route path="/login" element={<LoginPage />} />
+              <Route path="/test" element={<TestPage />} />
               
               <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
                 <Route path="/dashboard" element={<DashboardPage />} />
