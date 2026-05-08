@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Definições - NeuroLearn</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50">
+  <div class="max-w-2xl mx-auto p-8">
+    <h1 class="text-3xl font-bold mb-2">⚙️ Definições da Empresa</h1>
+    <p class="text-slate-600 mb-8">Configure os dados da sua empresa</p>
+
+    <form onsubmit="handleSave(event)" class="bg-white rounded-lg shadow p-8 space-y-6">
+      
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-2">Nome da Empresa</label>
+        <input type="text" id="company_name" value="NeuroLearn" required
+          class="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <p id="company_name_display" class="text-sm text-slate-500 mt-1">Valor: NeuroLearn</p>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-2">NIF / NIPC</label>
+        <input type="text" id="nif" value="12" required
+          class="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <p id="nif_display" class="text-sm text-slate-500 mt-1">Valor: 12</p>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-2">País</label>
+        <input type="text" id="country" value="PT" required
+          class="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <p id="country_display" class="text-sm text-slate-500 mt-1">Valor: PT</p>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-2">Morada Fiscal</label>
+        <textarea id="fiscal_address" required
+          class="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">Rua, nº, código postal, cidade, país</textarea>
+        <p id="fiscal_address_display" class="text-sm text-slate-500 mt-1">Valor: Rua, nº, código postal, cidade, país</p>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-2">Email Geral</label>
+        <input type="email" id="email_geral" value="info@neurolearn.pt" required
+          class="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <p id="email_geral_display" class="text-sm text-slate-500 mt-1">Valor: info@neurolearn.pt</p>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-2">Email Suporte</label>
+        <input type="email" id="email_support" value="suporte@neurolearn.pt" required
+          class="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <p id="email_support_display" class="text-sm text-slate-500 mt-1">Valor: suporte@neurolearn.pt</p>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-2">Email Legal</label>
+        <input type="email" id="email_legal" value="legal@neurolearn.pt" required
+          class="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <p id="email_legal_display" class="text-sm text-slate-500 mt-1">Valor: legal@neurolearn.pt</p>
+      </div>
+
+      <button type="submit" class="w-full px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition">
+        💾 Guardar Definições
+      </button>
+    </form>
+  </div>
+
+  <script>
+    // Update display values when input changes
+    const inputs = ['company_name', 'nif', 'country', 'fiscal_address', 'email_geral', 'email_support', 'email_legal'];
+    
+    inputs.forEach(id => {
+      const input = document.getElementById(id);
+      const display = document.getElementById(id + '_display');
+      
+      input.addEventListener('input', (e) => {
+        display.textContent = `Valor: ${e.target.value}`;
+        console.log(`${id} changed to: ${e.target.value}`);
+      });
+    });
+
+    function handleSave(e) {
+      e.preventDefault();
+      
+      const data = {};
+      inputs.forEach(id => {
+        data[id] = document.getElementById(id).value;
+      });
+      
+      console.log('Saving:', data);
+      alert('✅ Definições guardadas com sucesso!');
+    }
+  </script>
+</body>
+</html>
