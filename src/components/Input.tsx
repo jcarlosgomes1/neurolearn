@@ -16,23 +16,16 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     helperText, 
     fullWidth = true,
     type = 'text',
-    value,
+    value = '',
     onChange,
     ...props 
   }, ref) => {
-    const [internalValue, setInternalValue] = useState(value || '')
-
+    // Fully controlled component - always use parent value
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const newValue = e.currentTarget.value
-      setInternalValue(newValue)
-      
-      // Call parent onChange if provided
       if (onChange) {
         onChange(e)
       }
     }
-
-    const inputValue = value !== undefined ? value : internalValue
 
     return (
       <div className={clsx(fullWidth && 'w-full')}>
@@ -44,7 +37,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         <input
           ref={ref}
           type={type}
-          value={inputValue}
+          value={value}
           onChange={handleChange}
           className={clsx(
             'w-full px-4 py-2.5 border rounded-lg transition-all duration-200',
