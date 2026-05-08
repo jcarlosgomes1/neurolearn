@@ -1,0 +1,297 @@
+// Supabase Edge Function: admin-dashboard
+// Path: supabase/functions/admin-dashboard/index.ts
+// Access: https://neurolearn-rosy.vercel.app/.netlify/functions/admin-dashboard
+
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+serve(async (req: Request) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
+  try {
+    // Check if PIN is correct (basic auth)
+    const pin = new URL(req.url).searchParams.get("pin");
+    if (pin !== "2026") {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // HTML + React Component embedded
+    const html = `
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - i18n</title>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/react.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; }
+    input, select, button, textarea { font-family: inherit; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    function I18nAdminDashboard() {
+      const [translations, setTranslations] = React.useState([]);
+      const [loading, setLoading] = React.useState(true);
+      const [searchTerm, setSearchTerm] = React.useState('');
+      const [selectedLang, setSelectedLang] = React.useState('pt');
+      const [editingId, setEditingId] = React.useState(null);
+      const [editValues, setEditValues] = React.useState({});
+      const [showForm, setShowForm] = React.useState(false);
+      const [newTranslation, setNewTranslation] = React.useState({
+        key: '',
+        lang: 'pt',
+        value: ''
+      });
+
+      const languages = ['pt', 'en', 'es', 'fr'];
+
+      React.useEffect(() => {
+        loadTranslations();
+      }, []);
+
+      const loadTranslations = async () => {
+        setLoading(true);
+        try {
+          const response = await fetch('https://obpezocujzdaznrdgwoo.supabase.co/rest/v1/nl_i18n?select=*', {
+            headers: {
+              'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9'
+            }
+          });
+          if (response.ok) {
+            const data = await response.json();
+            setTranslations(data);
+          }
+        } catch (err) {
+          console.error('Error loading:', err);
+        }
+        setLoading(false);
+      };
+
+      const handleDelete = async (key, lang) => {
+        if (!window.confirm('Deletar esta tradução?')) return;
+        try {
+          const response = await fetch(
+            \`https://obpezocujzdaznrdgwoo.supabase.co/rest/v1/nl_i18n?key=eq.\${key}&lang=eq.\${lang}\`,
+            {
+              method: 'DELETE',
+              headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9' }
+            }
+          );
+          if (response.ok) {
+            setTranslations(translations.filter(t => !(t.key === key && t.lang === lang)));
+          }
+        } catch (err) {
+          console.error('Error:', err);
+        }
+      };
+
+      const handleUpdate = async (key, lang, newValue) => {
+        try {
+          const response = await fetch(
+            \`https://obpezocujzdaznrdgwoo.supabase.co/rest/v1/nl_i18n?key=eq.\${key}&lang=eq.\${lang}\`,
+            {
+              method: 'PATCH',
+              headers: {
+                'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ value: newValue, updated_at: new Date().toISOString() })
+            }
+          );
+          if (response.ok) {
+            setTranslations(translations.map(t =>
+              t.key === key && t.lang === lang ? { ...t, value: newValue } : t
+            ));
+            setEditingId(null);
+          }
+        } catch (err) {
+          console.error('Error:', err);
+        }
+      };
+
+      const handleAddNew = async () => {
+        if (!newTranslation.key || !newTranslation.value) {
+          alert('Preencha todos os campos');
+          return;
+        }
+        try {
+          const response = await fetch(
+            'https://obpezocujzdaznrdgwoo.supabase.co/rest/v1/nl_i18n',
+            {
+              method: 'POST',
+              headers: {
+                'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                key: newTranslation.key,
+                lang: newTranslation.lang,
+                value: newTranslation.value,
+                updated_at: new Date().toISOString()
+              })
+            }
+          );
+          if (response.ok) {
+            await loadTranslations();
+            setNewTranslation({ key: '', lang: 'pt', value: '' });
+            setShowForm(false);
+          }
+        } catch (err) {
+          console.error('Error:', err);
+        }
+      };
+
+      const handleExportCSV = () => {
+        const csv = [
+          ['Key', 'Language', 'Value'].join(','),
+          ...translations.map(t => [t.key, t.lang, \`"\${t.value}"\`].join(','))
+        ].join('\\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'translations.csv';
+        a.click();
+      };
+
+      const filteredTranslations = translations.filter(t =>
+        (selectedLang === 'all' || t.lang === selectedLang) &&
+        (searchTerm === '' || t.key.includes(searchTerm) || t.value.includes(searchTerm))
+      );
+
+      return (
+        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
+          <h1>🌐 Admin - Traduções</h1>
+          <p>Gerir todas as strings i18n</p>
+
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
+            <input
+              type="text"
+              placeholder="Procurar..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{ padding: '8px', border: '1px solid #ddd', flex: 1, minWidth: '200px' }}
+            />
+            <select
+              value={selectedLang}
+              onChange={(e) => setSelectedLang(e.target.value)}
+              style={{ padding: '8px', border: '1px solid #ddd' }}
+            >
+              <option value="all">Todos</option>
+              {languages.map(l => <option key={l} value={l}>{l}</option>)}
+            </select>
+            <button onClick={() => setShowForm(!showForm)} style={{ padding: '8px 16px', background: '#28a745', color: '#fff', border: 'none', cursor: 'pointer' }}>+ Nova</button>
+            <button onClick={handleExportCSV} style={{ padding: '8px 16px', background: '#007bff', color: '#fff', border: 'none', cursor: 'pointer' }}>CSV</button>
+            <button onClick={loadTranslations} style={{ padding: '8px 16px', background: '#6c757d', color: '#fff', border: 'none', cursor: 'pointer' }}>Recarregar</button>
+          </div>
+
+          {showForm && (
+            <div style={{ background: '#f8f9fa', padding: '15px', marginBottom: '20px', borderRadius: '4px' }}>
+              <h3>Nova Tradução</h3>
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                <input
+                  type="text"
+                  placeholder="Chave"
+                  value={newTranslation.key}
+                  onChange={(e) => setNewTranslation({ ...newTranslation, key: e.target.value })}
+                  style={{ padding: '8px', border: '1px solid #ddd', flex: 1 }}
+                />
+                <select
+                  value={newTranslation.lang}
+                  onChange={(e) => setNewTranslation({ ...newTranslation, lang: e.target.value })}
+                  style={{ padding: '8px', border: '1px solid #ddd' }}
+                >
+                  {languages.map(l => <option key={l} value={l}>{l}</option>)}
+                </select>
+                <input
+                  type="text"
+                  placeholder="Valor"
+                  value={newTranslation.value}
+                  onChange={(e) => setNewTranslation({ ...newTranslation, value: e.target.value })}
+                  style={{ padding: '8px', border: '1px solid #ddd', flex: 2 }}
+                />
+                <button onClick={handleAddNew} style={{ padding: '8px 16px', background: '#28a745', color: '#fff', border: 'none', cursor: 'pointer' }}>Guardar</button>
+                <button onClick={() => setShowForm(false)} style={{ padding: '8px 16px', background: '#dc3545', color: '#fff', border: 'none', cursor: 'pointer' }}>Cancelar</button>
+              </div>
+            </div>
+          )}
+
+          {loading ? <p>Carregando...</p> : (
+            <div style={{ background: '#fff', border: '1px solid #ddd', borderRadius: '4px' }}>
+              {filteredTranslations.length === 0 ? (
+                <div style={{ padding: '20px', textAlign: 'center', color: '#999' }}>Nenhum resultado</div>
+              ) : (
+                filteredTranslations.map((t, i) => (
+                  <div key={i} style={{ display: 'grid', gridTemplateColumns: '150px 80px 1fr 100px', gap: '10px', padding: '12px', borderBottom: '1px solid #eee', alignItems: 'center' }}>
+                    <div style={{ fontSize: '12px', fontFamily: 'monospace' }}>{t.key}</div>
+                    <div style={{ fontSize: '12px', background: '#e9ecef', padding: '4px', textAlign: 'center' }}>{t.lang}</div>
+                    <div>
+                      {editingId === \`\${t.key}-\${t.lang}\` ? (
+                        <input
+                          type="text"
+                          value={editValues[\`\${t.key}-\${t.lang}\`] || t.value}
+                          onChange={(e) => setEditValues({ ...editValues, [\`\${t.key}-\${t.lang}\`]: e.target.value })}
+                          style={{ width: '100%', padding: '6px', border: '2px solid #007bff' }}
+                        />
+                      ) : (
+                        <span>{t.value}</span>
+                      )}
+                    </div>
+                    <div style={{ display: 'flex', gap: '5px' }}>
+                      {editingId === \`\${t.key}-\${t.lang}\` ? (
+                        <>
+                          <button onClick={() => handleUpdate(t.key, t.lang, editValues[\`\${t.key}-\${t.lang}\`])} style={{ background: '#28a745', color: '#fff', border: 'none', padding: '4px 8px', cursor: 'pointer' }}>✓</button>
+                          <button onClick={() => setEditingId(null)} style={{ background: '#6c757d', color: '#fff', border: 'none', padding: '4px 8px', cursor: 'pointer' }}>✕</button>
+                        </>
+                      ) : (
+                        <>
+                          <button onClick={() => { setEditingId(\`\${t.key}-\${t.lang}\`); setEditValues({ [\`\${t.key}-\${t.lang}\`]: t.value }); }} style={{ background: '#007bff', color: '#fff', border: 'none', padding: '4px 8px', cursor: 'pointer' }}>✏️</button>
+                          <button onClick={() => handleDelete(t.key, t.lang)} style={{ background: '#dc3545', color: '#fff', border: 'none', padding: '4px 8px', cursor: 'pointer' }}>🗑️</button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+          <div style={{ marginTop: '20px', fontSize: '12px', color: '#666' }}>
+            Total: {translations.length} | Exibindo: {filteredTranslations.length}
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<I18nAdminDashboard />);
+  </script>
+</body>
+</html>
+    `;
+
+    return new Response(html, {
+      headers: { "Content-Type": "text/html", ...corsHeaders },
+    });
+  } catch (error) {
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
+  }
+});
