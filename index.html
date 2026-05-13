@@ -674,7 +674,7 @@ const renderMarkdown = (md) => {
         }
       } catch(e) {}
     }, [view, zone, aView, sView]);
-    useEffect(() => { setCfgDraft(platformConfig || {}); }, [platformConfig]);
+    useEffect(() => { if (platformConfig && Object.keys(platformConfig).length > 0) { setCfgDraft(prev => Object.keys(prev).length === 0 ? platformConfig : prev); } }, [JSON.stringify(platformConfig)]);
     const ldInstructorData = async () => {
       if (!curStu || !curStu.id) return;
       setInstructorLoading(true);
@@ -1814,7 +1814,7 @@ const renderMarkdown = (md) => {
     };
     const agSend = async (overrideMsg) => {
         var _a;
-        const msg = (overrideMsg || agIn).trim();
+        const msg = (overrideMsg || document.getElementById('ag-input')?.value || agIn).trim();
         if (!msg)
             return;
         // Detect course creation intent — launch wizard
@@ -4480,8 +4480,8 @@ const renderMarkdown = (md) => {
                 React.createElement("span", { style: { fontSize: 12, color: "#86868B", marginLeft: 4 } }, "A gerar curso...")),
             React.createElement("div", { ref: chatRef })),
         !agWizard && React.createElement("div", { style: { display: "flex", gap: 7, position: "sticky", bottom: 0, paddingTop: 8, background: "#F5F5F7" } },
-            React.createElement("input", { type: "text", value: agIn, onChange: e => setAgIn(e.target.value), onKeyDown: e => e.key === "Enter" && agSend(), placeholder: "Ex: Cria um curso sobre Excel com IA...", style: { flex: 1, padding: "10px 14px", borderRadius: 980, border: "0.5px solid rgba(0,0,0,.1)", fontSize: 13, outline: "none", background: "#fff", fontFamily: F }, onFocus: e => e.target.style.borderColor = "#0071E3", onBlur: e => e.target.style.borderColor = "rgba(0,0,0,.1)" }),
-            React.createElement("button", { onClick: () => agSend(), style: Object.assign(Object.assign({ width: 38, height: 38, borderRadius: "50%", background: agIn.trim() ? "#0071E3" : "#E5E5EA", border: "none", cursor: agIn.trim() ? "pointer" : "default" }, fc), { justifyContent: "center", fontSize: 14, color: "#fff" }) }, "\u2191")))), [agMsg, agLoad, agIn, agWizard, wzTopic, wzNumLessons, wzLessonDur, wzQuizMode, wzHasVideo, wzBiblio, wzBiblioMode]);
+            React.createElement("input", { type: "text", defaultValue: agIn, id: "ag-input", onKeyDown: e => { if(e.key === "Enter") { setAgIn(e.target.value); agSend(); } }, placeholder: "Ex: Cria um curso sobre Excel com IA...", style: { flex: 1, padding: "10px 14px", borderRadius: 980, border: "0.5px solid rgba(0,0,0,.1)", fontSize: 13, outline: "none", background: "#fff", fontFamily: F }, onFocus: e => e.target.style.borderColor = "#0071E3", onBlur: e => e.target.style.borderColor = "rgba(0,0,0,.1)" }),
+            React.createElement("button", { onClick: () => { const v = document.getElementById('ag-input')?.value; if(v) setAgIn(v); agSend(); }, style: Object.assign(Object.assign({ width: 38, height: 38, borderRadius: "50%", background: "#0071E3", border: "none", cursor: "pointer" }, fc), { justifyContent: "center", fontSize: 14, color: "#fff" }) }, "\u2191")))), [agMsg, agLoad, agIn, agWizard, wzTopic, wzNumLessons, wzLessonDur, wzQuizMode, wzHasVideo, wzBiblio, wzBiblioMode]);
     const NOTIF_TYPES = {
         quiz_submitted: { label: "Quiz submetido", color: "#0071E3", icon: "📝", desc: "Avaliações pendentes de validação" },
         quiz_validated: { label: "Quiz validado", color: "#30D158", icon: "✅", desc: "Avaliações já validadas" },
@@ -5183,8 +5183,8 @@ const renderMarkdown = (md) => {
           )
         );
         return React.createElement("div", { style: { fontFamily: F, background: "#F5F5F7", minHeight: "100vh", color: "#1D1D1F" } },
-          ITopBar(),
-          ISide(),
+          React.createElement(ITopBar, null),
+          React.createElement(ISide, null),
           React.createElement("div", { style: { marginLeft: isMobile ? 0 : 200, padding: isMobile ? "0 16px 16px" : "0 32px 24px" } },
             isMobile && React.createElement("div", { style: { display: "flex", gap: 8, marginBottom: 16, overflowX: "auto", paddingBottom: 4 } },
               navItems.map(([k, , label]) => React.createElement("button", {
@@ -6014,7 +6014,7 @@ const renderMarkdown = (md) => {
                     section.fields.map(f => React.createElement("div", { key: f.key, style: { display: "flex", gap: 8, alignItems: "flex-start" } },
                         React.createElement("div", { style: { flex: 1 } },
                             React.createElement("label", { style: { fontSize: 12, fontWeight: 500, color: "#86868B", display: "block", marginBottom: 4 } }, f.label),
-                            f.textarea ? React.createElement("textarea", { value: getVal(f.key), onChange: e => setVal(f.key, e.target.value), placeholder: f.placeholder, rows: 2, style: { width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid #E5E5EA", fontSize: 13, fontFamily: F, outline: "none", boxSizing: "border-box", resize: "vertical" } }) : React.createElement("input", { value: getVal(f.key), onChange: e => setVal(f.key, e.target.value), placeholder: f.placeholder, style: { width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid #E5E5EA", fontSize: 13, fontFamily: F, outline: "none", boxSizing: "border-box" } })
+                            f.textarea ? React.createElement("textarea", { defaultValue: getVal(f.key), onBlur: e => setVal(f.key, e.target.value), placeholder: f.placeholder, rows: 2, style: { width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid #E5E5EA", fontSize: 13, fontFamily: F, outline: "none", boxSizing: "border-box", resize: "vertical" } }) : React.createElement("input", { defaultValue: getVal(f.key), onBlur: e => setVal(f.key, e.target.value), placeholder: f.placeholder, style: { width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid #E5E5EA", fontSize: 13, fontFamily: F, outline: "none", boxSizing: "border-box" } })
                         ),
                         React.createElement("button", { onClick: () => saveField(f.key), disabled: saving, style: { marginTop: 19, padding: "8px 12px", borderRadius: 8, background: "#0071E3", color: "#fff", border: "none", fontSize: 11, fontWeight: 600, cursor: saving ? "wait" : "pointer", fontFamily: F, whiteSpace: "nowrap", flexShrink: 0 } }, saving ? "..." : "Guardar")
                     ))
@@ -6217,7 +6217,7 @@ const renderMarkdown = (md) => {
             StuLogin(),
             renderToast()));
     if (zone === "instructor")
-        return (React.createElement(React.Fragment, null, IZone(), ReviewModal()));
+        return (React.createElement(React.Fragment, null, React.createElement(IZone, null), React.createElement(ReviewModal, null)));
     if (zone === "admin")
         return (React.createElement("div", { style: { fontFamily: F, color: "#1D1D1F", background: "#F5F5F7", minHeight: "100vh", opacity: mounted ? 1 : 0, transition: "opacity .4s" } },
             !isMobile && ASide(),
@@ -6229,22 +6229,22 @@ const renderMarkdown = (md) => {
                 aView === "dashboard" && ADash(),
                 aView === "courses" && ACourses(),
                 aView === "students" && AStudents(),
-                aView === "agent" && AAgent(),
+                aView === "agent" && React.createElement(AAgent, null),
                 aView === "analytics" && AAnalytics(),
                 aView === "evals" && AEvals(),
                 aView === "adminNotifs" && AAdminNotifs(),
-                aView === "promote" && APromote(), aView === "instructors" && AInstructors(), aView === "transactions" && ATransactions(), aView === "legal_pages" && ALegalPages(), aView === "config" && AConfig(), aView === "settings" && ASettings()),
+                aView === "promote" && React.createElement(APromote, null), aView === "instructors" && React.createElement(AInstructors, null), aView === "transactions" && React.createElement(ATransactions, null), aView === "legal_pages" && React.createElement(ALegalPages, null), aView === "config" && AConfig(), aView === "settings" && ASettings()),
             renderDocViewer(),
             renderCoursePreview(),
             renderToast()));
     if (zone === "student")
         return (React.createElement("div", { style: { fontFamily: F, color: tx1, background: bg1, minHeight: "100vh", opacity: mounted ? 1 : 0, transition: "all .4s" }, onClick: () => { showNotif && setShowNotif(false); showEmails && setShowEmails(false); } },
             SNav(),
-            sView === "my" && MyCourses(),
+            sView === "my" && React.createElement(MyCourses, null),
             sView === "explore" && React.createElement(Explore2, null),
-            sView === "play" && Player(),
-            sView === "profile" && Profile(),
-            ReviewModal(),
+            sView === "play" && React.createElement(Player, null),
+            sView === "profile" && React.createElement(Profile, null),
+            React.createElement(ReviewModal, null),
             renderQuizForm(),
             sView === "community" && (() => {
                 var _a, _b;
@@ -6334,9 +6334,9 @@ const renderMarkdown = (md) => {
     return (React.createElement("div", { style: { fontFamily: F, color: "#1D1D1F", background: "#FBFBFD", minHeight: "100vh", opacity: mounted ? 1 : 0, transition: "opacity .4s" }, onClick: () => showNotif && setShowNotif(false) },
         PNav(),
         view === "home" && Home(),
-        view === "courses" && PubCourses(),
-        view === "pricing" && Pricing(),
-        view === "detail" && Detail(),
+        view === "courses" && React.createElement(PubCourses, null),
+        view === "pricing" && React.createElement(Pricing, null),
+        view === "detail" && React.createElement(Detail, null),
         view === "privacy" && React.createElement(LegalPage, { slug: "privacy", fallbackTitle: "Privacidade" }),
         view === "terms" && React.createElement(LegalPage, { slug: "terms", fallbackTitle: "Termos" }),
         view === "refunds" && React.createElement(LegalPage, { slug: "refunds", fallbackTitle: "Reembolsos" }),
@@ -6345,7 +6345,7 @@ const renderMarkdown = (md) => {
         view === "faq" && React.createElement(LegalPage, { slug: "faq", fallbackTitle: "FAQ" }),
         view === "about-page" && React.createElement(LegalPage, { slug: "about", fallbackTitle: "Sobre" }),
         /* apply-instructor route removed — promotion is admin-driven only */
-        view === "instructor-public" && InstructorPublic(),
+        view === "instructor-public" && React.createElement(InstructorPublic, null),
         view === "about" && React.createElement("div", { style: { background: "#FBFBFD" } },
             React.createElement("style", null, anim),
             React.createElement("div", { style: { background: "linear-gradient(135deg,#0071E308,#AF52DE06)", borderBottom: bd, padding: "72px clamp(16px,4vw,48px) 60px", textAlign: "center" } },
