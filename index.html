@@ -5196,7 +5196,7 @@ const renderMarkdown = (md) => {
           )
         );
     };
-    const APromote = () => {
+    const APromote = React.useCallback(() => {
       const [students, setStudents] = useState([]);
       const [loading, setLoading] = useState(true);
       const [search, setSearch] = useState("");
@@ -5376,8 +5376,8 @@ const renderMarkdown = (md) => {
           )
         )
       );
-    };
-    const AApplications = () => {
+    }, []);
+    const AApplications = React.useCallback(() => {
       const refresh = async () => {
         setAdminAppsLoading(true);
         try {
@@ -5576,8 +5576,8 @@ const renderMarkdown = (md) => {
           ))
         )
       );
-    };
-    const AInstructors = () => {
+    }, []);
+    const AInstructors = React.useCallback(() => {
         const [list, setList] = useState([]);
         const [loading, setLoading] = useState(true);
         const [editing, setEditing] = useState(null);
@@ -5712,8 +5712,8 @@ const renderMarkdown = (md) => {
             )
           )
         );
-    };
-    const ATransactions = () => {
+    }, []);
+    const ATransactions = React.useCallback(() => {
         const [list, setList] = useState([]);
         const [loading, setLoading] = useState(true);
         const [stats, setStats] = useState({ total: 0, count: 0, refunded: 0 });
@@ -5873,8 +5873,8 @@ const renderMarkdown = (md) => {
             )
           )
         );
-    };
-    const ALegalPages = () => {
+    }, []);
+    const ALegalPages = React.useCallback(() => {
         const [list, setList] = useState([]);
         const [loading, setLoading] = useState(true);
         const [editing, setEditing] = useState(null);
@@ -5933,7 +5933,7 @@ const renderMarkdown = (md) => {
             )
           ))
         );
-    };
+    }, []);
     const AConfig = () => {
         const cfg = cfgDraft, setCfg = setCfgDraft, saving = cfgSaving, setSaving = setCfgSaving;
         const msg = cfgMsg, setMsg = setCfgMsg, translating = cfgTranslating, setTranslating = setCfgTranslating;
