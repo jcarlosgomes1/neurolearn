@@ -4105,7 +4105,7 @@ const renderMarkdown = (md) => {
         React.createElement("div", { style: { padding: "0 18px 16px", borderBottom: "0.5px solid rgba(0,0,0,.06)", marginBottom: 4 } },
             React.createElement("div", { style: { fontSize: 16, fontWeight: 600, background: G, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" } }, "NeuroLearn"),
             React.createElement("div", { style: { fontSize: 9, fontWeight: 600, color: "#86868B", textTransform: "uppercase", letterSpacing: ".08em", marginTop: 2 } }, "Gest\u00E3o")),
-        [["dashboard", "▣", "Dashboard"], ["courses", "◎", t("stats.courses","ui")||"Cursos"], ["students", "◉", t("stats.students","ui")||"Alunos"], ["analytics", "◈", "Analytics"], ["evals", "📋", "Avaliações"], ["adminNotifs", "🔔", "Notificações"], ["agent", "✦", "AI Agent"], ["promote", "✨", "Promover Instrutor"], ["instructors", "👨‍🏫", "Instrutores"], ["transactions", "💰", "Transacções"], ["legal_pages", "📜", "Páginas Legais"], ["config", "🏢", "Empresa"], ["settings", "⚙", "Definições"]].map(([k, ic, l]) => {
+        [["dashboard", "▣", "Dashboard"], ["courses", "◎", t("stats.courses","ui")||"Cursos"], ["students", "◉", t("stats.students","ui")||"Alunos"], ["analytics", "◈", "Analytics"], ["evals", "📋", "Avaliações"], ["adminNotifs", "🔔", "Notificações"], ["agent", "✦", "AI Agent"], ["promote", "✨", "Promover Instrutor"], ["instructors", "👨‍🏫", "Instrutores"], ["transactions", "💰", "Transacções"], ["legal_pages", "📜", "Páginas Legais"], ["i18n", "🌐", "Traduções"], ["config", "🏢", "Empresa"], ["settings", "⚙", "Definições"]].map(([k, ic, l]) => {
             const isNotifs = k === "adminNotifs";
             const unreadCount = isNotifs ? adminNotifs.filter(n => !n.read).length : 0;
             return (React.createElement("div", { key: k, style: Object.assign(Object.assign({}, fc), { gap: 8, padding: "9px 18px", fontSize: 13, fontWeight: aView === k ? 600 : 400, color: aView === k ? "#0071E3" : "#6E6E73", cursor: "pointer", background: aView === k ? "#0071E310" : "transparent", borderRight: aView === k ? "3px solid #0071E3" : "3px solid transparent" }), onClick: () => setAView(k) },
@@ -5934,7 +5934,138 @@ const renderMarkdown = (md) => {
           ))
         );
     }, []);
-    const AConfig = () => {
+
+    const AI18n = React.useCallback(() => {
+        const [translations, setTranslations] = React.useState([]);
+        const [loading, setLoading] = React.useState(true);
+        const [search, setSearch] = React.useState("");
+        const [langFilter, setLangFilter] = React.useState("all");
+        const [editing, setEditing] = React.useState(null);
+        const [editValue, setEditValue] = React.useState("");
+        const [showAdd, setShowAdd] = React.useState(false);
+        const [newKey, setNewKey] = React.useState("");
+        const [newLang, setNewLang] = React.useState("pt");
+        const [newValue, setNewValue] = React.useState("");
+        const [msg, setMsg] = React.useState("");
+
+        const refresh = async () => {
+            setLoading(true);
+            try {
+                const { data } = await window._SB.from("nl_i18n").select("*").order("key");
+                setTranslations(data || []);
+            } catch(e) { console.error(e); }
+            setLoading(false);
+        };
+
+        React.useEffect(() => { refresh(); }, []);
+
+        const handleSaveEdit = async (key, lang) => {
+            try {
+                await window._SB.from("nl_i18n").update({ value: editValue, updated_at: new Date().toISOString() }).eq("key", key).eq("lang", lang);
+                setEditing(null);
+                setMsg("\u2705 Tradu\u00E7\u00E3o actualizada");
+                setTimeout(() => setMsg(""), 2500);
+                await refresh();
+            } catch(e) { console.error(e); setMsg("\u274C Erro: " + e.message); }
+        };
+
+        const handleDelete = async (key, lang) => {
+            if (!window.confirm("Eliminar esta tradu\u00E7\u00E3o?")) return;
+            try {
+                await window._SB.from("nl_i18n").delete().eq("key", key).eq("lang", lang);
+                setMsg("\u2705 Tradu\u00E7\u00E3o eliminada");
+                setTimeout(() => setMsg(""), 2500);
+                await refresh();
+            } catch(e) { console.error(e); }
+        };
+
+        const handleAdd = async () => {
+            if (!newKey.trim() || !newValue.trim()) {
+                setMsg("\u26A0\uFE0F Preencha todos os campos");
+                setTimeout(() => setMsg(""), 2500);
+                return;
+            }
+            try {
+                await window._SB.from("nl_i18n").insert({ key: newKey.trim(), lang: newLang, value: newValue.trim(), updated_at: new Date().toISOString() });
+                setNewKey(""); setNewValue(""); setShowAdd(false);
+                setMsg("\u2705 Tradu\u00E7\u00E3o adicionada");
+                setTimeout(() => setMsg(""), 2500);
+                await refresh();
+            } catch(e) { console.error(e); setMsg("\u274C Erro: " + e.message); }
+        };
+
+        const handleExportCSV = () => {
+            const rows = [["Key", "Lang", "Value"]];
+            translations.forEach(t => rows.push([t.key, t.lang, '"' + (t.value||"").replace(/"/g, '""') + '"']));
+            const csv = rows.map(r => r.join(",")).join("\n");
+            const blob = new Blob([csv], { type: "text/csv" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url; a.download = "nl_translations.csv"; a.click();
+            URL.revokeObjectURL(url);
+        };
+
+        const filtered = translations.filter(t => 
+            (langFilter === "all" || t.lang === langFilter) &&
+            (search === "" || (t.key||"").toLowerCase().includes(search.toLowerCase()) || (t.value||"").toLowerCase().includes(search.toLowerCase()))
+        );
+
+        return React.createElement("div", { style: { padding: 28, maxWidth: 1100 } },
+            React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 } },
+                React.createElement("div", null,
+                    React.createElement("h1", { style: { fontSize: 24, fontWeight: 600, color: "#1D1D1F", marginBottom: 4 } }, "\uD83C\uDF10 Tradu\u00E7\u00F5es (i18n)"),
+                    React.createElement("p", { style: { color: "#86868B", fontSize: 13 } }, "Gerir strings de tradu\u00E7\u00E3o da plataforma")),
+                React.createElement("div", { style: { display: "flex", gap: 8 } },
+                    React.createElement("button", { onClick: () => setShowAdd(!showAdd), style: { padding: "8px 16px", background: "#0071E3", color: "#fff", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer" } }, showAdd ? "Cancelar" : "+ Nova"),
+                    React.createElement("button", { onClick: handleExportCSV, style: { padding: "8px 16px", background: "#fff", color: "#1D1D1F", border: "1px solid #E5E5EA", borderRadius: 8, fontSize: 13, cursor: "pointer" } }, "\u2B07\uFE0F CSV"),
+                    React.createElement("button", { onClick: refresh, style: { padding: "8px 16px", background: "#fff", color: "#1D1D1F", border: "1px solid #E5E5EA", borderRadius: 8, fontSize: 13, cursor: "pointer" } }, "\u21BB"))),
+            msg && React.createElement("div", { style: { padding: "10px 14px", background: "#F0F8FF", border: "1px solid #D0E6FF", borderRadius: 8, marginBottom: 16, fontSize: 13 } }, msg),
+            showAdd && React.createElement("div", { style: { background: "#fff", border: "1px solid #E5E5EA", borderRadius: 12, padding: 16, marginBottom: 16 } },
+                React.createElement("div", { style: { fontSize: 14, fontWeight: 600, marginBottom: 12 } }, "Nova Tradu\u00E7\u00E3o"),
+                React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 100px 2fr auto", gap: 8, alignItems: "center" } },
+                    React.createElement("input", { type: "text", value: newKey, onChange: e => setNewKey(e.target.value), placeholder: "chave (ex: nav.home)", style: { padding: "8px 12px", borderRadius: 6, border: "1px solid #E5E5EA", fontSize: 13 } }),
+                    React.createElement("select", { value: newLang, onChange: e => setNewLang(e.target.value), style: { padding: "8px 12px", borderRadius: 6, border: "1px solid #E5E5EA", fontSize: 13 } },
+                        React.createElement("option", { value: "pt" }, "pt"),
+                        React.createElement("option", { value: "en" }, "en"),
+                        React.createElement("option", { value: "es" }, "es"),
+                        React.createElement("option", { value: "fr" }, "fr")),
+                    React.createElement("input", { type: "text", value: newValue, onChange: e => setNewValue(e.target.value), placeholder: "valor da tradu\u00E7\u00E3o", style: { padding: "8px 12px", borderRadius: 6, border: "1px solid #E5E5EA", fontSize: 13 } }),
+                    React.createElement("button", { onClick: handleAdd, style: { padding: "8px 16px", background: "#34C759", color: "#fff", border: "none", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer" } }, "Guardar"))),
+            React.createElement("div", { style: { display: "flex", gap: 8, marginBottom: 16 } },
+                React.createElement("input", { type: "text", value: search, onChange: e => setSearch(e.target.value), placeholder: "\uD83D\uDD0D Procurar por chave ou valor...", style: { flex: 1, padding: "8px 12px", borderRadius: 8, border: "1px solid #E5E5EA", fontSize: 13 } }),
+                React.createElement("select", { value: langFilter, onChange: e => setLangFilter(e.target.value), style: { padding: "8px 12px", borderRadius: 8, border: "1px solid #E5E5EA", fontSize: 13, minWidth: 120 } },
+                    React.createElement("option", { value: "all" }, "Todos os idiomas"),
+                    React.createElement("option", { value: "pt" }, "Portugu\u00EAs"),
+                    React.createElement("option", { value: "en" }, "English"),
+                    React.createElement("option", { value: "es" }, "Espa\u00F1ol"),
+                    React.createElement("option", { value: "fr" }, "Fran\u00E7ais"))),
+            loading ? React.createElement("div", { style: { textAlign: "center", padding: 40, color: "#86868B" } }, "A carregar...") :
+            filtered.length === 0 ? React.createElement("div", { style: { textAlign: "center", padding: 40, color: "#86868B", background: "#fff", borderRadius: 12, border: "1px solid #E5E5EA" } }, "Nenhuma tradu\u00E7\u00E3o encontrada") :
+            React.createElement("div", { style: { background: "#fff", borderRadius: 12, border: "1px solid #E5E5EA", overflow: "hidden" } },
+                React.createElement("div", { style: { display: "grid", gridTemplateColumns: "200px 60px 1fr 120px", padding: "10px 16px", background: "#F5F5F7", borderBottom: "1px solid #E5E5EA", fontSize: 11, fontWeight: 600, color: "#6E6E73", textTransform: "uppercase", letterSpacing: ".05em" } },
+                    React.createElement("div", null, "Chave"),
+                    React.createElement("div", null, "Idioma"),
+                    React.createElement("div", null, "Valor"),
+                    React.createElement("div", null, "Ac\u00E7\u00F5es")),
+                filtered.map((t, i) => React.createElement("div", { key: t.key + "-" + t.lang, style: { display: "grid", gridTemplateColumns: "200px 60px 1fr 120px", padding: "12px 16px", borderBottom: i < filtered.length - 1 ? "1px solid #F5F5F7" : "none", fontSize: 13, alignItems: "center" } },
+                    React.createElement("div", { style: { fontFamily: "monospace", fontSize: 12, color: "#1D1D1F" } }, t.key),
+                    React.createElement("div", null, React.createElement("span", { style: { padding: "2px 8px", background: "#E8F4FF", color: "#0071E3", borderRadius: 4, fontSize: 11, fontWeight: 600 } }, t.lang)),
+                    React.createElement("div", null,
+                        editing === t.key + "-" + t.lang ?
+                            React.createElement("input", { type: "text", value: editValue, onChange: e => setEditValue(e.target.value), autoFocus: true, style: { width: "100%", padding: "6px 10px", borderRadius: 6, border: "2px solid #0071E3", fontSize: 13 } }) :
+                            React.createElement("span", null, t.value)),
+                    React.createElement("div", { style: { display: "flex", gap: 6 } },
+                        editing === t.key + "-" + t.lang ? [
+                            React.createElement("button", { key: "save", onClick: () => handleSaveEdit(t.key, t.lang), style: { padding: "4px 10px", background: "#34C759", color: "#fff", border: "none", borderRadius: 4, fontSize: 11, cursor: "pointer" } }, "\u2713"),
+                            React.createElement("button", { key: "cancel", onClick: () => setEditing(null), style: { padding: "4px 10px", background: "#E5E5EA", color: "#1D1D1F", border: "none", borderRadius: 4, fontSize: 11, cursor: "pointer" } }, "\u2715")
+                        ] : [
+                            React.createElement("button", { key: "edit", onClick: () => { setEditing(t.key + "-" + t.lang); setEditValue(t.value || ""); }, style: { padding: "4px 10px", background: "#fff", border: "1px solid #E5E5EA", borderRadius: 4, fontSize: 11, cursor: "pointer" } }, "\u270F\uFE0F"),
+                            React.createElement("button", { key: "delete", onClick: () => handleDelete(t.key, t.lang), style: { padding: "4px 10px", background: "#fff", border: "1px solid #E5E5EA", borderRadius: 4, fontSize: 11, cursor: "pointer" } }, "\uD83D\uDDD1\uFE0F")
+                        ])))),
+            React.createElement("div", { style: { marginTop: 16, fontSize: 12, color: "#86868B", textAlign: "right" } }, "Total: " + translations.length + " | Exibindo: " + filtered.length));
+    }, []);
+
+        const AConfig = () => {
         const cfg = cfgDraft, setCfg = setCfgDraft, saving = cfgSaving, setSaving = setCfgSaving;
         const msg = cfgMsg, setMsg = setCfgMsg, translating = cfgTranslating, setTranslating = setCfgTranslating;
         const getVal = (k) => (cfg[k] && cfg[k].value) || "";
@@ -6232,7 +6363,7 @@ const renderMarkdown = (md) => {
                 aView === "analytics" && AAnalytics(),
                 aView === "evals" && AEvals(),
                 aView === "adminNotifs" && AAdminNotifs(),
-                aView === "promote" && React.createElement(APromote, null), aView === "instructors" && React.createElement(AInstructors, null), aView === "transactions" && React.createElement(ATransactions, null), aView === "legal_pages" && React.createElement(ALegalPages, null), aView === "config" && AConfig(), aView === "settings" && ASettings()),
+                aView === "promote" && React.createElement(APromote, null), aView === "instructors" && React.createElement(AInstructors, null), aView === "transactions" && React.createElement(ATransactions, null), aView === "legal_pages" && React.createElement(ALegalPages, null), aView === "i18n" && React.createElement(AI18n, null), aView === "config" && AConfig(), aView === "settings" && ASettings()),
             renderDocViewer(),
             renderCoursePreview(),
             renderToast()));
