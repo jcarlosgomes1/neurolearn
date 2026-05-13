@@ -674,7 +674,7 @@ const renderMarkdown = (md) => {
         }
       } catch(e) {}
     }, [view, zone, aView, sView]);
-    useEffect(() => { setCfgDraft(prev => Object.keys(prev).length === 0 ? (platformConfig || {}) : prev); }, [platformConfig]);
+    useEffect(() => { if (platformConfig && Object.keys(platformConfig).length > 0) { setCfgDraft(prev => Object.keys(prev).length === 0 ? platformConfig : prev); } }, [JSON.stringify(platformConfig)]);
     const ldInstructorData = async () => {
       if (!curStu || !curStu.id) return;
       setInstructorLoading(true);
