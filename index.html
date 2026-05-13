@@ -68,8 +68,7 @@
         if(STUDENT_KEYS.has(k)){
           const email=getStudentEmail();
           if(email){
-            const val=await sbGet('nl_student_data',['student_email||key',email+'|'+k]);
-            // query correcta:
+            // query directa (correcta):
             try{
               const {data,error}=await SB.from('nl_student_data').select('data')
                 .eq('student_email',email).eq('key',k).maybeSingle();
@@ -1814,7 +1813,7 @@ const renderMarkdown = (md) => {
     };
     const agSend = async (overrideMsg) => {
         var _a;
-        const msg = (overrideMsg || document.getElementById('ag-input')?.value || agIn).trim();
+        const msg = (overrideMsg || document.getElementById('nl-agent-input')?.value || agIn).trim();
         if (!msg)
             return;
         // Detect course creation intent — launch wizard
@@ -4468,7 +4467,7 @@ const renderMarkdown = (md) => {
             React.createElement("div", { style: Object.assign(Object.assign({ width: 44, height: 44, borderRadius: 12, background: G }, fc), { justifyContent: "center", margin: "0 auto 10px", fontSize: 18, color: "#fff" }) }, "\u2726"),
             React.createElement("h1", { style: { fontSize: 22, fontWeight: 700 } }, "AI Agent"),
             React.createElement("p", { style: { color: "#86868B", fontSize: 12, marginTop: 3 } }, "Cria e gere com linguagem natural")),
-        agWizard && AgentWizard(),
+        agWizard && React.createElement(AgentWizard, null),
         !agWizard && agMsg.length === 0 && React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 7, marginBottom: 20 } }, ["Cria um curso sobre Python", "Qual o mais popular?", "Actualiza o programa do curso de Excel", "Sugere melhorias de conteúdo"].map((s, i) => (React.createElement("button", { key: i, onClick: () => agSend(s), style: { padding: "10px 12px", borderRadius: 9, background: "#fff", border: "0.5px solid rgba(0,0,0,.08)", cursor: "pointer", textAlign: "left", fontSize: 12, color: "#6E6E73", fontFamily: F, transition: "all .2s" }, onMouseEnter: e => { e.currentTarget.style.borderColor = "#0071E3"; e.currentTarget.style.color = "#0071E3"; }, onMouseLeave: e => { e.currentTarget.style.borderColor = "rgba(0,0,0,.08)"; e.currentTarget.style.color = "#6E6E73"; } }, s)))),
         React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 10, marginBottom: 16, maxHeight: 360, overflowY: "auto" } },
             agMsg.map((m, i) => (React.createElement("div", { key: i, style: { display: "flex", justifyContent: m.r === "u" ? "flex-end" : "flex-start" } },
@@ -4480,8 +4479,8 @@ const renderMarkdown = (md) => {
                 React.createElement("span", { style: { fontSize: 12, color: "#86868B", marginLeft: 4 } }, "A gerar curso...")),
             React.createElement("div", { ref: chatRef })),
         !agWizard && React.createElement("div", { style: { display: "flex", gap: 7, position: "sticky", bottom: 0, paddingTop: 8, background: "#F5F5F7" } },
-            React.createElement("input", { type: "text", defaultValue: agIn, id: "ag-input", onKeyDown: e => { if(e.key === "Enter") { setAgIn(e.target.value); agSend(); } }, placeholder: "Ex: Cria um curso sobre Excel com IA...", style: { flex: 1, padding: "10px 14px", borderRadius: 980, border: "0.5px solid rgba(0,0,0,.1)", fontSize: 13, outline: "none", background: "#fff", fontFamily: F }, onFocus: e => e.target.style.borderColor = "#0071E3", onBlur: e => e.target.style.borderColor = "rgba(0,0,0,.1)" }),
-            React.createElement("button", { onClick: () => { const v = document.getElementById('ag-input')?.value; if(v) setAgIn(v); agSend(); }, style: Object.assign(Object.assign({ width: 38, height: 38, borderRadius: "50%", background: "#0071E3", border: "none", cursor: "pointer" }, fc), { justifyContent: "center", fontSize: 14, color: "#fff" }) }, "\u2191")))), [agMsg, agLoad, agIn, agWizard, wzTopic, wzNumLessons, wzLessonDur, wzQuizMode, wzHasVideo, wzBiblio, wzBiblioMode]);
+            React.createElement("input", { type: "text", id: "nl-agent-input", defaultValue: "", onKeyDown: e => { if(e.key === "Enter") { const v = e.target.value.trim(); if(v) { setAgIn(v); agSend(v); e.target.value = ""; } } }, placeholder: "Ex: Cria um curso sobre Excel com IA...", style: { flex: 1, padding: "10px 14px", borderRadius: 980, border: "0.5px solid rgba(0,0,0,.1)", fontSize: 13, outline: "none", background: "#fff", fontFamily: F }, onFocus: e => e.target.style.borderColor = "#0071E3", onBlur: e => e.target.style.borderColor = "rgba(0,0,0,.1)" }),
+            React.createElement("button", { onClick: () => agSend(), style: Object.assign(Object.assign({ width: 38, height: 38, borderRadius: "50%", background: agIn.trim() ? "#0071E3" : "#E5E5EA", border: "none", cursor: agIn.trim() ? "pointer" : "default" }, fc), { justifyContent: "center", fontSize: 14, color: "#fff" }) }, "\u2191")))), [agMsg, agLoad, agIn, agWizard, wzTopic, wzNumLessons, wzLessonDur, wzQuizMode, wzHasVideo, wzBiblio, wzBiblioMode]);
     const NOTIF_TYPES = {
         quiz_submitted: { label: "Quiz submetido", color: "#0071E3", icon: "📝", desc: "Avaliações pendentes de validação" },
         quiz_validated: { label: "Quiz validado", color: "#30D158", icon: "✅", desc: "Avaliações já validadas" },
@@ -6014,7 +6013,7 @@ const renderMarkdown = (md) => {
                     section.fields.map(f => React.createElement("div", { key: f.key, style: { display: "flex", gap: 8, alignItems: "flex-start" } },
                         React.createElement("div", { style: { flex: 1 } },
                             React.createElement("label", { style: { fontSize: 12, fontWeight: 500, color: "#86868B", display: "block", marginBottom: 4 } }, f.label),
-                            f.textarea ? React.createElement("textarea", { defaultValue: getVal(f.key), onBlur: e => setVal(f.key, e.target.value), placeholder: f.placeholder, rows: 2, style: { width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid #E5E5EA", fontSize: 13, fontFamily: F, outline: "none", boxSizing: "border-box", resize: "vertical" } }) : React.createElement("input", { defaultValue: getVal(f.key), onBlur: e => setVal(f.key, e.target.value), placeholder: f.placeholder, style: { width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid #E5E5EA", fontSize: 13, fontFamily: F, outline: "none", boxSizing: "border-box" } })
+                            f.textarea ? React.createElement("textarea", { key: f.key + "-" + (getVal(f.key) ? "loaded" : "empty"), defaultValue: getVal(f.key), onBlur: e => setVal(f.key, e.target.value), placeholder: f.placeholder, rows: 2, style: { width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid #E5E5EA", fontSize: 13, fontFamily: F, outline: "none", boxSizing: "border-box", resize: "vertical" } }) : React.createElement("input", { key: f.key + "-" + (getVal(f.key) ? "loaded" : "empty"), defaultValue: getVal(f.key), onBlur: e => setVal(f.key, e.target.value), placeholder: f.placeholder, style: { width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid #E5E5EA", fontSize: 13, fontFamily: F, outline: "none", boxSizing: "border-box" } })
                         ),
                         React.createElement("button", { onClick: () => saveField(f.key), disabled: saving, style: { marginTop: 19, padding: "8px 12px", borderRadius: 8, background: "#0071E3", color: "#fff", border: "none", fontSize: 11, fontWeight: 600, cursor: saving ? "wait" : "pointer", fontFamily: F, whiteSpace: "nowrap", flexShrink: 0 } }, saving ? "..." : "Guardar")
                     ))
