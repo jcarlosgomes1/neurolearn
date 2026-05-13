@@ -674,7 +674,7 @@ const renderMarkdown = (md) => {
         }
       } catch(e) {}
     }, [view, zone, aView, sView]);
-    useEffect(() => { if (platformConfig && Object.keys(platformConfig).length > 0) { setCfgDraft(prev => Object.keys(prev).length === 0 ? platformConfig : prev); } }, [JSON.stringify(platformConfig)]);
+    useEffect(() => { setCfgDraft(platformConfig || {}); }, [platformConfig]);
     const ldInstructorData = async () => {
       if (!curStu || !curStu.id) return;
       setInstructorLoading(true);
@@ -6220,20 +6220,20 @@ const renderMarkdown = (md) => {
         return (React.createElement(React.Fragment, null, React.createElement(IZone, null), React.createElement(ReviewModal, null)));
     if (zone === "admin")
         return (React.createElement("div", { style: { fontFamily: F, color: "#1D1D1F", background: "#F5F5F7", minHeight: "100vh", opacity: mounted ? 1 : 0, transition: "opacity .4s" } },
-            !isMobile && React.createElement(ASide, null),
+            !isMobile && ASide(),
             React.createElement("div", { style: { marginLeft: isMobile ? 0 : 200, padding: isMobile ? "16px" : "24px 32px", minHeight: "100vh" } },
                 isMobile && React.createElement("div", { style: { display: "flex", gap: 8, marginBottom: 16, overflowX: "auto", paddingBottom: 4 } },
                     [["dashboard", "Dashboard"], ["promote", "✨"], ["courses", t("stats.courses","ui")||"Cursos"], ["students", t("stats.students","ui")||"Alunos"], ["analytics", "Analytics"], ["evals", "Aval."], ["adminNotifs", "🔔"], ["agent", "Agent"], ["settings", "Def."]].map(([k, l]) => (React.createElement("button", { key: k, style: { padding: "6px 14px", borderRadius: 980, fontSize: 12, fontWeight: aView === k ? 600 : 400, background: aView === k ? "#0071E3" : "rgba(0,0,0,.04)", color: aView === k ? "#fff" : "#6E6E73", border: "none", cursor: "pointer", whiteSpace: "nowrap", fontFamily: F }, onClick: () => setAView(k) }, l))),
                     React.createElement("button", { style: { padding: "6px 14px", borderRadius: 980, fontSize: 12, background: "transparent", color: "#0071E3", border: "none", cursor: "pointer", fontFamily: F, whiteSpace: "nowrap" }, onClick: goPublic }, "\uD83C\uDF10 Site"),
                     React.createElement("button", { style: { padding: "6px 14px", borderRadius: 980, fontSize: 12, background: "transparent", color: "#FF375F", border: "none", cursor: "pointer", fontFamily: F }, onClick: goPublic }, "Sair")),
-                aView === "dashboard" && React.createElement(ADash, null),
-                aView === "courses" && React.createElement(ACourses, null),
-                aView === "students" && React.createElement(AStudents, null),
-                aView === "agent" && React.createElement(AAgent, null),
-                aView === "analytics" && React.createElement(AAnalytics, null),
-                aView === "evals" && React.createElement(AEvals, null),
-                aView === "adminNotifs" && React.createElement(AAdminNotifs, null),
-                aView === "promote" && React.createElement(APromote, null), aView === "instructors" && React.createElement(AInstructors, null), aView === "transactions" && React.createElement(ATransactions, null), aView === "legal_pages" && React.createElement(ALegalPages, null), aView === "config" && React.createElement(AConfig, null), aView === "settings" && React.createElement(ASettings, null)),
+                aView === "dashboard" && ADash(),
+                aView === "courses" && ACourses(),
+                aView === "students" && AStudents(),
+                aView === "agent" && AAgent(),
+                aView === "analytics" && AAnalytics(),
+                aView === "evals" && AEvals(),
+                aView === "adminNotifs" && AAdminNotifs(),
+                aView === "promote" && APromote(), aView === "instructors" && AInstructors(), aView === "transactions" && ATransactions(), aView === "legal_pages" && ALegalPages(), aView === "config" && AConfig(), aView === "settings" && ASettings()),
             renderDocViewer(),
             renderCoursePreview(),
             renderToast()));
