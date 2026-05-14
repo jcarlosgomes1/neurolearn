@@ -2412,7 +2412,8 @@ const renderMarkdown = (md) => {
   
       const navLinks = [
     ['home',T.nav.home],['courses',T.nav.courses],
-    ['pricing',T.nav.pricing],['about',T.nav.about]
+    ['pricing',T.nav.pricing],['about',T.nav.about],
+    ['apply',t('apply.navlink')||'Ensinar']
       ];
   
       return React.createElement('nav',{style:{
@@ -6837,6 +6838,7 @@ const renderMarkdown = (md) => {
         view === "home" && Home(),
         view === "courses" && React.createElement(PubCourses, null),
         view === "pricing" && React.createElement(Pricing, null),
+        view === "apply" && React.createElement(ApplyInstructor, null),
         view === "detail" && React.createElement(Detail, null),
         view === "privacy" && React.createElement(LegalPage, { slug: "privacy", fallbackTitle: "Privacidade" }),
         view === "terms" && React.createElement(LegalPage, { slug: "terms", fallbackTitle: "Termos" }),
