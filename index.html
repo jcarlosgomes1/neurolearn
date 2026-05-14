@@ -599,6 +599,30 @@ const renderMarkdown = (md) => {
         { id: 3, author: "Ana Costa", avatar: "AC", role: "Aluna · IA para Negócios", time: "há 1 dia", text: "Pergunta para a comunidade: qual é a vossa estratégia favorita para apresentar IA ao board de uma empresa tradicional? Estou a preparar uma proposta e queria ouvir experiências reais.", likes: 7, replies: [{ author: "Maria Oliveira", avatar: "MO", time: "há 20h", text: "Começa sempre pelo ROI concreto e casos de uso específicos do sector deles. Evita o hype e foca em problemas reais que já conhecem." }, { author: "Pedro Santos", avatar: "PS", time: "há 18h", text: "Concordo com a Maria. Eu uso sempre uma demo ao vivo de 5 minutos — vale mais que 50 slides de teoria." }] },
         { id: 4, author: "Inês Martins", avatar: "IM", role: "Aluna · Fundamentos de IA", time: "há 2 dias", text: "Acabei de receber o meu certificado de Fundamentos de IA! 🎓 Para quem está a começar: não desistam nos primeiros módulos de Python — é a base de tudo. Valeu cada hora investida!", likes: 34, replies: [] },
     ]);
+    // Load community posts from Supabase
+    useEffect(() => {
+        (async () => {
+            try {
+                const { data } = await window._SB.from("nl_community_posts").select("id, author_email, author_name, content, original_lang, likes, created_at").order("created_at", { ascending: false }).limit(50);
+                if (data) {
+                    const posts = data.map(p => ({
+                        id: p.created_at,
+                        dbId: p.id,
+                        author: p.author_name || p.author_email,
+                        avatar: (p.author_name || p.author_email).split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase(),
+                        role: "Aluno",
+                        time: new Date(p.created_at).toLocaleString(),
+                        text: p.content,
+                        original_lang: p.original_lang || "pt",
+                        likes: p.likes || 0,
+                        replies: []
+                    }));
+                    setCommunityPosts(posts);
+                }
+            } catch(e) { console.warn("Failed to load community posts:", e); }
+        })();
+    }, []);
+    
     const [newPost, setNewPost] = useState("");
     const [replyText, setReplyText] = useState({});
     const [showReply, setShowReply] = useState({});
@@ -4535,7 +4559,7 @@ const renderMarkdown = (md) => {
                     count,
                     " notifica\u00E7\u00E3o",
                     count !== 1 ? "s" : ""))))),
-            React.createElement("div", { style: { display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" } }, [["all", "Todas"], ["unread", "Por ler"], ["read", "Lidas"]].map(([v, l]) => (React.createElement("button", { key: v, onClick: () => setFilterRead(v), style: { padding: "5px 14px", borderRadius: 980, fontSize: 12, fontWeight: filterRead === v ? 600 : 400, background: filterRead === v ? "#1D1D1F" : "rgba(0,0,0,.04)", color: filterRead === v ? "#fff" : "#6E6E73", border: "none", cursor: "pointer", fontFamily: F } }, l)))),
+            React.createElement("div", { style: { display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" } }, [["all", t("notifs.all")||"Todas"], ["unread", t("notifs.unread")||"Por ler"], ["read", t("notifs.read")||"Lidas"]].map(([v, l]) => (React.createElement("button", { key: v, onClick: () => setFilterRead(v), style: { padding: "5px 14px", borderRadius: 980, fontSize: 12, fontWeight: filterRead === v ? 600 : 400, background: filterRead === v ? "#1D1D1F" : "rgba(0,0,0,.04)", color: filterRead === v ? "#fff" : "#6E6E73", border: "none", cursor: "pointer", fontFamily: F } }, l)))),
             filtered.length === 0 ? (React.createElement("div", { style: { textAlign: "center", padding: "48px 20px", color: "#86868B" } },
                 React.createElement("div", { style: { fontSize: 36, marginBottom: 10 } }, "\uD83D\uDD14"),
                 React.createElement("p", null, adminNotifs.length === 0 ? "Sem notificações ainda." : "Nenhuma corresponde ao filtro."))) : filtered.map((n, i) => {
@@ -6407,17 +6431,22 @@ const renderMarkdown = (md) => {
                     React.createElement("div", { style: Object.assign(Object.assign({}, crd), { padding: 18, border: bd, borderRadius: 16, marginBottom: 20 }) },
                         React.createElement("div", { style: Object.assign(Object.assign({}, fc), { gap: 10, marginBottom: 12 }) },
                             React.createElement("div", { style: Object.assign(Object.assign({ width: 36, height: 36, borderRadius: "50%", background: G }, fc), { justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 700, flexShrink: 0 }) }, (_b = curStu === null || curStu === void 0 ? void 0 : curStu.name) === null || _b === void 0 ? void 0 : _b.split(" ").map(n => n[0]).join("")),
-                            React.createElement("textarea", { value: newPost, onChange: e => setNewPost(e.target.value), placeholder: "Partilha uma dica, pergunta ou conquista...", style: { flex: 1, padding: "10px 14px", borderRadius: 12, border: "1px solid #E5E5EA", fontSize: 13, fontFamily: F, resize: "none", outline: "none", minHeight: 72, lineHeight: 1.5 }, onFocus: e => e.target.style.borderColor = "#0071E3", onBlur: e => e.target.style.borderColor = "#E5E5EA" })),
+                            React.createElement("textarea", { value: newPost, onChange: e => setNewPost(e.target.value), placeholder: t("community.placeholder")||"Partilha uma dica, pergunta ou conquista...", style: { flex: 1, padding: "10px 14px", borderRadius: 12, border: "1px solid #E5E5EA", fontSize: 13, fontFamily: F, resize: "none", outline: "none", minHeight: 72, lineHeight: 1.5 }, onFocus: e => e.target.style.borderColor = "#0071E3", onBlur: e => e.target.style.borderColor = "#E5E5EA" })),
                         React.createElement("div", { style: { display: "flex", justifyContent: "flex-end" } },
-                            React.createElement("button", { style: Object.assign(Object.assign({}, B(true, true)), { fontSize: 12 }), onClick: () => {
+                            React.createElement("button", { style: Object.assign(Object.assign({}, B(true, true)), { fontSize: 12 }), onClick: async () => {
                                     var _a;
-                                    if (!newPost.trim())
-                                        return;
-                                    const post = { id: Date.now(), author: curStu.name, avatar: curStu.name.split(" ").map(n => n[0]).join(""), role: `Aluno · ${((_a = courses.find(c => { var _a; return (_a = curStu.enr) === null || _a === void 0 ? void 0 : _a.includes(c.id); })) === null || _a === void 0 ? void 0 : _a.title) || "NeuroLearn"}`, time: "agora mesmo", text: newPost.trim(), likes: 0, replies: [] };
+                                    if (!newPost.trim()) return;
+                                    const txt = newPost.trim();
+                                    const post = { id: Date.now(), author: curStu.name, avatar: curStu.name.split(" ").map(n => n[0]).join(""), role: `Aluno · ${((_a = courses.find(c => { var _a; return (_a = curStu.enr) === null || _a === void 0 ? void 0 : _a.includes(c.id); })) === null || _a === void 0 ? void 0 : _a.title) || "NeuroLearn"}`, time: t("community.now")||"agora mesmo", text: txt, likes: 0, replies: [], original_lang: _lang || "pt" };
                                     setCommunityPosts(p => [post, ...p]);
                                     setNewPost("");
-                                    tst("Post publicado! 🎉");
-                                } }, "Publicar"))),
+                                    tst((t("community.posted")||"Publicado!") + " 🎉");
+                                    // Persistir no Supabase em background
+                                    try { 
+                                      const { data } = await window._SB.from("nl_community_posts").insert({ author_email: curStu.email, author_name: curStu.name, content: txt, original_lang: _lang || "pt" }).select().single();
+                                      if (data) { post.dbId = data.id; setCommunityPosts(p => p.map(x => x.id === post.id ? Object.assign({}, x, { dbId: data.id }) : x)); }
+                                    } catch(e) { console.warn("Failed to persist post:", e); }
+                                } }, t("community.publish")||"Publicar"))),
                     communityPosts.map((post, pi) => {
                         var _a;
                         return (React.createElement("div", { key: post.id, style: Object.assign(Object.assign({}, crd), { padding: 20, border: bd, borderRadius: 16, marginBottom: 14, animation: `fu .3s ease ${pi * .05}s both` }) },
@@ -6429,7 +6458,28 @@ const renderMarkdown = (md) => {
                                         post.role,
                                         " \u00B7 ",
                                         post.time))),
-                            React.createElement("p", { style: { fontSize: 14, color: "#1D1D1F", lineHeight: 1.65, marginBottom: 14 } }, post.text),
+                            React.createElement("p", { style: { fontSize: 14, color: "#1D1D1F", lineHeight: 1.65, marginBottom: 6 } }, post.translated || post.text),
+                            (post.original_lang && _lang && post.original_lang !== _lang.split("-")[0]) && React.createElement("div", { style: { display: "flex", gap: 8, marginBottom: 14, fontSize: 11, color: "#86868B" } },
+                                post.translating ? React.createElement("span", null, t("community.translating")||"A traduzir...") :
+                                post.translated && post.showOriginal ? React.createElement("button", { onClick: () => setCommunityPosts(ps => ps.map(p => p.id === post.id ? Object.assign(Object.assign({}, p), { showOriginal: false, translated: p.translated }) : p)), style: { background: "none", border: "none", color: "#0071E3", cursor: "pointer", fontSize: 11, padding: 0 } }, "🌐 " + (t("community.translated")||"Traduzido")) :
+                                post.translated ? React.createElement("button", { onClick: () => setCommunityPosts(ps => ps.map(p => p.id === post.id ? Object.assign(Object.assign({}, p), { showOriginal: true, translated: null }) : p).map(p => p.id === post.id ? Object.assign(Object.assign({}, p), { text: p.text }) : p)), style: { background: "none", border: "none", color: "#0071E3", cursor: "pointer", fontSize: 11, padding: 0 } }, "🌐 " + (t("community.showOriginal")||"Mostrar original")) :
+                                React.createElement("button", { onClick: async () => {
+                                    setCommunityPosts(ps => ps.map(p => p.id === post.id ? Object.assign(Object.assign({}, p), { translating: true }) : p));
+                                    try {
+                                        const tgt = (_lang || "pt").split("-")[0];
+                                        const r = await fetch(SUPABASE_URL + "/functions/v1/translate-text", {
+                                            method: "POST",
+                                            headers: { "Content-Type": "application/json", "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY },
+                                            body: JSON.stringify({ source_table: "posts", source_id: post.dbId, text: post.text, target_lang: tgt, source_lang: post.original_lang })
+                                        });
+                                        const d = await r.json();
+                                        setCommunityPosts(ps => ps.map(p => p.id === post.id ? Object.assign(Object.assign({}, p), { translated: d.translated || p.text, translating: false }) : p));
+                                    } catch(e) {
+                                        setCommunityPosts(ps => ps.map(p => p.id === post.id ? Object.assign(Object.assign({}, p), { translating: false }) : p));
+                                        console.warn("Translation failed:", e);
+                                    }
+                                }, style: { background: "none", border: "none", color: "#0071E3", cursor: "pointer", fontSize: 11, padding: 0 } }, "🌐 " + (t("community.translate")||"Traduzir") + " (" + post.original_lang + ")")
+                            ),
                             React.createElement("div", { style: Object.assign(Object.assign({}, fc), { gap: 14, marginBottom: 12, paddingTop: 8, borderTop: bd }) },
                                 React.createElement("button", { style: Object.assign(Object.assign({ background: "none", border: "none", cursor: "pointer" }, fc), { gap: 5, fontSize: 13, color: "#86868B", fontFamily: F, padding: 0 }), onClick: () => { setCommunityPosts(ps => ps.map(p => p.id === post.id ? Object.assign(Object.assign({}, p), { likes: p.likes + (p.liked ? -1 : 1), liked: !p.liked }) : p)); } },
                                     React.createElement("span", { style: { fontSize: 16, color: post.liked ? "#FF375F" : "#86868B" } }, post.liked ? "❤️" : "🤍"),
