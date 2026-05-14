@@ -1192,7 +1192,16 @@ const renderMarkdown = (md) => {
         setSpeaking(true);
         window.speechSynthesis.speak(u);
     };
-    const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+    const [windowWidth, setWindowWidth] = useState(typeof window !== "undefined" ? window.innerWidth : 1200);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    useEffect(() => {
+      if (typeof window === "undefined") return;
+      const onResize = () => setWindowWidth(window.innerWidth);
+      window.addEventListener("resize", onResize);
+      return () => window.removeEventListener("resize", onResize);
+    }, []);
+    const isMobile = windowWidth < 768;
+    const isTablet = windowWidth >= 768 && windowWidth < 1024;
     const dm = darkMode;
     const bg1 = dm ? "#1C1C1E" : "#FBFBFD";
     const bg2 = dm ? "#2C2C2E" : "#fff";
@@ -2408,101 +2417,235 @@ const renderMarkdown = (md) => {
     // ── NAVIGATION ──────────────────────────────────────────────────────────
     const PNav = () => {
       const T = TL();
-  
-  
       const navLinks = [
-    ['home',T.nav.home],['courses',T.nav.courses],
-    ['pricing',T.nav.pricing],['about',T.nav.about],
-    ['apply',t('apply.navlink')||'Ensinar']
+        ['home', T.nav.home],
+        ['courses', T.nav.courses],
+        ['pricing', T.nav.pricing],
+        ['about', T.nav.about],
+        ['apply', t('apply.navlink') || 'Ensinar']
       ];
-  
-      return React.createElement('nav',{style:{
-    position:'sticky',top:0,zIndex:200,height:58,
-    background:navScrolled?'rgba(255,255,255,.95)':'rgba(255,255,255,.8)',
-    backdropFilter:'saturate(200%) blur(20px)',
-    WebkitBackdropFilter:'saturate(200%) blur(20px)',
-    borderBottom:`1px solid ${navScrolled?'var(--border2)':'transparent'}`,
-    boxShadow:navScrolled?'var(--shadow-sm)':'none',
-    transition:'all .2s ease'
-      }},
-    React.createElement('div',{style:{
-      maxWidth:1200,margin:'0 auto',height:'100%',
-      padding:'0 clamp(16px,4vw,40px)',
-      display:'flex',alignItems:'center',justifyContent:'space-between',gap:16
-    }},
-      // Logo
-      React.createElement('div',{style:{display:'flex',alignItems:'center',gap:9,cursor:'pointer',flexShrink:0},
-        onClick:()=>setView('home')},
-        React.createElement('div',{style:{width:30,height:30,borderRadius:8,
-          background:'linear-gradient(135deg,var(--blue),var(--violet))',
-          display:'flex',alignItems:'center',justifyContent:'center',
-          fontSize:14,fontWeight:700,color:'#fff',letterSpacing:'-0.04em'}},'N'),
-        React.createElement('span',{style:{fontSize:17,fontWeight:700,
-          letterSpacing:'-0.03em',color:'var(--ink)'}},'NeuroLearn')
-      ),
-  
-      // Desktop nav links
-      !isMobile && React.createElement('div',{style:{display:'flex',gap:2,alignItems:'center',flex:1,justifyContent:'center'}},
-        navLinks.map(([k,l])=>React.createElement('button',{key:k,
-          onClick:()=>setView(k),
-          style:{background:'none',border:'none',cursor:'pointer',
-            padding:'6px 13px',borderRadius:'var(--r8)',fontSize:14,
-            fontWeight:view===k?600:400,
-            color:view===k?'var(--blue)':'var(--ink3)',
-            fontFamily:'var(--font)',transition:'all .15s',
-            background:view===k?'var(--blue-xs)':'transparent'}},l))
-      ),
-  
-      // Right side
-      React.createElement('div',{style:{display:'flex',alignItems:'center',gap:8,flexShrink:0}},
-        // Language selector
-        React.createElement('select',{
-          value:_lang,onChange:e=>setLang(e.target.value),
-          style:{padding:'5px 8px',borderRadius:'var(--r8)',
-            border:'1px solid var(--border2)',fontSize:12,
-            fontFamily:'var(--font)',cursor:'pointer',
-            background:'var(--surface3)',color:'var(--ink3)',
-            outline:'none',fontWeight:500}},
-          ['pt','es','fr','en'].map(l=>React.createElement('option',{key:l,value:l},
-            {pt:'🇵🇹 PT',es:'🇪🇸 ES',fr:'🇫🇷 FR',en:'🇬🇧 EN'}[l]))
+
+      const closeMenu = () => setMobileMenuOpen(false);
+
+      return React.createElement(React.Fragment, null,
+        React.createElement('nav', {
+          style: {
+            position: 'sticky', top: 0, zIndex: 200,
+            height: isMobile ? 64 : 72,
+            background: navScrolled ? 'rgba(255,255,255,.95)' : 'rgba(255,255,255,.85)',
+            backdropFilter: 'saturate(200%) blur(20px)',
+            WebkitBackdropFilter: 'saturate(200%) blur(20px)',
+            borderBottom: '1px solid ' + (navScrolled ? 'var(--border2)' : 'transparent'),
+            boxShadow: navScrolled ? 'var(--shadow-sm)' : 'none',
+            transition: 'all .2s ease'
+          }
+        },
+          React.createElement('div', {
+            style: {
+              maxWidth: 1280, margin: '0 auto', height: '100%',
+              padding: '0 clamp(16px,4vw,40px)',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16
+            }
+          },
+            // Logo
+            React.createElement('div', {
+              style: { display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', flexShrink: 0 },
+              onClick: () => { setView('home'); closeMenu(); }
+            },
+              React.createElement('div', {
+                style: {
+                  width: 36, height: 36, borderRadius: 10,
+                  background: 'linear-gradient(135deg,var(--blue),var(--violet))',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 16, fontWeight: 700, color: '#fff', letterSpacing: '-0.04em'
+                }
+              }, 'N'),
+              React.createElement('span', {
+                style: { fontSize: 19, fontWeight: 700, letterSpacing: '-0.03em', color: 'var(--ink)' }
+              }, 'NeuroLearn')
+            ),
+
+            // Desktop nav links
+            !isMobile && React.createElement('div', {
+              style: { display: 'flex', gap: 4, alignItems: 'center', flex: 1, justifyContent: 'center' }
+            },
+              navLinks.map(([k, l]) => React.createElement('button', {
+                key: k,
+                onClick: () => setView(k),
+                style: {
+                  background: view === k ? 'var(--blue-xs)' : 'none',
+                  border: 'none', cursor: 'pointer',
+                  padding: '8px 16px', borderRadius: 8,
+                  fontSize: 15, fontWeight: view === k ? 600 : 500,
+                  color: view === k ? 'var(--blue)' : 'var(--ink2)',
+                  fontFamily: 'var(--font)', transition: 'all .15s'
+                }
+              }, l))
+            ),
+
+            // Right side
+            React.createElement('div', {
+              style: { display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }
+            },
+              // Language selector - hidden on small mobile
+              !isMobile && React.createElement('select', {
+                value: _lang, onChange: e => setLang(e.target.value),
+                style: {
+                  padding: '7px 10px', borderRadius: 8,
+                  border: '1px solid var(--border2)', fontSize: 13,
+                  fontFamily: 'var(--font)', cursor: 'pointer',
+                  background: 'var(--surface3)', color: 'var(--ink2)',
+                  outline: 'none', fontWeight: 500
+                }
+              },
+                ['pt', 'es', 'fr', 'en'].map(l => React.createElement('option', { key: l, value: l },
+                  { pt: '🇵🇹 PT', es: '🇪🇸 ES', fr: '🇫🇷 FR', en: '🇬🇧 EN' }[l]))
+              ),
+
+              curStu ? React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
+                React.createElement('div', {
+                  onClick: () => { setZone('student'); setSView('my'); },
+                  style: {
+                    display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer',
+                    padding: '6px 14px 6px 6px', borderRadius: 980,
+                    background: 'var(--surface2)', border: '1px solid var(--border)',
+                    transition: 'all .15s'
+                  }
+                },
+                  React.createElement(Av, { name: curStu.name, size: 28, color: 'var(--blue)' }),
+                  !isMobile && React.createElement('span', {
+                    style: { fontSize: 14, fontWeight: 500, color: 'var(--ink2)' }
+                  }, curStu.name.split(' ')[0])
+                ),
+                !isMobile && (curStu.role === 'instructor' || curStu.role === 'admin' || curStu.role === 'super_admin') && React.createElement('button', {
+                  onClick: () => setZone('instructor'),
+                  title: 'Zona Instrutor',
+                  style: { padding: '7px 12px', borderRadius: 8, background: 'transparent', border: '1px solid var(--border)', cursor: 'pointer', fontSize: 15, fontFamily: 'var(--font)' }
+                }, '👨‍🏫'),
+                !isMobile && (curStu.role === 'admin' || curStu.role === 'super_admin') && React.createElement('button', {
+                  onClick: () => setZone('admin'),
+                  title: 'Zona Admin',
+                  style: { padding: '7px 12px', borderRadius: 8, background: 'transparent', border: '1px solid var(--border)', cursor: 'pointer', fontSize: 15, fontFamily: 'var(--font)' }
+                }, '⚙')
+              ) : React.createElement(React.Fragment, null,
+                !isMobile && React.createElement('button', {
+                  onClick: goStuLogin,
+                  style: {
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    fontSize: 15, fontWeight: 500, color: 'var(--ink2)',
+                    padding: '8px 14px', fontFamily: 'var(--font)', borderRadius: 8,
+                    transition: 'color .15s'
+                  }
+                }, T.nav.login),
+                !isMobile && React.createElement(BtnP, { size: 'sm', onClick: goStuLogin }, T.nav.cta)
+              ),
+
+              // Mobile hamburger button
+              isMobile && React.createElement('button', {
+                onClick: () => setMobileMenuOpen(!mobileMenuOpen),
+                style: {
+                  background: 'none', border: '1px solid var(--border)',
+                  cursor: 'pointer', padding: 8, borderRadius: 8,
+                  width: 42, height: 42,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 20
+                }
+              }, mobileMenuOpen ? '✕' : '☰')
+            )
+          )
         ),
-    
-        curStu ? React.createElement('div',{style:{display:'flex',alignItems:'center',gap:6}},
-          React.createElement('div',{
-            onClick:()=>{setZone('student');setSView('my');},
-            style:{display:'flex',alignItems:'center',gap:8,cursor:'pointer',
-              padding:'5px 12px 5px 6px',borderRadius:980,
-              background:'var(--surface2)',border:'1px solid var(--border)',
-              transition:'all .15s'},
-            onMouseEnter:e=>e.currentTarget.style.borderColor='var(--border2)',
-            onMouseLeave:e=>e.currentTarget.style.borderColor='var(--border)'},
-            React.createElement(Av,{name:curStu.name,size:24,color:'var(--blue)'}),
-            React.createElement('span',{style:{fontSize:13,fontWeight:500,color:'var(--ink2)'}},
-              curStu.name.split(' ')[0])
-          ),
-          // Quick switch to instructor or admin zone (only shown if user has those roles)
-          (curStu.role === 'instructor' || curStu.role === 'admin' || curStu.role === 'super_admin') && React.createElement('button',{
-            onClick:()=>setZone('instructor'),
-            title:'Zona Instrutor',
-            style:{padding:'6px 10px',borderRadius:8,background:'transparent',border:'1px solid var(--border)',cursor:'pointer',fontSize:14,fontFamily:'var(--font)'}
-          },'👨‍🏫'),
-          (curStu.role === 'admin' || curStu.role === 'super_admin') && React.createElement('button',{
-            onClick:()=>setZone('admin'),
-            title:'Zona Admin',
-            style:{padding:'6px 10px',borderRadius:8,background:'transparent',border:'1px solid var(--border)',cursor:'pointer',fontSize:14,fontFamily:'var(--font)'}
-          },'⚙')
-        ) : React.createElement(React.Fragment,null,
-          !isMobile && React.createElement('button',{onClick:goStuLogin,
-            style:{background:'none',border:'none',cursor:'pointer',
-              fontSize:14,fontWeight:500,color:'var(--ink3)',
-              padding:'6px 10px',fontFamily:'var(--font)',borderRadius:'var(--r8)',
-              transition:'color .15s'},
-            onMouseEnter:e=>e.target.style.color='var(--ink)',
-            onMouseLeave:e=>e.target.style.color='var(--ink3)'},T.nav.login),
-          React.createElement(BtnP,{size:'sm',onClick:goStuLogin},T.nav.cta)
+
+        // Mobile menu drawer
+        isMobile && mobileMenuOpen && React.createElement('div', {
+          onClick: closeMenu,
+          style: {
+            position: 'fixed', top: 64, left: 0, right: 0, bottom: 0, zIndex: 199,
+            background: 'rgba(0,0,0,.4)',
+            backdropFilter: 'blur(4px)'
+          }
+        },
+          React.createElement('div', {
+            onClick: e => e.stopPropagation(),
+            style: {
+              background: '#fff',
+              padding: '20px 24px 32px',
+              boxShadow: '0 10px 30px rgba(0,0,0,.1)',
+              maxHeight: 'calc(100vh - 64px)',
+              overflowY: 'auto'
+            }
+          },
+            navLinks.map(([k, l]) => React.createElement('button', {
+              key: k,
+              onClick: () => { setView(k); closeMenu(); },
+              style: {
+                display: 'block', width: '100%', textAlign: 'left',
+                background: view === k ? 'var(--blue-xs)' : 'transparent',
+                border: 'none', cursor: 'pointer',
+                padding: '14px 16px', borderRadius: 10,
+                fontSize: 17, fontWeight: view === k ? 600 : 500,
+                color: view === k ? 'var(--blue)' : 'var(--ink)',
+                fontFamily: 'var(--font)', marginBottom: 4
+              }
+            }, l)),
+            React.createElement('div', { style: { height: 1, background: 'var(--border)', margin: '16px 0' } }),
+            !curStu && React.createElement('button', {
+              onClick: () => { goStuLogin(); closeMenu(); },
+              style: {
+                display: 'block', width: '100%', textAlign: 'left',
+                background: 'transparent', border: 'none', cursor: 'pointer',
+                padding: '14px 16px', borderRadius: 10,
+                fontSize: 17, fontWeight: 500, color: 'var(--ink2)',
+                fontFamily: 'var(--font)', marginBottom: 4
+              }
+            }, T.nav.login),
+            !curStu && React.createElement('button', {
+              onClick: () => { goStuLogin(); closeMenu(); },
+              style: {
+                display: 'block', width: '100%', textAlign: 'center',
+                background: 'var(--blue)', color: '#fff', border: 'none', cursor: 'pointer',
+                padding: '14px 16px', borderRadius: 10,
+                fontSize: 16, fontWeight: 600,
+                fontFamily: 'var(--font)', marginTop: 8
+              }
+            }, T.nav.cta),
+            curStu && (curStu.role === 'instructor' || curStu.role === 'admin' || curStu.role === 'super_admin') && React.createElement('button', {
+              onClick: () => { setZone('instructor'); closeMenu(); },
+              style: {
+                display: 'block', width: '100%', textAlign: 'left',
+                background: 'transparent', border: 'none', cursor: 'pointer',
+                padding: '14px 16px', borderRadius: 10,
+                fontSize: 17, fontWeight: 500, color: 'var(--ink)',
+                fontFamily: 'var(--font)'
+              }
+            }, '👨‍🏫 Zona Instrutor'),
+            curStu && (curStu.role === 'admin' || curStu.role === 'super_admin') && React.createElement('button', {
+              onClick: () => { setZone('admin'); closeMenu(); },
+              style: {
+                display: 'block', width: '100%', textAlign: 'left',
+                background: 'transparent', border: 'none', cursor: 'pointer',
+                padding: '14px 16px', borderRadius: 10,
+                fontSize: 17, fontWeight: 500, color: 'var(--ink)',
+                fontFamily: 'var(--font)'
+              }
+            }, '⚙ Zona Admin'),
+            // Language selector at bottom
+            React.createElement('div', { style: { marginTop: 24, padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--border)' } },
+              React.createElement('span', { style: { fontSize: 13, color: 'var(--ink3)' } }, 'Idioma:'),
+              React.createElement('select', {
+                value: _lang, onChange: e => { setLang(e.target.value); closeMenu(); },
+                style: {
+                  padding: '8px 12px', borderRadius: 8,
+                  border: '1px solid var(--border)', fontSize: 14,
+                  fontFamily: 'var(--font)', cursor: 'pointer',
+                  background: '#fff'
+                }
+              },
+                ['pt', 'es', 'fr', 'en'].map(l => React.createElement('option', { key: l, value: l },
+                  { pt: '🇵🇹 PT', es: '🇪🇸 ES', fr: '🇫🇷 FR', en: '🇬🇧 EN' }[l]))
+              )
+            )
+          )
         )
-      )
-    )
       );
     };
 
