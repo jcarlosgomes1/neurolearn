@@ -2199,6 +2199,37 @@ const renderMarkdown = (md) => {
     profile:{ title:"My profile",joined:"Member since",courses_done:"Courses completed",certs:"Certificates",edit_name:"Edit name",change_pass:"Change password",change_email:"Change email",billing:"Manage subscription",current_pass:"Current password",new_pass:"New password",save:"Save changes",cancel:"Cancel" },
       },
     };
+
+    // Load public content overrides from Supabase (admin-editable)
+    let _publicContentLoaded = false;
+    async function loadPublicContent() {
+      try {
+        const r = await fetch(SUPABASE_URL + "/rest/v1/nl_public_content?select=key,lang,value", { headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY } });
+        if (!r.ok) return;
+        const rows = await r.json();
+        // Merge into TX object
+        rows.forEach(row => {
+          const lang = row.lang;
+          if (!TX[lang]) TX[lang] = {};
+          const parts = row.key.split('.');
+          let target = TX[lang];
+          for (let i = 0; i < parts.length - 1; i++) {
+            if (!target[parts[i]] || typeof target[parts[i]] !== 'object') target[parts[i]] = {};
+            target = target[parts[i]];
+          }
+          // Try to parse JSON for arrays/objects
+          let val = row.value;
+          if (val && (val.startsWith('[') || val.startsWith('{'))) {
+            try { val = JSON.parse(val); } catch {}
+          }
+          target[parts[parts.length - 1]] = val;
+        });
+        _publicContentLoaded = true;
+        if (window._forceRefresh) window._forceRefresh();
+      } catch(e) { console.warn("[publicContent] load failed:", e); }
+    }
+    loadPublicContent();
+    
     const TL = () => TX[_lang] || TX.pt;
 
     // ── SHARED ATOMS ─────────────────────────────────────────────────────────
@@ -4149,7 +4180,7 @@ const renderMarkdown = (md) => {
         React.createElement("div", { style: { padding: "0 18px 16px", borderBottom: "0.5px solid rgba(0,0,0,.06)", marginBottom: 4 } },
             React.createElement("div", { style: { fontSize: 16, fontWeight: 600, background: G, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" } }, "NeuroLearn"),
             React.createElement("div", { style: { fontSize: 9, fontWeight: 600, color: "#86868B", textTransform: "uppercase", letterSpacing: ".08em", marginTop: 2 } }, "Gest\u00E3o")),
-        [["dashboard", "▣", t("nav.dashboard")||"Dashboard"], ["courses", "◎", t("nav.courses")||"Cursos"], ["students", "◉", t("nav.students")||"Alunos"], ["analytics", "◈", t("nav.analytics")||"Analytics"], ["evals", "📋", t("nav.evals")||"Avaliações"], ["adminNotifs", "🔔", t("nav.notifs")||"Notificações"], ["agent", "✦", t("nav.agent")||"AI Agent"], ["promote", "✨", t("nav.promote")||"Promover Instrutor"], ["instructors", "👨‍🏫", t("nav.instructors")||"Instrutores"], ["transactions", "💰", t("nav.transactions")||"Transacções"], ["legal_pages", "📜", t("nav.legal")||"Páginas Legais"], ["i18n", "🌐", t("nav.i18n")||"Traduções"], ["config", "🏢", t("nav.company")||"Empresa"], ["settings", "⚙", t("nav.settings")||"Definições"]].map(([k, ic, l]) => {
+        [["dashboard", "▣", t("nav.dashboard")||"Dashboard"], ["courses", "◎", t("nav.courses")||"Cursos"], ["students", "◉", t("nav.students")||"Alunos"], ["analytics", "◈", t("nav.analytics")||"Analytics"], ["evals", "📋", t("nav.evals")||"Avaliações"], ["adminNotifs", "🔔", t("nav.notifs")||"Notificações"], ["agent", "✦", t("nav.agent")||"AI Agent"], ["promote", "✨", t("nav.promote")||"Promover Instrutor"], ["instructors", "👨‍🏫", t("nav.instructors")||"Instrutores"], ["transactions", "💰", t("nav.transactions")||"Transacções"], ["legal_pages", "📜", t("nav.legal")||"Páginas Legais"], ["i18n", "🌐", t("nav.i18n")||"Traduções"], ["public_content", "📄", t("nav.publicContent")||"Páginas Públicas"], ["config", "🏢", t("nav.company")||"Empresa"], ["settings", "⚙", t("nav.settings")||"Definições"]].map(([k, ic, l]) => {
             const isNotifs = k === "adminNotifs";
             const unreadCount = isNotifs ? adminNotifs.filter(n => !n.read).length : 0;
             return (React.createElement("div", { key: k, style: Object.assign(Object.assign({}, fc), { gap: 8, padding: "9px 18px", fontSize: 13, fontWeight: aView === k ? 600 : 400, color: aView === k ? "#0071E3" : "#6E6E73", cursor: "pointer", background: aView === k ? "#0071E310" : "transparent", borderRight: aView === k ? "3px solid #0071E3" : "3px solid transparent" }), onClick: () => setAView(k) },
@@ -5979,6 +6010,86 @@ const renderMarkdown = (md) => {
         );
     }, []);
 
+
+    const APublicContent = React.useCallback(() => {
+        const [rows, setRows] = React.useState([]);
+        const [loading, setLoading] = React.useState(true);
+        const [search, setSearch] = React.useState("");
+        const [sectionFilter, setSectionFilter] = React.useState("all");
+        const [langFilter, setLangFilter] = React.useState("pt");
+        const [editing, setEditing] = React.useState(null);
+        const [editValue, setEditValue] = React.useState("");
+        const [msg, setMsg] = React.useState("");
+
+        const refresh = async () => {
+            setLoading(true);
+            try {
+                const { data } = await window._SB.from("nl_public_content").select("*").order("section").order("key");
+                setRows(data || []);
+            } catch(e) { console.error(e); }
+            setLoading(false);
+        };
+
+        React.useEffect(() => { refresh(); }, []);
+
+        const handleSaveEdit = async (key, lang) => {
+            try {
+                await window._SB.from("nl_public_content").update({ value: editValue, updated_at: new Date().toISOString() }).eq("key", key).eq("lang", lang);
+                setEditing(null);
+                setMsg("Conteudo actualizado");
+                setTimeout(() => setMsg(""), 2500);
+                await refresh();
+            } catch(e) { console.error(e); setMsg("Erro: " + e.message); }
+        };
+
+        const sections = Array.from(new Set(rows.map(r => r.section)));
+        const filtered = rows.filter(r => 
+            r.lang === langFilter &&
+            (sectionFilter === "all" || r.section === sectionFilter) &&
+            (search === "" || (r.key||"").toLowerCase().includes(search.toLowerCase()) || (r.value||"").toLowerCase().includes(search.toLowerCase()))
+        );
+
+        return React.createElement("div", { style: { padding: 28, maxWidth: 1100 } },
+            React.createElement("div", { style: { marginBottom: 20 } },
+                React.createElement("h1", { style: { fontSize: 24, fontWeight: 600, color: "#1D1D1F", marginBottom: 4 } }, "Paginas Publicas"),
+                React.createElement("p", { style: { color: "#86868B", fontSize: 13 } }, "Editar textos visiveis das paginas publicas. Alteracoes aplicam-se imediatamente.")),
+            msg && React.createElement("div", { style: { padding: "10px 14px", background: "#F0F8FF", border: "1px solid #D0E6FF", borderRadius: 8, marginBottom: 16, fontSize: 13 } }, msg),
+            React.createElement("div", { style: { display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" } },
+                React.createElement("input", { type: "text", value: search, onChange: e => setSearch(e.target.value), placeholder: "Procurar...", style: { flex: 1, minWidth: 200, padding: "8px 12px", borderRadius: 8, border: "1px solid #E5E5EA", fontSize: 13 } }),
+                React.createElement("select", { value: sectionFilter, onChange: e => setSectionFilter(e.target.value), style: { padding: "8px 12px", borderRadius: 8, border: "1px solid #E5E5EA", fontSize: 13 } },
+                    React.createElement("option", { value: "all" }, "Todas as seccoes"),
+                    sections.map(s => React.createElement("option", { key: s, value: s }, s))),
+                React.createElement("select", { value: langFilter, onChange: e => setLangFilter(e.target.value), style: { padding: "8px 12px", borderRadius: 8, border: "1px solid #E5E5EA", fontSize: 13 } },
+                    React.createElement("option", { value: "pt" }, "PT"),
+                    React.createElement("option", { value: "en" }, "EN"),
+                    React.createElement("option", { value: "es" }, "ES"),
+                    React.createElement("option", { value: "fr" }, "FR")),
+                React.createElement("button", { onClick: refresh, style: { padding: "8px 16px", background: "#fff", color: "#1D1D1F", border: "1px solid #E5E5EA", borderRadius: 8, fontSize: 13, cursor: "pointer" } }, "Recarregar")),
+            loading ? React.createElement("div", { style: { textAlign: "center", padding: 40, color: "#86868B" } }, "A carregar...") :
+            filtered.length === 0 ? React.createElement("div", { style: { textAlign: "center", padding: 40, color: "#86868B", background: "#fff", borderRadius: 12, border: "1px solid #E5E5EA" } }, "Nenhum resultado") :
+            React.createElement("div", { style: { background: "#fff", borderRadius: 12, border: "1px solid #E5E5EA", overflow: "hidden" } },
+                React.createElement("div", { style: { display: "grid", gridTemplateColumns: "100px 220px 1fr 100px", padding: "10px 16px", background: "#F5F5F7", borderBottom: "1px solid #E5E5EA", fontSize: 11, fontWeight: 600, color: "#6E6E73", textTransform: "uppercase", letterSpacing: ".05em" } },
+                    React.createElement("div", null, "Seccao"),
+                    React.createElement("div", null, "Chave"),
+                    React.createElement("div", null, "Valor"),
+                    React.createElement("div", null, "Accoes")),
+                filtered.map((row, i) => React.createElement("div", { key: row.key + "-" + row.lang, style: { display: "grid", gridTemplateColumns: "100px 220px 1fr 100px", padding: "12px 16px", borderBottom: i < filtered.length - 1 ? "1px solid #F5F5F7" : "none", fontSize: 13, alignItems: "center" } },
+                    React.createElement("div", null, React.createElement("span", { style: { padding: "2px 8px", background: "#FFF3E0", color: "#E65100", borderRadius: 4, fontSize: 11, fontWeight: 600 } }, row.section)),
+                    React.createElement("div", { style: { fontFamily: "monospace", fontSize: 12, color: "#1D1D1F" } }, row.key),
+                    React.createElement("div", null,
+                        editing === row.key ?
+                            React.createElement("textarea", { value: editValue, onChange: e => setEditValue(e.target.value), rows: row.value && row.value.length > 80 ? 4 : 1, autoFocus: true, style: { width: "100%", padding: "6px 10px", borderRadius: 6, border: "2px solid #0071E3", fontSize: 13, fontFamily: "inherit" } }) :
+                            React.createElement("span", { style: { whiteSpace: "pre-wrap", wordBreak: "break-word" } }, row.value && row.value.length > 200 ? row.value.substring(0, 200) + "..." : row.value)),
+                    React.createElement("div", { style: { display: "flex", gap: 6 } },
+                        editing === row.key ? [
+                            React.createElement("button", { key: "save", onClick: () => handleSaveEdit(row.key, row.lang), style: { padding: "4px 10px", background: "#34C759", color: "#fff", border: "none", borderRadius: 4, fontSize: 11, cursor: "pointer" } }, "OK"),
+                            React.createElement("button", { key: "cancel", onClick: () => setEditing(null), style: { padding: "4px 10px", background: "#E5E5EA", color: "#1D1D1F", border: "none", borderRadius: 4, fontSize: 11, cursor: "pointer" } }, "X")
+                        ] : [
+                            React.createElement("button", { key: "edit", onClick: () => { setEditing(row.key); setEditValue(row.value || ""); }, style: { padding: "4px 10px", background: "#fff", border: "1px solid #E5E5EA", borderRadius: 4, fontSize: 11, cursor: "pointer" } }, "Editar")
+                        ])))),
+            React.createElement("div", { style: { marginTop: 16, fontSize: 12, color: "#86868B", textAlign: "right" } }, "Total: " + rows.length + " | A exibir: " + filtered.length + " | Idioma: " + langFilter));
+    }, []);
+
     const AI18n = React.useCallback(() => {
         const [translations, setTranslations] = React.useState([]);
         const [loading, setLoading] = React.useState(true);
@@ -6407,7 +6518,7 @@ const renderMarkdown = (md) => {
                 aView === "analytics" && AAnalytics(),
                 aView === "evals" && AEvals(),
                 aView === "adminNotifs" && AAdminNotifs(),
-                aView === "promote" && React.createElement(APromote, null), aView === "instructors" && React.createElement(AInstructors, null), aView === "transactions" && React.createElement(ATransactions, null), aView === "legal_pages" && React.createElement(ALegalPages, null), aView === "i18n" && React.createElement(AI18n, null), aView === "config" && AConfig(), aView === "settings" && ASettings()),
+                aView === "promote" && React.createElement(APromote, null), aView === "instructors" && React.createElement(AInstructors, null), aView === "transactions" && React.createElement(ATransactions, null), aView === "legal_pages" && React.createElement(ALegalPages, null), aView === "i18n" && React.createElement(AI18n, null), aView === "public_content" && React.createElement(APublicContent, null), aView === "config" && AConfig(), aView === "settings" && ASettings()),
             renderDocViewer(),
             renderCoursePreview(),
             renderToast()));
