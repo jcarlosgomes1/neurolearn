@@ -474,7 +474,16 @@ const renderMarkdown = (md) => {
     const [iView, setIView] = useState("dashboard");
     // Instructor application form state
     const [appStep, setAppStep] = useState(1);
-    const [appData, setAppData] = useState({});
+    const [appData, _setAppData] = useState(() => {
+        try { const saved = localStorage.getItem('nl-instructor-app-draft'); return saved ? JSON.parse(saved) : {}; } catch { return {}; }
+    });
+    const setAppData = (updater) => {
+        _setAppData(prev => {
+            const next = typeof updater === 'function' ? updater(prev) : updater;
+            try { localStorage.setItem('nl-instructor-app-draft', JSON.stringify(next)); } catch {}
+            return next;
+        });
+    };
     const [appSubmitting, setAppSubmitting] = useState(false);
     const [appSubmitted, setAppSubmitted] = useState(false);
     const [appError, setAppError] = useState("");
@@ -3494,7 +3503,7 @@ const renderMarkdown = (md) => {
             body: JSON.stringify({ action: "submit", application: payload })
           });
           const d = await r.json();
-          if (d.ok) { setAppSubmitted(true); setAppData({}); }
+          if (d.ok) { setAppSubmitted(true); setAppData({}); try { localStorage.removeItem("nl-instructor-app-draft"); } catch {} }
           else setAppError(d.error || "Erro");
         } catch(e) { setAppError("Erro de conexão: " + e.message); }
         setAppSubmitting(false);
