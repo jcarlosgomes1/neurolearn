@@ -248,22 +248,67 @@ let _lang = localStorage.getItem("nl8-lang") || navigator.language?.split("-")[0
 const LANGS = ["pt","es","fr","en"];
 if (!LANGS.includes(_lang)) _lang = "pt";
 let _tr = {};
+const I18N_CACHE_TTL = 24 * 60 * 60 * 1000; // 24h
+const I18N_CACHE_VERSION = "v1";
+
+function loadI18nCache(lang) {
+  try {
+    const raw = localStorage.getItem("nl-i18n-cache-" + lang);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed.version !== I18N_CACHE_VERSION) return null;
+    if (Date.now() - parsed.timestamp > I18N_CACHE_TTL) return null;
+    return parsed.data;
+  } catch(_) { return null; }
+}
+
+function saveI18nCache(lang, data) {
+  try {
+    localStorage.setItem("nl-i18n-cache-" + lang, JSON.stringify({
+      version: I18N_CACHE_VERSION,
+      timestamp: Date.now(),
+      data: data
+    }));
+  } catch(_) {}
+}
+
 async function loadI18n(lang) {
+  const baseLang = (lang||"pt").split("-")[0];
+  
+  // Try cache first
+  const cached = loadI18nCache(baseLang);
+  if (cached) {
+    _tr = cached;
+    console.log("[i18n] loaded from cache (" + baseLang + ")");
+    // Still refresh in background to keep fresh
+    setTimeout(() => refreshI18nFromServer(baseLang), 100);
+    return;
+  }
+  
+  await refreshI18nFromServer(baseLang);
+}
+
+async function refreshI18nFromServer(lang) {
+  let merged = _tr || {};
+  
   try {
     // Try Edge Function first (existing system with namespaces)
     const d = await ef("i18n",{action:"get_all",lang});
-    if (d.ok) _tr = d.translations;
+    if (d.ok) merged = d.translations;
   } catch(_){}
+  
   // Also load directly from nl_i18n table (new flat keys)
   try {
-    const r = await fetch(SUPABASE_URL + "/rest/v1/nl_i18n?lang=eq." + (lang||"pt").split("-")[0] + "&select=key,value", { headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY } });
+    const r = await fetch(SUPABASE_URL + "/rest/v1/nl_i18n?lang=eq." + lang + "&select=key,value", { headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY } });
     if (r.ok) {
       const rows = await r.json();
-      if (!_tr) _tr = {};
-      if (!_tr.ui) _tr.ui = {};
-      rows.forEach(row => { _tr.ui[row.key] = row.value; });
+      if (!merged.ui) merged.ui = {};
+      rows.forEach(row => { merged.ui[row.key] = row.value; });
     }
   } catch(e){ console.warn("[i18n] direct load failed:", e); }
+  
+  _tr = merged;
+  saveI18nCache(lang, merged);
 }
 const t = (key, ns="ui") => _tr[ns]?.[key] || _tr["ui"]?.[key] || key;
 function setLang(lang) {
@@ -2202,13 +2247,32 @@ const renderMarkdown = (md) => {
 
     // Load public content overrides from Supabase (admin-editable)
     let _publicContentLoaded = false;
-    async function loadPublicContent() {
+    const PUBCONTENT_CACHE_TTL = 12 * 60 * 60 * 1000; // 12h
+    const PUBCONTENT_CACHE_VERSION = "v1";
+    
+    function _loadPCCache() {
       try {
-        const r = await fetch(SUPABASE_URL + "/rest/v1/nl_public_content?select=key,lang,value", { headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY } });
-        if (!r.ok) return;
-        const rows = await r.json();
-        // Merge into TX object
-        rows.forEach(row => {
+        const raw = localStorage.getItem("nl-pubcontent-cache");
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (parsed.version !== PUBCONTENT_CACHE_VERSION) return null;
+        if (Date.now() - parsed.timestamp > PUBCONTENT_CACHE_TTL) return null;
+        return parsed.rows;
+      } catch(_) { return null; }
+    }
+    
+    function _savePCCache(rows) {
+      try {
+        localStorage.setItem("nl-pubcontent-cache", JSON.stringify({
+          version: PUBCONTENT_CACHE_VERSION,
+          timestamp: Date.now(),
+          rows: rows
+        }));
+      } catch(_) {}
+    }
+    
+    function _applyPCRows(rows) {
+      rows.forEach(row => {
           const lang = row.lang;
           if (!TX[lang]) TX[lang] = {};
           const parts = row.key.split('.');
@@ -2217,15 +2281,35 @@ const renderMarkdown = (md) => {
             if (!target[parts[i]] || typeof target[parts[i]] !== 'object') target[parts[i]] = {};
             target = target[parts[i]];
           }
-          // Try to parse JSON for arrays/objects
           let val = row.value;
           if (val && (val.startsWith('[') || val.startsWith('{'))) {
             try { val = JSON.parse(val); } catch {}
           }
           target[parts[parts.length - 1]] = val;
-        });
-        _publicContentLoaded = true;
-        if (window._forceRefresh) window._forceRefresh();
+      });
+      if (window._forceRefresh) window._forceRefresh();
+    }
+    
+    async function loadPublicContent() {
+      // Try cache first
+      const cached = _loadPCCache();
+      if (cached) {
+        _applyPCRows(cached);
+        console.log("[pubContent] loaded from cache (" + cached.length + " rows)");
+        // Refresh in background
+        setTimeout(() => _refreshPCFromServer(), 500);
+        return;
+      }
+      await _refreshPCFromServer();
+    }
+    
+    async function _refreshPCFromServer() {
+      try {
+        const r = await fetch(SUPABASE_URL + "/rest/v1/nl_public_content?select=key,lang,value", { headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY } });
+        if (!r.ok) return;
+        const rows = await r.json();
+        _applyPCRows(rows);
+        _savePCCache(rows);
       } catch(e) { console.warn("[publicContent] load failed:", e); }
     }
     loadPublicContent();
@@ -4180,7 +4264,7 @@ const renderMarkdown = (md) => {
         React.createElement("div", { style: { padding: "0 18px 16px", borderBottom: "0.5px solid rgba(0,0,0,.06)", marginBottom: 4 } },
             React.createElement("div", { style: { fontSize: 16, fontWeight: 600, background: G, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" } }, "NeuroLearn"),
             React.createElement("div", { style: { fontSize: 9, fontWeight: 600, color: "#86868B", textTransform: "uppercase", letterSpacing: ".08em", marginTop: 2 } }, "Gest\u00E3o")),
-        [["dashboard", "▣", t("nav.dashboard")||"Dashboard"], ["courses", "◎", t("nav.courses")||"Cursos"], ["students", "◉", t("nav.students")||"Alunos"], ["analytics", "◈", t("nav.analytics")||"Analytics"], ["evals", "📋", t("nav.evals")||"Avaliações"], ["adminNotifs", "🔔", t("nav.notifs")||"Notificações"], ["agent", "✦", t("nav.agent")||"AI Agent"], ["promote", "✨", t("nav.promote")||"Promover Instrutor"], ["instructors", "👨‍🏫", t("nav.instructors")||"Instrutores"], ["transactions", "💰", t("nav.transactions")||"Transacções"], ["legal_pages", "📜", t("nav.legal")||"Páginas Legais"], ["i18n", "🌐", t("nav.i18n")||"Traduções"], ["public_content", "📄", t("nav.publicContent")||"Páginas Públicas"], ["config", "🏢", t("nav.company")||"Empresa"], ["settings", "⚙", t("nav.settings")||"Definições"]].map(([k, ic, l]) => {
+        [["dashboard", "▣", t("nav.dashboard")||"Dashboard"], ["courses", "◎", t("nav.courses")||"Cursos"], ["students", "◉", t("nav.students")||"Alunos"], ["analytics", "◈", t("nav.analytics")||"Analytics"], ["evals", "📋", t("nav.evals")||"Avaliações"], ["adminNotifs", "🔔", t("nav.notifs")||"Notificações"], ["agent", "✦", t("nav.agent")||"AI Agent"], ["promote", "✨", t("nav.promote")||"Promover Instrutor"], ["instructors", "👨‍🏫", t("nav.instructors")||"Instrutores"], ["transactions", "💰", t("nav.transactions")||"Transacções"], ["legal_pages", "📜", t("nav.legal")||"Páginas Legais"], ["i18n", "🌐", t("nav.i18n")||"Traduções"], ["public_content", "📄", t("nav.publicContent")||"Páginas Públicas"], ["emails", "📧", t("nav.emails")||"Templates Email"], ["config", "🏢", t("nav.company")||"Empresa"], ["settings", "⚙", t("nav.settings")||"Definições"]].map(([k, ic, l]) => {
             const isNotifs = k === "adminNotifs";
             const unreadCount = isNotifs ? adminNotifs.filter(n => !n.read).length : 0;
             return (React.createElement("div", { key: k, style: Object.assign(Object.assign({}, fc), { gap: 8, padding: "9px 18px", fontSize: 13, fontWeight: aView === k ? 600 : 400, color: aView === k ? "#0071E3" : "#6E6E73", cursor: "pointer", background: aView === k ? "#0071E310" : "transparent", borderRight: aView === k ? "3px solid #0071E3" : "3px solid transparent" }), onClick: () => setAView(k) },
@@ -6011,7 +6095,113 @@ const renderMarkdown = (md) => {
     }, []);
 
 
-    const APublicContent = React.useCallback(() => {
+
+    const AEmails = React.useCallback(() => {
+        const [templates, setTemplates] = React.useState([]);
+        const [loading, setLoading] = React.useState(true);
+        const [keyFilter, setKeyFilter] = React.useState("all");
+        const [langFilter, setLangFilter] = React.useState("pt");
+        const [editing, setEditing] = React.useState(null);
+        const [editSubject, setEditSubject] = React.useState("");
+        const [editBody, setEditBody] = React.useState("");
+        const [msg, setMsg] = React.useState("");
+        const [testEmail, setTestEmail] = React.useState("");
+        const [testing, setTesting] = React.useState(false);
+
+        const refresh = async () => {
+            setLoading(true);
+            try {
+                const { data } = await window._SB.from("nl_email_templates").select("*").order("template_key").order("lang");
+                setTemplates(data || []);
+            } catch(e) { console.error(e); }
+            setLoading(false);
+        };
+
+        React.useEffect(() => { refresh(); }, []);
+
+        const handleSaveEdit = async (tk, lang) => {
+            try {
+                await window._SB.from("nl_email_templates").update({ subject: editSubject, body_html: editBody, updated_at: new Date().toISOString() }).eq("template_key", tk).eq("lang", lang);
+                setEditing(null);
+                setMsg("Template actualizado");
+                setTimeout(() => setMsg(""), 2500);
+                await refresh();
+            } catch(e) { console.error(e); setMsg("Erro: " + e.message); }
+        };
+
+        const handleSendTest = async (tk, lang) => {
+            if (!testEmail) { setMsg("Insere um email de teste"); return; }
+            setTesting(true);
+            try {
+                const r = await fetch(SUPABASE_URL + "/functions/v1/send-email-i18n", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY },
+                    body: JSON.stringify({ template_key: tk, to: testEmail, lang: lang, vars: { name: "Maria Silva", course_title: "Curso de Teste", amount: "29.90", currency: "EUR", certificate_url: SUPABASE_URL, reset_url: SUPABASE_URL + "/reset" } })
+                });
+                const d = await r.json();
+                if (d.preview) {
+                    setMsg("Preview gerado (Resend nao configurado) - ver consola");
+                    console.log("Email preview:", d);
+                } else if (d.ok) {
+                    setMsg("Email enviado para " + testEmail);
+                } else {
+                    setMsg("Erro: " + (d.error || "desconhecido"));
+                }
+                setTimeout(() => setMsg(""), 4000);
+            } catch(e) { console.error(e); setMsg("Erro: " + e.message); }
+            setTesting(false);
+        };
+
+        const keys = Array.from(new Set(templates.map(t => t.template_key)));
+        const filtered = templates.filter(t =>
+            t.lang === langFilter &&
+            (keyFilter === "all" || t.template_key === keyFilter)
+        );
+
+        return React.createElement("div", { style: { padding: 28, maxWidth: 1100 } },
+            React.createElement("div", { style: { marginBottom: 20 } },
+                React.createElement("h1", { style: { fontSize: 24, fontWeight: 600, color: "#1D1D1F", marginBottom: 4 } }, "Templates Email"),
+                React.createElement("p", { style: { color: "#86868B", fontSize: 13 } }, "Editar emails automaticos da plataforma. Suporta variaveis: {name}, {course_title}, {certificate_url}, {amount}, {currency}, {date}, {site_url}, {reset_url}")),
+            msg && React.createElement("div", { style: { padding: "10px 14px", background: "#F0F8FF", border: "1px solid #D0E6FF", borderRadius: 8, marginBottom: 16, fontSize: 13 } }, msg),
+            React.createElement("div", { style: { display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" } },
+                React.createElement("select", { value: keyFilter, onChange: e => setKeyFilter(e.target.value), style: { padding: "8px 12px", borderRadius: 8, border: "1px solid #E5E5EA", fontSize: 13, minWidth: 180 } },
+                    React.createElement("option", { value: "all" }, "Todos os templates"),
+                    keys.map(k => React.createElement("option", { key: k, value: k }, k))),
+                React.createElement("select", { value: langFilter, onChange: e => setLangFilter(e.target.value), style: { padding: "8px 12px", borderRadius: 8, border: "1px solid #E5E5EA", fontSize: 13 } },
+                    React.createElement("option", { value: "pt" }, "PT"),
+                    React.createElement("option", { value: "en" }, "EN"),
+                    React.createElement("option", { value: "es" }, "ES"),
+                    React.createElement("option", { value: "fr" }, "FR")),
+                React.createElement("input", { type: "email", value: testEmail, onChange: e => setTestEmail(e.target.value), placeholder: "email para teste", style: { flex: 1, minWidth: 200, padding: "8px 12px", borderRadius: 8, border: "1px solid #E5E5EA", fontSize: 13 } }),
+                React.createElement("button", { onClick: refresh, style: { padding: "8px 16px", background: "#fff", color: "#1D1D1F", border: "1px solid #E5E5EA", borderRadius: 8, fontSize: 13, cursor: "pointer" } }, "Recarregar")),
+            loading ? React.createElement("div", { style: { textAlign: "center", padding: 40, color: "#86868B" } }, "A carregar...") :
+            filtered.length === 0 ? React.createElement("div", { style: { textAlign: "center", padding: 40, color: "#86868B", background: "#fff", borderRadius: 12, border: "1px solid #E5E5EA" } }, "Nenhum template") :
+            React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 16 } },
+                filtered.map(tpl => React.createElement("div", { key: tpl.template_key + "-" + tpl.lang, style: { background: "#fff", borderRadius: 12, border: "1px solid #E5E5EA", padding: 20 } },
+                    React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 } },
+                        React.createElement("div", null,
+                            React.createElement("span", { style: { padding: "3px 10px", background: "#E8F4FF", color: "#0071E3", borderRadius: 4, fontSize: 11, fontWeight: 600, marginRight: 8 } }, tpl.template_key),
+                            React.createElement("span", { style: { padding: "3px 10px", background: "#F5F5F7", color: "#6E6E73", borderRadius: 4, fontSize: 11 } }, tpl.lang.toUpperCase())),
+                        React.createElement("div", { style: { display: "flex", gap: 6 } },
+                            React.createElement("button", { onClick: () => handleSendTest(tpl.template_key, tpl.lang), disabled: testing, style: { padding: "6px 12px", background: "#fff", border: "1px solid #E5E5EA", borderRadius: 6, fontSize: 12, cursor: "pointer" } }, testing ? "A enviar..." : "Enviar teste"),
+                            editing === tpl.template_key + "-" + tpl.lang ?
+                                [React.createElement("button", { key: "s", onClick: () => handleSaveEdit(tpl.template_key, tpl.lang), style: { padding: "6px 12px", background: "#34C759", color: "#fff", border: "none", borderRadius: 6, fontSize: 12, cursor: "pointer" } }, "Guardar"),
+                                 React.createElement("button", { key: "c", onClick: () => setEditing(null), style: { padding: "6px 12px", background: "#E5E5EA", color: "#1D1D1F", border: "none", borderRadius: 6, fontSize: 12, cursor: "pointer" } }, "Cancelar")] :
+                                React.createElement("button", { onClick: () => { setEditing(tpl.template_key + "-" + tpl.lang); setEditSubject(tpl.subject || ""); setEditBody(tpl.body_html || ""); }, style: { padding: "6px 12px", background: "#0071E3", color: "#fff", border: "none", borderRadius: 6, fontSize: 12, cursor: "pointer" } }, "Editar"))),
+                    editing === tpl.template_key + "-" + tpl.lang ?
+                        React.createElement("div", null,
+                            React.createElement("div", { style: { marginBottom: 12 } },
+                                React.createElement("label", { style: { fontSize: 11, color: "#6E6E73", fontWeight: 600, textTransform: "uppercase", display: "block", marginBottom: 4 } }, "Assunto"),
+                                React.createElement("input", { type: "text", value: editSubject, onChange: e => setEditSubject(e.target.value), style: { width: "100%", padding: "8px 12px", borderRadius: 6, border: "1px solid #E5E5EA", fontSize: 13, fontFamily: "inherit" } })),
+                            React.createElement("div", null,
+                                React.createElement("label", { style: { fontSize: 11, color: "#6E6E73", fontWeight: 600, textTransform: "uppercase", display: "block", marginBottom: 4 } }, "Corpo HTML"),
+                                React.createElement("textarea", { value: editBody, onChange: e => setEditBody(e.target.value), rows: 10, style: { width: "100%", padding: "8px 12px", borderRadius: 6, border: "1px solid #E5E5EA", fontSize: 12, fontFamily: "monospace" } }))) :
+                        React.createElement("div", null,
+                            React.createElement("div", { style: { fontSize: 12, color: "#6E6E73", marginBottom: 6 } }, "Assunto: ", React.createElement("strong", { style: { color: "#1D1D1F" } }, tpl.subject)),
+                            React.createElement("div", { style: { fontSize: 12, padding: 12, background: "#FAFAFA", borderRadius: 8, maxHeight: 150, overflow: "auto", fontFamily: "monospace" } }, tpl.body_html && tpl.body_html.length > 500 ? tpl.body_html.substring(0, 500) + "..." : tpl.body_html))))));
+    }, []);
+
+        const APublicContent = React.useCallback(() => {
         const [rows, setRows] = React.useState([]);
         const [loading, setLoading] = React.useState(true);
         const [search, setSearch] = React.useState("");
@@ -6518,7 +6708,7 @@ const renderMarkdown = (md) => {
                 aView === "analytics" && AAnalytics(),
                 aView === "evals" && AEvals(),
                 aView === "adminNotifs" && AAdminNotifs(),
-                aView === "promote" && React.createElement(APromote, null), aView === "instructors" && React.createElement(AInstructors, null), aView === "transactions" && React.createElement(ATransactions, null), aView === "legal_pages" && React.createElement(ALegalPages, null), aView === "i18n" && React.createElement(AI18n, null), aView === "public_content" && React.createElement(APublicContent, null), aView === "config" && AConfig(), aView === "settings" && ASettings()),
+                aView === "promote" && React.createElement(APromote, null), aView === "instructors" && React.createElement(AInstructors, null), aView === "transactions" && React.createElement(ATransactions, null), aView === "legal_pages" && React.createElement(ALegalPages, null), aView === "i18n" && React.createElement(AI18n, null), aView === "public_content" && React.createElement(APublicContent, null), aView === "emails" && React.createElement(AEmails, null), aView === "config" && AConfig(), aView === "settings" && ASettings()),
             renderDocViewer(),
             renderCoursePreview(),
             renderToast()));
