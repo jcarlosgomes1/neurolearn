@@ -3961,31 +3961,22 @@ const renderMarkdown = (md) => {
       };
       
       return React.createElement("div", { style: { background: "var(--surface2)", minHeight: "calc(100vh - 76px)" } },
-        // Hero section with gradient
-        React.createElement("div", { style: { background: "var(--gradient-soft)", borderBottom: "1px solid var(--border)", padding: "72px clamp(20px,5vw,40px) 64px" } },
-          React.createElement("div", { style: { maxWidth: 800, margin: "0 auto" } },
-            React.createElement("button", { onClick: () => { setView("home"); window.scrollTo(0,0); }, onMouseEnter: e => e.currentTarget.style.background = "rgba(255,255,255,.7)", onMouseLeave: e => e.currentTarget.style.background = "rgba(255,255,255,.5)", style: { background: "rgba(255,255,255,.5)", backdropFilter: "blur(8px)", border: "1px solid var(--border)", padding: "9px 16px", borderRadius: 10, fontSize: 14, fontWeight: 500, color: "var(--ink2)", cursor: "pointer", marginBottom: 32, fontFamily: "var(--font)", transition: "all .15s", display: "inline-flex", alignItems: "center", gap: 6 } }, "← " + ({pt:"Voltar ao site",es:"Volver al sitio",fr:"Retour au site",en:"Back to site"}[langKey] || "Back")),
-            React.createElement("div", { style: { fontSize: 13, fontWeight: 700, color: "var(--blue)", textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 14, display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 14px", borderRadius: 980, background: "rgba(255,255,255,.7)", backdropFilter: "blur(8px)" } }, "✨ " + T.heroEyebrow),
-            React.createElement("h1", { style: { fontSize: "clamp(36px,5vw,56px)", fontWeight: 800, letterSpacing: "-0.04em", lineHeight: 1.1, marginBottom: 18, color: "var(--ink)" } }, 
+        // Hero section - clean and concise
+        React.createElement("div", { style: { background: "var(--gradient-soft)", borderBottom: "1px solid var(--border)", padding: "48px clamp(20px,5vw,40px) 36px" } },
+          React.createElement("div", { style: { maxWidth: 760, margin: "0 auto" } },
+            React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 12 } },
+              React.createElement("button", { onClick: () => { setView("home"); window.scrollTo(0,0); }, onMouseEnter: e => e.currentTarget.style.background = "rgba(255,255,255,.95)", onMouseLeave: e => e.currentTarget.style.background = "rgba(255,255,255,.6)", style: { background: "rgba(255,255,255,.6)", backdropFilter: "blur(8px)", border: "1px solid var(--border)", padding: "8px 14px", borderRadius: 10, fontSize: 14, fontWeight: 500, color: "var(--ink2)", cursor: "pointer", fontFamily: "var(--font)", transition: "all .15s", display: "inline-flex", alignItems: "center", gap: 6 } }, "← " + ({pt:"Voltar",es:"Volver",fr:"Retour",en:"Back"}[langKey] || "Back")),
+              React.createElement("div", { style: { fontSize: 12, fontWeight: 700, color: "var(--blue)", textTransform: "uppercase", letterSpacing: ".08em", display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 980, background: "rgba(255,255,255,.7)", backdropFilter: "blur(8px)" } }, "✨ " + T.heroEyebrow)
+            ),
+            React.createElement("h1", { style: { fontSize: "clamp(28px,4vw,42px)", fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1.15, marginBottom: 12, color: "var(--ink)" } }, 
               T.heroTitle, " ",
               React.createElement("span", { style: { background: "var(--gradient-primary)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" } }, T.heroTitleAccent)),
-            React.createElement("p", { style: { fontSize: 18, color: "var(--ink3)", lineHeight: 1.6, maxWidth: 640 } }, T.heroSub),
-            
-            // Benefits grid
-            React.createElement("div", { style: { display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)", gap: 16, marginTop: 40 } },
-              [["🌍", T.b1, T.b1s], ["💰", T.b2, T.b2s], ["🚀", T.b3, T.b3s]].map(([icon, title, sub], i) => 
-                React.createElement("div", { key: i, style: { background: "rgba(255,255,255,.7)", backdropFilter: "blur(8px)", borderRadius: 16, padding: 22, border: "1px solid var(--border)" } },
-                  React.createElement("div", { style: { fontSize: 32, marginBottom: 10 } }, icon),
-                  React.createElement("div", { style: { fontSize: 16, fontWeight: 700, color: "var(--ink)", marginBottom: 4 } }, title),
-                  React.createElement("div", { style: { fontSize: 14, color: "var(--ink3)", lineHeight: 1.5 } }, sub)
-                )
-              )
-            )
+            React.createElement("p", { style: { fontSize: 16, color: "var(--ink3)", lineHeight: 1.55, maxWidth: 580 } }, T.heroSub)
           )
         ),
         
         // Form section
-        React.createElement("div", { style: { padding: "56px clamp(20px,5vw,40px) 100px" } },
+        React.createElement("div", { style: { padding: "32px clamp(20px,5vw,40px) 80px" } },
           React.createElement("div", { style: { maxWidth: 760, margin: "0 auto" } },
             // Stepper
             React.createElement("div", { style: { marginBottom: 32 } },
@@ -4701,7 +4692,7 @@ const renderMarkdown = (md) => {
   
   return React.createElement("aside", {
     style: {
-      width: 248,
+      width: 256,
       background: "#FFFFFF",
       borderRight: "1px solid rgba(15,23,42,.06)",
       minHeight: "100vh",
@@ -7243,13 +7234,59 @@ const renderMarkdown = (md) => {
     if (zone === "instructor")
         return (React.createElement(React.Fragment, null, React.createElement(IZone, null), React.createElement(ReviewModal, null)));
     if (zone === "admin")
-        return (React.createElement("div", { style: { fontFamily: F, color: "#1D1D1F", background: "#F5F5F7", minHeight: "100vh", opacity: mounted ? 1 : 0, transition: "opacity .4s" } },
+        return (React.createElement("div", { style: { fontFamily: "var(--font)", color: "var(--ink)", background: "#F8FAFC", minHeight: "100vh", opacity: mounted ? 1 : 0, transition: "opacity .4s" } },
+            // Sidebar (desktop)
             !isMobile && ASide(),
-            React.createElement("div", { style: { marginLeft: isMobile ? 0 : 200, padding: isMobile ? "16px" : "24px 32px", minHeight: "100vh" } },
-                isMobile && React.createElement("div", { style: { display: "flex", gap: 8, marginBottom: 16, overflowX: "auto", paddingBottom: 4 } },
-                    [["dashboard", "Dashboard"], ["promote", "✨"], ["courses", t("stats.courses","ui")||"Cursos"], ["students", t("stats.students","ui")||"Alunos"], ["analytics", "Analytics"], ["evals", "Aval."], ["adminNotifs", "🔔"], ["agent", "Agent"], ["settings", "Def."]].map(([k, l]) => (React.createElement("button", { key: k, style: { padding: "6px 14px", borderRadius: 980, fontSize:14, fontWeight: aView === k ? 600 : 400, background: aView === k ? "#0071E3" : "rgba(0,0,0,.04)", color: aView === k ? "#fff" : "#6E6E73", border: "none", cursor: "pointer", whiteSpace: "nowrap", fontFamily: F }, onClick: () => setAView(k) }, l))),
-                    React.createElement("button", { style: { padding: "6px 14px", borderRadius: 980, fontSize:14, background: "transparent", color: "#0071E3", border: "none", cursor: "pointer", fontFamily: F, whiteSpace: "nowrap" }, onClick: goPublic }, "\uD83C\uDF10 Site"),
-                    React.createElement("button", { style: { padding: "6px 14px", borderRadius: 980, fontSize:14, background: "transparent", color: "#FF375F", border: "none", cursor: "pointer", fontFamily: F }, onClick: goPublic }, "Sair")),
+            
+            // Mobile menu drawer
+            isMobile && mobileMenuOpen && React.createElement("div", {
+              onClick: () => setMobileMenuOpen(false),
+              style: { position: "fixed", inset: 0, zIndex: 100, background: "rgba(15,23,42,.45)", backdropFilter: "blur(6px)" }
+            },
+              React.createElement("div", { onClick: e => e.stopPropagation(), style: { position: "fixed", left: 0, top: 0, bottom: 0, width: 280, background: "#fff", boxShadow: "0 10px 30px rgba(0,0,0,.15)" } }, ASide())
+            ),
+            
+            // Main area with top bar
+            React.createElement("div", { style: { marginLeft: isMobile ? 0 : 256, minHeight: "100vh", display: "flex", flexDirection: "column" } },
+              
+              // Top bar
+              React.createElement("header", { style: { position: "sticky", top: 0, zIndex: 50, background: "rgba(255,255,255,.95)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(15,23,42,.06)", height: 64, display: "flex", alignItems: "center", padding: "0 clamp(16px,3vw,28px)", gap: 12 } },
+                // Mobile hamburger
+                isMobile && React.createElement("button", {
+                  onClick: () => setMobileMenuOpen(true),
+                  style: { background: "transparent", border: "1px solid rgba(15,23,42,.1)", borderRadius: 10, width: 40, height: 40, fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }
+                }, "☰"),
+                
+                // Breadcrumb
+                React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 0 } },
+                  React.createElement("span", { style: { fontSize: 13, color: "var(--ink4)", fontWeight: 500 } }, "Admin"),
+                  React.createElement("span", { style: { color: "var(--ink5)" } }, "/"),
+                  React.createElement("span", { style: { fontSize: 15, fontWeight: 600, color: "var(--ink)" } }, (function() {
+                    const titles = { dashboard: "Dashboard", courses: "Cursos", students: "Alunos", analytics: "Analytics", evals: "Avaliações", adminNotifs: "Notificações", agent: "AI Agent", promote: "Promover Instrutor", instructors: "Instrutores", transactions: "Transacções", legal_pages: "Páginas Legais", i18n: "Traduções", public_content: "Páginas Públicas", emails: "Templates Email", config: "Empresa", settings: "Definições" };
+                    return titles[aView] || "Dashboard";
+                  })())
+                ),
+                
+                // Right actions
+                React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8 } },
+                  // View site button
+                  React.createElement("button", {
+                    onClick: () => { setZone("public"); setView("home"); window.scrollTo(0,0); },
+                    onMouseEnter: e => { e.currentTarget.style.background = "var(--surface3)"; e.currentTarget.style.borderColor = "var(--ink5)"; },
+                    onMouseLeave: e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(15,23,42,.1)"; },
+                    style: { display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 10, background: "#fff", border: "1px solid rgba(15,23,42,.1)", fontSize: 14, fontWeight: 500, color: "var(--ink2)", cursor: "pointer", fontFamily: "var(--font)", transition: "all .15s" }
+                  }, "🌐 ", !isMobile && "Site"),
+                  
+                  // User avatar pill
+                  curStu && React.createElement("div", { style: { display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 14px 5px 5px", borderRadius: 980, background: "var(--surface2)", border: "1px solid rgba(15,23,42,.06)" } },
+                    React.createElement("div", { style: { width: 28, height: 28, borderRadius: "50%", background: "var(--gradient-primary)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 700 } }, (curStu.name || curStu.email || "A").split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase()),
+                    !isMobile && React.createElement("span", { style: { fontSize: 14, fontWeight: 600, color: "var(--ink)" } }, (curStu.name || "Admin").split(" ")[0])
+                  )
+                )
+              ),
+              
+              // Content area
+              React.createElement("main", { style: { flex: 1, padding: "clamp(20px,3vw,32px)", minHeight: "calc(100vh - 64px)" } },
                 aView === "dashboard" && ADash(),
                 aView === "courses" && ACourses(),
                 aView === "students" && AStudents(),
@@ -7257,7 +7294,17 @@ const renderMarkdown = (md) => {
                 aView === "analytics" && AAnalytics(),
                 aView === "evals" && AEvals(),
                 aView === "adminNotifs" && AAdminNotifs(),
-                aView === "promote" && React.createElement(APromote, null), aView === "instructors" && React.createElement(AInstructors, null), aView === "transactions" && React.createElement(ATransactions, null), aView === "legal_pages" && React.createElement(ALegalPages, null), aView === "i18n" && React.createElement(AI18n, null), aView === "public_content" && React.createElement(APublicContent, null), aView === "emails" && React.createElement(AEmails, null), aView === "config" && AConfig(), aView === "settings" && ASettings()),
+                aView === "promote" && React.createElement(APromote, null),
+                aView === "instructors" && React.createElement(AInstructors, null),
+                aView === "transactions" && React.createElement(ATransactions, null),
+                aView === "legal_pages" && React.createElement(ALegalPages, null),
+                aView === "i18n" && React.createElement(AI18n, null),
+                aView === "public_content" && React.createElement(APublicContent, null),
+                aView === "emails" && React.createElement(AEmails, null),
+                aView === "config" && AConfig(),
+                aView === "settings" && ASettings()
+              )
+            ),
             renderDocViewer(),
             renderCoursePreview(),
             renderToast()));
