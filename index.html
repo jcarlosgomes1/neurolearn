@@ -3817,14 +3817,15 @@ const renderMarkdown = (md) => {
         opts = opts || {};
         const isFocused = false;
         const inputStyle = {
-          width: "100%", padding: "13px 16px",
+          width: "100%", padding: "14px 18px",
           borderRadius: 12,
-          border: "1.5px solid var(--border)",
+          border: "1.5px solid var(--border2)",
           fontSize: 16, fontFamily: "var(--font)",
           outline: "none", boxSizing: "border-box",
           color: "var(--ink)",
-          background: "#fff",
-          transition: "all .15s"
+          background: "var(--surface2)",
+          transition: "all .15s",
+          boxShadow: "inset 0 1px 2px rgba(15,23,42,.03)"
         };
         return React.createElement("div", { style: { marginBottom: 18 } },
           React.createElement("label", { style: { display: "block", fontSize: 14, fontWeight: 600, color: "var(--ink2)", marginBottom: 8, letterSpacing: "-0.01em" } }, label, opts.required ? React.createElement("span", { style: { color: "var(--red)", marginLeft: 4 } }, "*") : null),
@@ -3833,22 +3834,22 @@ const renderMarkdown = (md) => {
             onChange: e => set(key, e.target.value),
             placeholder: opts.placeholder || "",
             rows: opts.rows || 3,
-            onFocus: e => { e.target.style.borderColor = "var(--blue)"; e.target.style.boxShadow = "0 0 0 4px rgba(59,130,246,.12)"; },
-            onBlur: e => { e.target.style.borderColor = "var(--border)"; e.target.style.boxShadow = "none"; },
+            onFocus: e => { e.target.style.borderColor = "var(--blue)"; e.target.style.background = "#fff"; e.target.style.boxShadow = "0 0 0 4px rgba(59,130,246,.15), inset 0 1px 2px rgba(15,23,42,.02)"; },
+            onBlur: e => { e.target.style.borderColor = "var(--border2)"; e.target.style.background = "var(--surface2)"; e.target.style.boxShadow = "inset 0 1px 2px rgba(15,23,42,.03)"; },
             style: Object.assign({}, inputStyle, { resize: "vertical", minHeight: 90 })
           }) : opts.select ? React.createElement("select", {
             value: appData[key] || "",
             onChange: e => set(key, e.target.value),
-            onFocus: e => { e.target.style.borderColor = "var(--blue)"; e.target.style.boxShadow = "0 0 0 4px rgba(59,130,246,.12)"; },
-            onBlur: e => { e.target.style.borderColor = "var(--border)"; e.target.style.boxShadow = "none"; },
+            onFocus: e => { e.target.style.borderColor = "var(--blue)"; e.target.style.background = "#fff"; e.target.style.boxShadow = "0 0 0 4px rgba(59,130,246,.15)"; },
+            onBlur: e => { e.target.style.borderColor = "var(--border2)"; e.target.style.background = "var(--surface2)"; e.target.style.boxShadow = "inset 0 1px 2px rgba(15,23,42,.03)"; },
             style: Object.assign({}, inputStyle, { cursor: "pointer" })
           }, opts.select.map(o => React.createElement("option", { key: o.v, value: o.v }, o.l))) : React.createElement("input", {
             type: opts.type || "text",
             value: appData[key] || "",
             onChange: e => set(key, e.target.value),
             placeholder: opts.placeholder || "",
-            onFocus: e => { e.target.style.borderColor = "var(--blue)"; e.target.style.boxShadow = "0 0 0 4px rgba(59,130,246,.12)"; },
-            onBlur: e => { e.target.style.borderColor = "var(--border)"; e.target.style.boxShadow = "none"; },
+            onFocus: e => { e.target.style.borderColor = "var(--blue)"; e.target.style.background = "#fff"; e.target.style.boxShadow = "0 0 0 4px rgba(59,130,246,.15), inset 0 1px 2px rgba(15,23,42,.02)"; },
+            onBlur: e => { e.target.style.borderColor = "var(--border2)"; e.target.style.background = "var(--surface2)"; e.target.style.boxShadow = "inset 0 1px 2px rgba(15,23,42,.03)"; },
             style: inputStyle
           })
         );
