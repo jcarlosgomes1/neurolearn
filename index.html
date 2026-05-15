@@ -312,7 +312,13 @@ async function refreshI18nFromServer(lang) {
   _tr = merged;
   saveI18nCache(lang, merged);
 }
-const t = (key, ns="ui") => _tr[ns]?.[key] || _tr["ui"]?.[key] || key;
+const t = (key, ns="ui") => {
+  const v = _tr[ns]?.[key] || _tr["ui"]?.[key];
+  if (v) return v;
+  // Se não há tradução, NÃO devolver a chave - devolver string vazia
+  // para que o fallback "||" funcione no código chamador
+  return "";
+};
 function setLang(lang) {
   _lang = lang;
   localStorage.setItem("nl8-lang", lang);
@@ -4647,31 +4653,176 @@ const renderMarkdown = (md) => {
     )
       );
     };
-    const ASide = () => (React.createElement("div", { style: { width: 200, background: "#fff", borderRight: "0.5px solid rgba(0,0,0,.06)", minHeight: "100vh", padding: "16px 0", position: "fixed", left: 0, top: 0, zIndex: 50 } },
-        React.createElement("div", { style: { padding: "0 18px 16px", borderBottom: "0.5px solid rgba(0,0,0,.06)", marginBottom: 4 } },
-            React.createElement("div", { style: { fontSize: 16, fontWeight: 600, background: G, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" } }, "NeuroLearn"),
-            React.createElement("div", { style: { fontSize:12, fontWeight: 600, color: "#86868B", textTransform: "uppercase", letterSpacing: ".08em", marginTop: 2 } }, "Gest\u00E3o")),
-        [["dashboard", "▣", t("nav.dashboard")||"Dashboard"], ["courses", "◎", t("nav.courses")||"Cursos"], ["students", "◉", t("nav.students")||"Alunos"], ["analytics", "◈", t("nav.analytics")||"Analytics"], ["evals", "📋", t("nav.evals")||"Avaliações"], ["adminNotifs", "🔔", t("nav.notifs")||"Notificações"], ["agent", "✦", t("nav.agent")||"AI Agent"], ["promote", "✨", t("nav.promote")||"Promover Instrutor"], ["instructors", "👨‍🏫", t("nav.instructors")||"Instrutores"], ["transactions", "💰", t("nav.transactions")||"Transacções"], ["legal_pages", "📜", t("nav.legal")||"Páginas Legais"], ["i18n", "🌐", t("nav.i18n")||"Traduções"], ["public_content", "📄", t("nav.publicContent")||"Páginas Públicas"], ["emails", "📧", t("nav.emails")||"Templates Email"], ["config", "🏢", t("nav.company")||"Empresa"], ["settings", "⚙", t("nav.settings")||"Definições"]].map(([k, ic, l]) => {
-            const isNotifs = k === "adminNotifs";
-            const unreadCount = isNotifs ? adminNotifs.filter(n => !n.read).length : 0;
-            return (React.createElement("div", { key: k, style: Object.assign(Object.assign({}, fc), { gap: 8, padding: "9px 18px", fontSize:15, fontWeight: aView === k ? 600 : 400, color: aView === k ? "#0071E3" : "#6E6E73", cursor: "pointer", background: aView === k ? "#0071E310" : "transparent", borderRight: aView === k ? "3px solid #0071E3" : "3px solid transparent" }), onClick: () => setAView(k) },
-                React.createElement("span", { style: { fontSize:16, width: 16, textAlign: "center", position: "relative" } },
-                    ic,
-                    unreadCount > 0 && React.createElement("span", { style: { position: "absolute", top: -4, right: -4, width: 14, height: 14, borderRadius: "50%", background: "#FF375F", color: "#fff", fontSize: 7, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" } }, unreadCount)),
-                l));
-        }),
-        React.createElement("div", { style: { position: "absolute", bottom: 14, left: 0, right: 0, padding: "0 18px" } },
-            React.createElement("div", { style: { borderTop: "0.5px solid rgba(0,0,0,.06)", paddingTop: 12, display: "flex", flexDirection: "column", gap: 8 } },
-                React.createElement("div", { style: Object.assign(Object.assign({}, fc), { gap: 6, cursor: "pointer", padding: "6px 0" }), onClick: () => { setAView("adminNotifs"); setShowAdminNotifs(false); } },
-                    React.createElement("div", { style: { position: "relative" } },
-                        React.createElement("span", { style: { fontSize: 16 } }, "\uD83D\uDD14"),
-                        adminNotifs.filter(n => !n.read).length > 0 && React.createElement("div", { style: Object.assign(Object.assign({ position: "absolute", top: -4, right: -4, width: 14, height: 14, borderRadius: "50%", background: "#FF375F", color: "#fff", fontSize:11, fontWeight: 700 }, fc), { justifyContent: "center" }) }, adminNotifs.filter(n => !n.read).length)),
-                    React.createElement("span", { style: { fontSize:14, color: "#6E6E73", fontWeight: 500 } }, "Notifica\u00E7\u00F5es")),
-                React.createElement("div", { onClick: goPublic, style: Object.assign(Object.assign({ fontSize:14, color: "#0071E3", cursor: "pointer", fontWeight: 500 }, fc), { gap: 4 }) }, "\uD83C\uDF10 Ver site p\u00FAblico"),
-                React.createElement("div", { onClick: () => { try {
-                        localStorage.removeItem("nl7-admin");
-                    }
-                    catch (_a) { } goPublic(); }, style: { fontSize:14, color: "#FF375F", cursor: "pointer", fontWeight: 500 } }, "\u2190 Sair da gest\u00E3o")))));
+    const ASide = () => {
+  const menuItems = [
+    { id: "dashboard", icon: "📊", label: t("nav.dashboard") || "Dashboard", group: "main" },
+    { id: "courses", icon: "📚", label: t("nav.courses") || "Cursos", group: "main" },
+    { id: "students", icon: "👥", label: t("nav.students") || "Alunos", group: "main" },
+    { id: "analytics", icon: "📈", label: t("nav.analytics") || "Analytics", group: "main" },
+    
+    { id: "agent", icon: "🤖", label: t("nav.agent") || "AI Agent", group: "tools" },
+    { id: "evals", icon: "📝", label: t("nav.evals") || "Avaliações", group: "tools" },
+    { id: "adminNotifs", icon: "🔔", label: t("nav.notifs") || "Notificações", group: "tools" },
+    
+    { id: "promote", icon: "✨", label: t("nav.promote") || "Promover Instrutor", group: "people" },
+    { id: "instructors", icon: "🎓", label: t("nav.instructors") || "Instrutores", group: "people" },
+    { id: "transactions", icon: "💳", label: t("nav.transactions") || "Transacções", group: "people" },
+    
+    { id: "i18n", icon: "🌐", label: t("nav.i18n") || "Traduções", group: "content" },
+    { id: "public_content", icon: "📄", label: t("nav.publicContent") || "Páginas Públicas", group: "content" },
+    { id: "legal_pages", icon: "⚖️", label: t("nav.legal") || "Páginas Legais", group: "content" },
+    { id: "emails", icon: "✉️", label: t("nav.emails") || "Templates Email", group: "content" },
+    
+    { id: "config", icon: "🏢", label: t("nav.company") || "Empresa", group: "system" },
+    { id: "settings", icon: "⚙️", label: t("nav.settings") || "Definições", group: "system" }
+  ];
+  
+  const groupLabels = {
+    main: { pt: "Principal", en: "Main", es: "Principal", fr: "Principal" },
+    tools: { pt: "Ferramentas", en: "Tools", es: "Herramientas", fr: "Outils" },
+    people: { pt: "Pessoas", en: "People", es: "Personas", fr: "Personnes" },
+    content: { pt: "Conteúdo", en: "Content", es: "Contenido", fr: "Contenu" },
+    system: { pt: "Sistema", en: "System", es: "Sistema", fr: "Système" }
+  };
+  
+  const lang = _lang || "pt";
+  const groups = ["main", "tools", "people", "content", "system"];
+  
+  return React.createElement("aside", {
+    style: {
+      width: 248,
+      background: "#FFFFFF",
+      borderRight: "1px solid rgba(15,23,42,.06)",
+      minHeight: "100vh",
+      position: "fixed",
+      left: 0, top: 0,
+      zIndex: 50,
+      display: "flex",
+      flexDirection: "column",
+      overflowY: "auto"
+    }
+  },
+    // Brand header
+    React.createElement("div", {
+      style: {
+        padding: "20px 20px 18px",
+        borderBottom: "1px solid rgba(15,23,42,.06)",
+        background: "linear-gradient(180deg, #FAFBFC 0%, #FFFFFF 100%)"
+      }
+    },
+      React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 11 } },
+        React.createElement("div", {
+          style: {
+            width: 36, height: 36, borderRadius: 10,
+            background: "var(--gradient-primary)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 16, fontWeight: 800, color: "#fff",
+            boxShadow: "0 4px 12px rgba(59,130,246,.25)"
+          }
+        }, "N"),
+        React.createElement("div", null,
+          React.createElement("div", {
+            style: { fontSize: 16, fontWeight: 700, color: "var(--ink)", letterSpacing: "-0.02em", lineHeight: 1.1 }
+          }, "NeuroLearn"),
+          React.createElement("div", {
+            style: { fontSize: 11, fontWeight: 600, color: "var(--ink4)", textTransform: "uppercase", letterSpacing: ".1em", marginTop: 3 }
+          }, "Admin")
+        )
+      )
+    ),
+    
+    // Menu groups
+    React.createElement("nav", {
+      style: { flex: 1, padding: "16px 12px", overflowY: "auto" }
+    },
+      groups.map(g => React.createElement("div", { key: g, style: { marginBottom: 16 } },
+        React.createElement("div", {
+          style: {
+            fontSize: 11, fontWeight: 700, color: "var(--ink4)",
+            textTransform: "uppercase", letterSpacing: ".1em",
+            padding: "8px 12px 6px"
+          }
+        }, groupLabels[g][lang] || groupLabels[g].pt),
+        menuItems.filter(m => m.group === g).map(item => {
+          const isActive = aView === item.id;
+          return React.createElement("button", {
+            key: item.id,
+            onClick: () => setAView(item.id),
+            onMouseEnter: e => { if (!isActive) { e.currentTarget.style.background = "var(--surface2)"; } },
+            onMouseLeave: e => { if (!isActive) { e.currentTarget.style.background = "transparent"; } },
+            style: {
+              display: "flex", alignItems: "center", gap: 12,
+              width: "100%",
+              padding: "10px 12px",
+              borderRadius: 10,
+              background: isActive ? "var(--blue-xs)" : "transparent",
+              border: "none",
+              cursor: "pointer",
+              fontFamily: "var(--font)",
+              fontSize: 14,
+              fontWeight: isActive ? 600 : 500,
+              color: isActive ? "var(--blue)" : "var(--ink2)",
+              transition: "all .15s",
+              textAlign: "left",
+              marginBottom: 2,
+              position: "relative"
+            }
+          },
+            isActive && React.createElement("div", {
+              style: {
+                position: "absolute", left: -12, top: "20%", bottom: "20%", width: 3,
+                background: "var(--gradient-primary)",
+                borderTopRightRadius: 3, borderBottomRightRadius: 3
+              }
+            }),
+            React.createElement("span", { style: { fontSize: 17, lineHeight: 1, width: 22, display: "inline-flex", justifyContent: "center" } }, item.icon),
+            React.createElement("span", { style: { flex: 1 } }, item.label)
+          );
+        })
+      ))
+    ),
+    
+    // Footer with logout
+    React.createElement("div", {
+      style: {
+        padding: "12px 16px 16px",
+        borderTop: "1px solid rgba(15,23,42,.06)",
+        background: "var(--surface2)"
+      }
+    },
+      React.createElement("button", {
+        onClick: () => {
+          try {
+            localStorage.removeItem("nl7-admin");
+            localStorage.removeItem("nl-admin");
+          } catch (e) {}
+          goPublic();
+        },
+        onMouseEnter: e => e.currentTarget.style.background = "rgba(239,68,68,.08)",
+        onMouseLeave: e => e.currentTarget.style.background = "transparent",
+        style: {
+          display: "flex", alignItems: "center", gap: 10,
+          width: "100%",
+          padding: "10px 12px",
+          borderRadius: 10,
+          background: "transparent",
+          border: "none",
+          cursor: "pointer",
+          fontFamily: "var(--font)",
+          fontSize: 14,
+          fontWeight: 600,
+          color: "var(--red)",
+          transition: "all .15s",
+          textAlign: "left"
+        }
+      },
+        React.createElement("span", { style: { fontSize: 17 } }, "←"),
+        React.createElement("span", null, "Sair da gestão")
+      )
+    )
+  );
+};
+
     const ADash = () => {
         const allLessons = courses.flatMap(c => mkL(c.md, c.id));
         const totalGen = allLessons.filter(l => lessonContent[l.id]).length;
@@ -5730,7 +5881,7 @@ const renderMarkdown = (md) => {
         return React.createElement("div", { style: { fontFamily: F, background: "#F5F5F7", minHeight: "100vh", color: "#1D1D1F" } },
           React.createElement(ITopBar, null),
           React.createElement(ISide, null),
-          React.createElement("div", { style: { marginLeft: isMobile ? 0 : 200, padding: isMobile ? "0 16px 16px" : "0 32px 24px" } },
+          React.createElement("div", { style: { marginLeft: isMobile ? 0 : 248, padding: isMobile ? "0 16px 16px" : "0 32px 24px" } },
             isMobile && React.createElement("div", { style: { display: "flex", gap: 8, marginBottom: 16, overflowX: "auto", paddingBottom: 4 } },
               navItems.map(([k, , label]) => React.createElement("button", {
                 key: k, onClick: () => setIView(k),
