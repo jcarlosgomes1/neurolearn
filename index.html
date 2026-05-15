@@ -703,7 +703,7 @@ const renderMarkdown = (md) => {
         if (t) { setResetTokenFromURL(t); setZone("stuLogin"); }
         // Initialize view from URL hash (e.g. #privacy, #courses)
         const initHash = (window.location.hash || "").replace(/^#/, "");
-        const validViews = ["home","courses","pricing","detail","privacy","terms","refunds","cookies","legal-notice","faq","about-page","instructor-public"];
+        const validViews = ["home","courses","pricing","apply","detail","privacy","terms","refunds","cookies","legal-notice","faq","about-page","instructor-public","about"];
         if (initHash.startsWith("instructor/")) {
           const slug = initHash.slice("instructor/".length).replace(/[^a-z0-9-]/g, "");
           if (slug) { setPublicInstructorSlug(slug); setView("instructor-public"); setZone("public"); }
@@ -723,7 +723,7 @@ const renderMarkdown = (md) => {
           // If no state, derive from hash
           if (!s.zone && !s.view) {
             const h = (window.location.hash || "").replace(/^#/, "");
-            const validViews = ["home","courses","pricing","detail","privacy","terms","refunds","cookies","legal-notice","faq","about-page"];
+            const validViews = ["home","courses","pricing","apply","detail","privacy","terms","refunds","cookies","legal-notice","faq","about-page","instructor-public","about"];
             if (h.startsWith("instructor/")) {
               const slug = h.slice("instructor/".length).replace(/[^a-z0-9-]/g, "");
               if (slug) { setPublicInstructorSlug(slug); setView("instructor-public"); setZone("public"); }
@@ -1022,7 +1022,17 @@ const renderMarkdown = (md) => {
                     subscription:enrData.subscription||null,
                 };
                 setCurStu(stuObj);
-                if (u.role==="super_admin"||u.role==="admin") { setZone("admin"); setAView("dashboard"); }
+                if (u.role==="super_admin"||u.role==="admin") {
+                  // Respect public hash routes (e.g. /#apply, /#courses)
+                  const currentHash = (window.location.hash || "").replace(/^#/, "");
+                  const publicViews = ["home","courses","pricing","apply","detail","privacy","terms","refunds","cookies","legal-notice","faq","about-page","instructor-public","about"];
+                  const isPublicHash = currentHash && (publicViews.includes(currentHash) || currentHash.startsWith("instructor/"));
+                  const isAdminHash = currentHash.startsWith("admin");
+                  const isStudentHash = currentHash.startsWith("student");
+                  if (isPublicHash) { setZone("public"); }
+                  else if (isStudentHash) { setZone("student"); setSView("my"); }
+                  else { setZone("admin"); setAView("dashboard"); }
+                }
                 else { setZone("student"); setSView("my"); }
                 await ldStudentData(stuObj);
                 // Load admin notifications
