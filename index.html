@@ -2370,37 +2370,43 @@ const renderMarkdown = (md) => {
 
     // Primary button
     const BtnP = ({children,onClick,size='md',style={},disabled=false,loading=false,...p}) => {
-      const sizes = {sm:{fontSize:15,padding:'7px 16px',gap:5},md:{fontSize:16,padding:'10px 22px',gap:6},lg:{fontSize:16,padding:'13px 30px',gap:7},xl:{fontSize:17,padding:'16px 36px',gap:8}};
+      const sizes = {sm:{fontSize:14,padding:'9px 18px',gap:6},md:{fontSize:15,padding:'12px 24px',gap:8},lg:{fontSize:16,padding:'14px 30px',gap:8},xl:{fontSize:17,padding:'17px 36px',gap:10}};
+      const shadows = {sm:'0 4px 14px rgba(59,130,246,.25)',md:'0 6px 20px rgba(59,130,246,.3)',lg:'0 8px 24px rgba(59,130,246,.32)',xl:'0 10px 28px rgba(59,130,246,.35)'};
       return React.createElement('button',{
     onClick:disabled||loading?undefined:onClick,disabled:disabled||loading,
-    onMouseEnter:e=>{if(!disabled&&!loading){e.currentTarget.style.filter='brightness(1.07)';e.currentTarget.style.transform='translateY(-1px)';}},
-    onMouseLeave:e=>{e.currentTarget.style.filter='';e.currentTarget.style.transform='';},
+    onMouseEnter:e=>{if(!disabled&&!loading){e.currentTarget.style.filter='brightness(1.08)';e.currentTarget.style.transform='translateY(-2px)';e.currentTarget.style.boxShadow=shadows[size].replace(/,(\.\d+)\)/,(m,n)=>',' + Math.min(parseFloat(n)+0.1, 0.5) + ')');}},
+    onMouseLeave:e=>{e.currentTarget.style.filter='';e.currentTarget.style.transform='';e.currentTarget.style.boxShadow=disabled?'none':shadows[size];},
     style:{display:'inline-flex',alignItems:'center',justifyContent:'center',
       border:'none',cursor:disabled||loading?'not-allowed':'pointer',fontFamily:'var(--font)',
-      fontWeight:600,letterSpacing:'-0.01em',borderRadius:'var(--r10)',
-      background:disabled?'var(--surface4)':'var(--blue)',
+      fontWeight:600,letterSpacing:'-0.01em',borderRadius:12,
+      background:disabled?'var(--surface4)':'var(--gradient-primary)',
       color:disabled?'var(--ink4)':'#fff',
-      boxShadow:disabled?'none':'0 1px 3px rgba(37,99,235,.3)',
-      transition:'all .15s ease',opacity:loading?.7:1,
+      boxShadow:disabled?'none':shadows[size],
+      transition:'all .2s cubic-bezier(.22,1,.36,1)',opacity:loading?.7:1,
       ...sizes[size],...style},...p},
-    loading ? React.createElement('span',{style:{width:14,height:14,border:'2px solid rgba(255,255,255,.3)',
+    loading ? React.createElement('span',{style:{width:16,height:16,border:'2.5px solid rgba(255,255,255,.3)',
       borderTopColor:'#fff',borderRadius:'50%',animation:'spin .7s linear infinite',display:'inline-block'}}) : children
       );
     };
 
     // Secondary button
     const BtnS = ({children,onClick,size='md',style={},active=false,...p}) => {
-      const sizes = {sm:{fontSize:15,padding:'7px 16px'},md:{fontSize:16,padding:'10px 22px'},lg:{fontSize:16,padding:'13px 30px'},xl:{fontSize:17,padding:'16px 36px'}};
+      const sizes = {sm:{fontSize:14,padding:'9px 18px'},md:{fontSize:15,padding:'12px 24px'},lg:{fontSize:16,padding:'14px 30px'},xl:{fontSize:17,padding:'17px 36px'}};
       return React.createElement('button',{
     onClick,
-    onMouseEnter:e=>{e.currentTarget.style.background='var(--surface3)';},
-    onMouseLeave:e=>{e.currentTarget.style.background=active?'var(--surface3)':'var(--surface2)';},
-    style:{display:'inline-flex',alignItems:'center',justifyContent:'center',gap:6,
-      borderRadius:'var(--r10)',fontFamily:'var(--font)',fontWeight:500,cursor:'pointer',
-      background:active?'var(--surface3)':'var(--surface2)',
-      border:`1px solid ${active?'var(--border2)':'var(--border)'}`,
-      color:'var(--ink2)',transition:'all .15s ease',...sizes[size],...style},...p},children);
+    onMouseEnter:e=>{e.currentTarget.style.background='var(--surface3)';e.currentTarget.style.borderColor='var(--ink5)';e.currentTarget.style.transform='translateY(-1px)';},
+    onMouseLeave:e=>{e.currentTarget.style.background=active?'var(--surface3)':'#fff';e.currentTarget.style.borderColor='var(--border2)';e.currentTarget.style.transform='translateY(0)';},
+    style:{display:'inline-flex',alignItems:'center',justifyContent:'center',gap:8,
+      borderRadius:12,border:'1.5px solid var(--border2)',
+      background:active?'var(--surface3)':'#fff',
+      color:'var(--ink)',fontFamily:'var(--font)',fontWeight:600,
+      letterSpacing:'-0.01em',cursor:'pointer',
+      transition:'all .2s cubic-bezier(.22,1,.36,1)',
+      boxShadow:'var(--shadow-xs)',
+      ...sizes[size],...style},...p
+      },children);
     };
+
 
     // Ghost button
     const BtnG = ({children,onClick,size='md',style={},...p}) => {
@@ -2509,20 +2515,41 @@ const renderMarkdown = (md) => {
             !isMobile && React.createElement('div', {
               style: { display: 'flex', gap: 4, alignItems: 'center', flex: 1, justifyContent: 'center' }
             },
-              navLinks.map(([k, l]) => React.createElement('button', {
-                key: k,
-                onClick: () => setView(k),
-                onMouseEnter: e => { if (view !== k) { e.currentTarget.style.background = 'rgba(15,23,42,.04)'; e.currentTarget.style.color = 'var(--ink)'; } },
-                onMouseLeave: e => { if (view !== k) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--ink3)'; } },
-                style: {
-                  background: view === k ? 'var(--blue-xs)' : 'transparent',
-                  border: 'none', cursor: 'pointer',
-                  padding: '10px 18px', borderRadius: 10,
-                  fontSize: 16, fontWeight: view === k ? 600 : 500,
-                  color: view === k ? 'var(--blue)' : 'var(--ink3)',
-                  fontFamily: 'var(--font)', transition: 'all .15s'
+              navLinks.map(([k, l]) => {
+                const isApply = k === 'apply';
+                const isActive = view === k;
+                if (isApply) {
+                  return React.createElement('button', {
+                    key: k,
+                    onClick: () => setView(k),
+                    onMouseEnter: e => e.currentTarget.style.background = 'var(--blue-xs)',
+                    onMouseLeave: e => e.currentTarget.style.background = isActive ? 'var(--blue-xs)' : 'transparent',
+                    style: {
+                      background: isActive ? 'var(--blue-xs)' : 'transparent',
+                      border: '1.5px solid var(--blue)', cursor: 'pointer',
+                      padding: '8px 16px', borderRadius: 10,
+                      fontSize: 15, fontWeight: 600,
+                      color: 'var(--blue)',
+                      fontFamily: 'var(--font)', transition: 'all .15s',
+                      display: 'inline-flex', alignItems: 'center', gap: 6
+                    }
+                  }, '✨ ', l);
                 }
-              }, l))
+                return React.createElement('button', {
+                  key: k,
+                  onClick: () => setView(k),
+                  onMouseEnter: e => { if (!isActive) { e.currentTarget.style.background = 'rgba(15,23,42,.04)'; e.currentTarget.style.color = 'var(--ink)'; } },
+                  onMouseLeave: e => { if (!isActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--ink3)'; } },
+                  style: {
+                    background: isActive ? 'var(--blue-xs)' : 'transparent',
+                    border: 'none', cursor: 'pointer',
+                    padding: '10px 18px', borderRadius: 10,
+                    fontSize: 16, fontWeight: isActive ? 600 : 500,
+                    color: isActive ? 'var(--blue)' : 'var(--ink3)',
+                    fontFamily: 'var(--font)', transition: 'all .15s'
+                  }
+                }, l);
+              })
             ),
 
             React.createElement('div', {
@@ -3775,39 +3802,58 @@ const renderMarkdown = (md) => {
     };
     const ApplyInstructor = () => {
       const langKey = _lang || "pt";
-      const T = ({pt:{title:"Candidata-te a Instrutor",sub:"Junta-te a uma plataforma curada de instrutores especialistas. Aplicações revistas semanalmente.",step:"Passo",of:"de",next:"Continuar",back:"Voltar",submit:"Submeter aplicação",submitting:"A submeter...",sent:"Aplicação recebida!",sentSub:"Vamos analisar a tua candidatura nos próximos 5-10 dias úteis. Receberás resposta por email.",sentBack:"Voltar ao site",errReq:"Campos obrigatórios em falta",s1t:"Sobre ti",s2t:"Experiência e expertise",s3t:"O curso que queres lecionar",s4t:"Prova de qualidade",fname:"Nome completo",email:"Email",phone:"Telefone (opcional)",country:"País",city:"Cidade",linkedin:"LinkedIn (recomendado)",website:"Website ou portfolio",github:"GitHub (opcional)",lang:"Idioma preferido",exp:"Áreas de expertise (separadas por vírgula)",years:"Anos de experiência",role:"Cargo actual",company:"Empresa actual",teach:"Onde já leccionaste? (universidades, bootcamps, empresas, online…)",ctitle:"Título do curso proposto",cdesc:"Descrição em 2-3 frases",cformat:"Formato",fmt_self:"Self-paced (assíncrono)",fmt_cohort:"Cohort (turmas com datas)",fmt_live:"Workshop ao vivo",fmt_hybrid:"Híbrido (vídeo + sessões live)",clang:"Idioma do curso",ctarget:"Público-alvo",coutline:"Outline (1 módulo por linha, format: Título do módulo | tópico1, tópico2)",cdur:"Duração estimada",cprice:"Preço sugerido (€)",demo:"Vídeo demo (link YouTube/Vimeo unlisted, 3-5 min)",sample:"Lição exemplo (link Google Doc, PDF público, etc)",portf:"Portfolio (1 link por linha)",refs:"Referências profissionais (opcional)"},es:{title:"Postula como Instructor",sub:"Únete a una plataforma curada de instructores expertos.",step:"Paso",of:"de",next:"Continuar",back:"Volver",submit:"Enviar postulación",submitting:"Enviando...",sent:"¡Postulación recibida!",sentSub:"Revisaremos tu candidatura en 5-10 días hábiles.",sentBack:"Volver al sitio",errReq:"Faltan campos obligatorios",s1t:"Sobre ti",s2t:"Experiencia",s3t:"Tu curso",s4t:"Prueba de calidad",fname:"Nombre completo",email:"Email",phone:"Teléfono",country:"País",city:"Ciudad",linkedin:"LinkedIn (recomendado)",website:"Sitio web o portfolio",github:"GitHub",lang:"Idioma preferido",exp:"Expertise (separadas por coma)",years:"Años de experiencia",role:"Cargo actual",company:"Empresa actual",teach:"¿Dónde has enseñado?",ctitle:"Título del curso",cdesc:"Descripción 2-3 frases",cformat:"Formato",fmt_self:"Asíncrono",fmt_cohort:"Cohort",fmt_live:"Workshop en vivo",fmt_hybrid:"Híbrido",clang:"Idioma del curso",ctarget:"Audiencia objetivo",coutline:"Outline (1 módulo por línea)",cdur:"Duración estimada",cprice:"Precio sugerido (€)",demo:"Video demo (link)",sample:"Lección ejemplo",portf:"Portfolio",refs:"Referencias"},fr:{title:"Postule comme Instructeur",sub:"Rejoins une plateforme curated d'instructeurs experts.",step:"Étape",of:"sur",next:"Continuer",back:"Retour",submit:"Soumettre",submitting:"Envoi...",sent:"Candidature reçue !",sentSub:"Nous examinons sous 5-10 jours.",sentBack:"Retour au site",errReq:"Champs obligatoires manquants",s1t:"À propos",s2t:"Expérience",s3t:"Ton cours",s4t:"Preuves",fname:"Nom complet",email:"Email",phone:"Téléphone",country:"Pays",city:"Ville",linkedin:"LinkedIn (recommandé)",website:"Site web",github:"GitHub",lang:"Langue préférée",exp:"Expertise (séparées par virgule)",years:"Années d'expérience",role:"Poste actuel",company:"Entreprise",teach:"Où as-tu enseigné ?",ctitle:"Titre du cours",cdesc:"Description 2-3 phrases",cformat:"Format",fmt_self:"Asynchrone",fmt_cohort:"Cohorte",fmt_live:"Workshop live",fmt_hybrid:"Hybride",clang:"Langue du cours",ctarget:"Public cible",coutline:"Outline (1 module par ligne)",cdur:"Durée estimée",cprice:"Prix suggéré (€)",demo:"Vidéo demo (lien)",sample:"Leçon exemple",portf:"Portfolio",refs:"Références"},en:{title:"Apply as Instructor",sub:"Join a curated platform of expert instructors. Applications reviewed weekly.",step:"Step",of:"of",next:"Continue",back:"Back",submit:"Submit application",submitting:"Submitting...",sent:"Application received!",sentSub:"We'll review your application within 5-10 business days. You'll hear back by email.",sentBack:"Back to site",errReq:"Required fields missing",s1t:"About you",s2t:"Experience and expertise",s3t:"Your proposed course",s4t:"Quality proof",fname:"Full name",email:"Email",phone:"Phone (optional)",country:"Country",city:"City",linkedin:"LinkedIn (recommended)",website:"Website or portfolio",github:"GitHub (optional)",lang:"Preferred language",exp:"Expertise areas (comma-separated)",years:"Years of experience",role:"Current role",company:"Current company",teach:"Where have you taught before?",ctitle:"Proposed course title",cdesc:"Description in 2-3 sentences",cformat:"Format",fmt_self:"Self-paced",fmt_cohort:"Cohort",fmt_live:"Live workshop",fmt_hybrid:"Hybrid",clang:"Course language",ctarget:"Target audience",coutline:"Outline (1 module per line, format: Module title | topic1, topic2)",cdur:"Estimated duration",cprice:"Suggested price (€)",demo:"Demo video (YouTube/Vimeo unlisted, 3-5 min)",sample:"Sample lesson (Google Doc, public PDF, etc)",portf:"Portfolio (1 link per line)",refs:"References (optional)"}}[langKey] || {});
+      const T = ({pt:{title:"Candidata-te a Instrutor",sub:"Junta-te a uma plataforma curada de instrutores especialistas. Aplicações revistas semanalmente.",step:"Passo",of:"de",next:"Continuar",back:"Voltar",submit:"Submeter candidatura",submitting:"A submeter...",sent:"Candidatura recebida!",sentSub:"Vamos analisar a tua candidatura nos próximos 5-10 dias úteis. Receberás resposta por email.",sentBack:"Voltar ao site",errReq:"Campos obrigatórios em falta",s1t:"Sobre ti",s1d:"Vamos conhecer-te melhor.",s2t:"Experiência e expertise",s2d:"O teu percurso profissional.",s3t:"O curso que queres lecionar",s3d:"Conta-nos sobre a tua proposta.",s4t:"Prova de qualidade",s4d:"Material para validarmos a tua abordagem.",fname:"Nome completo",email:"Email",phone:"Telefone (opcional)",country:"País",city:"Cidade",linkedin:"LinkedIn (recomendado)",website:"Website ou portfolio",github:"GitHub (opcional)",lang:"Idioma preferido",exp:"Áreas de expertise",years:"Anos de experiência",role:"Cargo actual",company:"Empresa actual",teach:"Onde já leccionaste? (universidades, bootcamps, empresas, online…)",ctitle:"Título do curso proposto",cdesc:"Descrição em 2-3 frases",cformat:"Formato",fmt_self:"Self-paced",fmt_cohort:"Cohort",fmt_live:"Workshop ao vivo",fmt_hybrid:"Híbrido",clang:"Idioma do curso",ctarget:"Público-alvo",coutline:"Outline (1 módulo por linha)",cdur:"Duração estimada",cprice:"Preço sugerido (€)",demo:"Vídeo demo (YouTube/Vimeo unlisted)",sample:"Lição exemplo (Google Doc, PDF público)",portf:"Portfolio (1 link por linha)",refs:"Referências profissionais (opcional)",heroEyebrow:"Programa de Instrutores",heroTitle:"Partilha o teu conhecimento.",heroTitleAccent:"Inspira milhares.",heroSub:"Procuramos especialistas com paixão por ensinar. Se tens algo único para partilhar, queremos ouvir-te.",b1:"Audiência global",b1s:"Milhares de alunos em PT, EN, ES, FR",b2:"Revenue share atractivo",b2s:"Modelo justo de partilha de receitas",b3:"Suporte completo",b3s:"Equipa dedicada de produção e marketing"},es:{title:"Postula como Instructor",sub:"Únete a una plataforma curada de instructores expertos.",step:"Paso",of:"de",next:"Continuar",back:"Volver",submit:"Enviar candidatura",submitting:"Enviando...",sent:"¡Candidatura recibida!",sentSub:"Revisaremos tu candidatura en 5-10 días hábiles.",sentBack:"Volver al sitio",errReq:"Faltan campos obligatorios",s1t:"Sobre ti",s1d:"Conozcámonos mejor.",s2t:"Experiencia",s2d:"Tu trayectoria.",s3t:"Tu curso",s3d:"Cuéntanos tu propuesta.",s4t:"Prueba de calidad",s4d:"Material para validar.",fname:"Nombre completo",email:"Email",phone:"Teléfono",country:"País",city:"Ciudad",linkedin:"LinkedIn (recomendado)",website:"Sitio web",github:"GitHub",lang:"Idioma preferido",exp:"Áreas de expertise",years:"Años de experiencia",role:"Cargo actual",company:"Empresa actual",teach:"¿Dónde has enseñado?",ctitle:"Título del curso",cdesc:"Descripción 2-3 frases",cformat:"Formato",fmt_self:"Asíncrono",fmt_cohort:"Cohort",fmt_live:"Workshop en vivo",fmt_hybrid:"Híbrido",clang:"Idioma del curso",ctarget:"Audiencia objetivo",coutline:"Outline",cdur:"Duración estimada",cprice:"Precio sugerido (€)",demo:"Video demo",sample:"Lección ejemplo",portf:"Portfolio",refs:"Referencias",heroEyebrow:"Programa de Instructores",heroTitle:"Comparte tu conocimiento.",heroTitleAccent:"Inspira a miles.",heroSub:"Buscamos expertos con pasión por enseñar.",b1:"Audiencia global",b1s:"Miles de alumnos en PT, EN, ES, FR",b2:"Revenue share atractivo",b2s:"Modelo justo de ingresos",b3:"Apoyo completo",b3s:"Equipo dedicado"},fr:{title:"Postule comme Instructeur",sub:"Rejoins une plateforme curated d'instructeurs experts.",step:"Étape",of:"sur",next:"Continuer",back:"Retour",submit:"Soumettre candidature",submitting:"Envoi...",sent:"Candidature reçue !",sentSub:"Nous examinons sous 5-10 jours.",sentBack:"Retour au site",errReq:"Champs obligatoires manquants",s1t:"À propos",s1d:"Faisons connaissance.",s2t:"Expérience",s2d:"Ton parcours.",s3t:"Ton cours",s3d:"Parle-nous de ta proposition.",s4t:"Preuves",s4d:"Matériel de validation.",fname:"Nom complet",email:"Email",phone:"Téléphone",country:"Pays",city:"Ville",linkedin:"LinkedIn",website:"Site web",github:"GitHub",lang:"Langue préférée",exp:"Expertise",years:"Années d''expérience",role:"Poste actuel",company:"Entreprise",teach:"Où as-tu enseigné ?",ctitle:"Titre du cours",cdesc:"Description 2-3 phrases",cformat:"Format",fmt_self:"Asynchrone",fmt_cohort:"Cohorte",fmt_live:"Workshop live",fmt_hybrid:"Hybride",clang:"Langue du cours",ctarget:"Public cible",coutline:"Outline",cdur:"Durée estimée",cprice:"Prix suggéré (€)",demo:"Vidéo demo",sample:"Leçon exemple",portf:"Portfolio",refs:"Références",heroEyebrow:"Programme Instructeurs",heroTitle:"Partage ton savoir.",heroTitleAccent:"Inspire des milliers.",heroSub:"Nous cherchons des experts passionnés par l''enseignement.",b1:"Audience globale",b1s:"Milliers d''étudiants en PT, EN, ES, FR",b2:"Revenue share attractif",b2s:"Modèle équitable",b3:"Support complet",b3s:"Équipe dédiée"},en:{title:"Apply as Instructor",sub:"Join a curated platform of expert instructors.",step:"Step",of:"of",next:"Continue",back:"Back",submit:"Submit application",submitting:"Submitting...",sent:"Application received!",sentSub:"We''ll review your application within 5-10 business days.",sentBack:"Back to site",errReq:"Required fields missing",s1t:"About you",s1d:"Let''s get to know you.",s2t:"Experience",s2d:"Your background.",s3t:"Your course",s3d:"Tell us your proposal.",s4t:"Quality proof",s4d:"Material to validate.",fname:"Full name",email:"Email",phone:"Phone",country:"Country",city:"City",linkedin:"LinkedIn",website:"Website",github:"GitHub",lang:"Preferred language",exp:"Expertise areas",years:"Years of experience",role:"Current role",company:"Current company",teach:"Where have you taught?",ctitle:"Proposed course title",cdesc:"Description in 2-3 sentences",cformat:"Format",fmt_self:"Self-paced",fmt_cohort:"Cohort",fmt_live:"Live workshop",fmt_hybrid:"Hybrid",clang:"Course language",ctarget:"Target audience",coutline:"Outline",cdur:"Estimated duration",cprice:"Suggested price (€)",demo:"Demo video",sample:"Sample lesson",portf:"Portfolio",refs:"References",heroEyebrow:"Instructor Program",heroTitle:"Share your knowledge.",heroTitleAccent:"Inspire thousands.",heroSub:"We''re looking for experts passionate about teaching.",b1:"Global audience",b1s:"Thousands of students in PT, EN, ES, FR",b2:"Attractive revenue share",b2s:"Fair revenue model",b3:"Full support",b3s:"Dedicated production team"}}[langKey] || {});
+      
       const set = (k, v) => setAppData(d => Object.assign({}, d, { [k]: v }));
+      
+      // Field with refined styling
       const fld = (label, key, opts) => {
         opts = opts || {};
-        return React.createElement("div", { style: { marginBottom: 14 } },
-          React.createElement("label", { style: { display: "block", fontSize:14, fontWeight: 600, color: "var(--ink3)", marginBottom: 5 } }, label + (opts.required ? " *" : "")),
+        const isFocused = false;
+        const inputStyle = {
+          width: "100%", padding: "13px 16px",
+          borderRadius: 12,
+          border: "1.5px solid var(--border)",
+          fontSize: 16, fontFamily: "var(--font)",
+          outline: "none", boxSizing: "border-box",
+          color: "var(--ink)",
+          background: "#fff",
+          transition: "all .15s"
+        };
+        return React.createElement("div", { style: { marginBottom: 18 } },
+          React.createElement("label", { style: { display: "block", fontSize: 14, fontWeight: 600, color: "var(--ink2)", marginBottom: 8, letterSpacing: "-0.01em" } }, label + (opts.required ? React.createElement("span", { style: { color: "var(--red)", marginLeft: 4 } }, "*") : "")),
           opts.textarea ? React.createElement("textarea", {
             value: appData[key] || "",
             onChange: e => set(key, e.target.value),
             placeholder: opts.placeholder || "",
             rows: opts.rows || 3,
-            style: { width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)", fontSize:16, fontFamily: "var(--font)", outline: "none", boxSizing: "border-box", resize: "vertical" }
+            onFocus: e => { e.target.style.borderColor = "var(--blue)"; e.target.style.boxShadow = "0 0 0 4px rgba(59,130,246,.12)"; },
+            onBlur: e => { e.target.style.borderColor = "var(--border)"; e.target.style.boxShadow = "none"; },
+            style: Object.assign({}, inputStyle, { resize: "vertical", minHeight: 90 })
           }) : opts.select ? React.createElement("select", {
             value: appData[key] || "",
             onChange: e => set(key, e.target.value),
-            style: { width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)", fontSize:16, fontFamily: "var(--font)", outline: "none", background: "#fff", boxSizing: "border-box" }
+            onFocus: e => { e.target.style.borderColor = "var(--blue)"; e.target.style.boxShadow = "0 0 0 4px rgba(59,130,246,.12)"; },
+            onBlur: e => { e.target.style.borderColor = "var(--border)"; e.target.style.boxShadow = "none"; },
+            style: Object.assign({}, inputStyle, { cursor: "pointer" })
           }, opts.select.map(o => React.createElement("option", { key: o.v, value: o.v }, o.l))) : React.createElement("input", {
             type: opts.type || "text",
             value: appData[key] || "",
             onChange: e => set(key, e.target.value),
             placeholder: opts.placeholder || "",
-            style: { width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)", fontSize:16, fontFamily: "var(--font)", outline: "none", boxSizing: "border-box" }
+            onFocus: e => { e.target.style.borderColor = "var(--blue)"; e.target.style.boxShadow = "0 0 0 4px rgba(59,130,246,.12)"; },
+            onBlur: e => { e.target.style.borderColor = "var(--border)"; e.target.style.boxShadow = "none"; },
+            style: inputStyle
           })
         );
       };
+      
       const submit = async () => {
-        // Required fields validation
         const required = ["full_name", "email", "expertise", "proposed_course_title", "proposed_course_description"];
         const missing = required.filter(k => !appData[k] || (typeof appData[k] === "string" && appData[k].trim().length === 0));
         if (missing.length) { setAppError(T.errReq + ": " + missing.join(", ")); return; }
         setAppSubmitting(true); setAppError("");
         try {
-          // Parse expertise / outline / portfolio
           const expertise = (appData.expertise || "").split(",").map(s => s.trim()).filter(Boolean);
           const outline = (appData.proposed_course_outline || "").split("\n").map(line => {
             const [title, topicsRaw] = line.split("|");
@@ -3831,37 +3877,44 @@ const renderMarkdown = (md) => {
         } catch(e) { setAppError("Erro de conexão: " + e.message); }
         setAppSubmitting(false);
       };
+      
+      // Success state
       if (appSubmitted) {
-        return React.createElement("div", { style: { background: "var(--surface)", minHeight: "calc(100vh - 60px)" } },
-          React.createElement("div", { style: { maxWidth: 560, margin: "0 auto", padding: "80px 24px", textAlign: "center" } },
-            React.createElement("div", { style: { fontSize: 56, marginBottom: 16 } }, "✉️"),
-            React.createElement("h1", { style: { fontSize: 28, fontWeight: 700, marginBottom: 12, letterSpacing: "-0.03em" } }, T.sent),
-            React.createElement("p", { style: { fontSize: 15, color: "var(--ink3)", lineHeight: 1.6, marginBottom: 24 } }, T.sentSub),
-            React.createElement("button", { onClick: () => { setAppSubmitted(false); setView("home"); window.scrollTo(0,0); }, style: { padding: "11px 24px", borderRadius: 10, background: "var(--blue)", color: "#fff", border: "none", fontSize:16, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font)" } }, T.sentBack)
+        return React.createElement("div", { style: { background: "var(--surface)", minHeight: "calc(100vh - 76px)" } },
+          React.createElement("div", { style: { maxWidth: 600, margin: "0 auto", padding: "100px 24px", textAlign: "center" } },
+            React.createElement("div", { style: { width: 96, height: 96, borderRadius: "50%", background: "var(--gradient-primary)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 28px", fontSize: 48, boxShadow: "0 12px 32px rgba(59,130,246,.3)" } }, "✨"),
+            React.createElement("h1", { style: { fontSize: 36, fontWeight: 800, marginBottom: 14, letterSpacing: "-0.03em", color: "var(--ink)" } }, T.sent),
+            React.createElement("p", { style: { fontSize: 17, color: "var(--ink3)", lineHeight: 1.65, marginBottom: 36, maxWidth: 480, marginLeft: "auto", marginRight: "auto" } }, T.sentSub),
+            React.createElement("button", { onClick: () => { setAppSubmitted(false); setView("home"); window.scrollTo(0,0); }, onMouseEnter: e => e.currentTarget.style.transform = "translateY(-1px)", onMouseLeave: e => e.currentTarget.style.transform = "translateY(0)", style: { padding: "14px 32px", borderRadius: 12, background: "var(--gradient-primary)", color: "#fff", border: "none", fontSize: 16, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font)", boxShadow: "0 6px 20px rgba(59,130,246,.3)", transition: "all .15s" } }, T.sentBack)
           )
         );
       }
+      
       const totalSteps = 4;
+      const stepInfo = [
+        { t: T.s1t, d: T.s1d, i: "👋" },
+        { t: T.s2t, d: T.s2d, i: "💼" },
+        { t: T.s3t, d: T.s3d, i: "🎓" },
+        { t: T.s4t, d: T.s4d, i: "⭐" }
+      ];
+      
       const screens = {
         1: () => React.createElement("div", null,
-          React.createElement("h2", { style: { fontSize: 20, fontWeight: 700, marginBottom: 4, letterSpacing: "-0.02em" } }, T.s1t),
-          React.createElement("p", { style: { fontSize:15, color: "var(--ink3)", marginBottom: 18 } }, ""),
           fld(T.fname, "full_name", { required: true }),
           fld(T.email, "email", { required: true, type: "email" }),
           fld(T.phone, "phone"),
-          React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 } },
+          React.createElement("div", { style: { display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 14 } },
             fld(T.country, "country", { placeholder: "PT" }),
             fld(T.city, "city")
           ),
           fld(T.linkedin, "linkedin_url", { placeholder: "https://linkedin.com/in/..." }),
           fld(T.website, "website_url"),
           fld(T.github, "github_url"),
-          fld(T.lang, "preferred_lang", { select: [{v:"pt",l:"Português"},{v:"es",l:"Español"},{v:"fr",l:"Français"},{v:"en",l:"English"}] })
+          fld(T.lang, "preferred_lang", { select: [{v:"pt",l:"🇵🇹 Português"},{v:"es",l:"🇪🇸 Español"},{v:"fr",l:"🇫🇷 Français"},{v:"en",l:"🇬🇧 English"}] })
         ),
         2: () => React.createElement("div", null,
-          React.createElement("h2", { style: { fontSize: 20, fontWeight: 700, marginBottom: 18 } }, T.s2t),
           fld(T.exp, "expertise", { required: true, placeholder: "Machine Learning, Python, Computer Vision" }),
-          React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 } },
+          React.createElement("div", { style: { display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 14 } },
             fld(T.years, "years_experience", { type: "number" }),
             fld(T.role, "job_title")
           ),
@@ -3869,45 +3922,87 @@ const renderMarkdown = (md) => {
           fld(T.teach, "teaching_experience", { textarea: true, rows: 4 })
         ),
         3: () => React.createElement("div", null,
-          React.createElement("h2", { style: { fontSize: 20, fontWeight: 700, marginBottom: 18 } }, T.s3t),
           fld(T.ctitle, "proposed_course_title", { required: true }),
           fld(T.cdesc, "proposed_course_description", { required: true, textarea: true, rows: 3 }),
-          React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 } },
+          React.createElement("div", { style: { display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 14 } },
             fld(T.cformat, "proposed_course_format", { select: [{v:"",l:"—"},{v:"self_paced",l:T.fmt_self},{v:"cohort",l:T.fmt_cohort},{v:"live_workshop",l:T.fmt_live},{v:"hybrid",l:T.fmt_hybrid}] }),
-            fld(T.clang, "proposed_course_language", { select: [{v:"",l:"—"},{v:"pt",l:"PT"},{v:"es",l:"ES"},{v:"fr",l:"FR"},{v:"en",l:"EN"}] })
+            fld(T.clang, "proposed_course_language", { select: [{v:"",l:"—"},{v:"pt",l:"🇵🇹 PT"},{v:"es",l:"🇪🇸 ES"},{v:"fr",l:"🇫🇷 FR"},{v:"en",l:"🇬🇧 EN"}] })
           ),
           fld(T.ctarget, "proposed_target_audience"),
           fld(T.coutline, "proposed_course_outline", { textarea: true, rows: 6, placeholder: "1. Fundamentos | conceito A, conceito B\n2. Aplicação prática | exercício 1, exercício 2" }),
-          React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 } },
+          React.createElement("div", { style: { display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 14 } },
             fld(T.cdur, "proposed_course_duration", { placeholder: "6 semanas, 4h total..." }),
             fld(T.cprice, "proposed_course_price_eur", { type: "number", placeholder: "99" })
           )
         ),
         4: () => React.createElement("div", null,
-          React.createElement("h2", { style: { fontSize: 20, fontWeight: 700, marginBottom: 18 } }, T.s4t),
           fld(T.demo, "demo_video_url"),
           fld(T.sample, "sample_lesson_url"),
           fld(T.portf, "portfolio_links_text", { textarea: true, rows: 3, placeholder: "https://...\nhttps://..." }),
           fld(T.refs, "references_text", { textarea: true, rows: 3 })
         )
       };
-      return React.createElement("div", { style: { background: "var(--surface)", minHeight: "calc(100vh - 60px)" } },
-        React.createElement("div", { style: { maxWidth: 720, margin: "0 auto", padding: "48px clamp(20px,5vw,32px) 80px" } },
-          React.createElement("button", { onClick: () => { setView("home"); window.scrollTo(0,0); }, style: { background: "none", border: "1px solid var(--border)", padding: "6px 12px", borderRadius: 8, fontSize:14, color: "var(--ink3)", cursor: "pointer", marginBottom: 24, fontFamily: "var(--font)" } }, "← " + ({pt:"Voltar",es:"Volver",fr:"Retour",en:"Back"}[langKey] || "Back")),
-          React.createElement("div", { style: { marginBottom: 24 } },
-            React.createElement("div", { style: { fontSize:13, color: "var(--blue)", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 6 } }, T.step + " " + appStep + " " + T.of + " " + totalSteps),
-            React.createElement("h1", { style: { fontSize: "clamp(26px,3.5vw,36px)", fontWeight: 700, letterSpacing: "-0.03em", marginBottom: 6 } }, T.title),
-            React.createElement("p", { style: { fontSize:16, color: "var(--ink3)" } }, T.sub)
-          ),
-          React.createElement("div", { style: { height: 4, background: "rgba(0,0,0,.06)", borderRadius: 2, marginBottom: 24, overflow: "hidden" } },
-            React.createElement("div", { style: { height: "100%", width: (appStep / totalSteps * 100) + "%", background: "var(--blue)", transition: "width .3s" } })
-          ),
-          React.createElement("div", { style: { background: "#fff", borderRadius: 14, padding: 24, border: "1px solid rgba(0,0,0,.06)" } },
-            (screens[appStep] || screens[1])(),
-            appError && React.createElement("div", { style: { padding: "10px 14px", borderRadius: 8, background: "#FEE2E2", color: "#991B1B", fontSize:15, marginTop: 12 } }, appError),
-            React.createElement("div", { style: { display: "flex", justifyContent: "space-between", marginTop: 24, paddingTop: 20, borderTop: "1px solid rgba(0,0,0,.06)" } },
-              appStep > 1 ? React.createElement("button", { onClick: () => { setAppStep(s => s - 1); setAppError(""); }, style: { padding: "10px 20px", borderRadius: 10, background: "transparent", color: "var(--ink2)", border: "1px solid var(--border)", fontSize:15, fontWeight: 500, cursor: "pointer", fontFamily: "var(--font)" } }, "← " + T.back) : React.createElement("div"),
-              appStep < totalSteps ? React.createElement("button", { onClick: () => { setAppStep(s => s + 1); setAppError(""); }, style: { padding: "10px 22px", borderRadius: 10, background: "var(--blue)", color: "#fff", border: "none", fontSize:15, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font)" } }, T.next + " →") : React.createElement("button", { onClick: submit, disabled: appSubmitting, style: { padding: "11px 24px", borderRadius: 10, background: appSubmitting ? "#86868B" : "#16A34A", color: "#fff", border: "none", fontSize:15, fontWeight: 600, cursor: appSubmitting ? "wait" : "pointer", fontFamily: "var(--font)" } }, appSubmitting ? T.submitting : T.submit)
+      
+      return React.createElement("div", { style: { background: "var(--surface2)", minHeight: "calc(100vh - 76px)" } },
+        // Hero section with gradient
+        React.createElement("div", { style: { background: "var(--gradient-soft)", borderBottom: "1px solid var(--border)", padding: "72px clamp(20px,5vw,40px) 64px" } },
+          React.createElement("div", { style: { maxWidth: 800, margin: "0 auto" } },
+            React.createElement("button", { onClick: () => { setView("home"); window.scrollTo(0,0); }, onMouseEnter: e => e.currentTarget.style.background = "rgba(255,255,255,.7)", onMouseLeave: e => e.currentTarget.style.background = "rgba(255,255,255,.5)", style: { background: "rgba(255,255,255,.5)", backdropFilter: "blur(8px)", border: "1px solid var(--border)", padding: "9px 16px", borderRadius: 10, fontSize: 14, fontWeight: 500, color: "var(--ink2)", cursor: "pointer", marginBottom: 32, fontFamily: "var(--font)", transition: "all .15s", display: "inline-flex", alignItems: "center", gap: 6 } }, "← " + ({pt:"Voltar ao site",es:"Volver al sitio",fr:"Retour au site",en:"Back to site"}[langKey] || "Back")),
+            React.createElement("div", { style: { fontSize: 13, fontWeight: 700, color: "var(--blue)", textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 14, display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 14px", borderRadius: 980, background: "rgba(255,255,255,.7)", backdropFilter: "blur(8px)" } }, "✨ " + T.heroEyebrow),
+            React.createElement("h1", { style: { fontSize: "clamp(36px,5vw,56px)", fontWeight: 800, letterSpacing: "-0.04em", lineHeight: 1.1, marginBottom: 18, color: "var(--ink)" } }, 
+              T.heroTitle, " ",
+              React.createElement("span", { style: { background: "var(--gradient-primary)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" } }, T.heroTitleAccent)),
+            React.createElement("p", { style: { fontSize: 18, color: "var(--ink3)", lineHeight: 1.6, maxWidth: 640 } }, T.heroSub),
+            
+            // Benefits grid
+            React.createElement("div", { style: { display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)", gap: 16, marginTop: 40 } },
+              [["🌍", T.b1, T.b1s], ["💰", T.b2, T.b2s], ["🚀", T.b3, T.b3s]].map(([icon, title, sub], i) => 
+                React.createElement("div", { key: i, style: { background: "rgba(255,255,255,.7)", backdropFilter: "blur(8px)", borderRadius: 16, padding: 22, border: "1px solid var(--border)" } },
+                  React.createElement("div", { style: { fontSize: 32, marginBottom: 10 } }, icon),
+                  React.createElement("div", { style: { fontSize: 16, fontWeight: 700, color: "var(--ink)", marginBottom: 4 } }, title),
+                  React.createElement("div", { style: { fontSize: 14, color: "var(--ink3)", lineHeight: 1.5 } }, sub)
+                )
+              )
+            )
+          )
+        ),
+        
+        // Form section
+        React.createElement("div", { style: { padding: "56px clamp(20px,5vw,40px) 100px" } },
+          React.createElement("div", { style: { maxWidth: 760, margin: "0 auto" } },
+            // Stepper
+            React.createElement("div", { style: { marginBottom: 32 } },
+              React.createElement("div", { style: { display: "flex", gap: isMobile ? 6 : 12, marginBottom: 24, flexWrap: isMobile ? "wrap" : "nowrap" } },
+                stepInfo.map((s, i) => {
+                  const num = i + 1;
+                  const isActive = num === appStep;
+                  const isDone = num < appStep;
+                  return React.createElement("div", { key: i, style: { flex: 1, minWidth: isMobile ? 80 : 0, display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 8 } },
+                    React.createElement("div", { style: { height: 4, width: "100%", borderRadius: 2, background: isActive || isDone ? "var(--gradient-primary)" : "var(--surface4)", transition: "background .3s" } }),
+                    React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 6 } },
+                      React.createElement("div", { style: { width: 24, height: 24, borderRadius: "50%", background: isActive ? "var(--gradient-primary)" : isDone ? "var(--green)" : "var(--surface3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: isActive || isDone ? "#fff" : "var(--ink4)" } }, isDone ? "✓" : num),
+                      React.createElement("span", { style: { fontSize: 13, fontWeight: 600, color: isActive ? "var(--ink)" : "var(--ink4)" } }, isMobile ? "" : s.t)
+                    )
+                  );
+                })
+              )
+            ),
+            
+            // Step header
+            React.createElement("div", { style: { marginBottom: 28 } },
+              React.createElement("div", { style: { fontSize: 13, fontWeight: 700, color: "var(--blue)", textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 8 } }, T.step + " " + appStep + " " + T.of + " " + totalSteps),
+              React.createElement("h2", { style: { fontSize: "clamp(26px,3vw,32px)", fontWeight: 700, letterSpacing: "-0.03em", marginBottom: 6, color: "var(--ink)", display: "flex", alignItems: "center", gap: 12 } }, stepInfo[appStep-1].i, " ", stepInfo[appStep-1].t),
+              React.createElement("p", { style: { fontSize: 16, color: "var(--ink3)" } }, stepInfo[appStep-1].d)
+            ),
+            
+            // Form card
+            React.createElement("div", { style: { background: "#fff", borderRadius: 20, padding: isMobile ? 24 : 36, border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" } },
+              (screens[appStep] || screens[1])(),
+              appError && React.createElement("div", { style: { padding: "14px 18px", borderRadius: 12, background: "#FEE2E2", color: "#991B1B", fontSize: 15, marginTop: 16, border: "1px solid #FCA5A5", fontWeight: 500 } }, "⚠️ " + appError),
+              React.createElement("div", { style: { display: "flex", justifyContent: "space-between", gap: 12, marginTop: 32, paddingTop: 24, borderTop: "1px solid var(--border)" } },
+                appStep > 1 ? React.createElement("button", { onClick: () => { setAppStep(s => s - 1); setAppError(""); window.scrollTo(0,0); }, onMouseEnter: e => e.currentTarget.style.background = "var(--surface3)", onMouseLeave: e => e.currentTarget.style.background = "transparent", style: { padding: "12px 22px", borderRadius: 12, background: "transparent", color: "var(--ink2)", border: "1.5px solid var(--border2)", fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font)", transition: "all .15s" } }, "← " + T.back) : React.createElement("div"),
+                appStep < totalSteps ? React.createElement("button", { onClick: () => { setAppStep(s => s + 1); setAppError(""); window.scrollTo(0,0); }, onMouseEnter: e => e.currentTarget.style.transform = "translateY(-1px)", onMouseLeave: e => e.currentTarget.style.transform = "translateY(0)", style: { padding: "13px 28px", borderRadius: 12, background: "var(--gradient-primary)", color: "#fff", border: "none", fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font)", boxShadow: "0 4px 14px rgba(59,130,246,.3)", transition: "all .15s" } }, T.next + " →") : React.createElement("button", { onClick: submit, disabled: appSubmitting, onMouseEnter: e => { if (!appSubmitting) e.currentTarget.style.transform = "translateY(-1px)"; }, onMouseLeave: e => e.currentTarget.style.transform = "translateY(0)", style: { padding: "13px 28px", borderRadius: 12, background: appSubmitting ? "var(--ink4)" : "linear-gradient(135deg,#10B981 0%,#059669 100%)", color: "#fff", border: "none", fontSize: 15, fontWeight: 600, cursor: appSubmitting ? "wait" : "pointer", fontFamily: "var(--font)", boxShadow: appSubmitting ? "none" : "0 4px 14px rgba(16,185,129,.3)", transition: "all .15s" } }, appSubmitting ? T.submitting : "✓ " + T.submit)
+              )
             )
           )
         )
@@ -4191,20 +4286,104 @@ const renderMarkdown = (md) => {
     const PubCourses = () => {
       const T = TL();
       const pub = localizedCourses.filter(c=>c.pub);
-      return React.createElement("div",{style:{maxWidth:1200,margin:"0 auto",
-    padding:"48px clamp(16px,4vw,48px) 80px"}},
-    React.createElement("style",null,GLOBAL_CSS+anim),
-    React.createElement("div",{style:{marginBottom:36}},
-      React.createElement("h1",{style:{fontSize:"clamp(24px,4vw,40px)",fontWeight:700,
-        letterSpacing:"-0.04em",color:"var(--ink)",marginBottom:8}},T.nav.courses),
-      React.createElement("p",{style:{fontSize:15,color:"var(--ink3)"}},
-        pub.length+" "+{pt:"cursos disponíveis",es:"cursos disponibles",
-          fr:"cours disponibles",en:"courses available"}[_lang||"pt"])
-    ),
-    React.createElement("div",{style:{display:"grid",
-      gridTemplateColumns:"repeat(auto-fill,minmax(clamp(260px,28vw,300px),1fr))",gap:20}},
-      pub.map((c,i)=>React.createElement(Card,{key:c.id,c,d:i*40}))
-    )
+      const [searchTerm, setSearchTerm] = React.useState("");
+      const [catFilter, setCatFilter] = React.useState("all");
+      const [levelFilter, setLevelFilter] = React.useState("all");
+      const [sortBy, setSortBy] = React.useState("featured");
+      
+      const cats = Array.from(new Set(pub.map(c => c.cat).filter(Boolean)));
+      const levels = Array.from(new Set(pub.map(c => c.lv).filter(Boolean)));
+      
+      let filtered = pub.filter(c => {
+        if (catFilter !== "all" && c.cat !== catFilter) return false;
+        if (levelFilter !== "all" && c.lv !== levelFilter) return false;
+        if (searchTerm) {
+          const q = searchTerm.toLowerCase();
+          return (c.title || "").toLowerCase().includes(q) || (c.sub || "").toLowerCase().includes(q) || (c.cat || "").toLowerCase().includes(q);
+        }
+        return true;
+      });
+      
+      if (sortBy === "price-asc") filtered = [...filtered].sort((a,b) => (a.price || 0) - (b.price || 0));
+      else if (sortBy === "price-desc") filtered = [...filtered].sort((a,b) => (b.price || 0) - (a.price || 0));
+      else if (sortBy === "newest") filtered = [...filtered].sort((a,b) => (b.id || 0) - (a.id || 0));
+      
+      const labels = {pt:{ available:"cursos disponíveis", search:"Procurar cursos...", all:"Todos", allCats:"Todas as categorias", allLevels:"Todos os níveis", filter:"Filtros", sortFeatured:"Em destaque", sortNewest:"Mais recentes", sortPriceAsc:"Preço: menor primeiro", sortPriceDesc:"Preço: maior primeiro", noResults:"Nenhum curso encontrado", noResultsSub:"Tenta ajustar os filtros ou pesquisa." },
+                     es:{ available:"cursos disponibles", search:"Buscar cursos...", all:"Todos", allCats:"Todas las categorías", allLevels:"Todos los niveles", filter:"Filtros", sortFeatured:"Destacados", sortNewest:"Más recientes", sortPriceAsc:"Precio: menor primero", sortPriceDesc:"Precio: mayor primero", noResults:"Sin resultados", noResultsSub:"Intenta ajustar los filtros." },
+                     fr:{ available:"cours disponibles", search:"Rechercher des cours...", all:"Tous", allCats:"Toutes les catégories", allLevels:"Tous les niveaux", filter:"Filtres", sortFeatured:"En vedette", sortNewest:"Plus récents", sortPriceAsc:"Prix : croissant", sortPriceDesc:"Prix : décroissant", noResults:"Aucun cours trouvé", noResultsSub:"Ajustez les filtres ou la recherche." },
+                     en:{ available:"courses available", search:"Search courses...", all:"All", allCats:"All categories", allLevels:"All levels", filter:"Filters", sortFeatured:"Featured", sortNewest:"Newest", sortPriceAsc:"Price: low to high", sortPriceDesc:"Price: high to low", noResults:"No courses found", noResultsSub:"Try adjusting filters or search." }}[_lang||"pt"] || {};
+      
+      return React.createElement(React.Fragment, null,
+        React.createElement("style", null, GLOBAL_CSS + anim),
+        
+        // Hero section with gradient
+        React.createElement("section", { style: { background: "var(--gradient-soft)", borderBottom: "1px solid var(--border)", padding: "72px clamp(20px,5vw,48px) 56px", position: "relative", overflow: "hidden" } },
+          React.createElement("div", { style: { position: "absolute", top: "-10%", right: "-5%", width: "30vw", height: "30vw", maxWidth: 400, maxHeight: 400, background: "radial-gradient(circle, rgba(59,130,246,.1) 0%, transparent 65%)", pointerEvents: "none", borderRadius: "50%" } }),
+          React.createElement("div", { style: { maxWidth: 1200, margin: "0 auto", position: "relative" } },
+            React.createElement("div", { style: { fontSize: 13, fontWeight: 700, color: "var(--blue)", textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 14, display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 14px", borderRadius: 980, background: "rgba(255,255,255,.7)", backdropFilter: "blur(8px)" } }, "📚 " + (T.featured?.eyebrow || "Catálogo")),
+            React.createElement("h1", { style: { fontSize: "clamp(36px,5vw,56px)", fontWeight: 800, letterSpacing: "-0.04em", color: "var(--ink)", marginBottom: 14, lineHeight: 1.1 } }, T.nav.courses),
+            React.createElement("p", { style: { fontSize: 18, color: "var(--ink3)", lineHeight: 1.6, maxWidth: 560 } }, pub.length + " " + labels.available + ". " + (T.features_sub || ""))
+          )
+        ),
+        
+        // Main content with filters
+        React.createElement("div", { style: { maxWidth: 1280, margin: "0 auto", padding: "40px clamp(20px,5vw,48px) 80px" } },
+          // Filters bar
+          React.createElement("div", { style: { display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center", marginBottom: 28, padding: 16, background: "#fff", borderRadius: 16, border: "1px solid var(--border)", boxShadow: "var(--shadow-xs)" } },
+            React.createElement("div", { style: { position: "relative", flex: isMobile ? "1 1 100%" : "1 1 300px", minWidth: 200 } },
+              React.createElement("span", { style: { position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", fontSize: 16, color: "var(--ink4)", pointerEvents: "none" } }, "🔍"),
+              React.createElement("input", {
+                type: "text", value: searchTerm, onChange: e => setSearchTerm(e.target.value),
+                placeholder: labels.search,
+                onFocus: e => { e.target.style.borderColor = "var(--blue)"; e.target.style.boxShadow = "0 0 0 4px rgba(59,130,246,.12)"; },
+                onBlur: e => { e.target.style.borderColor = "var(--border2)"; e.target.style.boxShadow = "none"; },
+                style: { width: "100%", padding: "11px 14px 11px 42px", borderRadius: 10, border: "1.5px solid var(--border2)", fontSize: 15, fontFamily: "var(--font)", outline: "none", boxSizing: "border-box", transition: "all .15s", background: "var(--surface2)" }
+              })
+            ),
+            React.createElement("select", {
+              value: catFilter, onChange: e => setCatFilter(e.target.value),
+              style: { padding: "11px 14px", borderRadius: 10, border: "1.5px solid var(--border2)", fontSize: 15, fontFamily: "var(--font)", cursor: "pointer", background: "var(--surface2)", color: "var(--ink)", outline: "none", fontWeight: 500 }
+            },
+              React.createElement("option", { value: "all" }, labels.allCats),
+              cats.map(c => React.createElement("option", { key: c, value: c }, c))
+            ),
+            React.createElement("select", {
+              value: levelFilter, onChange: e => setLevelFilter(e.target.value),
+              style: { padding: "11px 14px", borderRadius: 10, border: "1.5px solid var(--border2)", fontSize: 15, fontFamily: "var(--font)", cursor: "pointer", background: "var(--surface2)", color: "var(--ink)", outline: "none", fontWeight: 500 }
+            },
+              React.createElement("option", { value: "all" }, labels.allLevels),
+              levels.map(l => React.createElement("option", { key: l, value: l }, l))
+            ),
+            React.createElement("select", {
+              value: sortBy, onChange: e => setSortBy(e.target.value),
+              style: { padding: "11px 14px", borderRadius: 10, border: "1.5px solid var(--border2)", fontSize: 15, fontFamily: "var(--font)", cursor: "pointer", background: "var(--surface2)", color: "var(--ink)", outline: "none", fontWeight: 500, marginLeft: isMobile ? 0 : "auto" }
+            },
+              React.createElement("option", { value: "featured" }, labels.sortFeatured),
+              React.createElement("option", { value: "newest" }, labels.sortNewest),
+              React.createElement("option", { value: "price-asc" }, labels.sortPriceAsc),
+              React.createElement("option", { value: "price-desc" }, labels.sortPriceDesc)
+            )
+          ),
+          
+          // Active filters chips
+          (catFilter !== "all" || levelFilter !== "all" || searchTerm) && React.createElement("div", { style: { display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" } },
+            searchTerm && React.createElement("button", { onClick: () => setSearchTerm(""), style: { padding: "6px 12px", borderRadius: 980, background: "var(--blue-xs)", color: "var(--blue)", border: "1px solid rgba(59,130,246,.3)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font)" } }, "🔍 \"" + searchTerm + "\" ✕"),
+            catFilter !== "all" && React.createElement("button", { onClick: () => setCatFilter("all"), style: { padding: "6px 12px", borderRadius: 980, background: "var(--blue-xs)", color: "var(--blue)", border: "1px solid rgba(59,130,246,.3)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font)" } }, catFilter + " ✕"),
+            levelFilter !== "all" && React.createElement("button", { onClick: () => setLevelFilter("all"), style: { padding: "6px 12px", borderRadius: 980, background: "var(--blue-xs)", color: "var(--blue)", border: "1px solid rgba(59,130,246,.3)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font)" } }, levelFilter + " ✕")
+          ),
+          
+          // Results count
+          React.createElement("div", { style: { fontSize: 15, color: "var(--ink3)", marginBottom: 24 } }, filtered.length + " " + labels.available),
+          
+          // Grid or empty state
+          filtered.length === 0 ? React.createElement("div", { style: { padding: "80px 24px", textAlign: "center", background: "#fff", borderRadius: 20, border: "1px solid var(--border)" } },
+            React.createElement("div", { style: { fontSize: 48, marginBottom: 16 } }, "🔍"),
+            React.createElement("h3", { style: { fontSize: 22, fontWeight: 700, color: "var(--ink)", marginBottom: 8 } }, labels.noResults),
+            React.createElement("p", { style: { fontSize: 16, color: "var(--ink3)" } }, labels.noResultsSub)
+          ) : React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(clamp(280px, 30vw, 320px), 1fr))", gap: 24 } },
+            filtered.map((c, i) => React.createElement(Card, { key: c.id, c, d: i * 30 }))
+          )
+        )
       );
     };
 
