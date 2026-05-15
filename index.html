@@ -3827,7 +3827,7 @@ const renderMarkdown = (md) => {
           transition: "all .15s"
         };
         return React.createElement("div", { style: { marginBottom: 18 } },
-          React.createElement("label", { style: { display: "block", fontSize: 14, fontWeight: 600, color: "var(--ink2)", marginBottom: 8, letterSpacing: "-0.01em" } }, label + (opts.required ? React.createElement("span", { style: { color: "var(--red)", marginLeft: 4 } }, "*") : "")),
+          React.createElement("label", { style: { display: "block", fontSize: 14, fontWeight: 600, color: "var(--ink2)", marginBottom: 8, letterSpacing: "-0.01em" } }, label, opts.required ? React.createElement("span", { style: { color: "var(--red)", marginLeft: 4 } }, "*") : null),
           opts.textarea ? React.createElement("textarea", {
             value: appData[key] || "",
             onChange: e => set(key, e.target.value),
