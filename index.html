@@ -3819,13 +3819,13 @@ const renderMarkdown = (md) => {
         const inputStyle = {
           width: "100%", padding: "14px 18px",
           borderRadius: 12,
-          border: "1.5px solid var(--border2)",
+          border: "2px solid #E2E8F0",
           fontSize: 16, fontFamily: "var(--font)",
           outline: "none", boxSizing: "border-box",
           color: "var(--ink)",
-          background: "var(--surface2)",
+          background: "#FFFFFF",
           transition: "all .15s",
-          boxShadow: "inset 0 1px 2px rgba(15,23,42,.03)"
+          fontWeight: 500
         };
         return React.createElement("div", { style: { marginBottom: 18 } },
           React.createElement("label", { style: { display: "block", fontSize: 14, fontWeight: 600, color: "var(--ink2)", marginBottom: 8, letterSpacing: "-0.01em" } }, label, opts.required ? React.createElement("span", { style: { color: "var(--red)", marginLeft: 4 } }, "*") : null),
@@ -3834,22 +3834,22 @@ const renderMarkdown = (md) => {
             onChange: e => set(key, e.target.value),
             placeholder: opts.placeholder || "",
             rows: opts.rows || 3,
-            onFocus: e => { e.target.style.borderColor = "var(--blue)"; e.target.style.background = "#fff"; e.target.style.boxShadow = "0 0 0 4px rgba(59,130,246,.15), inset 0 1px 2px rgba(15,23,42,.02)"; },
-            onBlur: e => { e.target.style.borderColor = "var(--border2)"; e.target.style.background = "var(--surface2)"; e.target.style.boxShadow = "inset 0 1px 2px rgba(15,23,42,.03)"; },
+            onFocus: e => { e.target.style.borderColor = "var(--blue)"; e.target.style.boxShadow = "0 0 0 4px rgba(59,130,246,.12)"; },
+            onBlur: e => { e.target.style.borderColor = "#E2E8F0"; e.target.style.boxShadow = "none"; },
             style: Object.assign({}, inputStyle, { resize: "vertical", minHeight: 90 })
           }) : opts.select ? React.createElement("select", {
             value: appData[key] || "",
             onChange: e => set(key, e.target.value),
-            onFocus: e => { e.target.style.borderColor = "var(--blue)"; e.target.style.background = "#fff"; e.target.style.boxShadow = "0 0 0 4px rgba(59,130,246,.15)"; },
-            onBlur: e => { e.target.style.borderColor = "var(--border2)"; e.target.style.background = "var(--surface2)"; e.target.style.boxShadow = "inset 0 1px 2px rgba(15,23,42,.03)"; },
+            onFocus: e => { e.target.style.borderColor = "var(--blue)"; e.target.style.boxShadow = "0 0 0 4px rgba(59,130,246,.12)"; },
+            onBlur: e => { e.target.style.borderColor = "#E2E8F0"; e.target.style.boxShadow = "none"; },
             style: Object.assign({}, inputStyle, { cursor: "pointer" })
           }, opts.select.map(o => React.createElement("option", { key: o.v, value: o.v }, o.l))) : React.createElement("input", {
             type: opts.type || "text",
             value: appData[key] || "",
             onChange: e => set(key, e.target.value),
             placeholder: opts.placeholder || "",
-            onFocus: e => { e.target.style.borderColor = "var(--blue)"; e.target.style.background = "#fff"; e.target.style.boxShadow = "0 0 0 4px rgba(59,130,246,.15), inset 0 1px 2px rgba(15,23,42,.02)"; },
-            onBlur: e => { e.target.style.borderColor = "var(--border2)"; e.target.style.background = "var(--surface2)"; e.target.style.boxShadow = "inset 0 1px 2px rgba(15,23,42,.03)"; },
+            onFocus: e => { e.target.style.borderColor = "var(--blue)"; e.target.style.boxShadow = "0 0 0 4px rgba(59,130,246,.12)"; },
+            onBlur: e => { e.target.style.borderColor = "#E2E8F0"; e.target.style.boxShadow = "none"; },
             style: inputStyle
           })
         );
@@ -4003,12 +4003,12 @@ const renderMarkdown = (md) => {
             ),
             
             // Form card
-            React.createElement("div", { style: { background: "#fff", borderRadius: 20, padding: isMobile ? 24 : 36, border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" } },
+            React.createElement("div", { style: { background: "#FFFFFF", borderRadius: 20, padding: isMobile ? 24 : 36, border: "1px solid #E2E8F0", boxShadow: "0 4px 24px rgba(15,23,42,.04), 0 1px 3px rgba(15,23,42,.05)" } },
               (screens[appStep] || screens[1])(),
               appError && React.createElement("div", { style: { padding: "14px 18px", borderRadius: 12, background: "#FEE2E2", color: "#991B1B", fontSize: 15, marginTop: 16, border: "1px solid #FCA5A5", fontWeight: 500 } }, "⚠️ " + appError),
               React.createElement("div", { style: { display: "flex", justifyContent: "space-between", gap: 12, marginTop: 32, paddingTop: 24, borderTop: "1px solid var(--border)" } },
-                appStep > 1 ? React.createElement("button", { onClick: () => { setAppStep(s => s - 1); setAppError(""); window.scrollTo(0,0); }, onMouseEnter: e => e.currentTarget.style.background = "var(--surface3)", onMouseLeave: e => e.currentTarget.style.background = "transparent", style: { padding: "12px 22px", borderRadius: 12, background: "transparent", color: "var(--ink2)", border: "1.5px solid var(--border2)", fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font)", transition: "all .15s" } }, "← " + T.back) : React.createElement("div"),
-                appStep < totalSteps ? React.createElement("button", { onClick: () => { setAppStep(s => s + 1); setAppError(""); window.scrollTo(0,0); }, onMouseEnter: e => e.currentTarget.style.transform = "translateY(-1px)", onMouseLeave: e => e.currentTarget.style.transform = "translateY(0)", style: { padding: "13px 28px", borderRadius: 12, background: "var(--gradient-primary)", color: "#fff", border: "none", fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font)", boxShadow: "0 4px 14px rgba(59,130,246,.3)", transition: "all .15s" } }, T.next + " →") : React.createElement("button", { onClick: submit, disabled: appSubmitting, onMouseEnter: e => { if (!appSubmitting) e.currentTarget.style.transform = "translateY(-1px)"; }, onMouseLeave: e => e.currentTarget.style.transform = "translateY(0)", style: { padding: "13px 28px", borderRadius: 12, background: appSubmitting ? "var(--ink4)" : "linear-gradient(135deg,#10B981 0%,#059669 100%)", color: "#fff", border: "none", fontSize: 15, fontWeight: 600, cursor: appSubmitting ? "wait" : "pointer", fontFamily: "var(--font)", boxShadow: appSubmitting ? "none" : "0 4px 14px rgba(16,185,129,.3)", transition: "all .15s" } }, appSubmitting ? T.submitting : "✓ " + T.submit)
+                appStep > 1 ? React.createElement("button", { onClick: () => { setAppStep(s => s - 1); setAppError(""); window.scrollTo(0,0); }, onMouseEnter: e => { e.currentTarget.style.background = "#F1F5F9"; e.currentTarget.style.borderColor = "#94A3B8"; }, onMouseLeave: e => { e.currentTarget.style.background = "#FFFFFF"; e.currentTarget.style.borderColor = "#E2E8F0"; }, style: { padding: "14px 28px", borderRadius: 12, background: "#FFFFFF", color: "var(--ink)", border: "2px solid #E2E8F0", fontSize: 16, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font)", transition: "all .15s", minWidth: 140 } }, "← " + T.back) : React.createElement("div"),
+                appStep < totalSteps ? React.createElement("button", { onClick: () => { setAppStep(s => s + 1); setAppError(""); window.scrollTo(0,0); }, onMouseEnter: e => e.currentTarget.style.transform = "translateY(-2px)", onMouseLeave: e => e.currentTarget.style.transform = "translateY(0)", style: { padding: "14px 32px", borderRadius: 12, background: "linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%)", backgroundColor: "#3B82F6", color: "#FFFFFF", border: "none", fontSize: 16, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font)", boxShadow: "0 6px 20px rgba(59,130,246,.35)", transition: "all .2s", minWidth: 160, letterSpacing: "-0.01em" } }, T.next + " →") : React.createElement("button", { onClick: submit, disabled: appSubmitting, onMouseEnter: e => { if (!appSubmitting) e.currentTarget.style.transform = "translateY(-2px)"; }, onMouseLeave: e => e.currentTarget.style.transform = "translateY(0)", style: { padding: "14px 32px", borderRadius: 12, background: appSubmitting ? "#94A3B8" : "linear-gradient(135deg, #10B981 0%, #059669 100%)", backgroundColor: appSubmitting ? "#94A3B8" : "#10B981", color: "#FFFFFF", border: "none", fontSize: 16, fontWeight: 700, cursor: appSubmitting ? "wait" : "pointer", fontFamily: "var(--font)", boxShadow: appSubmitting ? "none" : "0 6px 20px rgba(16,185,129,.35)", transition: "all .2s", minWidth: 200, letterSpacing: "-0.01em" } }, appSubmitting ? T.submitting : "✓ " + T.submit)
               )
             )
           )
