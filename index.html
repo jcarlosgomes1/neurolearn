@@ -1481,7 +1481,7 @@ const renderMarkdown = (md) => {
         lessons.forEach(l => { if (!mGrp[l.mt])
             mGrp[l.mt] = []; mGrp[l.mt].push(l); });
         return (React.createElement("div", { style: { position: "fixed", inset: 0, background: "rgba(0,0,0,.5)", backdropFilter: "blur(8px)", zIndex: 400, display: "flex" }, onClick: () => setCoursePreview(null) },
-            React.createElement("div", { style: { background: "#FBFBFD", width: "100%", maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", height: "100vh" }, onClick: e => e.stopPropagation() },
+            React.createElement("div", { style: { background: "#FBFBFD", width: "100%", maxWidth: 1200, margin: "0 auto", display: "flex", flexDirection: "column", height: "100vh" }, onClick: e => e.stopPropagation() },
                 React.createElement("div", { style: { padding: "14px 24px", borderBottom: "0.5px solid rgba(0,0,0,.08)", display: "flex", alignItems: "center", gap: 14, background: "#fff", flexShrink: 0 } },
                     React.createElement("div", { style: { width: 36, height: 36, borderRadius: 10, background: `${c.color}20`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 } }, c.emoji),
                     React.createElement("div", { style: { flex: 1 } },
@@ -2505,7 +2505,7 @@ const renderMarkdown = (md) => {
         },
           React.createElement('div', {
             style: {
-              maxWidth: 1280, margin: '0 auto', height: '100%',
+              maxWidth: 1200, margin: '0 auto', height: '100%',
               padding: '0 clamp(20px,4vw,40px)',
               display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16
             }
@@ -3031,7 +3031,7 @@ const renderMarkdown = (md) => {
     React.createElement('section',{style:{
       padding:'80px clamp(20px,5vw,48px)',background:'var(--surface2)'
     }},
-      React.createElement('div',{style:{maxWidth:1100,margin:'0 auto'}},
+      React.createElement('div',{style:{maxWidth: 1200,margin:'0 auto'}},
         React.createElement('div',{style:{textAlign:'center',marginBottom:48}},
           React.createElement('h2',{style:{fontSize:'clamp(26px,4vw,42px)',fontWeight:700,
             letterSpacing:'-0.04em',color:'var(--ink)',margin:0}},T.test_title)
@@ -3117,7 +3117,7 @@ const renderMarkdown = (md) => {
       borderBottom:'1px solid var(--border)',
       padding:'clamp(32px,5vw,52px) clamp(20px,5vw,48px) clamp(28px,4vw,44px)'
     }},
-      React.createElement('div',{style:{maxWidth:1100,margin:'0 auto'}},
+      React.createElement('div',{style:{maxWidth: 1200,margin:'0 auto'}},
         React.createElement(BtnG,{size:'sm',onClick:()=>setView('courses'),
           style:{marginBottom:24}},T.back),
     
@@ -3202,7 +3202,7 @@ const renderMarkdown = (md) => {
     ),
 
     // Body
-    React.createElement('div',{style:{maxWidth:1100,margin:'0 auto',
+    React.createElement('div',{style:{maxWidth: 1200,margin:'0 auto',
       padding:'44px clamp(20px,5vw,48px) 80px',
       display:'grid',gridTemplateColumns:isMobile?'1fr':'1fr 300px',gap:48}},
   
@@ -3300,7 +3300,7 @@ const renderMarkdown = (md) => {
       };
   
       return React.createElement('div',{style:{
-    maxWidth:1100,margin:'0 auto',
+    maxWidth: 1200,margin:'0 auto',
     padding:'40px clamp(16px,4vw,40px) 80px'
       }},
     React.createElement('style',null,GLOBAL_CSS+anim),
@@ -3699,7 +3699,7 @@ const renderMarkdown = (md) => {
           return React.createElement("span", { style: { color: "#F59E0B", fontSize:14 } }, [1,2,3,4,5].map(n => n <= r ? "★" : (n - 0.5 === r ? "⯨" : "☆")).join(""));
         };
         return React.createElement("div", { style: { fontFamily: F, background: "#fff", minHeight: "calc(100vh - 60px)" } },
-          React.createElement("div", { style: { maxWidth: 1100, margin: "0 auto", padding: "48px clamp(20px,5vw,32px) 80px" } },
+          React.createElement("div", { style: { maxWidth: 1200, margin: "0 auto", padding: "48px clamp(20px,5vw,32px) 80px" } },
             React.createElement("button", { onClick: () => { setView("home"); window.scrollTo(0,0); }, style: { background: "none", border: "1px solid #E5E5EA", padding: "6px 12px", borderRadius: 8, fontSize:14, color: "#6E6E73", cursor: "pointer", marginBottom: 24, fontFamily: F } }, "← Voltar"),
             React.createElement("h1", { style: { fontSize: "clamp(28px,4vw,42px)", fontWeight: 700, letterSpacing: "-0.03em", marginBottom: 8 } }, "Os nossos instrutores"),
             React.createElement("p", { style: { fontSize: 15, color: "#6E6E73", marginBottom: 32, maxWidth: 560 } }, "Profissionais activos no mercado, todos validados por um processo de vetting rigoroso. Cada um traz experiência real e perspectiva única."),
@@ -3963,7 +3963,7 @@ const renderMarkdown = (md) => {
       return React.createElement("div", { style: { background: "var(--surface2)", minHeight: "calc(100vh - 76px)" } },
         // Hero section - clean and concise
         React.createElement("div", { style: { background: "var(--gradient-soft)", borderBottom: "1px solid var(--border)", padding: "48px clamp(20px,5vw,40px) 36px" } },
-          React.createElement("div", { style: { maxWidth: 760, margin: "0 auto" } },
+          React.createElement("div", { style: { maxWidth: 1200, margin: "0 auto" } },
             React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 12 } },
               React.createElement("button", { onClick: () => { setView("home"); window.scrollTo(0,0); }, onMouseEnter: e => e.currentTarget.style.background = "rgba(255,255,255,.95)", onMouseLeave: e => e.currentTarget.style.background = "rgba(255,255,255,.6)", style: { background: "rgba(255,255,255,.6)", backdropFilter: "blur(8px)", border: "1px solid var(--border)", padding: "8px 14px", borderRadius: 10, fontSize: 14, fontWeight: 500, color: "var(--ink2)", cursor: "pointer", fontFamily: "var(--font)", transition: "all .15s", display: "inline-flex", alignItems: "center", gap: 6 } }, "← " + ({pt:"Voltar",es:"Volver",fr:"Retour",en:"Back"}[langKey] || "Back")),
               React.createElement("div", { style: { fontSize: 12, fontWeight: 700, color: "var(--blue)", textTransform: "uppercase", letterSpacing: ".08em", display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 980, background: "rgba(255,255,255,.7)", backdropFilter: "blur(8px)" } }, "✨ " + T.heroEyebrow)
@@ -4335,7 +4335,7 @@ const renderMarkdown = (md) => {
         ),
         
         // Main content with filters
-        React.createElement("div", { style: { maxWidth: 1280, margin: "0 auto", padding: "40px clamp(20px,5vw,48px) 80px" } },
+        React.createElement("div", { style: { maxWidth: 1200, margin: "0 auto", padding: "40px clamp(20px,5vw,48px) 80px" } },
           // Filters bar
           React.createElement("div", { style: { display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center", marginBottom: 28, padding: 16, background: "#fff", borderRadius: 16, border: "1px solid var(--border)", boxShadow: "var(--shadow-xs)" } },
             React.createElement("div", { style: { position: "relative", flex: isMobile ? "1 1 100%" : "1 1 300px", minWidth: 200 } },
@@ -4397,7 +4397,7 @@ const renderMarkdown = (md) => {
 
     const Pricing = () => {
       const T = TL();
-      return React.createElement("div",{style:{maxWidth:960,margin:"0 auto",
+      return React.createElement("div",{style:{maxWidth:1200,margin:"0 auto",
     padding:"64px clamp(16px,4vw,48px) 80px"}},
     React.createElement("style",null,GLOBAL_CSS+anim),
     React.createElement("div",{style:{textAlign:"center",marginBottom:48}},
@@ -4517,7 +4517,7 @@ const renderMarkdown = (md) => {
     const Explore2 = () => {
       const pub = localizedCourses.filter(c=>c.pub);
       const T = TL();
-      return React.createElement("div",{style:{maxWidth:1100,margin:"0 auto",
+      return React.createElement("div",{style:{maxWidth: 1200,margin:"0 auto",
     padding:"40px clamp(16px,4vw,40px) 80px"}},
     React.createElement("style",null,GLOBAL_CSS+anim),
     React.createElement("h1",{style:{fontSize:"clamp(22px,3vw,32px)",fontWeight:700,
@@ -6332,7 +6332,7 @@ const renderMarkdown = (md) => {
             alert("✅ " + (instructor.display_name || "Instrutor") + " foi despromovido a aluno. Tem de fazer logout/login para ver a mudança.");
           } catch(e) { alert("Erro: " + (e.message || e)); }
         };
-        return React.createElement("div", { style: { maxWidth: 1100 } },
+        return React.createElement("div", { style: { maxWidth: 1200 } },
           React.createElement("h1", { style: { fontSize: 26, fontWeight: 700, marginBottom: 8 } }, "Instrutores"),
           React.createElement("p", { style: { fontSize:16, color: "#6E6E73", marginBottom: 24 } }, "Geriu instrutores, partilhas de receita e estados de aprovação."),
           loading ? React.createElement("div", { style: { padding: 40, textAlign: "center", color: "#86868B" } }, "A carregar...") :
@@ -6450,7 +6450,7 @@ const renderMarkdown = (md) => {
           } catch(e) { console.warn(e); }
           setLoading(false);
         })(); }, []);
-        return React.createElement("div", { style: { maxWidth: 1100 } },
+        return React.createElement("div", { style: { maxWidth: 1200 } },
           React.createElement("h1", { style: { fontSize: 26, fontWeight: 700, marginBottom: 8 } }, "Transacções"),
           React.createElement("p", { style: { fontSize:16, color: "#6E6E73", marginBottom: 24 } }, "Histórico de pagamentos. Sincronizado pelo webhook do Stripe."),
           React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 16, marginBottom: 24 } },
@@ -6617,7 +6617,7 @@ const renderMarkdown = (md) => {
         }
         const grouped = {};
         list.forEach(p => { if (!grouped[p.page_slug]) grouped[p.page_slug] = []; grouped[p.page_slug].push(p); });
-        return React.createElement("div", { style: { maxWidth: 1100 } },
+        return React.createElement("div", { style: { maxWidth: 1200 } },
           React.createElement("h1", { style: { fontSize: 26, fontWeight: 700, marginBottom: 8 } }, "Páginas Legais"),
           React.createElement("p", { style: { fontSize:16, color: "#6E6E73", marginBottom: 24 } }, "Edita páginas legais por slug e idioma. Os tokens de empresa são substituídos automaticamente em tempo de visualização."),
           loading ? React.createElement("div", { style: { padding: 40, textAlign: "center" } }, "A carregar...") :
@@ -6698,7 +6698,7 @@ const renderMarkdown = (md) => {
             (keyFilter === "all" || t.template_key === keyFilter)
         );
 
-        return React.createElement("div", { style: { padding: 28, maxWidth: 1100 } },
+        return React.createElement("div", { style: { padding: 28, maxWidth: 1200 } },
             React.createElement("div", { style: { marginBottom: 20 } },
                 React.createElement("h1", { style: { fontSize: 24, fontWeight: 600, color: "#1D1D1F", marginBottom: 4 } }, "Templates Email"),
                 React.createElement("p", { style: { color: "#86868B", fontSize:15 } }, "Editar emails automaticos da plataforma. Suporta variaveis: {name}, {course_title}, {certificate_url}, {amount}, {currency}, {date}, {site_url}, {reset_url}")),
@@ -6779,7 +6779,7 @@ const renderMarkdown = (md) => {
             (search === "" || (r.key||"").toLowerCase().includes(search.toLowerCase()) || (r.value||"").toLowerCase().includes(search.toLowerCase()))
         );
 
-        return React.createElement("div", { style: { padding: 28, maxWidth: 1100 } },
+        return React.createElement("div", { style: { padding: 28, maxWidth: 1200 } },
             React.createElement("div", { style: { marginBottom: 20 } },
                 React.createElement("h1", { style: { fontSize: 24, fontWeight: 600, color: "#1D1D1F", marginBottom: 4 } }, "Paginas Publicas"),
                 React.createElement("p", { style: { color: "#86868B", fontSize:15 } }, "Editar textos visiveis das paginas publicas. Alteracoes aplicam-se imediatamente.")),
@@ -6895,7 +6895,7 @@ const renderMarkdown = (md) => {
             (search === "" || (t.key||"").toLowerCase().includes(search.toLowerCase()) || (t.value||"").toLowerCase().includes(search.toLowerCase()))
         );
 
-        return React.createElement("div", { style: { padding: 28, maxWidth: 1100 } },
+        return React.createElement("div", { style: { padding: 28, maxWidth: 1200 } },
             React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 } },
                 React.createElement("div", null,
                     React.createElement("h1", { style: { fontSize: 24, fontWeight: 600, color: "#1D1D1F", marginBottom: 4 } }, "\uD83C\uDF10 " + (t("i18n.title")||"Traduções") + " (i18n)"),
@@ -7447,7 +7447,7 @@ const renderMarkdown = (md) => {
         view === "about" && React.createElement("div", { style: { background: "#FBFBFD" } },
             React.createElement("style", null, anim),
             React.createElement("div", { style: { background: "linear-gradient(135deg,#0071E308,#AF52DE06)", borderBottom: bd, padding: "72px clamp(16px,4vw,48px) 60px", textAlign: "center" } },
-                React.createElement("div", { style: { maxWidth: 700, margin: "0 auto" } },
+                React.createElement("div", { style: { maxWidth: 1200, margin: "0 auto" } },
                     React.createElement("div", { style: { display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 16px", borderRadius: 980, background: "rgba(0,113,227,.1)", color: "#0071E3", fontSize:14, fontWeight: 600, marginBottom: 20, letterSpacing: ".04em", textTransform: "uppercase" } }, "Sobre a NeuroLearn"),
                     React.createElement("h1", { style: { fontSize: "clamp(30px,5vw,48px)", fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1.1, marginBottom: 20 } },
                         "A plataforma de IA",
@@ -7457,7 +7457,7 @@ const renderMarkdown = (md) => {
                     React.createElement("div", { style: { display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" } },
                         React.createElement("button", { style: Object.assign(Object.assign({}, B(true)), { padding: "13px 32px" }), onClick: () => setView("courses") }, t("nav.courses","ui")||t("hero.cta_primary","ui")||"Explorar cursos"),
                         React.createElement("button", { style: Object.assign(Object.assign({}, B(false)), { padding: "13px 32px" }), onClick: () => goStuLogin() }, "Criar conta gr\u00E1tis")))),
-            React.createElement("div", { style: { maxWidth: 900, margin: "0 auto", padding: "48px clamp(16px,4vw,48px) 0" } },
+            React.createElement("div", { style: { maxWidth: 1200, margin: "0 auto", padding: "48px clamp(16px,4vw,48px) 0" } },
                 React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 14, marginBottom: 56 } }, [{ v: pub.length + "", l: "Cursos disponíveis", c: "#0071E3", e: "📚" }, { v: "15.000+", l: "Alunos formados", c: "#30D158", e: "👩‍🎓" }, { v: "4.8 / 5", l: "Avaliação média", c: "#FF9500", e: "⭐" }, { v: "100%", l: "Conteúdo em PT-PT", c: "#AF52DE", e: "🇵🇹" }, { v: "30h+", l: "Horas de conteúdo", c: "#FF375F", e: "⏱" }].map((s, i) => (React.createElement("div", { key: i, style: Object.assign(Object.assign({}, crd), { padding: "20px 18px", border: bd, textAlign: "center", animation: `fu .4s ease ${.1 + i * .06}s both` }) },
                     React.createElement("div", { style: { fontSize: 22, marginBottom: 6 } }, s.e),
                     React.createElement("div", { style: { fontSize: 26, fontWeight: 700, color: s.c, letterSpacing: "-0.02em" } }, s.v),
