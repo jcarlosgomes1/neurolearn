@@ -4016,6 +4016,134 @@ const renderMarkdown = (md) => {
         )
       );
     };
+    // ── FAQ ACCORDION ─────────────────────────────────────────────────
+    // Parses markdown structure '## Section\n**Q: ...**\nA: ...\n' into accordion
+    const FAQAccordion = ({ contentMd, lang }) => {
+      const [openId, setOpenId] = React.useState(null);
+      
+      // Parse content into sections with Q&A pairs
+      const sections = React.useMemo(() => {
+        if (!contentMd) return [];
+        const lines = contentMd.split(/\r?\n/);
+        const result = [];
+        let currentSection = null;
+        let currentQ = null;
+        let collectingAnswer = false;
+        
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          const trimmed = line.trim();
+          
+          // Section header ## Title
+          const secMatch = trimmed.match(/^##\s+(.+)$/);
+          if (secMatch) {
+            // Save pending question
+            if (currentQ && currentSection) {
+              currentSection.items.push(currentQ);
+              currentQ = null;
+            }
+            currentSection = { title: secMatch[1].trim(), items: [] };
+            result.push(currentSection);
+            collectingAnswer = false;
+            continue;
+          }
+          
+          // Question **Q: ...** (with or without colon variants)
+          const qMatch = trimmed.match(/^\*\*Q:\s*(.+?)\*\*$/);
+          if (qMatch && currentSection) {
+            if (currentQ) currentSection.items.push(currentQ);
+            currentQ = { q: qMatch[1].trim(), a: "" };
+            collectingAnswer = true;
+            continue;
+          }
+          
+          // Answer A: ...
+          const aMatch = trimmed.match(/^A:\s*(.+)$/);
+          if (aMatch && currentQ) {
+            currentQ.a = (currentQ.a ? currentQ.a + " " : "") + aMatch[1].trim();
+            continue;
+          }
+          
+          // Continuation of answer (non-empty, non-special line while collecting)
+          if (collectingAnswer && currentQ && trimmed && !trimmed.startsWith("##") && !trimmed.startsWith("**Q:")) {
+            currentQ.a = (currentQ.a ? currentQ.a + " " : "") + trimmed;
+          }
+        }
+        // Save last
+        if (currentQ && currentSection) currentSection.items.push(currentQ);
+        return result.filter(s => s.items.length > 0);
+      }, [contentMd]);
+      
+      // Fallback: if parser found nothing, render markdown
+      if (sections.length === 0) {
+        return React.createElement("div", { style: { color: "var(--ink2)", fontSize: 16, lineHeight: 1.7 } }, renderMarkdown(contentMd));
+      }
+      
+      const itemStyle = (isOpen) => ({
+        background: isOpen ? "var(--surface2)" : "#FFFFFF",
+        border: "1px solid " + (isOpen ? "var(--blue)" : "var(--border)"),
+        borderRadius: 14,
+        marginBottom: 10,
+        overflow: "hidden",
+        transition: "all .2s ease"
+      });
+      
+      return React.createElement("div", null,
+        sections.map((sec, si) => React.createElement("div", { key: si, style: { marginBottom: si < sections.length - 1 ? 32 : 0 } },
+          React.createElement("h2", {
+            style: {
+              fontSize: 20, fontWeight: 700, color: "var(--ink)",
+              marginBottom: 16, letterSpacing: "-0.02em",
+              paddingBottom: 8, borderBottom: "2px solid var(--border)"
+            }
+          }, sec.title),
+          sec.items.map((item, qi) => {
+            const id = si + "-" + qi;
+            const isOpen = openId === id;
+            return React.createElement("div", { key: qi, style: itemStyle(isOpen) },
+              React.createElement("button", {
+                onClick: () => setOpenId(isOpen ? null : id),
+                onMouseEnter: e => { if (!isOpen) e.currentTarget.style.background = "var(--surface2)"; },
+                onMouseLeave: e => { if (!isOpen) e.currentTarget.style.background = "transparent"; },
+                style: {
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                  width: "100%", textAlign: "left",
+                  background: "transparent", border: "none", cursor: "pointer",
+                  padding: "16px 20px", gap: 16,
+                  fontFamily: "var(--font)", fontSize: 16,
+                  fontWeight: isOpen ? 600 : 500,
+                  color: "var(--ink)",
+                  transition: "all .2s ease"
+                }
+              },
+                React.createElement("span", { style: { flex: 1, lineHeight: 1.4 } }, item.q),
+                React.createElement("span", {
+                  style: {
+                    width: 28, height: 28, borderRadius: 8,
+                    background: isOpen ? "var(--blue)" : "var(--surface3)",
+                    color: isOpen ? "#FFFFFF" : "var(--ink2)",
+                    display: "inline-flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 20, fontWeight: 300, lineHeight: 1,
+                    flexShrink: 0,
+                    transform: isOpen ? "rotate(45deg)" : "rotate(0deg)",
+                    transition: "all .25s cubic-bezier(.22,1,.36,1)"
+                  }
+                }, "+")
+              ),
+              isOpen && React.createElement("div", {
+                style: {
+                  padding: "0 20px 18px 20px",
+                  fontSize: 15, lineHeight: 1.65,
+                  color: "var(--ink2)",
+                  animation: "fadeIn .25s ease"
+                }
+              }, renderMarkdown(item.a))
+            );
+          })
+        ))
+      );
+    };
+
     const LegalPage = ({ slug, fallbackTitle }) => {
       const langKey = _lang || "pt";
       const page = (legalPagesCache[slug] || {})[langKey] || (legalPagesCache[slug] || {}).pt || (legalPagesCache[slug] || {}).en;
@@ -4058,6 +4186,7 @@ const renderMarkdown = (md) => {
                 React.createElement("p", { style: { fontSize: 16, color: "var(--ink3)", lineHeight: 1.65 } }, ({pt:"Esta página ainda não foi configurada.",es:"Esta página aún no está configurada.",fr:"Cette page n'a pas encore été configurée.",en:"This page has not been configured yet."}[langKey] || "Not yet configured."))
               ) : React.createElement("div", null,
                 page.last_updated_label && React.createElement("p", { style: { fontSize: 14, color: "var(--ink4)", marginBottom: 28, fontWeight: 500 } }, ({pt:"Última atualização: ",es:"Última actualización: ",fr:"Dernière mise à jour: ",en:"Last updated: "}[langKey] || "") + page.last_updated_label),
+                slug === "faq" ? React.createElement(FAQAccordion, { contentMd: renderTokens(page.content_md), lang: langKey }) :
                 React.createElement("div", { style: { color: "var(--ink2)", fontSize: 16, lineHeight: 1.7 } }, renderMarkdown(renderTokens(page.content_md)))
               )
             )
