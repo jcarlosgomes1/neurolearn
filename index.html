@@ -4775,7 +4775,7 @@ const renderMarkdown = (md) => {
           const isActive = aView === item.id;
           return React.createElement("button", {
             key: item.id,
-            onClick: () => setAView(item.id),
+            onClick: () => { setAView(item.id); setMobileMenuOpen(false); },
             onMouseEnter: e => { if (!isActive) { e.currentTarget.style.background = "var(--surface2)"; } },
             onMouseLeave: e => { if (!isActive) { e.currentTarget.style.background = "transparent"; } },
             style: {
