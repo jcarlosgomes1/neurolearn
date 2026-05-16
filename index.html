@@ -4722,13 +4722,13 @@ const renderMarkdown = (md) => {
       width: 256,
       background: "#FFFFFF",
       borderRight: "1px solid rgba(15,23,42,.06)",
-      minHeight: "100vh",
+      height: "100vh",
       position: "fixed",
-      left: 0, top: 0,
+      left: 0, top: 0, bottom: 0,
       zIndex: 50,
       display: "flex",
       flexDirection: "column",
-      overflowY: "auto"
+      overflow: "hidden"
     }
   },
     // Brand header
@@ -4736,7 +4736,8 @@ const renderMarkdown = (md) => {
       style: {
         padding: "20px 20px 18px",
         borderBottom: "1px solid rgba(15,23,42,.06)",
-        background: "linear-gradient(180deg, #FAFBFC 0%, #FFFFFF 100%)"
+        background: "linear-gradient(180deg, #FAFBFC 0%, #FFFFFF 100%)",
+        flexShrink: 0
       }
     },
       React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 11 } },
@@ -4762,7 +4763,7 @@ const renderMarkdown = (md) => {
     
     // Menu groups
     React.createElement("nav", {
-      style: { flex: 1, padding: "16px 12px", overflowY: "auto" }
+      style: { flex: 1, padding: "16px 12px", overflowY: "auto", minHeight: 0, WebkitOverflowScrolling: "touch" }
     },
       groups.map(g => React.createElement("div", { key: g, style: { marginBottom: 16 } },
         React.createElement("div", {
@@ -4816,7 +4817,8 @@ const renderMarkdown = (md) => {
       style: {
         padding: "12px 16px 16px",
         borderTop: "1px solid rgba(15,23,42,.06)",
-        background: "var(--surface2)"
+        background: "var(--surface2)",
+        flexShrink: 0
       }
     },
       React.createElement("button", {
@@ -7265,12 +7267,15 @@ const renderMarkdown = (md) => {
             // Sidebar (desktop)
             !isMobile && ASide(),
             
-            // Mobile menu drawer
+            // Mobile menu drawer (sobrepoe-se ao site, ASide é o conteudo)
             isMobile && mobileMenuOpen && React.createElement("div", {
               onClick: () => setMobileMenuOpen(false),
               style: { position: "fixed", inset: 0, zIndex: 100, background: "rgba(15,23,42,.45)", backdropFilter: "blur(6px)" }
             },
-              React.createElement("div", { onClick: e => e.stopPropagation(), style: { position: "fixed", left: 0, top: 0, bottom: 0, width: 280, background: "#fff", boxShadow: "0 10px 30px rgba(0,0,0,.15)" } }, ASide())
+              React.createElement("div", {
+                onClick: e => e.stopPropagation(),
+                style: { position: "absolute", left: 0, top: 0, bottom: 0, width: 280, background: "#fff", boxShadow: "0 10px 30px rgba(0,0,0,.15)" }
+              }, ASide())
             ),
             
             // Main area with top bar
