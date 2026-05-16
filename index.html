@@ -3964,8 +3964,7 @@ const renderMarkdown = (md) => {
         // Hero section - clean and concise
         React.createElement("div", { style: { background: "var(--gradient-soft)", borderBottom: "1px solid var(--border)", padding: "48px clamp(20px,5vw,40px) 36px" } },
           React.createElement("div", { style: { maxWidth: 1200, margin: "0 auto" } },
-            React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 12 } },
-              React.createElement("button", { onClick: () => { setView("home"); window.scrollTo(0,0); }, onMouseEnter: e => e.currentTarget.style.background = "rgba(255,255,255,.95)", onMouseLeave: e => e.currentTarget.style.background = "rgba(255,255,255,.6)", style: { background: "rgba(255,255,255,.6)", backdropFilter: "blur(8px)", border: "1px solid var(--border)", padding: "8px 14px", borderRadius: 10, fontSize: 14, fontWeight: 500, color: "var(--ink2)", cursor: "pointer", fontFamily: "var(--font)", transition: "all .15s", display: "inline-flex", alignItems: "center", gap: 6 } }, "← " + ({pt:"Voltar",es:"Volver",fr:"Retour",en:"Back"}[langKey] || "Back")),
+            React.createElement("div", { style: { display: "inline-flex", marginBottom: 20 } },
               React.createElement("div", { style: { fontSize: 12, fontWeight: 700, color: "var(--blue)", textTransform: "uppercase", letterSpacing: ".08em", display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 980, background: "rgba(255,255,255,.7)", backdropFilter: "blur(8px)" } }, "✨ " + T.heroEyebrow)
             ),
             React.createElement("h1", { style: { fontSize: "clamp(28px,4vw,42px)", fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1.15, marginBottom: 12, color: "var(--ink)" } }, 
@@ -4020,20 +4019,47 @@ const renderMarkdown = (md) => {
       const langKey = _lang || "pt";
       const page = (legalPagesCache[slug] || {})[langKey] || (legalPagesCache[slug] || {}).pt || (legalPagesCache[slug] || {}).en;
       const isLoaded = Object.keys(legalPagesCache).length > 0;
-      return React.createElement("div", { style: { background: "var(--surface)", minHeight: "calc(100vh - 60px)" } },
-        React.createElement("div", { style: { maxWidth: 760, margin: "0 auto", padding: "48px clamp(20px,5vw,32px) 80px" } },
-          React.createElement("button", {
-            onClick: () => { setView("home"); window.scrollTo(0,0); },
-            style: { background: "none", border: "1px solid var(--border)", color: "var(--ink3)", borderRadius: 8, padding: "6px 12px", fontSize:15, cursor: "pointer", marginBottom: 24, fontFamily: "var(--font)" }
-          }, "← " + ({pt:"Início",es:"Inicio",fr:"Accueil",en:"Home"}[langKey] || "Home")),
-          !isLoaded ? React.createElement("div", { style: { padding: 40, textAlign: "center", color: "var(--ink4)" } }, "...") :
-          !page ? React.createElement("div", null,
-            React.createElement("h1", { style: { fontSize: 26, fontWeight: 700, marginBottom: 12 } }, fallbackTitle || slug),
-            React.createElement("p", { style: { color: "var(--ink3)" } }, ({pt:"Esta página ainda não foi configurada.",es:"Esta página aún no está configurada.",fr:"Cette page n'a pas encore été configurée.",en:"This page has not been configured yet."}[langKey] || "Not yet configured."))
-          ) : React.createElement("div", null,
-            React.createElement("h1", { style: { fontSize: "clamp(28px,4vw,40px)", fontWeight: 700, letterSpacing: "-0.03em", marginBottom: 8, color: "var(--ink)" } }, page.title),
-            page.last_updated_label && React.createElement("p", { style: { fontSize:14, color: "var(--ink4)", marginBottom: 32 } }, ({pt:"Última atualização: ",es:"Última actualización: ",fr:"Dernière mise à jour: ",en:"Last updated: "}[langKey] || "") + page.last_updated_label),
-            React.createElement("div", { style: { color: "var(--ink2)" } }, renderMarkdown(renderTokens(page.content_md)))
+      const titleByLang = {
+        privacy: { pt: "Privacidade", en: "Privacy", es: "Privacidad", fr: "Confidentialité" },
+        terms: { pt: "Termos", en: "Terms", es: "Términos", fr: "Conditions" },
+        refunds: { pt: "Reembolsos", en: "Refunds", es: "Reembolsos", fr: "Remboursements" },
+        cookies: { pt: "Cookies", en: "Cookies", es: "Cookies", fr: "Cookies" },
+        "legal-notice": { pt: "Aviso Legal", en: "Legal Notice", es: "Aviso Legal", fr: "Mentions Légales" },
+        faq: { pt: "Perguntas Frequentes", en: "FAQ", es: "Preguntas Frecuentes", fr: "Questions Fréquentes" },
+        about: { pt: "Sobre", en: "About", es: "Acerca", fr: "À propos" }
+      };
+      const heroTitle = (titleByLang[slug] && titleByLang[slug][langKey]) || (page && page.title) || fallbackTitle || slug;
+      const subtitleByLang = {
+        privacy: { pt: "Como tratamos os teus dados.", en: "How we handle your data.", es: "Cómo tratamos tus datos.", fr: "Comment nous traitons vos données." },
+        terms: { pt: "Termos de utilização da plataforma.", en: "Platform terms of use.", es: "Términos de uso de la plataforma.", fr: "Conditions d'utilisation." },
+        refunds: { pt: "A nossa política de reembolsos.", en: "Our refund policy.", es: "Nuestra política de reembolsos.", fr: "Notre politique de remboursement." },
+        cookies: { pt: "Como usamos cookies.", en: "How we use cookies.", es: "Cómo usamos cookies.", fr: "Comment nous utilisons les cookies." },
+        "legal-notice": { pt: "Informações legais.", en: "Legal information.", es: "Información legal.", fr: "Informations légales." },
+        faq: { pt: "Respostas às dúvidas mais comuns.", en: "Answers to common questions.", es: "Respuestas a las dudas más comunes.", fr: "Réponses aux questions courantes." },
+        about: { pt: "Conhece a NeuroLearn.", en: "Get to know NeuroLearn.", es: "Conoce NeuroLearn.", fr: "Découvrez NeuroLearn." }
+      };
+      const heroSubtitle = (subtitleByLang[slug] && subtitleByLang[slug][langKey]) || "";
+      
+      return React.createElement("div", { style: { background: "var(--surface2)", minHeight: "calc(100vh - 76px)" } },
+        // Hero — mesma linguagem da home/apply
+        React.createElement("section", { style: { background: "var(--gradient-soft)", borderBottom: "1px solid var(--border)", padding: "56px clamp(20px,5vw,40px) 44px" } },
+          React.createElement("div", { style: { maxWidth: 1200, margin: "0 auto" } },
+            React.createElement("h1", { style: { fontSize: "clamp(32px,4.5vw,48px)", fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1.1, marginBottom: 10, color: "var(--ink)" } }, heroTitle),
+            heroSubtitle && React.createElement("p", { style: { fontSize: 17, color: "var(--ink3)", lineHeight: 1.55, maxWidth: 680 } }, heroSubtitle)
+          )
+        ),
+        // Conteúdo em card
+        React.createElement("div", { style: { padding: "40px clamp(20px,5vw,40px) 80px" } },
+          React.createElement("div", { style: { maxWidth: 1200, margin: "0 auto" } },
+            React.createElement("div", { style: { background: "#FFFFFF", borderRadius: 20, padding: "clamp(28px,4vw,48px)", border: "1px solid var(--border)", boxShadow: "0 4px 24px rgba(15,23,42,.04), 0 1px 3px rgba(15,23,42,.05)", maxWidth: 840, margin: "0 auto" } },
+              !isLoaded ? React.createElement("div", { style: { padding: 40, textAlign: "center", color: "var(--ink4)", fontSize: 15 } }, "A carregar...") :
+              !page ? React.createElement("div", null,
+                React.createElement("p", { style: { fontSize: 16, color: "var(--ink3)", lineHeight: 1.65 } }, ({pt:"Esta página ainda não foi configurada.",es:"Esta página aún no está configurada.",fr:"Cette page n'a pas encore été configurée.",en:"This page has not been configured yet."}[langKey] || "Not yet configured."))
+              ) : React.createElement("div", null,
+                page.last_updated_label && React.createElement("p", { style: { fontSize: 14, color: "var(--ink4)", marginBottom: 28, fontWeight: 500 } }, ({pt:"Última atualização: ",es:"Última actualización: ",fr:"Dernière mise à jour: ",en:"Last updated: "}[langKey] || "") + page.last_updated_label),
+                React.createElement("div", { style: { color: "var(--ink2)", fontSize: 16, lineHeight: 1.7 } }, renderMarkdown(renderTokens(page.content_md)))
+              )
+            )
           )
         )
       );
