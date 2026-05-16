@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>NeuroLearn — Plataforma de Cursos de IA</title>
   <meta name="description" content="Aprende IA. Transforma o futuro."/>
-  <style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}#root{min-height:100vh}
+  <style>*{margin:0;padding:0;box-sizing:border-box}html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;overflow-x:hidden;max-width:100vw}#root{min-height:100vh;overflow-x:hidden;max-width:100vw}
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
   <script>
@@ -1220,6 +1220,7 @@ const renderMarkdown = (md) => {
     }, []);
     const isMobile = windowWidth < 768;
     const isTablet = windowWidth >= 768 && windowWidth < 1024;
+    const isCompactNav = windowWidth < 900; // navbar usa hamburger até 900px (mais defensivo)
     const dm = darkMode;
     const bg1 = dm ? "#1C1C1E" : "#FBFBFD";
     const bg2 = dm ? "#2C2C2E" : "#fff";
@@ -2494,7 +2495,7 @@ const renderMarkdown = (md) => {
         React.createElement('nav', {
           style: {
             position: 'sticky', top: 0, zIndex: 200,
-            height: isMobile ? 64 : 76,
+            height: isCompactNav ? 64 : 76,
             background: navScrolled ? 'rgba(255,255,255,.92)' : 'rgba(255,255,255,.75)',
             backdropFilter: 'saturate(180%) blur(24px)',
             WebkitBackdropFilter: 'saturate(180%) blur(24px)',
@@ -2528,7 +2529,7 @@ const renderMarkdown = (md) => {
               }, 'NeuroLearn')
             ),
 
-            !isMobile && React.createElement('div', {
+            !isCompactNav && React.createElement('div', {
               style: { display: 'flex', gap: 4, alignItems: 'center', flex: 1, justifyContent: 'center' }
             },
               navLinks.map(([k, l]) => {
@@ -2571,7 +2572,7 @@ const renderMarkdown = (md) => {
             React.createElement('div', {
               style: { display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }
             },
-              !isMobile && React.createElement('select', {
+              !isCompactNav && React.createElement('select', {
                 value: _lang, onChange: e => setLang(e.target.value),
                 style: {
                   padding: '8px 12px', borderRadius: 10,
@@ -2598,18 +2599,18 @@ const renderMarkdown = (md) => {
                   onMouseLeave: e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--surface2)'; }
                 },
                   React.createElement(Av, { name: curStu.name, size: 30, color: 'var(--blue)' }),
-                  !isMobile && React.createElement('span', {
+                  !isCompactNav && React.createElement('span', {
                     style: { fontSize: 15, fontWeight: 600, color: 'var(--ink)' }
                   }, curStu.name.split(' ')[0])
                 ),
-                !isMobile && (curStu.role === 'instructor' || curStu.role === 'admin' || curStu.role === 'super_admin') && React.createElement('button', {
+                !isCompactNav && (curStu.role === 'instructor' || curStu.role === 'admin' || curStu.role === 'super_admin') && React.createElement('button', {
                   onClick: () => setZone('instructor'),
                   title: 'Zona Instrutor',
                   style: { padding: '9px 14px', borderRadius: 10, background: 'transparent', border: '1px solid var(--border)', cursor: 'pointer', fontSize: 17, fontFamily: 'var(--font)', transition: 'all .15s' },
                   onMouseEnter: e => e.currentTarget.style.background = 'var(--surface2)',
                   onMouseLeave: e => e.currentTarget.style.background = 'transparent'
                 }, '👨‍🏫'),
-                !isMobile && (curStu.role === 'admin' || curStu.role === 'super_admin') && React.createElement('button', {
+                !isCompactNav && (curStu.role === 'admin' || curStu.role === 'super_admin') && React.createElement('button', {
                   onClick: () => setZone('admin'),
                   title: 'Zona Admin',
                   style: { padding: '9px 14px', borderRadius: 10, background: 'transparent', border: '1px solid var(--border)', cursor: 'pointer', fontSize: 17, fontFamily: 'var(--font)', transition: 'all .15s' },
@@ -2617,7 +2618,7 @@ const renderMarkdown = (md) => {
                   onMouseLeave: e => e.currentTarget.style.background = 'transparent'
                 }, '⚙')
               ) : React.createElement(React.Fragment, null,
-                !isMobile && React.createElement('button', {
+                !isCompactNav && React.createElement('button', {
                   onClick: goStuLogin,
                   onMouseEnter: e => e.currentTarget.style.color = 'var(--ink)',
                   onMouseLeave: e => e.currentTarget.style.color = 'var(--ink2)',
@@ -2628,7 +2629,7 @@ const renderMarkdown = (md) => {
                     transition: 'color .15s'
                   }
                 }, T.nav.login),
-                !isMobile && React.createElement('button', {
+                !isCompactNav && React.createElement('button', {
                   onClick: goStuLogin,
                   onMouseEnter: e => e.currentTarget.style.transform = 'translateY(-1px)',
                   onMouseLeave: e => e.currentTarget.style.transform = 'translateY(0)',
@@ -2644,7 +2645,7 @@ const renderMarkdown = (md) => {
                 }, T.nav.cta)
               ),
 
-              isMobile && React.createElement('button', {
+              isCompactNav && React.createElement('button', {
                 onClick: () => setMobileMenuOpen(!mobileMenuOpen),
                 style: {
                   background: mobileMenuOpen ? 'var(--surface3)' : 'transparent',
@@ -2659,7 +2660,7 @@ const renderMarkdown = (md) => {
           )
         ),
 
-        isMobile && mobileMenuOpen && React.createElement('div', {
+        isCompactNav && mobileMenuOpen && React.createElement('div', {
           onClick: closeMenu,
           style: {
             position: 'fixed', top: 64, left: 0, right: 0, bottom: 0, zIndex: 199,
@@ -7276,7 +7277,7 @@ const renderMarkdown = (md) => {
             React.createElement("div", { style: { marginLeft: isMobile ? 0 : 256, minHeight: "100vh", display: "flex", flexDirection: "column" } },
               
               // Top bar
-              React.createElement("header", { style: { position: "sticky", top: 0, zIndex: 50, background: "rgba(255,255,255,.95)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(15,23,42,.06)", height: 64, display: "flex", alignItems: "center", padding: "0 clamp(16px,3vw,28px)", gap: 12 } },
+              React.createElement("header", { style: { position: "sticky", top: 0, zIndex: 50, background: "rgba(255,255,255,.95)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(15,23,42,.06)", height: 64, display: "flex", alignItems: "center", padding: "0 clamp(12px,3vw,28px)", gap: 10 } },
                 // Mobile hamburger
                 isMobile && React.createElement("button", {
                   onClick: () => setMobileMenuOpen(true),
@@ -7284,11 +7285,11 @@ const renderMarkdown = (md) => {
                 }, "☰"),
                 
                 // Breadcrumb
-                React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 0 } },
-                  React.createElement("span", { style: { fontSize: 13, color: "var(--ink4)", fontWeight: 500 } }, "Admin"),
-                  React.createElement("span", { style: { color: "var(--ink5)" } }, "/"),
-                  React.createElement("span", { style: { fontSize: 15, fontWeight: 600, color: "var(--ink)" } }, (function() {
-                    const titles = { dashboard: "Dashboard", courses: "Cursos", students: "Alunos", analytics: "Analytics", evals: "Avaliações", adminNotifs: "Notificações", agent: "AI Agent", promote: "Promover Instrutor", instructors: "Instrutores", transactions: "Transacções", legal_pages: "Páginas Legais", i18n: "Traduções", public_content: "Páginas Públicas", emails: "Templates Email", config: "Empresa", settings: "Definições" };
+                React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 0, overflow: "hidden" } },
+                  !isMobile && React.createElement("span", { style: { fontSize: 13, color: "var(--ink4)", fontWeight: 500, flexShrink: 0 } }, "Admin"),
+                  !isMobile && React.createElement("span", { style: { color: "var(--ink5)", flexShrink: 0 } }, "/"),
+                  React.createElement("span", { style: { fontSize: 15, fontWeight: 600, color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 } }, (function() {
+                    const titles = { dashboard: "Dashboard", courses: "Cursos", students: "Alunos", analytics: "Analytics", evals: "Avaliações", adminNotifs: "Notificações", agent: "AI Agent", promote: "Promover", instructors: "Instrutores", transactions: "Transacções", legal_pages: "Legais", i18n: "Traduções", public_content: "Páginas", emails: "Emails", config: "Empresa", settings: "Definições" };
                     return titles[aView] || "Dashboard";
                   })())
                 ),
@@ -7298,10 +7299,11 @@ const renderMarkdown = (md) => {
                   // View site button
                   React.createElement("button", {
                     onClick: () => { setZone("public"); setView("home"); window.scrollTo(0,0); },
+                    title: "Ver site",
                     onMouseEnter: e => { e.currentTarget.style.background = "var(--surface3)"; e.currentTarget.style.borderColor = "var(--ink5)"; },
                     onMouseLeave: e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(15,23,42,.1)"; },
-                    style: { display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 10, background: "#fff", border: "1px solid rgba(15,23,42,.1)", fontSize: 14, fontWeight: 500, color: "var(--ink2)", cursor: "pointer", fontFamily: "var(--font)", transition: "all .15s" }
-                  }, "🌐 ", !isMobile && "Site"),
+                    style: { display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: isMobile ? "0" : "8px 14px", width: isMobile ? 40 : "auto", height: isMobile ? 40 : "auto", borderRadius: 10, background: "#fff", border: "1px solid rgba(15,23,42,.1)", fontSize: isMobile ? 18 : 14, fontWeight: 500, color: "var(--ink2)", cursor: "pointer", fontFamily: "var(--font)", transition: "all .15s", flexShrink: 0 }
+                  }, isMobile ? "🌐" : React.createElement(React.Fragment, null, "🌐 ", "Site")),
                   
                   // User avatar pill
                   curStu && React.createElement("div", { style: { display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 14px 5px 5px", borderRadius: 980, background: "var(--surface2)", border: "1px solid rgba(15,23,42,.06)" } },
@@ -7312,7 +7314,7 @@ const renderMarkdown = (md) => {
               ),
               
               // Content area
-              React.createElement("main", { style: { flex: 1, padding: "clamp(20px,3vw,32px)", minHeight: "calc(100vh - 64px)" } },
+              React.createElement("main", { style: { flex: 1, padding: "clamp(16px,3vw,32px)", minHeight: "calc(100vh - 64px)", overflowX: "hidden", minWidth: 0 } },
                 aView === "dashboard" && ADash(),
                 aView === "courses" && ACourses(),
                 aView === "students" && AStudents(),
