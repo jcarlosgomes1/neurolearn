@@ -6846,140 +6846,272 @@ slug === "faq" ? renderFAQAccordion(renderTokens(page.content_md)) :
                             React.createElement("div", { style: { fontSize:14, padding: 12, background: "#FAFAFA", borderRadius: 8, maxHeight: 150, overflow: "auto", fontFamily: "monospace" } }, tpl.body_html && tpl.body_html.length > 500 ? tpl.body_html.substring(0, 500) + "..." : tpl.body_html))))));
     }, []);
 
-        // Admin: edit nl_home_blocks (stats, features, testimonials, pricing, cta, footer)
+        // Admin: editor visual de nl_home_blocks (forms por tipo, sem JSON cru)
         const AHomeBlocks = React.useCallback(() => {
-          const [blocks, setBlocks] = React.useState([]);
+          const [blocks, setBlocks] = React.useState({});
           const [loading, setLoading] = React.useState(true);
           const [langFilter, setLangFilter] = React.useState("pt");
-          const [editing, setEditing] = React.useState(null);
-          const [editJson, setEditJson] = React.useState("");
+          const [drafts, setDrafts] = React.useState({});
+          const [savingKey, setSavingKey] = React.useState("");
           const [msg, setMsg] = React.useState("");
-          const [jsonError, setJsonError] = React.useState("");
-          
+
           const refresh = async () => {
             setLoading(true);
             try {
-              const { data } = await window._SB.from("nl_home_blocks")
-                .select("slug, lang, data, updated_at")
-                .order("slug").order("lang");
-              setBlocks(data || []);
+              const { data } = await window._SB.from("nl_home_blocks").select("slug, lang, data, updated_at");
+              const grouped = {};
+              (data || []).forEach(r => {
+                if (!grouped[r.slug]) grouped[r.slug] = {};
+                grouped[r.slug][r.lang] = r.data;
+              });
+              setBlocks(grouped);
             } catch(e) { console.error(e); }
             setLoading(false);
           };
-          
           React.useEffect(() => { refresh(); }, []);
-          
-          const startEdit = (row) => {
-            setEditing(row.slug + ":" + row.lang);
-            setEditJson(JSON.stringify(row.data, null, 2));
-            setJsonError("");
+
+          const getDraft = (slug) => {
+            const k = slug + ":" + langFilter;
+            if (drafts[k] !== undefined) return drafts[k];
+            return (blocks[slug] && blocks[slug][langFilter]) || null;
           };
-          
-          const saveEdit = async (slug, lang) => {
-            let parsed;
-            try {
-              parsed = JSON.parse(editJson);
-            } catch(e) {
-              setJsonError("JSON inválido: " + e.message);
-              return;
-            }
+          const setDraft = (slug, data) => {
+            setDrafts(d => Object.assign({}, d, { [slug + ":" + langFilter]: data }));
+          };
+          const isDirty = (slug) => {
+            const k = slug + ":" + langFilter;
+            if (drafts[k] === undefined) return false;
+            return JSON.stringify(drafts[k]) !== JSON.stringify((blocks[slug] || {})[langFilter] || null);
+          };
+
+          const save = async (slug) => {
+            const draft = getDraft(slug);
+            if (!draft) return;
+            setSavingKey(slug);
             try {
               const { error } = await window._SB.from("nl_home_blocks")
-                .update({ data: parsed, updated_at: new Date().toISOString() })
-                .eq("slug", slug).eq("lang", lang);
+                .update({ data: draft, updated_at: new Date().toISOString() })
+                .eq("slug", slug).eq("lang", langFilter);
               if (error) throw error;
-              setEditing(null);
-              setMsg("✅ Bloco actualizado");
-              setTimeout(() => setMsg(""), 2500);
-              await refresh();
+              // Refrescar estado
+              setBlocks(b => {
+                const nb = Object.assign({}, b);
+                if (!nb[slug]) nb[slug] = {};
+                nb[slug] = Object.assign({}, nb[slug], { [langFilter]: draft });
+                return nb;
+              });
+              setDrafts(d => { const nd = Object.assign({}, d); delete nd[slug + ":" + langFilter]; return nd; });
+              setMsg("✅ " + slug + " guardado");
+              setTimeout(() => setMsg(""), 2200);
             } catch(e) {
-              setMsg("❌ " + (e.message || "Erro"));
+              setMsg("❌ " + (e.message || "erro"));
             }
+            setSavingKey("");
           };
+
+          // ── Componentes de input reutilizáveis ──
+          const lblStyle = { display: "block", fontSize: 12, fontWeight: 700, color: "var(--ink4)", textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 6 };
+          const inputStyle = { width: "100%", padding: "10px 12px", borderRadius: 8, border: "1.5px solid var(--border2)", fontSize: 14, fontFamily: "var(--font)", outline: "none", boxSizing: "border-box", background: "#fff" };
+          const taStyle = Object.assign({}, inputStyle, { minHeight: 70, resize: "vertical", lineHeight: 1.5 });
+
+          const Field = ({ label, value, onChange, area, placeholder }) => React.createElement("div", { style: { marginBottom: 12 } },
+            React.createElement("label", { style: lblStyle }, label),
+            area ?
+              React.createElement("textarea", { value: value || "", onChange: e => onChange(e.target.value), placeholder: placeholder || "", style: taStyle })
+              : React.createElement("input", { type: "text", value: value || "", onChange: e => onChange(e.target.value), placeholder: placeholder || "", style: inputStyle })
+          );
           
-          const filtered = blocks.filter(b => b.lang === langFilter);
-          const slugs = ["stats", "features", "testimonials", "cta_section", "pricing_header", "plans", "footer_brand"];
-          
-          return React.createElement("div", { style: { maxWidth: 1200, margin: "0 auto" } },
-            React.createElement("style", null, GLOBAL_CSS),
-            React.createElement("h1", { style: { fontSize: 28, fontWeight: 700, color: "var(--ink)", marginBottom: 8, letterSpacing: "-0.02em" } }, "Blocos da Home"),
-            React.createElement("p", { style: { fontSize: 15, color: "var(--ink3)", marginBottom: 24 } }, "Edita o conteúdo dos blocos da página inicial: stats, features, testemunhos, planos, CTA e brand. Cada bloco existe em 4 línguas."),
+          const NumField = ({ label, value, onChange }) => React.createElement("div", { style: { marginBottom: 12 } },
+            React.createElement("label", { style: lblStyle }, label),
+            React.createElement("input", { type: "number", value: value !== undefined ? value : "", onChange: e => onChange(e.target.value === "" ? "" : Number(e.target.value)), style: inputStyle })
+          );
+
+          // ── Renderers por slug ──
+          const renderStats = (data) => {
+            const items = (data && data.items) || [];
+            return React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 } },
+              items.map((it, i) => React.createElement("div", { key: i, style: { border: "1px solid var(--border)", borderRadius: 12, padding: 14, background: "var(--surface2)" } },
+                React.createElement("div", { style: { fontSize: 11, fontWeight: 700, color: "var(--ink4)", marginBottom: 8 } }, "Stat " + (i + 1)),
+                Field({ label: "Valor (ex: 12k+, 4.8★)", value: it.v, onChange: v => {
+                  const next = JSON.parse(JSON.stringify(data));
+                  next.items[i].v = v;
+                  setDraft("stats", next);
+                }}),
+                Field({ label: "Etiqueta", value: it.l, onChange: v => {
+                  const next = JSON.parse(JSON.stringify(data));
+                  next.items[i].l = v;
+                  setDraft("stats", next);
+                }})
+              ))
+            );
+          };
+
+          const renderListWithHeader = (slug, data, fields) => {
+            const items = (data && data.items) || [];
+            const cloneAndSet = (mut) => {
+              const next = JSON.parse(JSON.stringify(data || { items: [] }));
+              if (!next.items) next.items = [];
+              mut(next);
+              setDraft(slug, next);
+            };
+            const moveItem = (i, dir) => cloneAndSet(d => {
+              const j = i + dir;
+              if (j < 0 || j >= d.items.length) return;
+              const tmp = d.items[i]; d.items[i] = d.items[j]; d.items[j] = tmp;
+            });
+            const removeItem = (i) => cloneAndSet(d => { d.items.splice(i, 1); });
+            const addItem = () => cloneAndSet(d => {
+              const blank = {};
+              fields.forEach(f => { blank[f.key] = f.type === "number" ? 0 : ""; });
+              d.items.push(blank);
+            });
             
-            // Lang filter pills
-            React.createElement("div", { style: { display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" } },
+            const headerKeys = (data && (data.title !== undefined || data.sub !== undefined)) ? true : false;
+
+            return React.createElement("div", null,
+              headerKeys && React.createElement("div", { style: { padding: 14, border: "1px solid var(--border)", borderRadius: 12, background: "var(--surface2)", marginBottom: 12 } },
+                React.createElement("div", { style: { fontSize: 11, fontWeight: 700, color: "var(--ink4)", marginBottom: 8 } }, "Cabeçalho da secção"),
+                Field({ label: "Título", value: data.title, onChange: v => cloneAndSet(d => { d.title = v; }) }),
+                data.sub !== undefined && Field({ label: "Subtítulo", area: true, value: data.sub, onChange: v => cloneAndSet(d => { d.sub = v; }) })
+              ),
+              items.map((it, i) => React.createElement("div", { key: i, style: { border: "1px solid var(--border)", borderRadius: 12, padding: 14, background: "#fff", marginBottom: 10 } },
+                React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 } },
+                  React.createElement("div", { style: { fontSize: 11, fontWeight: 700, color: "var(--ink4)" } }, "Item " + (i + 1)),
+                  React.createElement("div", { style: { display: "flex", gap: 4 } },
+                    React.createElement("button", { onClick: () => moveItem(i, -1), disabled: i === 0, title: "Subir", style: { width: 28, height: 28, borderRadius: 7, border: "1px solid var(--border2)", background: "#fff", cursor: i === 0 ? "not-allowed" : "pointer", opacity: i === 0 ? .4 : 1, fontSize: 14 } }, "↑"),
+                    React.createElement("button", { onClick: () => moveItem(i, 1), disabled: i === items.length - 1, title: "Descer", style: { width: 28, height: 28, borderRadius: 7, border: "1px solid var(--border2)", background: "#fff", cursor: i === items.length - 1 ? "not-allowed" : "pointer", opacity: i === items.length - 1 ? .4 : 1, fontSize: 14 } }, "↓"),
+                    React.createElement("button", { onClick: () => { if (window.confirm("Eliminar este item?")) removeItem(i); }, title: "Remover", style: { width: 28, height: 28, borderRadius: 7, border: "1px solid var(--border2)", background: "#fff", color: "var(--red)", cursor: "pointer", fontSize: 14 } }, "×")
+                  )
+                ),
+                fields.map(f => {
+                  if (f.type === "number") {
+                    return NumField({ key: f.key, label: f.label, value: it[f.key], onChange: v => cloneAndSet(d => { d.items[i][f.key] = v; }) });
+                  }
+                  if (f.type === "list") {
+                    const list = Array.isArray(it[f.key]) ? it[f.key] : [];
+                    return React.createElement("div", { key: f.key, style: { marginBottom: 12 } },
+                      React.createElement("label", { style: lblStyle }, f.label),
+                      list.map((lv, li) => React.createElement("div", { key: li, style: { display: "flex", gap: 6, marginBottom: 6 } },
+                        React.createElement("input", { type: "text", value: lv, onChange: e => cloneAndSet(d => { d.items[i][f.key][li] = e.target.value; }), style: Object.assign({}, inputStyle, { flex: 1 }) }),
+                        React.createElement("button", { onClick: () => cloneAndSet(d => { d.items[i][f.key].splice(li, 1); }), style: { width: 32, borderRadius: 7, border: "1px solid var(--border2)", background: "#fff", color: "var(--red)", cursor: "pointer" } }, "×")
+                      )),
+                      React.createElement("button", { onClick: () => cloneAndSet(d => { if (!d.items[i][f.key]) d.items[i][f.key] = []; d.items[i][f.key].push(""); }), style: { padding: "6px 12px", borderRadius: 7, background: "var(--surface2)", border: "1px dashed var(--border2)", color: "var(--ink3)", cursor: "pointer", fontSize: 13, fontWeight: 500 } }, "+ adicionar")
+                    );
+                  }
+                  if (f.type === "bool") {
+                    return React.createElement("div", { key: f.key, style: { marginBottom: 12, display: "flex", alignItems: "center", gap: 8 } },
+                      React.createElement("input", { type: "checkbox", checked: !!it[f.key], onChange: e => cloneAndSet(d => { d.items[i][f.key] = e.target.checked; }), style: { width: 16, height: 16, cursor: "pointer" } }),
+                      React.createElement("label", { style: { fontSize: 14, fontWeight: 500, color: "var(--ink2)" } }, f.label)
+                    );
+                  }
+                  return Field({ key: f.key, label: f.label, area: f.area, value: it[f.key], onChange: v => cloneAndSet(d => { d.items[i][f.key] = v; }) });
+                })
+              )),
+              React.createElement("button", { onClick: addItem, style: { width: "100%", padding: "11px 16px", borderRadius: 10, background: "var(--surface2)", border: "1px dashed var(--border2)", color: "var(--ink3)", cursor: "pointer", fontFamily: "var(--font)", fontSize: 14, fontWeight: 600 } }, "+ adicionar item")
+            );
+          };
+
+          const renderCtaSection = (data) => React.createElement("div", null,
+            Field({ label: "Título", value: data.title, onChange: v => setDraft("cta_section", Object.assign({}, data, { title: v })) }),
+            Field({ label: "Subtítulo", area: true, value: data.sub, onChange: v => setDraft("cta_section", Object.assign({}, data, { sub: v })) }),
+            React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 } },
+              Field({ label: "Botão principal", value: data.btn1, onChange: v => setDraft("cta_section", Object.assign({}, data, { btn1: v })) }),
+              Field({ label: "Botão secundário", value: data.btn2, onChange: v => setDraft("cta_section", Object.assign({}, data, { btn2: v })) })
+            ),
+            Field({ label: "Nota (pequeno texto abaixo)", area: true, value: data.note, onChange: v => setDraft("cta_section", Object.assign({}, data, { note: v })) })
+          );
+
+          const renderPricingHeader = (data) => React.createElement("div", null,
+            Field({ label: "Título", value: data.title, onChange: v => setDraft("pricing_header", Object.assign({}, data, { title: v })) }),
+            Field({ label: "Subtítulo", area: true, value: data.sub, onChange: v => setDraft("pricing_header", Object.assign({}, data, { sub: v })) }),
+            React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 } },
+              Field({ label: "Badge popular", value: data.popular, onChange: v => setDraft("pricing_header", Object.assign({}, data, { popular: v })) }),
+              Field({ label: "Texto botão CTA", value: data.cta, onChange: v => setDraft("pricing_header", Object.assign({}, data, { cta: v })) })
+            )
+          );
+
+          const renderFooterBrand = (data) => React.createElement("div", null,
+            Field({ label: "Texto da marca (parágrafo)", area: true, value: data.brand, onChange: v => setDraft("footer_brand", { brand: v }) })
+          );
+
+          // ── Definição dos schemas por slug ──
+          const slugDefs = [
+            { slug: "stats", title: "Estatísticas", desc: "4 números destacados na home (cursos, alunos, avaliação, satisfação).", render: renderStats },
+            { slug: "features", title: "Funcionalidades", desc: "Cards com ícone + título + descrição.", render: (d) => renderListWithHeader("features", d, [
+              { key: "ic", label: "Emoji / Ícone" },
+              { key: "t", label: "Título" },
+              { key: "d", label: "Descrição", area: true }
+            ])},
+            { slug: "testimonials", title: "Testemunhos", desc: "Cards com nome, cargo, texto, avatar.", render: (d) => renderListWithHeader("testimonials", d, [
+              { key: "n", label: "Nome" },
+              { key: "r", label: "Cargo / Função" },
+              { key: "t", label: "Testemunho", area: true },
+              { key: "av", label: "Iniciais (avatar, ex: RM)" },
+              { key: "rating", label: "Estrelas (1-5)", type: "number" }
+            ])},
+            { slug: "pricing_header", title: "Cabeçalho dos preços", desc: "Texto que aparece no topo da página de preços.", render: renderPricingHeader },
+            { slug: "plans", title: "Planos", desc: "Cards de planos com preço e funcionalidades.", render: (d) => renderListWithHeader("plans", d, [
+              { key: "id", label: "ID interno (ex: monthly)" },
+              { key: "name", label: "Nome do plano" },
+              { key: "price", label: "Preço (€)", type: "number" },
+              { key: "period", label: "Período (ex: /mês, único)" },
+              { key: "billed", label: "Facturação (opcional)" },
+              { key: "desc", label: "Descrição" },
+              { key: "features", label: "Funcionalidades incluídas", type: "list" },
+              { key: "popular", label: "Marcar como popular", type: "bool" }
+            ])},
+            { slug: "cta_section", title: "Bloco final (Call-to-Action)", desc: "Faixa azul no fim da home com 2 botões.", render: renderCtaSection },
+            { slug: "footer_brand", title: "Texto do rodapé", desc: "Parágrafo descritivo no canto inferior esquerdo.", render: renderFooterBrand }
+          ];
+
+          return React.createElement("div", { style: { maxWidth: 900, margin: "0 auto" } },
+            React.createElement("style", null, GLOBAL_CSS),
+            React.createElement("h1", { style: { fontSize: 28, fontWeight: 700, color: "var(--ink)", marginBottom: 6, letterSpacing: "-0.02em" } }, "Blocos da Home"),
+            React.createElement("p", { style: { fontSize: 15, color: "var(--ink3)", marginBottom: 22, lineHeight: 1.5 } }, "Edita o conteúdo da página inicial. Cada bloco é guardado por língua."),
+            
+            React.createElement("div", { style: { display: "flex", gap: 6, marginBottom: 20, flexWrap: "wrap" } },
               ["pt", "en", "es", "fr"].map(l => React.createElement("button", {
                 key: l, onClick: () => setLangFilter(l),
                 style: {
-                  padding: "8px 16px", borderRadius: 980,
+                  padding: "8px 18px", borderRadius: 980,
                   background: langFilter === l ? "var(--blue)" : "#fff",
                   color: langFilter === l ? "#fff" : "var(--ink2)",
-                  border: "1px solid " + (langFilter === l ? "var(--blue)" : "var(--border)"),
-                  fontFamily: "var(--font)", fontSize: 14, fontWeight: 600,
-                  cursor: "pointer", textTransform: "uppercase", letterSpacing: ".05em"
+                  border: "1px solid " + (langFilter === l ? "var(--blue)" : "var(--border2)"),
+                  fontFamily: "var(--font)", fontSize: 13, fontWeight: 600,
+                  cursor: "pointer", textTransform: "uppercase", letterSpacing: ".06em"
                 }
               }, l))
             ),
             
-            msg && React.createElement("div", { style: { padding: 12, borderRadius: 10, background: msg.startsWith("✅") ? "rgba(16,185,129,.1)" : "rgba(239,68,68,.1)", color: msg.startsWith("✅") ? "#059669" : "#DC2626", fontSize: 14, fontWeight: 500, marginBottom: 16 } }, msg),
-            
+            msg && React.createElement("div", {
+              style: { padding: "10px 14px", borderRadius: 10, background: msg.startsWith("✅") ? "rgba(16,185,129,.1)" : "rgba(239,68,68,.1)", color: msg.startsWith("✅") ? "#059669" : "#DC2626", fontSize: 14, fontWeight: 500, marginBottom: 16 }
+            }, msg),
+
             loading ? React.createElement("div", { style: { padding: 40, textAlign: "center", color: "var(--ink4)" } }, "A carregar...") :
-            React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 16 } },
-              slugs.map(slug => {
-                const row = filtered.find(r => r.slug === slug);
-                if (!row) return null;
-                const key = row.slug + ":" + row.lang;
-                const isEditing = editing === key;
-                
-                return React.createElement("div", {
-                  key: slug,
-                  style: { background: "#fff", border: "1px solid var(--border)", borderRadius: 14, padding: 20, boxShadow: "var(--shadow-xs)" }
-                },
-                  React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 } },
-                    React.createElement("div", null,
-                      React.createElement("div", { style: { fontSize: 11, fontWeight: 700, color: "var(--ink4)", textTransform: "uppercase", letterSpacing: ".08em" } }, langFilter),
-                      React.createElement("h3", { style: { fontSize: 17, fontWeight: 700, color: "var(--ink)", letterSpacing: "-0.01em", marginTop: 2 } }, slug)
-                    ),
-                    !isEditing && React.createElement("button", {
-                      onClick: () => startEdit(row),
-                      style: { padding: "7px 14px", borderRadius: 8, background: "var(--surface2)", border: "1px solid var(--border2)", color: "var(--ink2)", cursor: "pointer", fontFamily: "var(--font)", fontSize: 13, fontWeight: 600 }
-                    }, "Editar")
+            slugDefs.map(def => {
+              const data = getDraft(def.slug);
+              const dirty = isDirty(def.slug);
+              return React.createElement("section", {
+                key: def.slug,
+                style: { background: "#fff", border: "1px solid var(--border)", borderRadius: 16, padding: 24, marginBottom: 18, boxShadow: "var(--shadow-xs)" }
+              },
+                React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 18, gap: 12, flexWrap: "wrap" } },
+                  React.createElement("div", null,
+                    React.createElement("h2", { style: { fontSize: 20, fontWeight: 700, color: "var(--ink)", letterSpacing: "-0.02em", margin: 0, marginBottom: 4 } }, def.title),
+                    React.createElement("p", { style: { fontSize: 14, color: "var(--ink3)", margin: 0 } }, def.desc)
                   ),
-                  isEditing ? React.createElement("div", null,
-                    React.createElement("textarea", {
-                      value: editJson, onChange: e => { setEditJson(e.target.value); setJsonError(""); },
-                      style: {
-                        width: "100%", padding: 12, borderRadius: 10,
-                        border: "1.5px solid " + (jsonError ? "var(--red)" : "var(--border2)"),
-                        fontFamily: "ui-monospace, Menlo, monospace", fontSize: 13,
-                        lineHeight: 1.5, minHeight: 200, resize: "vertical",
-                        outline: "none", boxSizing: "border-box"
-                      }
-                    }),
-                    jsonError && React.createElement("div", { style: { fontSize: 13, color: "var(--red)", marginTop: 6 } }, jsonError),
-                    React.createElement("div", { style: { display: "flex", gap: 8, marginTop: 12 } },
-                      React.createElement("button", {
-                        onClick: () => saveEdit(row.slug, row.lang),
-                        style: { padding: "9px 18px", borderRadius: 10, background: "var(--blue)", color: "#fff", border: "none", cursor: "pointer", fontFamily: "var(--font)", fontSize: 14, fontWeight: 600 }
-                      }, "Guardar"),
-                      React.createElement("button", {
-                        onClick: () => { setEditing(null); setJsonError(""); },
-                        style: { padding: "9px 18px", borderRadius: 10, background: "#fff", color: "var(--ink2)", border: "1px solid var(--border2)", cursor: "pointer", fontFamily: "var(--font)", fontSize: 14, fontWeight: 600 }
-                      }, "Cancelar")
-                    )
-                  ) : React.createElement("pre", {
-                    style: {
-                      background: "var(--surface2)", padding: 14, borderRadius: 10,
-                      fontFamily: "ui-monospace, Menlo, monospace", fontSize: 12,
-                      lineHeight: 1.5, overflow: "auto", maxHeight: 220, margin: 0,
-                      color: "var(--ink2)", whiteSpace: "pre-wrap", wordBreak: "break-word"
-                    }
-                  }, JSON.stringify(row.data, null, 2))
-                );
-              })
-            )
+                  dirty && React.createElement("button", {
+                    onClick: () => save(def.slug),
+                    disabled: savingKey === def.slug,
+                    style: { padding: "9px 20px", borderRadius: 10, background: "var(--blue)", color: "#fff", border: "none", cursor: savingKey === def.slug ? "wait" : "pointer", fontFamily: "var(--font)", fontSize: 14, fontWeight: 600, opacity: savingKey === def.slug ? .6 : 1, flexShrink: 0 }
+                  }, savingKey === def.slug ? "A guardar..." : "Guardar alterações")
+                ),
+                data ? def.render(data) : React.createElement("div", { style: { color: "var(--ink4)", fontSize: 14 } }, "Sem dados para esta língua.")
+              );
+            })
           );
         }, []);
-        
+
         const APublicContent = React.useCallback(() => {
         const [rows, setRows] = React.useState([]);
         const [loading, setLoading] = React.useState(true);
