@@ -526,6 +526,14 @@ const renderMarkdown = (md) => {
     const [courseTranslations, setCourseTranslations] = useState({});
     const [platformConfig, setPlatformConfig] = useState({});
     const [legalPagesCache, setLegalPagesCache] = useState({});
+    const [homeBlocks, setHomeBlocks] = useState({});
+    const hb = (slug, fallback) => {
+      const langKey = (typeof _lang !== "undefined" && _lang) || "pt";
+      const block = homeBlocks[slug];
+      if (block && block[langKey] && block[langKey].data) return block[langKey].data;
+      if (block && block.pt && block.pt.data) return block.pt.data;
+      return fallback;
+    };
     const [activeLegalPage, setActiveLegalPage] = useState(null);
     const [cfgDraft, setCfgDraft] = useState({});
     const [cfgSaving, setCfgSaving] = useState(false);
@@ -775,6 +783,19 @@ const renderMarkdown = (md) => {
         setPublicInstructorLoading(false);
       })();
     }, [publicInstructorSlug]);
+    const ldHomeBlocks = async () => {
+      try {
+        const { data } = await window._SB.from("nl_home_blocks").select("slug, lang, data");
+        if (data) {
+          const grouped = {};
+          data.forEach(b => {
+            if (!grouped[b.slug]) grouped[b.slug] = {};
+            grouped[b.slug][b.lang] = { data: b.data };
+          });
+          setHomeBlocks(grouped);
+        }
+      } catch(e) { console.warn("home blocks load:", e); }
+    };
     const ldLegalPages = async () => {
       try {
         const { data: pages } = await window._SB.from("nl_legal_pages").select("page_slug, lang_code, title, content_md, last_updated_label").eq("is_active", true);
@@ -808,6 +829,7 @@ const renderMarkdown = (md) => {
     };
     const ldTranslationsAndConfig = async () => {
       ldLegalPages();
+      ldHomeBlocks();
       try {
         const { data: trans } = await window._SB.from("nl_course_translations").select("course_id, lang_code, title, subtitle, description, category, level, instructor, topics, modules").eq("published", true);
         if (trans) { const grouped = {}; trans.forEach(t => { if (!grouped[t.course_id]) grouped[t.course_id] = {}; grouped[t.course_id][t.lang_code] = t; }); setCourseTranslations(grouped); }
@@ -2898,7 +2920,7 @@ const renderMarkdown = (md) => {
         display:'grid',gridTemplateColumns:'repeat(4,1fr)',
         padding:'0 clamp(20px,5vw,48px)'
       }},
-        [{v:'7',l:T.stats.c},{v:'12k+',l:T.stats.s},{v:'4.8★',l:T.stats.r},{v:'97%',l:T.stats.sat}]
+        (hb('stats',{items:[{v:'7',l:T.stats.c},{v:'12k+',l:T.stats.s},{v:'4.8★',l:T.stats.r},{v:'97%',l:T.stats.sat}]}).items)
         .map((s,i)=>React.createElement('div',{key:i,style:{
           padding:'28px 0',textAlign:'center',
           borderRight:i<3?'1px solid var(--border)':'none'
@@ -2952,15 +2974,15 @@ const renderMarkdown = (md) => {
             fontSize:'clamp(28px,4vw,48px)',fontWeight:700,
             letterSpacing:'-0.04em',color:'#fff',marginBottom:14,
             fontFamily:'var(--font-d)',fontStyle:'italic'
-          }},T.features_title),
+          }},(hb('features',{}).title)||T.features_title),
           React.createElement('p',{style:{fontSize:17,color:'rgba(255,255,255,.5)',
-            maxWidth:500,margin:'0 auto',lineHeight:1.65}},T.features_sub)
+            maxWidth:500,margin:'0 auto',lineHeight:1.65}},(hb('features',{}).sub)||T.features_sub)
         ),
         React.createElement('div',{style:{
           display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(290px,1fr))',
           gap:1,background:'rgba(255,255,255,.06)',borderRadius:'var(--r20)',overflow:'hidden'
         }},
-          T.features.map((f,i)=>React.createElement('div',{key:i,
+          (hb('features',{items:T.features}).items).map((f,i)=>React.createElement('div',{key:i,
             className:'u0',style:{animationDelay:`${i*50}ms`,
               padding:'36px 32px',background:'#0F172A',
               borderRight:i%3<2?'1px solid rgba(255,255,255,.05)':'none',
@@ -2986,12 +3008,12 @@ const renderMarkdown = (md) => {
       React.createElement('div',{style:{maxWidth: 1200,margin:'0 auto'}},
         React.createElement('div',{style:{textAlign:'center',marginBottom:48}},
           React.createElement('h2',{style:{fontSize:'clamp(26px,4vw,42px)',fontWeight:700,
-            letterSpacing:'-0.04em',color:'var(--ink)',margin:0}},T.test_title)
+            letterSpacing:'-0.04em',color:'var(--ink)',margin:0}},(hb('testimonials',{}).title)||T.test_title)
         ),
         React.createElement('div',{style:{
           display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(260px,1fr))',gap:20
         }},
-          T.testimonials.map((t,i)=>React.createElement('div',{key:i,
+          (hb('testimonials',{items:T.testimonials}).items).map((t,i)=>React.createElement('div',{key:i,
             className:'u0',style:{animationDelay:`${i*60}ms`,
               background:'var(--surface)',borderRadius:'var(--r20)',
               border:'1px solid var(--border)',padding:'28px',
@@ -3026,13 +3048,13 @@ const renderMarkdown = (md) => {
           fontSize:'clamp(28px,4vw,52px)',fontWeight:700,color:'#fff',
           letterSpacing:'-0.04em',lineHeight:1.08,marginBottom:18,
           fontFamily:'var(--font-d)',fontStyle:'italic'
-        }},T.cta_s.title),
+        }},(hb('cta_section',{}).title)||T.cta_s.title),
         React.createElement('p',{style:{fontSize:17,color:'rgba(255,255,255,.65)',
-          marginBottom:36,lineHeight:1.65}},T.cta_s.sub),
+          marginBottom:36,lineHeight:1.65}},(hb('cta_section',{}).sub)||T.cta_s.sub),
         React.createElement('div',{style:{display:'flex',gap:12,justifyContent:'center',flexWrap:'wrap',marginBottom:20}},
           React.createElement(BtnP,{size:'xl',onClick:goStuLogin,
             style:{background:'#fff',color:'var(--blue)',boxShadow:'0 4px 20px rgba(0,0,0,.25)',borderRadius:'var(--r12)'}},
-            T.cta_s.btn1),
+            ((hb('cta_section',{}).btn1)||T.cta_s.btn1)),
           React.createElement('button',{onClick:()=>setView('courses'),
             style:{background:'transparent',border:'1.5px solid rgba(255,255,255,.35)',
               color:'#fff',padding:'16px 32px',borderRadius:'var(--r12)',
@@ -3040,10 +3062,10 @@ const renderMarkdown = (md) => {
               transition:'all .15s'},
             onMouseEnter:e=>e.currentTarget.style.borderColor='rgba(255,255,255,.7)',
             onMouseLeave:e=>e.currentTarget.style.borderColor='rgba(255,255,255,.35)'},
-            T.cta_s.btn2)
+            ((hb('cta_section',{}).btn2)||T.cta_s.btn2))
         ),
         React.createElement('p',{style:{fontSize:14,color:'rgba(255,255,255,.35)',margin:0}},
-          T.cta_s.note)
+          ((hb('cta_section',{}).note)||T.cta_s.note))
       )
     )
       );
