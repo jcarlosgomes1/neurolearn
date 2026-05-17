@@ -4776,6 +4776,7 @@ slug === "faq" ? renderFAQAccordion(renderTokens(page.content_md)) :
     { id: "public_content", icon: "📄", label: t("nav.publicContent") || "Páginas Públicas", group: "content" },
     { id: "legal_pages", icon: "⚖️", label: t("nav.legal") || "Páginas Legais", group: "content" },
     { id: "emails", icon: "✉️", label: t("nav.emails") || "Templates Email", group: "content" },
+    { id: "home_blocks", icon: "🏠", label: t("nav.homeBlocks") || "Blocos da Home", group: "content" },
     
     { id: "config", icon: "🏢", label: t("nav.company") || "Empresa", group: "system" },
     { id: "settings", icon: "⚙️", label: t("nav.settings") || "Definições", group: "system" }
@@ -6845,6 +6846,140 @@ slug === "faq" ? renderFAQAccordion(renderTokens(page.content_md)) :
                             React.createElement("div", { style: { fontSize:14, padding: 12, background: "#FAFAFA", borderRadius: 8, maxHeight: 150, overflow: "auto", fontFamily: "monospace" } }, tpl.body_html && tpl.body_html.length > 500 ? tpl.body_html.substring(0, 500) + "..." : tpl.body_html))))));
     }, []);
 
+        // Admin: edit nl_home_blocks (stats, features, testimonials, pricing, cta, footer)
+        const AHomeBlocks = React.useCallback(() => {
+          const [blocks, setBlocks] = React.useState([]);
+          const [loading, setLoading] = React.useState(true);
+          const [langFilter, setLangFilter] = React.useState("pt");
+          const [editing, setEditing] = React.useState(null);
+          const [editJson, setEditJson] = React.useState("");
+          const [msg, setMsg] = React.useState("");
+          const [jsonError, setJsonError] = React.useState("");
+          
+          const refresh = async () => {
+            setLoading(true);
+            try {
+              const { data } = await window._SB.from("nl_home_blocks")
+                .select("slug, lang, data, updated_at")
+                .order("slug").order("lang");
+              setBlocks(data || []);
+            } catch(e) { console.error(e); }
+            setLoading(false);
+          };
+          
+          React.useEffect(() => { refresh(); }, []);
+          
+          const startEdit = (row) => {
+            setEditing(row.slug + ":" + row.lang);
+            setEditJson(JSON.stringify(row.data, null, 2));
+            setJsonError("");
+          };
+          
+          const saveEdit = async (slug, lang) => {
+            let parsed;
+            try {
+              parsed = JSON.parse(editJson);
+            } catch(e) {
+              setJsonError("JSON inválido: " + e.message);
+              return;
+            }
+            try {
+              const { error } = await window._SB.from("nl_home_blocks")
+                .update({ data: parsed, updated_at: new Date().toISOString() })
+                .eq("slug", slug).eq("lang", lang);
+              if (error) throw error;
+              setEditing(null);
+              setMsg("✅ Bloco actualizado");
+              setTimeout(() => setMsg(""), 2500);
+              await refresh();
+            } catch(e) {
+              setMsg("❌ " + (e.message || "Erro"));
+            }
+          };
+          
+          const filtered = blocks.filter(b => b.lang === langFilter);
+          const slugs = ["stats", "features", "testimonials", "cta_section", "pricing_header", "plans", "footer_brand"];
+          
+          return React.createElement("div", { style: { maxWidth: 1200, margin: "0 auto" } },
+            React.createElement("style", null, GLOBAL_CSS),
+            React.createElement("h1", { style: { fontSize: 28, fontWeight: 700, color: "var(--ink)", marginBottom: 8, letterSpacing: "-0.02em" } }, "Blocos da Home"),
+            React.createElement("p", { style: { fontSize: 15, color: "var(--ink3)", marginBottom: 24 } }, "Edita o conteúdo dos blocos da página inicial: stats, features, testemunhos, planos, CTA e brand. Cada bloco existe em 4 línguas."),
+            
+            // Lang filter pills
+            React.createElement("div", { style: { display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" } },
+              ["pt", "en", "es", "fr"].map(l => React.createElement("button", {
+                key: l, onClick: () => setLangFilter(l),
+                style: {
+                  padding: "8px 16px", borderRadius: 980,
+                  background: langFilter === l ? "var(--blue)" : "#fff",
+                  color: langFilter === l ? "#fff" : "var(--ink2)",
+                  border: "1px solid " + (langFilter === l ? "var(--blue)" : "var(--border)"),
+                  fontFamily: "var(--font)", fontSize: 14, fontWeight: 600,
+                  cursor: "pointer", textTransform: "uppercase", letterSpacing: ".05em"
+                }
+              }, l))
+            ),
+            
+            msg && React.createElement("div", { style: { padding: 12, borderRadius: 10, background: msg.startsWith("✅") ? "rgba(16,185,129,.1)" : "rgba(239,68,68,.1)", color: msg.startsWith("✅") ? "#059669" : "#DC2626", fontSize: 14, fontWeight: 500, marginBottom: 16 } }, msg),
+            
+            loading ? React.createElement("div", { style: { padding: 40, textAlign: "center", color: "var(--ink4)" } }, "A carregar...") :
+            React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 16 } },
+              slugs.map(slug => {
+                const row = filtered.find(r => r.slug === slug);
+                if (!row) return null;
+                const key = row.slug + ":" + row.lang;
+                const isEditing = editing === key;
+                
+                return React.createElement("div", {
+                  key: slug,
+                  style: { background: "#fff", border: "1px solid var(--border)", borderRadius: 14, padding: 20, boxShadow: "var(--shadow-xs)" }
+                },
+                  React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 } },
+                    React.createElement("div", null,
+                      React.createElement("div", { style: { fontSize: 11, fontWeight: 700, color: "var(--ink4)", textTransform: "uppercase", letterSpacing: ".08em" } }, langFilter),
+                      React.createElement("h3", { style: { fontSize: 17, fontWeight: 700, color: "var(--ink)", letterSpacing: "-0.01em", marginTop: 2 } }, slug)
+                    ),
+                    !isEditing && React.createElement("button", {
+                      onClick: () => startEdit(row),
+                      style: { padding: "7px 14px", borderRadius: 8, background: "var(--surface2)", border: "1px solid var(--border2)", color: "var(--ink2)", cursor: "pointer", fontFamily: "var(--font)", fontSize: 13, fontWeight: 600 }
+                    }, "Editar")
+                  ),
+                  isEditing ? React.createElement("div", null,
+                    React.createElement("textarea", {
+                      value: editJson, onChange: e => { setEditJson(e.target.value); setJsonError(""); },
+                      style: {
+                        width: "100%", padding: 12, borderRadius: 10,
+                        border: "1.5px solid " + (jsonError ? "var(--red)" : "var(--border2)"),
+                        fontFamily: "ui-monospace, Menlo, monospace", fontSize: 13,
+                        lineHeight: 1.5, minHeight: 200, resize: "vertical",
+                        outline: "none", boxSizing: "border-box"
+                      }
+                    }),
+                    jsonError && React.createElement("div", { style: { fontSize: 13, color: "var(--red)", marginTop: 6 } }, jsonError),
+                    React.createElement("div", { style: { display: "flex", gap: 8, marginTop: 12 } },
+                      React.createElement("button", {
+                        onClick: () => saveEdit(row.slug, row.lang),
+                        style: { padding: "9px 18px", borderRadius: 10, background: "var(--blue)", color: "#fff", border: "none", cursor: "pointer", fontFamily: "var(--font)", fontSize: 14, fontWeight: 600 }
+                      }, "Guardar"),
+                      React.createElement("button", {
+                        onClick: () => { setEditing(null); setJsonError(""); },
+                        style: { padding: "9px 18px", borderRadius: 10, background: "#fff", color: "var(--ink2)", border: "1px solid var(--border2)", cursor: "pointer", fontFamily: "var(--font)", fontSize: 14, fontWeight: 600 }
+                      }, "Cancelar")
+                    )
+                  ) : React.createElement("pre", {
+                    style: {
+                      background: "var(--surface2)", padding: 14, borderRadius: 10,
+                      fontFamily: "ui-monospace, Menlo, monospace", fontSize: 12,
+                      lineHeight: 1.5, overflow: "auto", maxHeight: 220, margin: 0,
+                      color: "var(--ink2)", whiteSpace: "pre-wrap", wordBreak: "break-word"
+                    }
+                  }, JSON.stringify(row.data, null, 2))
+                );
+              })
+            )
+          );
+        }, []);
+        
         const APublicContent = React.useCallback(() => {
         const [rows, setRows] = React.useState([]);
         const [loading, setLoading] = React.useState(true);
@@ -7369,7 +7504,7 @@ slug === "faq" ? renderFAQAccordion(renderTokens(page.content_md)) :
                   !isMobile && React.createElement("span", { style: { fontSize: 13, color: "var(--ink4)", fontWeight: 500, flexShrink: 0 } }, "Admin"),
                   !isMobile && React.createElement("span", { style: { color: "var(--ink5)", flexShrink: 0 } }, "/"),
                   React.createElement("span", { style: { fontSize: 15, fontWeight: 600, color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 } }, (function() {
-                    const titles = { dashboard: "Dashboard", courses: "Cursos", students: "Alunos", analytics: "Analytics", evals: "Avaliações", adminNotifs: "Notificações", agent: "AI Agent", promote: "Promover", instructors: "Instrutores", transactions: "Transacções", legal_pages: "Legais", i18n: "Traduções", public_content: "Páginas", emails: "Emails", config: "Empresa", settings: "Definições" };
+                    const titles = { dashboard: "Dashboard", courses: "Cursos", students: "Alunos", analytics: "Analytics", evals: "Avaliações", adminNotifs: "Notificações", agent: "AI Agent", promote: "Promover", instructors: "Instrutores", transactions: "Transacções", legal_pages: "Legais", i18n: "Traduções", public_content: "Páginas", home_blocks: "Blocos Home", emails: "Emails", config: "Empresa", settings: "Definições" };
                     return titles[aView] || "Dashboard";
                   })())
                 ),
@@ -7409,6 +7544,7 @@ slug === "faq" ? renderFAQAccordion(renderTokens(page.content_md)) :
                 aView === "i18n" && React.createElement(AI18n, null),
                 aView === "public_content" && React.createElement(APublicContent, null),
                 aView === "emails" && React.createElement(AEmails, null),
+                aView === "home_blocks" && React.createElement(AHomeBlocks, null),
                 aView === "config" && AConfig(),
                 aView === "settings" && ASettings()
               )
