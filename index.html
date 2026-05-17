@@ -3532,7 +3532,7 @@ const renderMarkdown = (md) => {
             React.createElement('span',{style:{fontSize:17,fontWeight:700,color:'#fff'}},
               'NeuroLearn')
           ),
-          React.createElement('p',{style:{fontSize:15,lineHeight:1.75,maxWidth:260,margin:'0 0 20px'}},T.brand),
+          React.createElement('p',{style:{fontSize:15,lineHeight:1.75,maxWidth:260,margin:'0 0 20px'}},((hb("footer_brand",{}).brand)||T.brand)),
           React.createElement('a',{href:'mailto:info@neurolearn.pt',
             style:{fontSize:14,color:'rgba(255,255,255,.3)',
               transition:'color .15s'},
@@ -3989,6 +3989,110 @@ const renderMarkdown = (md) => {
         )
       );
     };
+    // FAQ accordion - mini componente que aceita pergunta/resposta e gere estado próprio
+    const FAQItem = ({ q, a }) => {
+      const [open, setOpen] = React.useState(false);
+      return React.createElement("div", {
+        style: {
+          background: open ? "var(--surface2)" : "#FFFFFF",
+          border: "1px solid " + (open ? "var(--blue)" : "var(--border)"),
+          borderRadius: 14, marginBottom: 10, overflow: "hidden",
+          transition: "all .2s ease"
+        }
+      },
+        React.createElement("button", {
+          onClick: () => setOpen(!open),
+          onMouseEnter: function(e){ if (!open) e.currentTarget.style.background = "var(--surface2)"; },
+          onMouseLeave: function(e){ if (!open) e.currentTarget.style.background = "transparent"; },
+          style: {
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            width: "100%", textAlign: "left",
+            background: "transparent", border: "none", cursor: "pointer",
+            padding: "16px 20px", gap: 16, fontFamily: "var(--font)",
+            fontSize: 16, fontWeight: open ? 600 : 500, color: "var(--ink)",
+            transition: "all .2s ease"
+          }
+        },
+          React.createElement("span", { style: { flex: 1, lineHeight: 1.4 } }, q),
+          React.createElement("span", {
+            style: {
+              width: 28, height: 28, borderRadius: 8,
+              background: open ? "var(--blue)" : "var(--surface3)",
+              color: open ? "#FFFFFF" : "var(--ink2)",
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
+              fontSize: 20, fontWeight: 300, lineHeight: 1, flexShrink: 0,
+              transform: open ? "rotate(45deg)" : "rotate(0deg)",
+              transition: "all .25s cubic-bezier(.22,1,.36,1)"
+            }
+          }, "+")
+        ),
+        open && React.createElement("div", {
+          style: { padding: "0 20px 18px 20px", fontSize: 15, lineHeight: 1.65, color: "var(--ink2)" }
+        }, renderMarkdown(a))
+      );
+    };
+    
+    // Função pura: parses markdown FAQ e devolve estrutura React (sem hooks)
+    const renderFAQAccordion = (contentMd) => {
+      if (!contentMd) return React.createElement("div", null, "");
+      
+      const lines = contentMd.split(/\r?\n/);
+      const sections = [];
+      let currentSection = null;
+      let currentQ = null;
+      let collectingAnswer = false;
+      
+      for (let i = 0; i < lines.length; i++) {
+        const trimmed = lines[i].trim();
+        const secMatch = trimmed.match(/^##\s+(.+)$/);
+        if (secMatch) {
+          if (currentQ && currentSection) { currentSection.items.push(currentQ); currentQ = null; }
+          currentSection = { title: secMatch[1].trim(), items: [] };
+          sections.push(currentSection);
+          collectingAnswer = false;
+          continue;
+        }
+        const qMatch = trimmed.match(/^\*\*Q:\s*(.+?)\*\*$/);
+        if (qMatch && currentSection) {
+          if (currentQ) currentSection.items.push(currentQ);
+          currentQ = { q: qMatch[1].trim(), a: "" };
+          collectingAnswer = true;
+          continue;
+        }
+        const aMatch = trimmed.match(/^A:\s*(.+)$/);
+        if (aMatch && currentQ) {
+          currentQ.a = (currentQ.a ? currentQ.a + " " : "") + aMatch[1].trim();
+          continue;
+        }
+        if (collectingAnswer && currentQ && trimmed && !trimmed.startsWith("##") && !trimmed.startsWith("**Q:")) {
+          currentQ.a = (currentQ.a ? currentQ.a + " " : "") + trimmed;
+        }
+      }
+      if (currentQ && currentSection) currentSection.items.push(currentQ);
+      const filtered = sections.filter(function(s) { return s.items.length > 0; });
+      
+      if (filtered.length === 0) {
+        return React.createElement("div", { style: { color: "var(--ink2)", fontSize: 16, lineHeight: 1.7 } }, renderMarkdown(contentMd));
+      }
+      
+      return React.createElement("div", null,
+        filtered.map(function(sec, si) {
+          return React.createElement("div", { key: si, style: { marginBottom: si < filtered.length - 1 ? 32 : 0 } },
+            React.createElement("h2", {
+              style: {
+                fontSize: 20, fontWeight: 700, color: "var(--ink)",
+                marginBottom: 16, letterSpacing: "-0.02em",
+                paddingBottom: 8, borderBottom: "2px solid var(--border)"
+              }
+            }, sec.title),
+            sec.items.map(function(item, qi) {
+              return React.createElement(FAQItem, { key: si + "-" + qi, q: item.q, a: item.a });
+            })
+          );
+        })
+      );
+    };
+    
     const LegalPage = ({ slug, fallbackTitle }) => {
       const langKey = _lang || "pt";
       const page = (legalPagesCache[slug] || {})[langKey] || (legalPagesCache[slug] || {}).pt || (legalPagesCache[slug] || {}).en;
@@ -4031,6 +4135,7 @@ const renderMarkdown = (md) => {
                 React.createElement("p", { style: { fontSize: 16, color: "var(--ink3)", lineHeight: 1.65 } }, ({pt:"Esta página ainda não foi configurada.",es:"Esta página aún no está configurada.",fr:"Cette page n'a pas encore été configurée.",en:"This page has not been configured yet."}[langKey] || "Not yet configured."))
               ) : React.createElement("div", null,
                 page.last_updated_label && React.createElement("p", { style: { fontSize: 14, color: "var(--ink4)", marginBottom: 28, fontWeight: 500 } }, ({pt:"Última atualização: ",es:"Última actualización: ",fr:"Dernière mise à jour: ",en:"Last updated: "}[langKey] || "") + page.last_updated_label),
+slug === "faq" ? renderFAQAccordion(renderTokens(page.content_md)) :
                 React.createElement("div", { style: { color: "var(--ink2)", fontSize: 16, lineHeight: 1.7 } }, renderMarkdown(renderTokens(page.content_md)))
               )
             )
@@ -4397,22 +4502,19 @@ const renderMarkdown = (md) => {
 
     const Pricing = () => {
       const T = TL();
+      const ph = hb('pricing_header', {title:"Planos e preços", sub:"Escolhe o plano certo.", popular:"Popular", cta:"Começar"});
+      const planList = (hb('plans', {items: PLANS}).items) || PLANS;
       return React.createElement("div",{style:{maxWidth:1200,margin:"0 auto",
     padding:"64px clamp(16px,4vw,48px) 80px"}},
     React.createElement("style",null,GLOBAL_CSS+anim),
     React.createElement("div",{style:{textAlign:"center",marginBottom:48}},
       React.createElement("h1",{style:{fontSize:"clamp(28px,4vw,48px)",fontWeight:700,
-        letterSpacing:"-0.04em",color:"var(--ink)",marginBottom:12}},
-        {pt:"Planos e precos",es:"Planes y precios",fr:"Tarifs",en:"Pricing"}[_lang||"pt"]),
-      React.createElement("p",{style:{fontSize:17,color:"var(--ink3)",maxWidth:480,margin:"0 auto"}},
-        {pt:"Escolhe o plano certo para ti. Cancela quando quiseres.",
-         es:"Elige el plan adecuado. Cancela cuando quieras.",
-         fr:"Choisissez votre plan. Annulez quand vous voulez.",
-         en:"Choose your plan. Cancel anytime."}[_lang||"pt"])
+        letterSpacing:"-0.04em",color:"var(--ink)",marginBottom:12}}, ph.title),
+      React.createElement("p",{style:{fontSize:17,color:"var(--ink3)",maxWidth:480,margin:"0 auto"}}, ph.sub)
     ),
     React.createElement("div",{style:{display:"grid",
       gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:20}},
-      PLANS.map((plan,i)=>React.createElement("div",{key:plan.id,
+      planList.map((plan,i)=>React.createElement("div",{key:plan.id,
         className:"u0",style:{animationDelay:`${i*80}ms`,
           background:"var(--surface)",borderRadius:"var(--r20)",
           border:plan.popular?"2px solid var(--blue)":"1px solid var(--border)",
@@ -4422,7 +4524,7 @@ const renderMarkdown = (md) => {
           position:"absolute",top:14,right:14,
           background:"var(--blue)",color:"#fff",
           borderRadius:980,padding:"3px 10px",fontSize:13,fontWeight:700
-        }},{pt:"Popular",es:"Popular",fr:"Populaire",en:"Popular"}[_lang||"pt"]),
+        }}, ph.popular),
         React.createElement("div",{style:{fontSize:16,fontWeight:600,color:"var(--ink2)",
           marginBottom:14}},plan.name),
         React.createElement("div",{style:{display:"flex",alignItems:"baseline",gap:4,marginBottom:4}},
@@ -4442,7 +4544,7 @@ const renderMarkdown = (md) => {
           onClick:()=>{if(curStu)paySubscription(plan.id);else goStuLogin();},
           style:{width:"100%",justifyContent:"center",borderRadius:"var(--r10)",
             background:plan.popular?"var(--blue)":"var(--ink)"}},
-          {pt:"Comecar agora",es:"Empezar ahora",fr:"Commencer",en:"Get started"}[_lang||"pt"]
+          ph.cta
         )
       ))
     )
