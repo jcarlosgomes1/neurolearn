@@ -355,7 +355,7 @@ const CK = "nl7-c", SK = "nl7-s", NK = "nl7-n", NOK = "nl7-notes", LCK = "nl7-lc
 const F = "'SF Pro Display',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif";
 const PAL = ["#0071E3", "#30D158", "#FF9500", "#AF52DE", "#FF375F", "#5AC8FA"];
 const G = "linear-gradient(135deg,#0071E3,#AF52DE)";
-const anim = `@keyframes fu{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}@keyframes dt{0%,20%{opacity:.2}50%{opacity:1}100%{opacity:.2}}@keyframes pl{0%,100%{opacity:1}50%{opacity:.5}}`;
+const anim = `@keyframes fu{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}@keyframes dt{0%,20%{opacity:.2}50%{opacity:1}100%{opacity:.2}}@keyframes pl{0%,100%{opacity:1}50%{opacity:.5}}@keyframes fadeIn{from{opacity:0}to{opacity:1}}@keyframes scaleIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}@keyframes pulse{0%,100%{transform:scale(1);opacity:.95}50%{transform:scale(1.04);opacity:1}}@keyframes checkPop{0%{transform:scale(.5);opacity:0}50%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}.fadeIn{animation:fadeIn .35s ease backwards}.scaleIn{animation:scaleIn .3s cubic-bezier(.22,1,.36,1) backwards}.card-hover{transition:transform .25s cubic-bezier(.22,1,.36,1),box-shadow .25s cubic-bezier(.22,1,.36,1)}.card-hover:hover{transform:translateY(-4px);box-shadow:0 12px 28px rgba(15,23,42,.08),0 4px 12px rgba(15,23,42,.05)}.btn-shine{position:relative;overflow:hidden}.input-fancy{transition:border-color .2s,box-shadow .2s}.input-fancy:focus{border-color:var(--blue)!important;box-shadow:0 0 0 4px rgba(59,130,246,.12)!important;background:#fff!important}`;
 const mkL = (mod, cid) => {
     if (!mod || !Array.isArray(mod))
         return [];
@@ -2737,13 +2737,12 @@ const renderMarkdown = (md) => {
       const cardColor = c.color || colors[parseInt(c.id)%colors.length] || '#2563EB';
   
       return React.createElement('div',{
-    className:'u0',
+    className:'u0 card-hover',
     style:{animationDelay:`${d}ms`,
       background:'var(--surface)',borderRadius:'var(--r20)',
       border:`1px solid ${'var(--border)'}`,
       boxShadow:'var(--shadow-xs)',
-      cursor:'pointer',overflow:'hidden',
-      transition:'all .22s cubic-bezier(.22,1,.36,1)'},
+      cursor:'pointer',overflow:'hidden'},
     onClick:()=>{setSelC(c);setView('detail');}
       },
     // Thumbnail
@@ -3014,7 +3013,7 @@ const renderMarkdown = (md) => {
           display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(260px,1fr))',gap:20
         }},
           (hb('testimonials',{items:T.testimonials}).items).map((t,i)=>React.createElement('div',{key:i,
-            className:'u0',style:{animationDelay:`${i*60}ms`,
+            className:'u0 card-hover',style:{animationDelay:`${i*60}ms`,
               background:'var(--surface)',borderRadius:'var(--r20)',
               border:'1px solid var(--border)',padding:'28px',
               boxShadow:'var(--shadow-xs)',transition:'all .2s'},
@@ -4515,7 +4514,7 @@ slug === "faq" ? renderFAQAccordion(renderTokens(page.content_md)) :
     React.createElement("div",{style:{display:"grid",
       gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:20}},
       planList.map((plan,i)=>React.createElement("div",{key:plan.id,
-        className:"u0",style:{animationDelay:`${i*80}ms`,
+        className:"u0 card-hover",style:{animationDelay:`${i*80}ms`,
           background:"var(--surface)",borderRadius:"var(--r20)",
           border:plan.popular?"2px solid var(--blue)":"1px solid var(--border)",
           padding:"28px 24px",boxShadow:plan.popular?"var(--shadow-md)":"var(--shadow-xs)",
@@ -6846,14 +6845,15 @@ slug === "faq" ? renderFAQAccordion(renderTokens(page.content_md)) :
                             React.createElement("div", { style: { fontSize:14, padding: 12, background: "#FAFAFA", borderRadius: 8, maxHeight: 150, overflow: "auto", fontFamily: "monospace" } }, tpl.body_html && tpl.body_html.length > 500 ? tpl.body_html.substring(0, 500) + "..." : tpl.body_html))))));
     }, []);
 
-        // Admin: editor visual de nl_home_blocks (forms por tipo, sem JSON cru)
+        // Admin: editor visual moderno (sidebar + painel central)
         const AHomeBlocks = React.useCallback(() => {
           const [blocks, setBlocks] = React.useState({});
           const [loading, setLoading] = React.useState(true);
           const [langFilter, setLangFilter] = React.useState("pt");
           const [drafts, setDrafts] = React.useState({});
           const [savingKey, setSavingKey] = React.useState("");
-          const [msg, setMsg] = React.useState("");
+          const [savedFlash, setSavedFlash] = React.useState("");
+          const [activeSlug, setActiveSlug] = React.useState("stats");
 
           const refresh = async () => {
             setLoading(true);
@@ -6878,10 +6878,13 @@ slug === "faq" ? renderFAQAccordion(renderTokens(page.content_md)) :
           const setDraft = (slug, data) => {
             setDrafts(d => Object.assign({}, d, { [slug + ":" + langFilter]: data }));
           };
-          const isDirty = (slug) => {
-            const k = slug + ":" + langFilter;
+          const isDirtyLang = (slug, lang) => {
+            const k = slug + ":" + lang;
             if (drafts[k] === undefined) return false;
-            return JSON.stringify(drafts[k]) !== JSON.stringify((blocks[slug] || {})[langFilter] || null);
+            return JSON.stringify(drafts[k]) !== JSON.stringify((blocks[slug] || {})[lang] || null);
+          };
+          const dirtyCountForSlug = (slug) => {
+            return ["pt","en","es","fr"].filter(l => isDirtyLang(slug, l)).length;
           };
 
           const save = async (slug) => {
@@ -6893,7 +6896,6 @@ slug === "faq" ? renderFAQAccordion(renderTokens(page.content_md)) :
                 .update({ data: draft, updated_at: new Date().toISOString() })
                 .eq("slug", slug).eq("lang", langFilter);
               if (error) throw error;
-              // Refrescar estado
               setBlocks(b => {
                 const nb = Object.assign({}, b);
                 if (!nb[slug]) nb[slug] = {};
@@ -6901,47 +6903,32 @@ slug === "faq" ? renderFAQAccordion(renderTokens(page.content_md)) :
                 return nb;
               });
               setDrafts(d => { const nd = Object.assign({}, d); delete nd[slug + ":" + langFilter]; return nd; });
-              setMsg("✅ " + slug + " guardado");
-              setTimeout(() => setMsg(""), 2200);
+              setSavedFlash(slug);
+              setTimeout(() => setSavedFlash(""), 2000);
             } catch(e) {
-              setMsg("❌ " + (e.message || "erro"));
+              alert("Erro: " + (e.message || e));
             }
             setSavingKey("");
           };
 
-          // ── Componentes de input reutilizáveis ──
-          const lblStyle = { display: "block", fontSize: 12, fontWeight: 700, color: "var(--ink4)", textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 6 };
-          const inputStyle = { width: "100%", padding: "10px 12px", borderRadius: 8, border: "1.5px solid var(--border2)", fontSize: 14, fontFamily: "var(--font)", outline: "none", boxSizing: "border-box", background: "#fff" };
-          const taStyle = Object.assign({}, inputStyle, { minHeight: 70, resize: "vertical", lineHeight: 1.5 });
+          const lblStyle = { display: "block", fontSize: 12, fontWeight: 700, color: "var(--ink3)", textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 8 };
+          const inputStyle = { width: "100%", padding: "11px 14px", borderRadius: 10, border: "1.5px solid var(--border)", fontSize: 14, fontFamily: "var(--font)", outline: "none", boxSizing: "border-box", background: "var(--surface2)", color: "var(--ink)", fontWeight: 500 };
+          const taStyle = Object.assign({}, inputStyle, { minHeight: 80, resize: "vertical", lineHeight: 1.55 });
 
-          const Field = ({ label, value, onChange, area, placeholder }) => React.createElement("div", { style: { marginBottom: 12 } },
-            React.createElement("label", { style: lblStyle }, label),
-            area ?
-              React.createElement("textarea", { value: value || "", onChange: e => onChange(e.target.value), placeholder: placeholder || "", style: taStyle })
-              : React.createElement("input", { type: "text", value: value || "", onChange: e => onChange(e.target.value), placeholder: placeholder || "", style: inputStyle })
-          );
-          
-          const NumField = ({ label, value, onChange }) => React.createElement("div", { style: { marginBottom: 12 } },
-            React.createElement("label", { style: lblStyle }, label),
-            React.createElement("input", { type: "number", value: value !== undefined ? value : "", onChange: e => onChange(e.target.value === "" ? "" : Number(e.target.value)), style: inputStyle })
+          const Field = (props) => React.createElement("div", { style: { marginBottom: 14 } },
+            React.createElement("label", { style: lblStyle }, props.label),
+            props.area
+              ? React.createElement("textarea", { className: "input-fancy", value: props.value || "", onChange: e => props.onChange(e.target.value), style: taStyle })
+              : React.createElement("input", { className: "input-fancy", type: props.type || "text", value: props.value !== undefined && props.value !== null ? props.value : "", onChange: e => props.onChange(props.type === "number" ? (e.target.value === "" ? "" : Number(e.target.value)) : e.target.value), style: inputStyle })
           );
 
-          // ── Renderers por slug ──
           const renderStats = (data) => {
             const items = (data && data.items) || [];
-            return React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 } },
-              items.map((it, i) => React.createElement("div", { key: i, style: { border: "1px solid var(--border)", borderRadius: 12, padding: 14, background: "var(--surface2)" } },
-                React.createElement("div", { style: { fontSize: 11, fontWeight: 700, color: "var(--ink4)", marginBottom: 8 } }, "Stat " + (i + 1)),
-                Field({ label: "Valor (ex: 12k+, 4.8★)", value: it.v, onChange: v => {
-                  const next = JSON.parse(JSON.stringify(data));
-                  next.items[i].v = v;
-                  setDraft("stats", next);
-                }}),
-                Field({ label: "Etiqueta", value: it.l, onChange: v => {
-                  const next = JSON.parse(JSON.stringify(data));
-                  next.items[i].l = v;
-                  setDraft("stats", next);
-                }})
+            return React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 } },
+              items.map((it, i) => React.createElement("div", { key: i, style: { border: "1px solid var(--border)", borderRadius: 14, padding: 18, background: "linear-gradient(180deg,#FFFFFF 0%,var(--surface2) 100%)" } },
+                React.createElement("div", { style: { fontSize: 11, fontWeight: 700, color: "var(--ink4)", textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 12 } }, "Stat " + (i + 1)),
+                React.createElement(Field, { label: "Valor", value: it.v, onChange: v => { const next = JSON.parse(JSON.stringify(data)); next.items[i].v = v; setDraft("stats", next); } }),
+                React.createElement(Field, { label: "Etiqueta", value: it.l, onChange: v => { const next = JSON.parse(JSON.stringify(data)); next.items[i].l = v; setDraft("stats", next); } })
               ))
             );
           };
@@ -6954,161 +6941,173 @@ slug === "faq" ? renderFAQAccordion(renderTokens(page.content_md)) :
               mut(next);
               setDraft(slug, next);
             };
-            const moveItem = (i, dir) => cloneAndSet(d => {
-              const j = i + dir;
-              if (j < 0 || j >= d.items.length) return;
-              const tmp = d.items[i]; d.items[i] = d.items[j]; d.items[j] = tmp;
-            });
+            const moveItem = (i, dir) => cloneAndSet(d => { const j = i + dir; if (j < 0 || j >= d.items.length) return; const tmp = d.items[i]; d.items[i] = d.items[j]; d.items[j] = tmp; });
             const removeItem = (i) => cloneAndSet(d => { d.items.splice(i, 1); });
-            const addItem = () => cloneAndSet(d => {
-              const blank = {};
-              fields.forEach(f => { blank[f.key] = f.type === "number" ? 0 : ""; });
-              d.items.push(blank);
-            });
-            
-            const headerKeys = (data && (data.title !== undefined || data.sub !== undefined)) ? true : false;
+            const addItem = () => cloneAndSet(d => { const blank = {}; fields.forEach(f => { blank[f.key] = f.type === "number" ? 0 : f.type === "list" ? [] : f.type === "bool" ? false : ""; }); d.items.push(blank); });
+            const hasHeader = (data && (data.title !== undefined || data.sub !== undefined));
 
             return React.createElement("div", null,
-              headerKeys && React.createElement("div", { style: { padding: 14, border: "1px solid var(--border)", borderRadius: 12, background: "var(--surface2)", marginBottom: 12 } },
-                React.createElement("div", { style: { fontSize: 11, fontWeight: 700, color: "var(--ink4)", marginBottom: 8 } }, "Cabeçalho da secção"),
-                Field({ label: "Título", value: data.title, onChange: v => cloneAndSet(d => { d.title = v; }) }),
-                data.sub !== undefined && Field({ label: "Subtítulo", area: true, value: data.sub, onChange: v => cloneAndSet(d => { d.sub = v; }) })
+              hasHeader && React.createElement("div", { style: { padding: 18, border: "1px solid var(--border)", borderRadius: 14, background: "linear-gradient(180deg,#FFFFFF 0%,var(--surface2) 100%)", marginBottom: 16 } },
+                React.createElement("div", { style: { fontSize: 11, fontWeight: 700, color: "var(--ink4)", marginBottom: 12, textTransform: "uppercase", letterSpacing: ".08em" } }, "Cabeçalho"),
+                React.createElement(Field, { label: "Título", value: data.title, onChange: v => cloneAndSet(d => { d.title = v; }) }),
+                data.sub !== undefined && React.createElement(Field, { label: "Subtítulo", area: true, value: data.sub, onChange: v => cloneAndSet(d => { d.sub = v; }) })
               ),
-              items.map((it, i) => React.createElement("div", { key: i, style: { border: "1px solid var(--border)", borderRadius: 12, padding: 14, background: "#fff", marginBottom: 10 } },
-                React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 } },
-                  React.createElement("div", { style: { fontSize: 11, fontWeight: 700, color: "var(--ink4)" } }, "Item " + (i + 1)),
+              items.map((it, i) => React.createElement("div", { key: i, style: { border: "1px solid var(--border)", borderRadius: 14, padding: 18, background: "#fff", marginBottom: 12 } },
+                React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 } },
+                  React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 10 } },
+                    React.createElement("div", { style: { width: 28, height: 28, borderRadius: 8, background: "var(--surface3)", color: "var(--ink3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700 } }, i + 1),
+                    React.createElement("span", { style: { fontSize: 14, fontWeight: 600, color: "var(--ink2)" } }, it[fields[0].key] ? String(it[fields[0].key]).substring(0, 36) : "(novo item)")
+                  ),
                   React.createElement("div", { style: { display: "flex", gap: 4 } },
-                    React.createElement("button", { onClick: () => moveItem(i, -1), disabled: i === 0, title: "Subir", style: { width: 28, height: 28, borderRadius: 7, border: "1px solid var(--border2)", background: "#fff", cursor: i === 0 ? "not-allowed" : "pointer", opacity: i === 0 ? .4 : 1, fontSize: 14 } }, "↑"),
-                    React.createElement("button", { onClick: () => moveItem(i, 1), disabled: i === items.length - 1, title: "Descer", style: { width: 28, height: 28, borderRadius: 7, border: "1px solid var(--border2)", background: "#fff", cursor: i === items.length - 1 ? "not-allowed" : "pointer", opacity: i === items.length - 1 ? .4 : 1, fontSize: 14 } }, "↓"),
-                    React.createElement("button", { onClick: () => { if (window.confirm("Eliminar este item?")) removeItem(i); }, title: "Remover", style: { width: 28, height: 28, borderRadius: 7, border: "1px solid var(--border2)", background: "#fff", color: "var(--red)", cursor: "pointer", fontSize: 14 } }, "×")
+                    React.createElement("button", { onClick: () => moveItem(i, -1), disabled: i === 0, style: { width: 30, height: 30, borderRadius: 8, border: "1px solid var(--border)", background: "#fff", cursor: i === 0 ? "not-allowed" : "pointer", opacity: i === 0 ? .35 : 1, fontSize: 13 } }, "↑"),
+                    React.createElement("button", { onClick: () => moveItem(i, 1), disabled: i === items.length - 1, style: { width: 30, height: 30, borderRadius: 8, border: "1px solid var(--border)", background: "#fff", cursor: i === items.length - 1 ? "not-allowed" : "pointer", opacity: i === items.length - 1 ? .35 : 1, fontSize: 13 } }, "↓"),
+                    React.createElement("button", { onClick: () => { if (window.confirm("Eliminar?")) removeItem(i); }, style: { width: 30, height: 30, borderRadius: 8, border: "1px solid var(--border)", background: "#fff", color: "var(--red)", cursor: "pointer", fontSize: 15 } }, "×")
                   )
                 ),
                 fields.map(f => {
-                  if (f.type === "number") {
-                    return NumField({ key: f.key, label: f.label, value: it[f.key], onChange: v => cloneAndSet(d => { d.items[i][f.key] = v; }) });
-                  }
+                  if (f.type === "number") return React.createElement(Field, { key: f.key, label: f.label, type: "number", value: it[f.key], onChange: v => cloneAndSet(d => { d.items[i][f.key] = v; }) });
                   if (f.type === "list") {
                     const list = Array.isArray(it[f.key]) ? it[f.key] : [];
-                    return React.createElement("div", { key: f.key, style: { marginBottom: 12 } },
+                    return React.createElement("div", { key: f.key, style: { marginBottom: 14 } },
                       React.createElement("label", { style: lblStyle }, f.label),
                       list.map((lv, li) => React.createElement("div", { key: li, style: { display: "flex", gap: 6, marginBottom: 6 } },
-                        React.createElement("input", { type: "text", value: lv, onChange: e => cloneAndSet(d => { d.items[i][f.key][li] = e.target.value; }), style: Object.assign({}, inputStyle, { flex: 1 }) }),
-                        React.createElement("button", { onClick: () => cloneAndSet(d => { d.items[i][f.key].splice(li, 1); }), style: { width: 32, borderRadius: 7, border: "1px solid var(--border2)", background: "#fff", color: "var(--red)", cursor: "pointer" } }, "×")
+                        React.createElement("input", { className: "input-fancy", type: "text", value: lv, onChange: e => cloneAndSet(d => { d.items[i][f.key][li] = e.target.value; }), style: Object.assign({}, inputStyle, { flex: 1 }) }),
+                        React.createElement("button", { onClick: () => cloneAndSet(d => { d.items[i][f.key].splice(li, 1); }), style: { width: 36, borderRadius: 8, border: "1px solid var(--border)", background: "#fff", color: "var(--red)", cursor: "pointer", fontSize: 15 } }, "×")
                       )),
-                      React.createElement("button", { onClick: () => cloneAndSet(d => { if (!d.items[i][f.key]) d.items[i][f.key] = []; d.items[i][f.key].push(""); }), style: { padding: "6px 12px", borderRadius: 7, background: "var(--surface2)", border: "1px dashed var(--border2)", color: "var(--ink3)", cursor: "pointer", fontSize: 13, fontWeight: 500 } }, "+ adicionar")
+                      React.createElement("button", { onClick: () => cloneAndSet(d => { if (!d.items[i][f.key]) d.items[i][f.key] = []; d.items[i][f.key].push(""); }), style: { padding: "7px 14px", borderRadius: 8, background: "var(--blue-xs)", border: "1px dashed var(--blue)", color: "var(--blue)", cursor: "pointer", fontSize: 13, fontWeight: 600 } }, "+ adicionar")
                     );
                   }
-                  if (f.type === "bool") {
-                    return React.createElement("div", { key: f.key, style: { marginBottom: 12, display: "flex", alignItems: "center", gap: 8 } },
-                      React.createElement("input", { type: "checkbox", checked: !!it[f.key], onChange: e => cloneAndSet(d => { d.items[i][f.key] = e.target.checked; }), style: { width: 16, height: 16, cursor: "pointer" } }),
-                      React.createElement("label", { style: { fontSize: 14, fontWeight: 500, color: "var(--ink2)" } }, f.label)
-                    );
-                  }
-                  return Field({ key: f.key, label: f.label, area: f.area, value: it[f.key], onChange: v => cloneAndSet(d => { d.items[i][f.key] = v; }) });
+                  if (f.type === "bool") return React.createElement("div", { key: f.key, style: { marginBottom: 14, display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", background: it[f.key] ? "rgba(59,130,246,.08)" : "var(--surface2)", borderRadius: 10, border: "1px solid " + (it[f.key] ? "var(--blue)" : "var(--border)"), cursor: "pointer" }, onClick: () => cloneAndSet(d => { d.items[i][f.key] = !d.items[i][f.key]; }) },
+                    React.createElement("div", { style: { width: 22, height: 22, borderRadius: 6, background: it[f.key] ? "var(--blue)" : "#fff", border: "1.5px solid " + (it[f.key] ? "var(--blue)" : "var(--border)"), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 14, fontWeight: 700 } }, it[f.key] ? "✓" : ""),
+                    React.createElement("span", { style: { fontSize: 14, fontWeight: 600, color: "var(--ink2)" } }, f.label)
+                  );
+                  return React.createElement(Field, { key: f.key, label: f.label, area: f.area, value: it[f.key], onChange: v => cloneAndSet(d => { d.items[i][f.key] = v; }) });
                 })
               )),
-              React.createElement("button", { onClick: addItem, style: { width: "100%", padding: "11px 16px", borderRadius: 10, background: "var(--surface2)", border: "1px dashed var(--border2)", color: "var(--ink3)", cursor: "pointer", fontFamily: "var(--font)", fontSize: 14, fontWeight: 600 } }, "+ adicionar item")
+              React.createElement("button", { onClick: addItem, style: { width: "100%", padding: "14px 18px", borderRadius: 12, background: "transparent", border: "1.5px dashed var(--border)", color: "var(--ink3)", cursor: "pointer", fontFamily: "var(--font)", fontSize: 14, fontWeight: 600 } }, "+ Adicionar item")
             );
           };
 
-          const renderCtaSection = (data) => React.createElement("div", null,
-            Field({ label: "Título", value: data.title, onChange: v => setDraft("cta_section", Object.assign({}, data, { title: v })) }),
-            Field({ label: "Subtítulo", area: true, value: data.sub, onChange: v => setDraft("cta_section", Object.assign({}, data, { sub: v })) }),
-            React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 } },
-              Field({ label: "Botão principal", value: data.btn1, onChange: v => setDraft("cta_section", Object.assign({}, data, { btn1: v })) }),
-              Field({ label: "Botão secundário", value: data.btn2, onChange: v => setDraft("cta_section", Object.assign({}, data, { btn2: v })) })
-            ),
-            Field({ label: "Nota (pequeno texto abaixo)", area: true, value: data.note, onChange: v => setDraft("cta_section", Object.assign({}, data, { note: v })) })
+          const renderSimpleObj = (slug, data, fields) => React.createElement("div", { style: { padding: 18, border: "1px solid var(--border)", borderRadius: 14, background: "linear-gradient(180deg,#FFFFFF 0%,var(--surface2) 100%)" } },
+            fields.map(f => React.createElement(Field, { key: f.key, label: f.label, area: f.area, value: data[f.key], onChange: v => setDraft(slug, Object.assign({}, data, { [f.key]: v })) }))
           );
 
-          const renderPricingHeader = (data) => React.createElement("div", null,
-            Field({ label: "Título", value: data.title, onChange: v => setDraft("pricing_header", Object.assign({}, data, { title: v })) }),
-            Field({ label: "Subtítulo", area: true, value: data.sub, onChange: v => setDraft("pricing_header", Object.assign({}, data, { sub: v })) }),
-            React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 } },
-              Field({ label: "Badge popular", value: data.popular, onChange: v => setDraft("pricing_header", Object.assign({}, data, { popular: v })) }),
-              Field({ label: "Texto botão CTA", value: data.cta, onChange: v => setDraft("pricing_header", Object.assign({}, data, { cta: v })) })
-            )
-          );
-
-          const renderFooterBrand = (data) => React.createElement("div", null,
-            Field({ label: "Texto da marca (parágrafo)", area: true, value: data.brand, onChange: v => setDraft("footer_brand", { brand: v }) })
-          );
-
-          // ── Definição dos schemas por slug ──
           const slugDefs = [
-            { slug: "stats", title: "Estatísticas", desc: "4 números destacados na home (cursos, alunos, avaliação, satisfação).", render: renderStats },
-            { slug: "features", title: "Funcionalidades", desc: "Cards com ícone + título + descrição.", render: (d) => renderListWithHeader("features", d, [
-              { key: "ic", label: "Emoji / Ícone" },
-              { key: "t", label: "Título" },
-              { key: "d", label: "Descrição", area: true }
-            ])},
-            { slug: "testimonials", title: "Testemunhos", desc: "Cards com nome, cargo, texto, avatar.", render: (d) => renderListWithHeader("testimonials", d, [
-              { key: "n", label: "Nome" },
-              { key: "r", label: "Cargo / Função" },
-              { key: "t", label: "Testemunho", area: true },
-              { key: "av", label: "Iniciais (avatar, ex: RM)" },
-              { key: "rating", label: "Estrelas (1-5)", type: "number" }
-            ])},
-            { slug: "pricing_header", title: "Cabeçalho dos preços", desc: "Texto que aparece no topo da página de preços.", render: renderPricingHeader },
-            { slug: "plans", title: "Planos", desc: "Cards de planos com preço e funcionalidades.", render: (d) => renderListWithHeader("plans", d, [
-              { key: "id", label: "ID interno (ex: monthly)" },
-              { key: "name", label: "Nome do plano" },
-              { key: "price", label: "Preço (€)", type: "number" },
-              { key: "period", label: "Período (ex: /mês, único)" },
-              { key: "billed", label: "Facturação (opcional)" },
-              { key: "desc", label: "Descrição" },
-              { key: "features", label: "Funcionalidades incluídas", type: "list" },
-              { key: "popular", label: "Marcar como popular", type: "bool" }
-            ])},
-            { slug: "cta_section", title: "Bloco final (Call-to-Action)", desc: "Faixa azul no fim da home com 2 botões.", render: renderCtaSection },
-            { slug: "footer_brand", title: "Texto do rodapé", desc: "Parágrafo descritivo no canto inferior esquerdo.", render: renderFooterBrand }
+            { slug: "stats", icon: "📊", title: "Estatísticas", desc: "Números destacados" },
+            { slug: "features", icon: "✨", title: "Funcionalidades", desc: "Cards de features" },
+            { slug: "testimonials", icon: "💬", title: "Testemunhos", desc: "Reviews de alunos" },
+            { slug: "pricing_header", icon: "🏷️", title: "Cabeçalho preços", desc: "Topo da pricing" },
+            { slug: "plans", icon: "💎", title: "Planos", desc: "Cards de preços" },
+            { slug: "cta_section", icon: "🚀", title: "Call to action", desc: "Bloco final" },
+            { slug: "footer_brand", icon: "📝", title: "Rodapé", desc: "Texto da marca" }
           ];
 
-          return React.createElement("div", { style: { maxWidth: 900, margin: "0 auto" } },
-            React.createElement("style", null, GLOBAL_CSS),
-            React.createElement("h1", { style: { fontSize: 28, fontWeight: 700, color: "var(--ink)", marginBottom: 6, letterSpacing: "-0.02em" } }, "Blocos da Home"),
-            React.createElement("p", { style: { fontSize: 15, color: "var(--ink3)", marginBottom: 22, lineHeight: 1.5 } }, "Edita o conteúdo da página inicial. Cada bloco é guardado por língua."),
-            
-            React.createElement("div", { style: { display: "flex", gap: 6, marginBottom: 20, flexWrap: "wrap" } },
-              ["pt", "en", "es", "fr"].map(l => React.createElement("button", {
-                key: l, onClick: () => setLangFilter(l),
-                style: {
-                  padding: "8px 18px", borderRadius: 980,
-                  background: langFilter === l ? "var(--blue)" : "#fff",
-                  color: langFilter === l ? "#fff" : "var(--ink2)",
-                  border: "1px solid " + (langFilter === l ? "var(--blue)" : "var(--border2)"),
-                  fontFamily: "var(--font)", fontSize: 13, fontWeight: 600,
-                  cursor: "pointer", textTransform: "uppercase", letterSpacing: ".06em"
-                }
-              }, l))
-            ),
-            
-            msg && React.createElement("div", {
-              style: { padding: "10px 14px", borderRadius: 10, background: msg.startsWith("✅") ? "rgba(16,185,129,.1)" : "rgba(239,68,68,.1)", color: msg.startsWith("✅") ? "#059669" : "#DC2626", fontSize: 14, fontWeight: 500, marginBottom: 16 }
-            }, msg),
+          const activeDef = slugDefs.find(d => d.slug === activeSlug) || slugDefs[0];
+          const activeData = getDraft(activeSlug);
+          const activeDirty = isDirtyLang(activeSlug, langFilter);
 
-            loading ? React.createElement("div", { style: { padding: 40, textAlign: "center", color: "var(--ink4)" } }, "A carregar...") :
-            slugDefs.map(def => {
-              const data = getDraft(def.slug);
-              const dirty = isDirty(def.slug);
-              return React.createElement("section", {
-                key: def.slug,
-                style: { background: "#fff", border: "1px solid var(--border)", borderRadius: 16, padding: 24, marginBottom: 18, boxShadow: "var(--shadow-xs)" }
-              },
-                React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 18, gap: 12, flexWrap: "wrap" } },
-                  React.createElement("div", null,
-                    React.createElement("h2", { style: { fontSize: 20, fontWeight: 700, color: "var(--ink)", letterSpacing: "-0.02em", margin: 0, marginBottom: 4 } }, def.title),
-                    React.createElement("p", { style: { fontSize: 14, color: "var(--ink3)", margin: 0 } }, def.desc)
+          const renderActive = () => {
+            if (!activeData) return React.createElement("div", { style: { padding: 60, textAlign: "center", color: "var(--ink4)", border: "1.5px dashed var(--border)", borderRadius: 14 } }, "Sem dados para esta língua.");
+            switch (activeSlug) {
+              case "stats": return renderStats(activeData);
+              case "features": return renderListWithHeader("features", activeData, [
+                { key: "ic", label: "Emoji / Ícone" },
+                { key: "t", label: "Título" },
+                { key: "d", label: "Descrição", area: true }
+              ]);
+              case "testimonials": return renderListWithHeader("testimonials", activeData, [
+                { key: "n", label: "Nome" },
+                { key: "r", label: "Cargo / Função" },
+                { key: "t", label: "Testemunho", area: true },
+                { key: "av", label: "Iniciais (avatar)" },
+                { key: "rating", label: "Estrelas (1-5)", type: "number" }
+              ]);
+              case "pricing_header": return renderSimpleObj("pricing_header", activeData, [
+                { key: "title", label: "Título" },
+                { key: "sub", label: "Subtítulo", area: true },
+                { key: "popular", label: "Badge popular" },
+                { key: "cta", label: "Texto do botão CTA" }
+              ]);
+              case "plans": return renderListWithHeader("plans", activeData, [
+                { key: "id", label: "ID interno" },
+                { key: "name", label: "Nome do plano" },
+                { key: "price", label: "Preço (€)", type: "number" },
+                { key: "period", label: "Período (ex: /mês)" },
+                { key: "billed", label: "Facturação (opcional)" },
+                { key: "desc", label: "Descrição" },
+                { key: "features", label: "Funcionalidades", type: "list" },
+                { key: "popular", label: "Marcar como popular", type: "bool" }
+              ]);
+              case "cta_section": return renderSimpleObj("cta_section", activeData, [
+                { key: "title", label: "Título" },
+                { key: "sub", label: "Subtítulo", area: true },
+                { key: "btn1", label: "Botão principal" },
+                { key: "btn2", label: "Botão secundário" },
+                { key: "note", label: "Nota pequena", area: true }
+              ]);
+              case "footer_brand": return renderSimpleObj("footer_brand", activeData, [
+                { key: "brand", label: "Texto da marca", area: true }
+              ]);
+              default: return null;
+            }
+          };
+
+          return React.createElement("div", { style: { maxWidth: 1200, margin: "0 auto" } },
+            React.createElement("style", null, GLOBAL_CSS + anim),
+            React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, marginBottom: 24, flexWrap: "wrap" } },
+              React.createElement("div", null,
+                React.createElement("h1", { style: { fontSize: 28, fontWeight: 700, color: "var(--ink)", letterSpacing: "-0.02em", margin: 0, marginBottom: 4 } }, "Blocos da Home"),
+                React.createElement("p", { style: { fontSize: 15, color: "var(--ink3)", margin: 0 } }, "Edita o conteúdo da página inicial.")
+              ),
+              React.createElement("div", { style: { display: "flex", gap: 4, padding: 4, background: "var(--surface2)", borderRadius: 980, border: "1px solid var(--border)" } },
+                ["pt", "en", "es", "fr"].map(l => React.createElement("button", {
+                  key: l, onClick: () => setLangFilter(l),
+                  style: { padding: "7px 16px", borderRadius: 980, background: langFilter === l ? "#fff" : "transparent", color: langFilter === l ? "var(--ink)" : "var(--ink3)", border: "none", cursor: "pointer", fontFamily: "var(--font)", fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".06em", boxShadow: langFilter === l ? "var(--shadow-xs)" : "none" }
+                }, l))
+              )
+            ),
+
+            loading ? React.createElement("div", { style: { padding: 60, textAlign: "center", color: "var(--ink4)" } }, "A carregar...") :
+            React.createElement("div", { style: { display: "grid", gridTemplateColumns: "260px 1fr", gap: 20, alignItems: "start" } },
+              React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 6 } },
+                slugDefs.map(def => {
+                  const isActive = activeSlug === def.slug;
+                  const dirtyHere = dirtyCountForSlug(def.slug);
+                  return React.createElement("button", {
+                    key: def.slug, onClick: () => setActiveSlug(def.slug),
+                    style: { display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 12, border: "1px solid " + (isActive ? "var(--blue)" : "transparent"), background: isActive ? "var(--blue-xs)" : "transparent", cursor: "pointer", fontFamily: "var(--font)", textAlign: "left", width: "100%" }
+                  },
+                    React.createElement("div", { style: { width: 36, height: 36, borderRadius: 10, background: isActive ? "var(--blue)" : "#fff", border: "1px solid " + (isActive ? "var(--blue)" : "var(--border)"), display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 } }, def.icon),
+                    React.createElement("div", { style: { flex: 1, minWidth: 0 } },
+                      React.createElement("div", { style: { fontSize: 14, fontWeight: 600, color: isActive ? "var(--blue)" : "var(--ink)" } }, def.title),
+                      React.createElement("div", { style: { fontSize: 12, color: "var(--ink4)" } }, def.desc)
+                    ),
+                    dirtyHere > 0 && React.createElement("div", { style: { width: 8, height: 8, borderRadius: "50%", background: "var(--amber)", flexShrink: 0 } })
+                  );
+                })
+              ),
+
+              React.createElement("div", { className: "fadeIn", key: activeSlug, style: { background: "#fff", border: "1px solid var(--border)", borderRadius: 16, padding: 24, boxShadow: "var(--shadow-xs)" } },
+                React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22, paddingBottom: 18, borderBottom: "1px solid var(--border)", flexWrap: "wrap", gap: 12 } },
+                  React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 14 } },
+                    React.createElement("div", { style: { width: 44, height: 44, borderRadius: 12, background: "var(--gradient-primary)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, boxShadow: "0 4px 12px rgba(59,130,246,.25)" } }, activeDef.icon),
+                    React.createElement("div", null,
+                      React.createElement("h2", { style: { fontSize: 22, fontWeight: 700, color: "var(--ink)", margin: 0 } }, activeDef.title),
+                      React.createElement("p", { style: { fontSize: 14, color: "var(--ink3)", margin: 0, marginTop: 2 } }, activeDef.desc)
+                    )
                   ),
-                  dirty && React.createElement("button", {
-                    onClick: () => save(def.slug),
-                    disabled: savingKey === def.slug,
-                    style: { padding: "9px 20px", borderRadius: 10, background: "var(--blue)", color: "#fff", border: "none", cursor: savingKey === def.slug ? "wait" : "pointer", fontFamily: "var(--font)", fontSize: 14, fontWeight: 600, opacity: savingKey === def.slug ? .6 : 1, flexShrink: 0 }
-                  }, savingKey === def.slug ? "A guardar..." : "Guardar alterações")
+                  React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 10 } },
+                    savedFlash === activeSlug && React.createElement("div", { style: { display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 980, background: "rgba(16,185,129,.12)", color: "#059669", fontSize: 13, fontWeight: 700 } }, "✓ Guardado"),
+                    React.createElement("button", {
+                      onClick: () => save(activeSlug),
+                      disabled: !activeDirty || savingKey === activeSlug,
+                      style: { padding: "10px 22px", borderRadius: 12, background: activeDirty ? "var(--gradient-primary)" : "var(--surface3)", color: activeDirty ? "#fff" : "var(--ink4)", border: "none", cursor: activeDirty && savingKey !== activeSlug ? "pointer" : "not-allowed", fontFamily: "var(--font)", fontSize: 14, fontWeight: 700, boxShadow: activeDirty ? "0 4px 12px rgba(59,130,246,.3)" : "none" }
+                    }, savingKey === activeSlug ? "A guardar…" : activeDirty ? "Guardar" : "Sem alterações")
+                  )
                 ),
-                data ? def.render(data) : React.createElement("div", { style: { color: "var(--ink4)", fontSize: 14 } }, "Sem dados para esta língua.")
-              );
-            })
+                renderActive()
+              )
+            )
           );
         }, []);
 
