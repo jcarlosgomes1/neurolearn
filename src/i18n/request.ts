@@ -1,6 +1,7 @@
 import { getRequestConfig } from 'next-intl/server';
 import type { AbstractIntlMessages } from 'next-intl';
 import { routing } from './routing';
+import { SUPABASE_URL } from '@/lib/supabase/config';
 
 export default getRequestConfig(async ({ requestLocale }) => {
   let locale = await requestLocale;
@@ -11,7 +12,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
   let messages: AbstractIntlMessages = {};
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/app-bootstrap?lang=${locale}`,
+      `${SUPABASE_URL}/functions/v1/app-bootstrap?lang=${locale}`,
       { next: { revalidate: 60, tags: [`bootstrap:${locale}`] } }
     );
     const data = await res.json();

@@ -1,5 +1,6 @@
 import 'server-only';
 import { createClient as createServerClient } from '@/lib/supabase/server';
+import { SUPABASE_URL } from '@/lib/supabase/config';
 
 export type ApiResult<T = any> = { ok: true } & T | { ok: false; error: string; details?: unknown };
 
@@ -15,7 +16,7 @@ export class NeuroLearnApi {
   private agentKey?: string;
 
   constructor(opts: ApiOptions = {}) {
-    this.baseUrl = opts.baseUrl ?? process.env.NEXT_PUBLIC_SUPABASE_URL!;
+    this.baseUrl = opts.baseUrl ?? SUPABASE_URL;
     this.token = opts.token;
     this.agentKey = opts.agentKey;
   }
