@@ -59,7 +59,7 @@ export function AdminCockpit() {
   const compliance = dash.compliance_issues || [];
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8 space-y-8 animate-fade-in">
+    <div className="max-w-7xl mx-auto px-6 lg:px-8 py-8 space-y-8 animate-fade-in">
       <div>
         <h1 className="text-2xl font-bold text-slate-900">Cockpit Administrador</h1>
         <p className="text-slate-500 text-sm mt-1">Visão geral da plataforma e dos agentes</p>
@@ -67,7 +67,7 @@ export function AdminCockpit() {
 
       <div>
         <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Pessoas</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-4 gap-4">
           <Stat icon="🎓" label="Estudantes" value={dash.students} accent="brand" />
           <Stat icon="👨‍🏫" label="Instrutores" value={dash.instructors} accent="purple" href="/admin/instrutores" />
           <Stat icon="🛡" label="Admins" value={dash.admins} accent="slate" />
@@ -77,7 +77,7 @@ export function AdminCockpit() {
 
       <div>
         <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Operacional</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-4 gap-4">
           <Stat icon="🤖" label="Agentes activos" value={dash.active_agents} accent="brand" href="/admin/agentes" />
           <Stat icon="⚙" label="Jobs pendentes" value={dash.pending_jobs} accent="amber" href="/admin/jobs" />
           <Stat icon="✋" label="Aprovações" value={dash.pending_approvals} accent={dash.pending_approvals > 0 ? 'amber' : 'slate'} href="#aprovacoes" />

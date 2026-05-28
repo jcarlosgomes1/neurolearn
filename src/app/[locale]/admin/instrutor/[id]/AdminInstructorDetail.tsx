@@ -31,7 +31,7 @@ export function AdminInstructorDetail({ instructorId }: { instructorId: string }
   const inst = dash.instructor;
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8 space-y-6 animate-fade-in">
+    <div className="max-w-7xl mx-auto px-6 lg:px-8 py-8 space-y-6 animate-fade-in">
       <div>
         <Link href={'/admin/instrutores' as any} className="text-sm text-brand-600 hover:underline">← Todos os instrutores</Link>
         <div className="flex items-center gap-3 mt-2">
