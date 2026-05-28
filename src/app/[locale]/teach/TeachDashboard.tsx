@@ -35,9 +35,12 @@ export function TeachDashboard() {
   const s = dash.stats;
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-6 animate-fade-in">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Painel Instrutor</h1>
-        <p className="text-slate-500 text-sm mt-1">Gestão dos teus cursos e receitas</p>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Painel Instrutor</h1>
+          <p className="text-slate-500 text-sm mt-1">Gestão dos teus cursos e receitas</p>
+        </div>
+        <Link href={'/teach/novo' as any} className="btn-primary">+ Criar curso</Link>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
@@ -51,7 +54,7 @@ export function TeachDashboard() {
       <section className="bg-white rounded-xl border border-slate-200 p-5">
         <h2 className="font-semibold text-slate-900 mb-4">Os meus cursos</h2>
         {dash.my_courses.length === 0 ? (
-          <p className="text-sm text-slate-500">Sem cursos ainda. Cria o teu primeiro!</p>
+          <div className="text-center py-6"><p className="text-sm text-slate-500 mb-3">Sem cursos ainda.</p><Link href={'/teach/novo' as any} className="btn-primary inline-flex">+ Criar o meu primeiro curso</Link></div>
         ) : (
           <div className="space-y-2">
             {dash.my_courses.map((c: any) => (

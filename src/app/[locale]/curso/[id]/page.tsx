@@ -6,6 +6,7 @@ import { getHomeBlocks } from '@/lib/api/home-blocks';
 import { fmtCents } from '@/lib/utils/cn';
 import { notFound } from 'next/navigation';
 import { Clock, Award, Users, Star, CheckCircle, BookOpen } from 'lucide-react';
+import { EnrollButton } from '@/components/shared/EnrollButton';
 
 export const revalidate = 120;
 
@@ -53,7 +54,7 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
                     <div className="text-3xl font-bold text-slate-900">{fmtCents(course.price_cents, course.currency || 'EUR')}</div>
                     <p className="text-xs text-slate-500 mt-1">Pagamento único · acesso vitalício</p>
                   </div>
-                  <Link href={`/register?course=${course.id}` as any} className="block w-full text-center bg-brand-600 text-white font-semibold py-3 rounded-lg hover:bg-brand-700 transition-colors shadow-md">Inscrever-me agora</Link>
+                  <EnrollButton courseId={course.id} priceLabel={fmtCents(course.price_cents, course.currency || 'EUR')} />
                   <Link href={'/login' as any} className="block w-full text-center mt-2 text-sm text-brand-700 hover:underline">Já tenho conta</Link>
                   <ul className="mt-6 space-y-2 text-sm text-slate-700">
                     <li className="flex items-start gap-2"><CheckCircle className="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0" /><span>Acesso vitalício ao conteúdo</span></li>
