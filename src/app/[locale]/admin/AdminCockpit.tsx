@@ -8,15 +8,29 @@ import { DashboardSkeleton } from '@/components/shared/DashboardSkeleton';
 import { relTime } from '@/lib/utils/cn';
 import { toast } from 'sonner';
 
+const APPROVAL_GROUPS: { key: string; label: string; emoji: string; match: (a: string) => boolean }[] = [
+  { key: 'courses', label: 'Cursos', emoji: '📚', match: (a) => a.includes('course') },
+  { key: 'blog', label: 'Blog', emoji: '📝', match: (a) => a.includes('blog') },
+  { key: 'social', label: 'Redes sociais', emoji: '📣', match: (a) => a.includes('social') },
+  { key: 'other', label: 'Outros', emoji: '✋', match: () => true },
+];
+
+function groupApprovals(approvals: any[]) {
+  const groups: Record<string, any[]> = { courses: [], blog: [], social: [], other: [] };
+  for (const a of approvals) {
+    const g = APPROVAL_GROUPS.find((g) => g.match(a.action || ''));
+    groups[g?.key || 'other'].push(a);
+  }
+  return groups;
+}
+
 export function AdminCockpit() {
   const [dash, setDash] = useState<any>(null);
   const [err, setErr] = useState<string | null>(null);
   const [deciding, setDeciding] = useState<string | null>(null);
 
   function load() {
-    callAgentOps<{ dashboard: any }>('dashboard')
-      .then((r) => setDash(r.dashboard))
-      .catch((e) => setErr(e.message));
+    callAgentOps<{ dashboard: any }>('dashboard').then((r) => setDash(r.dashboard)).catch((e) => setErr(e.message));
   }
   useEffect(() => { load(); }, []);
 
@@ -26,11 +40,7 @@ export function AdminCockpit() {
       await callAgentOps('decide_approval', { approval_id: approvalId, decision });
       toast.success(decision === 'approved' ? 'Aprovado' : 'Rejeitado');
       setDash((d: any) => ({ ...d, approvals_pending: (d.approvals_pending || []).filter((a: any) => a.id !== approvalId), pending_approvals: Math.max(0, (d.pending_approvals || 1) - 1) }));
-    } catch (e: any) {
-      toast.error(e.message);
-    } finally {
-      setDeciding(null);
-    }
+    } catch (e: any) { toast.error(e.message); } finally { setDeciding(null); }
   }
 
   if (err) {
@@ -45,6 +55,7 @@ export function AdminCockpit() {
   if (!dash) return <DashboardSkeleton stats={8} />;
 
   const approvals = dash.approvals_pending || [];
+  const grouped = groupApprovals(approvals);
   const compliance = dash.compliance_issues || [];
 
   return (
@@ -55,24 +66,54 @@ export function AdminCockpit() {
       </div>
 
       <div>
-        <div className="flex items-center justify-between mb-3"><h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Pessoas</h2><Link href={'/admin/instrutores' as any} className="text-xs text-brand-600 hover:underline font-medium">Ver instrutores →</Link></div>
+        <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Pessoas</h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Stat icon="🎓" label="Estudantes" value={dash.students} accent="brand" />
-          <Stat icon="👨‍🏫" label="Instrutores" value={dash.instructors} accent="purple" />
+          <Stat icon="👨‍🏫" label="Instrutores" value={dash.instructors} accent="purple" href="/admin/instrutores" />
           <Stat icon="🛡" label="Admins" value={dash.admins} accent="slate" />
-          <Stat icon="📚" label="Cursos publicados" value={dash.courses_published} accent="emerald" />
+          <Stat icon="📚" label="Cursos publicados" value={dash.courses_published} accent="emerald" href="/admin/cursos" />
         </div>
       </div>
 
       <div>
         <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Operacional</h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <Stat icon="🤖" label="Agentes activos" value={dash.active_agents} accent="brand" />
-          <Stat icon="⚙" label="Jobs pendentes" value={dash.pending_jobs} accent="amber" />
-          <Stat icon="✋" label="Aprovações" value={dash.pending_approvals} accent={dash.pending_approvals > 0 ? 'amber' : 'slate'} />
+          <Stat icon="🤖" label="Agentes activos" value={dash.active_agents} accent="brand" href="/admin/agentes" />
+          <Stat icon="⚙" label="Jobs pendentes" value={dash.pending_jobs} accent="amber" href="/admin/jobs" />
+          <Stat icon="✋" label="Aprovações" value={dash.pending_approvals} accent={dash.pending_approvals > 0 ? 'amber' : 'slate'} href="#aprovacoes" />
           <Stat icon="⚠" label="Compliance" value={dash.critical_compliance} accent={dash.critical_compliance > 0 ? 'rose' : 'slate'} />
         </div>
       </div>
+
+      <section id="aprovacoes" className="scroll-mt-20">
+        <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Aprovações pendentes {approvals.length > 0 && <span className="ml-1 text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full normal-case">{approvals.length}</span>}</h2>
+        {approvals.length === 0 ? (
+          <div className="bg-white rounded-xl border border-slate-200 p-6 text-sm text-slate-500">Nada para aprovar. Tudo em dia! 🎉</div>
+        ) : (
+          <div className="space-y-4">
+            {APPROVAL_GROUPS.filter((g) => grouped[g.key].length > 0).map((g) => (
+              <div key={g.key} className="bg-white rounded-xl border border-slate-200 p-5">
+                <h3 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">{g.emoji} {g.label} <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">{grouped[g.key].length}</span></h3>
+                <ul className="space-y-3">
+                  {grouped[g.key].map((a: any) => (
+                    <li key={a.id} className="flex items-center justify-between gap-3 p-3 rounded-lg border border-slate-100">
+                      <div className="min-w-0">
+                        <div className="font-medium text-slate-900 text-sm">{a.params?.course_title || a.params?.title || a.action}</div>
+                        {a.reason && <div className="text-xs text-slate-500 truncate">{a.reason}</div>}
+                        <div className="text-xs text-slate-400 mt-0.5">{relTime(a.created_at)}</div>
+                      </div>
+                      <div className="flex gap-2 flex-shrink-0">
+                        <button onClick={() => decide(a.id, 'approved')} disabled={deciding === a.id} className="text-xs bg-emerald-600 text-white px-3 py-1.5 rounded-md hover:bg-emerald-700 disabled:opacity-50">Aprovar</button>
+                        <button onClick={() => decide(a.id, 'rejected')} disabled={deciding === a.id} className="text-xs bg-white border border-slate-300 text-slate-700 px-3 py-1.5 rounded-md hover:bg-slate-50 disabled:opacity-50">Rejeitar</button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
 
       <div className="grid md:grid-cols-2 gap-6">
         <section className="bg-white rounded-xl border border-slate-200 p-5">
@@ -96,29 +137,6 @@ export function AdminCockpit() {
           <div className="mt-4 pt-4 border-t border-slate-100 text-xs text-slate-500">{dash.active_crons} crons agendados · {dash.audit_entries_24h} entradas de auditoria 24h</div>
         </section>
       </div>
-
-      <section className="bg-white rounded-xl border border-slate-200 p-5">
-        <h2 className="font-semibold text-slate-900 mb-4 flex items-center gap-2">✋ Aprovações pendentes {approvals.length > 0 && <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">{approvals.length}</span>}</h2>
-        {approvals.length === 0 ? (
-          <p className="text-sm text-slate-500">Nada para aprovar. Tudo em dia! 🎉</p>
-        ) : (
-          <ul className="space-y-3">
-            {approvals.slice(0, 8).map((a: any) => (
-              <li key={a.id} className="flex items-center justify-between gap-3 p-3 rounded-lg border border-slate-100">
-                <div className="min-w-0">
-                  <div className="font-medium text-slate-900 text-sm">{a.action}</div>
-                  {a.reason && <div className="text-xs text-slate-500 truncate">{a.reason}</div>}
-                  <div className="text-xs text-slate-400 mt-0.5">{relTime(a.created_at)}</div>
-                </div>
-                <div className="flex gap-2 flex-shrink-0">
-                  <button onClick={() => decide(a.id, 'approved')} disabled={deciding === a.id} className="text-xs bg-emerald-600 text-white px-3 py-1.5 rounded-md hover:bg-emerald-700 disabled:opacity-50">Aprovar</button>
-                  <button onClick={() => decide(a.id, 'rejected')} disabled={deciding === a.id} className="text-xs bg-white border border-slate-300 text-slate-700 px-3 py-1.5 rounded-md hover:bg-slate-50 disabled:opacity-50">Rejeitar</button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
 
       {compliance.length > 0 && (
         <section className="bg-white rounded-xl border border-slate-200 p-5">
