@@ -55,7 +55,7 @@ export function AdminList({ title, action, dataKey, backHref, columns, linkPrefi
   if (!rows) return <DashboardSkeleton stats={3} />;
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8 space-y-6 animate-fade-in">
+    <div className="max-w-7xl mx-auto px-6 lg:px-8 py-8 space-y-6 animate-fade-in">
       <div>
         <Link href={backHref as any} className="text-sm text-brand-600 hover:underline">← Cockpit</Link>
         <h1 className="text-2xl font-bold text-slate-900 mt-1">{title}</h1>
