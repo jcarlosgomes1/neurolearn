@@ -39,13 +39,13 @@ export function RegisterForm() {
       <div>
         <label className="label" htmlFor="password">Password</label>
         <input id="password" type="password" required autoComplete="new-password" minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} className="input" />
-        <p className="text-xs text-slate-500 mt-1">M\u00ednimo 6 caracteres</p>
+        <p className="text-xs text-slate-500 mt-1">Mínimo 6 caracteres</p>
       </div>
       <button type="submit" disabled={loading} className="btn-primary w-full">
-        {loading ? 'A criar...' : 'Criar conta gr\u00e1tis'}
+        {loading ? 'A criar...' : 'Criar conta grátis'}
       </button>
       <p className="text-xs text-slate-500 text-center">
-        Ao criar conta, aceitas os nossos Termos e Pol\u00edtica de Privacidade.
+        Ao criar conta, aceitas os nossos Termos e Política de Privacidade.
       </p>
     </form>
   );

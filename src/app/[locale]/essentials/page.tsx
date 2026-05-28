@@ -25,15 +25,15 @@ export default async function EssentialsPage({ params }: { params: Promise<{ loc
     <>
       <Header />
       <main className="bg-white min-h-screen">
-        <PageHeader badge="\u{1F193} Sempre gr\u00e1tis" title="NeuroLearn Essentials" subtitle="Fundamentos de IA gratuitos, sempre actualizados, curados pela nossa equipa. Come\u00e7a hoje, do zero ao avan\u00e7ado." />
+        <PageHeader badge="🆓 Sempre grátis" title="NeuroLearn Essentials" subtitle="Fundamentos de IA gratuitos, sempre actualizados, curados pela nossa equipa. Começa hoje, do zero ao avançado." />
         <section className="max-w-6xl mx-auto px-4 py-12">
           {!tracks || tracks.length === 0 ? (
             <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-600 via-brand-700 to-brand-900 text-white p-12 text-center">
-              <div className="text-5xl mb-4">\u{1F680}</div>
+              <div className="text-5xl mb-4">🚀</div>
               <h2 className="text-2xl sm:text-3xl font-bold">Em breve</h2>
-              <p className="mt-4 text-brand-100 max-w-xl mx-auto text-pretty">Estamos a preparar as primeiras Essentials: Prompt Engineering, ChatGPT no Marketing, Automa\u00e7\u00e3o com n8n, e mais.</p>
+              <p className="mt-4 text-brand-100 max-w-xl mx-auto text-pretty">Estamos a preparar as primeiras Essentials: Prompt Engineering, ChatGPT no Marketing, Automação com n8n, e mais.</p>
               <div className="mt-8 flex flex-wrap justify-center gap-3">
-                <Link href={'/register' as any} className="bg-white text-brand-700 font-semibold px-6 py-3 rounded-lg hover:bg-brand-50 transition-colors">Criar conta gr\u00e1tis</Link>
+                <Link href={'/register' as any} className="bg-white text-brand-700 font-semibold px-6 py-3 rounded-lg hover:bg-brand-50 transition-colors">Criar conta grátis</Link>
                 <Link href={'/cursos' as any} className="border border-white/40 text-white font-semibold px-6 py-3 rounded-lg hover:bg-white/10 transition-colors">Ver Pro Courses</Link>
               </div>
             </div>

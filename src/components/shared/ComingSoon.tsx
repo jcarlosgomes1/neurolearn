@@ -26,7 +26,7 @@ export function ComingSoon({ emoji, title, description, features }: Props) {
               <ul className="space-y-2">
                 {features.map((f, i) => (
                   <li key={i} className="flex items-start gap-2 text-sm text-slate-700">
-                    <span className="text-brand-500 mt-0.5">\u25B8</span>
+                    <span className="text-brand-500 mt-0.5">▸</span>
                     <span>{f}</span>
                   </li>
                 ))}
@@ -35,7 +35,7 @@ export function ComingSoon({ emoji, title, description, features }: Props) {
           )}
 
           <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Link href="/" className="btn-secondary">\u2190 Voltar \u00e0 p\u00e1gina inicial</Link>
+            <Link href="/" className="btn-secondary">← Voltar à página inicial</Link>
             <Link href={'/cursos' as any} className="btn-primary">Ver cursos</Link>
           </div>
         </div>

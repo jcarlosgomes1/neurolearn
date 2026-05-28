@@ -26,12 +26,12 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       <Header />
       <main className="bg-white min-h-screen">
         <article className="max-w-3xl mx-auto px-4 py-12">
-          <Link href={'/blog' as any} className="text-sm text-brand-600 hover:underline mb-4 inline-block">\u2190 Todos os artigos</Link>
+          <Link href={'/blog' as any} className="text-sm text-brand-600 hover:underline mb-4 inline-block">← Todos os artigos</Link>
           {post.category && <span className="inline-block text-xs font-medium text-brand-700 bg-brand-50 px-2 py-0.5 rounded-full mb-3">{post.category}</span>}
           <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight text-balance">{translation.title}</h1>
           <div className="mt-4 flex items-center gap-3 text-sm text-slate-500">
             {post.author_name && <span>{post.author_name}</span>}
-            {post.published_at && <span>\u00b7</span>}
+            {post.published_at && <span>·</span>}
             {post.published_at && <span>{fmtDate(post.published_at)}</span>}
           </div>
           {post.featured_image_url && <img src={post.featured_image_url} alt={translation.title} className="w-full rounded-xl mt-8" />}

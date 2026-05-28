@@ -9,12 +9,12 @@ export const revalidate = 600;
 export const metadata = { title: 'Empresas' };
 
 const FEATURES = [
-  { icon: Sparkles, title: 'Conte\u00fado \u00e0 medida', desc: 'Cursos custom para a tua equipa, criados a partir dos teus pr\u00f3prios materiais.' },
-  { icon: Shield, title: 'White-label', desc: 'Dom\u00ednio pr\u00f3prio, cores, logo e identidade total.' },
-  { icon: Users, title: 'Gest\u00e3o de equipas', desc: 'Adiciona/remove utilizadores em massa, organiza por departamentos.' },
-  { icon: BarChart, title: 'Analytics avan\u00e7ado', desc: 'Dashboards de progresso, taxas de conclus\u00e3o, certificados, ROI.' },
-  { icon: Building2, title: 'SSO + SCIM', desc: 'Integra\u00e7\u00e3o com Microsoft Entra, Okta, Google Workspace.' },
-  { icon: Headphones, title: 'Success Manager dedicado', desc: 'Suporte priorit\u00e1rio, forma\u00e7\u00e3o inicial, revis\u00f5es trimestrais.' },
+  { icon: Sparkles, title: 'Conteúdo à medida', desc: 'Cursos custom para a tua equipa, criados a partir dos teus próprios materiais.' },
+  { icon: Shield, title: 'White-label', desc: 'Domínio próprio, cores, logo e identidade total.' },
+  { icon: Users, title: 'Gestão de equipas', desc: 'Adiciona/remove utilizadores em massa, organiza por departamentos.' },
+  { icon: BarChart, title: 'Analytics avançado', desc: 'Dashboards de progresso, taxas de conclusão, certificados, ROI.' },
+  { icon: Building2, title: 'SSO + SCIM', desc: 'Integração com Microsoft Entra, Okta, Google Workspace.' },
+  { icon: Headphones, title: 'Success Manager dedicado', desc: 'Suporte prioritário, formação inicial, revisões trimestrais.' },
 ];
 
 export default async function CompaniesPage({ params }: { params: Promise<{ locale: string }> }) {
@@ -25,10 +25,10 @@ export default async function CompaniesPage({ params }: { params: Promise<{ loca
     <>
       <Header />
       <main className="bg-white min-h-screen">
-        <PageHeader badge="\u{1F3E2} Para empresas" title="Forma a tua equipa em IA. Sem complica\u00e7\u00f5es." subtitle="Plataforma white-label para formar a tua equipa em intelig\u00eancia artificial. Cursos \u00e0 medida, gest\u00e3o centralizada, certificados verific\u00e1veis.">
+        <PageHeader badge="🏢 Para empresas" title="Forma a tua equipa em IA. Sem complicações." subtitle="Plataforma white-label para formar a tua equipa em inteligência artificial. Cursos à medida, gestão centralizada, certificados verificáveis.">
           <div className="flex flex-wrap gap-3">
             <a href="mailto:hello@neurolearn.pt?subject=Enterprise" className="btn-primary">Falar com vendas</a>
-            <Link href={'/cursos' as any} className="btn-secondary">Ver cat\u00e1logo</Link>
+            <Link href={'/cursos' as any} className="btn-secondary">Ver catálogo</Link>
           </div>
         </PageHeader>
         <section className="max-w-6xl mx-auto px-4 py-16">
@@ -47,7 +47,7 @@ export default async function CompaniesPage({ params }: { params: Promise<{ loca
         </section>
         <section className="bg-slate-50 py-16">
           <div className="max-w-3xl mx-auto px-4 text-center">
-            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">Pronto para come\u00e7ar?</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">Pronto para começar?</h2>
             <p className="mt-4 text-lg text-slate-600">Fala connosco. Em 15 minutos preparamos uma demo personalizada.</p>
             <a href="mailto:hello@neurolearn.pt?subject=Demo" className="btn-primary mt-6 inline-flex text-base px-6 py-3">Agendar demo gratuita</a>
           </div>

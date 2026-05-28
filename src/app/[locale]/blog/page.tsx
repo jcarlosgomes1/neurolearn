@@ -29,12 +29,12 @@ export default async function BlogPage({ params }: { params: Promise<{ locale: s
     <>
       <Header />
       <main className="bg-white min-h-screen">
-        <PageHeader badge="\u{1F4DD} Blog" title="Aprende com os nossos artigos" subtitle="Tutoriais, casos de estudo e novidades do mundo da IA, escritos por especialistas." />
+        <PageHeader badge="📝 Blog" title="Aprende com os nossos artigos" subtitle="Tutoriais, casos de estudo e novidades do mundo da IA, escritos por especialistas." />
         <section className="max-w-6xl mx-auto px-4 py-12">
           {posts.length === 0 ? (
             <div className="text-center py-16 text-slate-500">
-              <p className="text-lg">Em breve \u2014 primeiros artigos a caminho.</p>
-              <Link href="/" className="mt-4 inline-block text-brand-600 hover:underline">\u2190 Voltar \u00e0 p\u00e1gina inicial</Link>
+              <p className="text-lg">Em breve — primeiros artigos a caminho.</p>
+              <Link href="/" className="mt-4 inline-block text-brand-600 hover:underline">← Voltar à página inicial</Link>
             </div>
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

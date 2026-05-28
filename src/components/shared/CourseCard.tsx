@@ -21,7 +21,7 @@ export function CourseCard({ course }: { course: CourseCardData }) {
       className="bg-white rounded-xl border border-slate-200 p-5 hover:shadow-lg hover:border-brand-200 transition-all flex flex-col group"
     >
       <div className="text-4xl mb-3 group-hover:scale-110 transition-transform origin-left">
-        {course.emoji || '\u{1F4DA}'}
+        {course.emoji || '📚'}
       </div>
       <h3 className="font-semibold text-slate-900 text-lg leading-snug">{course.title}</h3>
       {course.subtitle && (
@@ -37,7 +37,7 @@ export function CourseCard({ course }: { course: CourseCardData }) {
           </span>
         )}
         {course.enrollments_count && course.enrollments_count > 0 ? (
-          <span>\u{1F465} {course.enrollments_count}</span>
+          <span>👥 {course.enrollments_count}</span>
         ) : null}
       </div>
       <div className="mt-auto pt-4 flex items-center justify-between">
@@ -46,7 +46,7 @@ export function CourseCard({ course }: { course: CourseCardData }) {
         </span>
         {course.rating_avg ? (
           <span className="text-sm text-amber-600">
-            \u2605 {Number(course.rating_avg).toFixed(1)}
+            ★ {Number(course.rating_avg).toFixed(1)}
           </span>
         ) : null}
       </div>
