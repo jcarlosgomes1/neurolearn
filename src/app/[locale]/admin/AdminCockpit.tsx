@@ -55,7 +55,7 @@ export function AdminCockpit() {
       </div>
 
       <div>
-        <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Pessoas</h2>
+        <div className="flex items-center justify-between mb-3"><h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Pessoas</h2><Link href={'/admin/instrutores' as any} className="text-xs text-brand-600 hover:underline font-medium">Ver instrutores →</Link></div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Stat icon="🎓" label="Estudantes" value={dash.students} accent="brand" />
           <Stat icon="👨‍🏫" label="Instrutores" value={dash.instructors} accent="purple" />
