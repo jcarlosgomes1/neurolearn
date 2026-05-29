@@ -96,14 +96,15 @@ export function AdminCockpit() {
                 <h3 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">{g.emoji} {g.label} <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">{grouped[g.key].length}</span></h3>
                 <ul className="space-y-3">
                   {grouped[g.key].map((a: any) => (
-                    <li key={a.id} className="flex items-center justify-between gap-3 p-3 rounded-lg border border-slate-100">
-                      <div className="min-w-0">
+                    <li key={a.id} className="p-3 rounded-lg border border-slate-100 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                      <div className="min-w-0 flex-1">
                         <div className="font-medium text-slate-900 text-sm">{a.params?.course_title || a.params?.title || a.action}</div>
-                        {a.reason && <div className="text-xs text-slate-500 truncate">{a.reason}</div>}
+                        {a.reason && <div className="text-xs text-slate-500 line-clamp-2">{a.reason}</div>}
                         <div className="text-xs text-slate-400 mt-0.5">{relTime(a.created_at)}</div>
                       </div>
-                      <div className="flex gap-2 flex-shrink-0">
-                        <button onClick={() => decide(a.id, 'approved')} disabled={deciding === a.id} className="text-xs bg-emerald-600 text-white px-3 py-1.5 rounded-md hover:bg-emerald-700 disabled:opacity-50">Aprovar</button>
+                      <div className="flex flex-wrap gap-2 flex-shrink-0">
+                        <Link href={`/admin/aprovacao/${a.id}` as any} className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-md font-medium">👁 Ver</Link>
+                        <button onClick={() => decide(a.id, 'approved')} disabled={deciding === a.id} className="text-xs bg-emerald-600 text-white px-3 py-1.5 rounded-md hover:bg-emerald-700 disabled:opacity-50">✓ Aprovar</button>
                         <button onClick={() => decide(a.id, 'rejected')} disabled={deciding === a.id} className="text-xs bg-white border border-slate-300 text-slate-700 px-3 py-1.5 rounded-md hover:bg-slate-50 disabled:opacity-50">Rejeitar</button>
                       </div>
                     </li>
