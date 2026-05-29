@@ -20,20 +20,20 @@ const COLORS: Record<string, string> = {
 export function Stat({ icon, label, value, accent = 'brand', href }: StatProps) {
   const inner = (
     <>
-      <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg ${COLORS[accent]}`}>{icon}</div>
-      <div className="min-w-0">
-        <div className="text-2xl font-bold tabular-nums text-slate-900 truncate">{value}</div>
-        <div className="text-xs text-slate-500">{label}</div>
+      <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center text-base sm:text-lg flex-shrink-0 ${COLORS[accent]}`}>{icon}</div>
+      <div className="min-w-0 flex-1">
+        <div className="text-xl sm:text-2xl font-bold tabular-nums text-slate-900 truncate leading-tight">{value}</div>
+        <div className="text-[11px] sm:text-xs text-slate-500 truncate">{label}</div>
       </div>
     </>
   );
   if (href) {
     return (
-      <Link href={href as any} className="bg-white rounded-xl border border-slate-200 p-4 flex items-center gap-3 hover:border-brand-300 hover:shadow-md transition-all group">
+      <Link href={href as any} className="bg-white rounded-xl border border-slate-200 p-3 sm:p-4 flex items-center gap-2 sm:gap-3 hover:border-brand-300 hover:shadow-md transition-all group active:scale-[0.98] touch-manipulation">
         {inner}
-        <span className="ml-auto text-slate-300 group-hover:text-brand-500 transition-colors">→</span>
+        <span className="hidden sm:inline ml-auto text-slate-300 group-hover:text-brand-500 transition-colors text-sm">→</span>
       </Link>
     );
   }
-  return <div className="bg-white rounded-xl border border-slate-200 p-4 flex items-center gap-3">{inner}</div>;
+  return <div className="bg-white rounded-xl border border-slate-200 p-3 sm:p-4 flex items-center gap-2 sm:gap-3">{inner}</div>;
 }
