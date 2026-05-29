@@ -1,0 +1,165 @@
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
+import { SUPABASE_URL } from '@/lib/supabase/config';
+import { createClient } from '@/lib/supabase/client';
+import { Markdown } from '@/components/shared/Markdown';
+import { toast } from 'sonner';
+
+interface Msg { role: 'user' | 'assistant'; content: string }
+
+interface LessonContext {
+  course_title: string;
+  course_level?: string;
+  module_title: string;
+  lesson_title: string;
+  lesson_type?: string;
+  paragraphs?: string[];
+  key_points?: string[];
+  code?: string | null;
+  tip?: string | null;
+  language?: string;
+}
+
+const SUGGESTIONS_PT = [
+  'Podes explicar de outra forma?',
+  'Dá um exemplo prático',
+  'O que devo saber antes desta aula?',
+  'Faz-me uma pergunta para eu testar a matéria',
+];
+
+export function LessonTutor({ context, onClose }: { context: LessonContext; onClose?: () => void }) {
+  const [messages, setMessages] = useState<Msg[]>([]);
+  const [input, setInput] = useState('');
+  const [sending, setSending] = useState(false);
+  const [remaining, setRemaining] = useState<number | null>(null);
+  const [dailyLimit, setDailyLimit] = useState<number | null>(null);
+  const [disabled, setDisabled] = useState(false);
+  const [disabledReason, setDisabledReason] = useState<string | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+  }, [messages, sending]);
+
+  // Reset conversa se mudar de aula
+  useEffect(() => { setMessages([]); setInput(''); setDisabled(false); setDisabledReason(null); }, [context.lesson_title, context.module_title]);
+
+  async function send(text: string) {
+    if (!text.trim() || sending || disabled) return;
+    const next: Msg[] = [...messages, { role: 'user', content: text.trim() }];
+    setMessages(next);
+    setInput('');
+    setSending(true);
+    try {
+      const sb = createClient();
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) {
+        toast.error('Inicia sessão para usares o tutor');
+        setSending(false); setMessages(messages); return;
+      }
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/lesson-tutor`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ lesson_context: context, messages: next }),
+      });
+      const data = await res.json();
+      if (!data.ok) {
+        if (data.error === 'daily_limit_reached') {
+          setDisabled(true);
+          setDisabledReason(`Atingiste o limite diário de ${data.daily_limit || dailyLimit || 20} mensagens ao tutor. Volta amanhã!`);
+        } else if (data.error === 'tutor_disabled_by_admin') {
+          setDisabled(true);
+          setDisabledReason('O tutor AI foi desactivado pelo administrador.');
+        } else {
+          toast.error(data.error || 'Falha do tutor');
+        }
+        setMessages(messages);
+        setSending(false); return;
+      }
+      setMessages([...next, { role: 'assistant', content: data.answer || '...' }]);
+      if (typeof data.remaining_today === 'number') setRemaining(data.remaining_today);
+      if (typeof data.daily_limit === 'number') setDailyLimit(data.daily_limit);
+    } catch (e: any) {
+      toast.error(e.message);
+      setMessages(messages);
+    } finally { setSending(false); }
+  }
+
+  const isLow = remaining !== null && remaining <= 3;
+
+  return (
+    <div className="flex flex-col h-full bg-white">
+      <div className="flex items-center justify-between gap-3 p-4 border-b border-slate-100 flex-shrink-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-500 to-purple-500 flex items-center justify-center text-white text-sm">🧠</div>
+          <div className="min-w-0">
+            <div className="text-sm font-semibold text-slate-900">Tutor AI</div>
+            <div className="text-[11px] text-slate-500 truncate">Sobre esta aula</div>
+          </div>
+        </div>
+        {onClose && (
+          <button onClick={onClose} aria-label="Fechar tutor" className="text-slate-400 hover:text-slate-700 text-2xl leading-none w-8 h-8 flex items-center justify-center flex-shrink-0">×</button>
+        )}
+      </div>
+
+      {remaining !== null && (
+        <div className={`px-4 py-1.5 text-[11px] flex-shrink-0 ${isLow ? 'bg-amber-50 text-amber-700' : 'bg-slate-50 text-slate-500'}`}>
+          {remaining} {remaining === 1 ? 'mensagem restante' : 'mensagens restantes'} hoje
+        </div>
+      )}
+
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
+        {messages.length === 0 && !disabled && (
+          <div className="text-center text-sm text-slate-500 py-6">
+            <p>Olá! Sou o teu tutor para esta aula.</p>
+            <p className="mt-1">Pergunta-me o que quiseres sobre <strong>{context.lesson_title}</strong>.</p>
+            <div className="mt-5 space-y-1.5 text-left">
+              {SUGGESTIONS_PT.map((s) => (
+                <button key={s} onClick={() => send(s)} className="block w-full text-left px-3 py-2 bg-slate-50 hover:bg-brand-50 rounded-lg text-xs text-slate-700 hover:text-brand-700 transition-colors">
+                  💬 {s}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        {messages.map((m, i) => (
+          <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div className={`max-w-[85%] rounded-2xl px-3.5 py-2 text-sm leading-relaxed ${m.role === 'user' ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-800'}`}>
+              {m.role === 'assistant' ? <div className="prose prose-sm prose-slate max-w-none"><Markdown source={m.content} /></div> : m.content}
+            </div>
+          </div>
+        ))}
+        {sending && (
+          <div className="flex justify-start">
+            <div className="bg-slate-100 rounded-2xl px-3.5 py-2.5 flex gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+              <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+              <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+            </div>
+          </div>
+        )}
+        {disabled && (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
+            ⏱ {disabledReason}
+          </div>
+        )}
+      </div>
+
+      <div className="p-3 border-t border-slate-100 flex-shrink-0">
+        <form onSubmit={(e) => { e.preventDefault(); send(input); }} className="flex gap-2">
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            disabled={sending || disabled}
+            placeholder={disabled ? 'Tutor indisponível' : 'Pergunta sobre esta aula...'}
+            className="flex-1 px-3 py-2.5 rounded-lg border border-slate-200 focus:border-brand-400 focus:outline-none text-sm disabled:bg-slate-50 disabled:text-slate-400"
+          />
+          <button type="submit" disabled={sending || disabled || !input.trim()} className="bg-brand-600 hover:bg-brand-700 disabled:opacity-40 text-white font-medium px-4 rounded-lg text-sm transition-colors flex-shrink-0">
+            Enviar
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
