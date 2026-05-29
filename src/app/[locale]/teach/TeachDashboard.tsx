@@ -44,14 +44,14 @@ export function TeachDashboard() {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-        <Stat icon="📚" label="Cursos" value={`${s.courses_published}/${s.courses_total}`} accent="brand" />
-        <Stat icon="👥" label="Alunos" value={s.total_students} accent="purple" />
-        <Stat icon="💰" label="Receita" value={fmtCents(s.total_earnings_cents)} accent="emerald" />
-        <Stat icon="⏱" label="Disponível" value={fmtCents(s.available_payout_cents)} accent="amber" />
-        <Stat icon="★" label="Rating" value={s.avg_rating ?? '—'} accent="rose" />
+        <Stat icon="📚" label="Cursos" value={`${s.courses_published}/${s.courses_total}`} accent="brand" href="#meus-cursos" />
+        <Stat icon="👥" label="Alunos" value={s.total_students} accent="purple" href="#meus-cursos" />
+        <Stat icon="💰" label="Receita" value={fmtCents(s.total_earnings_cents)} accent="emerald" href="#meus-cursos" />
+        <Stat icon="⏱" label="Disponível" value={fmtCents(s.available_payout_cents)} accent="amber" href="#meus-cursos" />
+        <Stat icon="★" label="Rating" value={s.avg_rating ?? '—'} accent="rose" href="#meus-cursos" />
       </div>
 
-      <section className="bg-white rounded-xl border border-slate-200 p-5">
+      <section id="meus-cursos" className="scroll-mt-24 bg-white rounded-xl border border-slate-200 p-5">
         <h2 className="font-semibold text-slate-900 mb-4">Os meus cursos</h2>
         {dash.my_courses.length === 0 ? (
           <div className="text-center py-6"><p className="text-sm text-slate-500 mb-3">Sem cursos ainda.</p><Link href={'/teach/novo' as any} className="btn-primary inline-flex">+ Criar o meu primeiro curso</Link></div>

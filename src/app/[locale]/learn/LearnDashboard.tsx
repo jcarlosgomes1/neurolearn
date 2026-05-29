@@ -44,14 +44,14 @@ export function LearnDashboard() {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-        <Stat icon="📖" label="Cursos" value={s.enrollments_total} accent="brand" />
-        <Stat icon="⏳" label="Em curso" value={s.courses_in_progress} accent="amber" />
-        <Stat icon="✅" label="Concluídos" value={s.courses_completed} accent="emerald" />
-        <Stat icon="🏆" label="Certificados" value={s.certificates_earned} accent="purple" />
-        <Stat icon="🔔" label="Por ler" value={s.unread_notifications} accent="rose" />
+        <Stat icon="📖" label="Cursos" value={s.enrollments_total} accent="brand" href="#meus-cursos" />
+        <Stat icon="⏳" label="Em curso" value={s.courses_in_progress} accent="amber" href="#meus-cursos" />
+        <Stat icon="✅" label="Concluídos" value={s.courses_completed} accent="emerald" href="#meus-cursos" />
+        <Stat icon="🏆" label="Certificados" value={s.certificates_earned} accent="purple" href="#meus-cursos" />
+        <Stat icon="🔔" label="Por ler" value={s.unread_notifications} accent="rose" href="#meus-cursos" />
       </div>
 
-      <section className="bg-white rounded-xl border border-slate-200 p-5">
+      <section id="meus-cursos" className="scroll-mt-24 bg-white rounded-xl border border-slate-200 p-5">
         <h2 className="font-semibold text-slate-900 mb-4">Os meus cursos</h2>
         {dash.my_courses.length === 0 ? (
           <p className="text-sm text-slate-500">Ainda não tens cursos. <Link href={'/cursos' as any} className="text-brand-600 hover:underline">Explorar catálogo</Link></p>
