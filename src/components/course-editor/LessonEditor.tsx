@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { SUPABASE_URL } from '@/lib/supabase/config';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
+import { useAIFeatures } from '@/lib/hooks/useAIFeatures';
 import type { Lesson } from './ModulesEditor';
 
 interface Props {
@@ -27,6 +28,9 @@ const TYPE_OPTIONS = [
 
 export function LessonEditor({ course, moduleName, lesson, lessonIndex, totalLessons, prevLesson, nextLesson, onUpdate, onDelete, onBack }: Props) {
   const [generating, setGenerating] = useState(false);
+  const { features, isAdmin, loading: featLoading, refetch: refetchFeatures } = useAIFeatures();
+  const canGenerate = isAdmin || (features?.can_generate_lessons === true);
+  const creditsLeft = isAdmin ? Infinity : Math.max(0, (features?.monthly_ai_credits || 0) - (features?.credits_used_this_month || 0));
   const c = lesson.content || {};
 
   async function generateWithAI() {
@@ -49,7 +53,12 @@ export function LessonEditor({ course, moduleName, lesson, lessonIndex, totalLes
       const data = await res.json();
       if (!data.ok) throw new Error(data.error || 'Falha ao gerar conteúdo');
       onUpdate({ content: data.content });
-      toast.success('Conteúdo gerado! 🎉');
+      refetchFeatures();
+      if (typeof data.remaining_credits === 'number' && !isAdmin) {
+        toast.success(`Conteúdo gerado! 🎉 (${data.remaining_credits} créditos restantes)`);
+      } else {
+        toast.success('Conteúdo gerado! 🎉');
+      }
     } catch (e: any) { toast.error(e.message); } finally { setGenerating(false); }
   }
 
@@ -84,18 +93,39 @@ export function LessonEditor({ course, moduleName, lesson, lessonIndex, totalLes
         </div>
       </div>
 
-      <div className="bg-gradient-to-br from-brand-50 to-purple-50 rounded-xl border border-brand-200 p-6">
-        <div className="flex items-start justify-between gap-4 flex-wrap">
+      {featLoading ? null : !canGenerate ? (
+        <div className="bg-slate-50 rounded-xl border border-slate-200 p-5 flex items-start gap-3">
+          <span className="text-2xl flex-shrink-0">🔒</span>
           <div className="min-w-0">
-            <h2 className="font-semibold text-slate-900 flex items-center gap-2 text-lg">🧠 Conteúdo da aula</h2>
-            <p className="text-sm text-slate-600 mt-1">Gera parágrafos, key points, código exemplo, dica e quiz com base no título e contexto do curso.</p>
+            <h2 className="font-semibold text-slate-700 text-base">Geração com IA não está activada</h2>
+            <p className="text-sm text-slate-500 mt-1">Pede ao admin para activar a funcionalidade <strong>"Gerar conteúdo de aulas"</strong> no teu perfil de instrutor para gerar parágrafos, key points, código e quiz automaticamente.</p>
           </div>
-          <button onClick={generateWithAI} disabled={generating} className="btn-primary disabled:opacity-50 flex-shrink-0">
-            {generating ? '⏳ A gerar...' : c.p?.length ? '🔄 Regenerar com IA' : '✨ Gerar com IA'}
-          </button>
         </div>
-        {generating && <p className="text-xs text-slate-500 mt-3">Pode demorar 10-20 segundos. Estamos a usar o Claude para preparar conteúdo específico para esta aula.</p>}
-      </div>
+      ) : creditsLeft <= 0 && !isAdmin ? (
+        <div className="bg-amber-50 rounded-xl border border-amber-200 p-5 flex items-start gap-3">
+          <span className="text-2xl flex-shrink-0">⏱</span>
+          <div className="min-w-0">
+            <h2 className="font-semibold text-amber-900 text-base">Sem créditos AI este mês</h2>
+            <p className="text-sm text-amber-700 mt-1">Esgotaste os {features?.monthly_ai_credits} créditos mensais. Pede ao admin mais créditos ou aguarda o reset no próximo mês.</p>
+          </div>
+        </div>
+      ) : (
+        <div className="bg-gradient-to-br from-brand-50 to-purple-50 rounded-xl border border-brand-200 p-6">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div className="min-w-0">
+              <h2 className="font-semibold text-slate-900 flex items-center gap-2 text-lg">🧠 Conteúdo da aula</h2>
+              <p className="text-sm text-slate-600 mt-1">Gera parágrafos, key points, código exemplo, dica e quiz com base no título e contexto do curso.</p>
+              {!isAdmin && features && (
+                <p className="text-xs text-slate-500 mt-2"><strong className="tabular-nums">{creditsLeft}</strong> de {features.monthly_ai_credits} créditos restantes este mês · 1 crédito por geração</p>
+              )}
+            </div>
+            <button onClick={generateWithAI} disabled={generating} className="btn-primary disabled:opacity-50 flex-shrink-0">
+              {generating ? '⏳ A gerar...' : c.p?.length ? '🔄 Regenerar com IA' : '✨ Gerar com IA'}
+            </button>
+          </div>
+          {generating && <p className="text-xs text-slate-500 mt-3">Pode demorar 10-20 segundos. Estamos a usar o Claude para preparar conteúdo específico para esta aula.</p>}
+        </div>
+      )}
 
       {c.p?.length ? (
         <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-5">
