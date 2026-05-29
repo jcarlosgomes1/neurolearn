@@ -1,5 +1,5 @@
 import { Header } from '@/components/layout/Header';
-import { CourseEditor } from './CourseEditor';
+import { CourseEditor } from '@/components/course-editor/CourseEditor';
 
 export const metadata = { title: 'Editar curso' };
 
