@@ -20,7 +20,9 @@ interface Props {
   backHref: string;
   columns: Column[];
   linkPrefix?: string;
+  linkSuffix?: string;
   linkKey?: string;
+  linkLabel?: string;
 }
 
 function renderCell(row: any, col: Column) {
@@ -36,7 +38,7 @@ function renderCell(row: any, col: Column) {
   return String(v);
 }
 
-export function AdminList({ title, action, dataKey, backHref, columns, linkPrefix, linkKey }: Props) {
+export function AdminList({ title, action, dataKey, backHref, columns, linkPrefix, linkSuffix, linkKey, linkLabel }: Props) {
   const [rows, setRows] = useState<any[] | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
@@ -76,7 +78,7 @@ export function AdminList({ title, action, dataKey, backHref, columns, linkPrefi
                     {columns.map((c) => <td key={c.key} className={`px-4 py-3 ${c.primary ? 'font-medium text-slate-900' : 'text-slate-600'}`}>{renderCell(row, c)}</td>)}
                     {linkPrefix && linkKey && (
                       <td className="px-4 py-3 text-right">
-                        <Link href={`${linkPrefix}${row[linkKey]}` as any} className="text-xs bg-brand-600 text-white px-3 py-1.5 rounded-md hover:bg-brand-700">Abrir</Link>
+                        <Link href={`${linkPrefix}${row[linkKey]}${linkSuffix || ''}` as any} className="text-xs bg-brand-600 text-white px-3 py-1.5 rounded-md hover:bg-brand-700">{linkLabel || 'Abrir'}</Link>
                       </td>
                     )}
                   </tr>
