@@ -9,9 +9,12 @@ export default function Page() {
     <>
       <Header />
       <main className="bg-slate-50 min-h-screen">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 pt-8 flex items-center justify-between gap-3 flex-wrap">
-          <div className="text-sm text-slate-500">Edita instrutores e cria AI Essentials curados pela equipa.</div>
-          <Link href={'/admin/essential/novo' as any} className="btn-primary text-sm">+ Novo AI Essential</Link>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 flex items-center justify-between gap-2 flex-wrap">
+          <p className="text-sm text-slate-500">Edita cursos existentes ou cria novos AI Essentials.</p>
+          <div className="flex gap-2 flex-wrap">
+            <Link href={'/admin/essential/novo' as any} className="text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-4 py-2 rounded-lg">+ Manual</Link>
+            <Link href={'/admin/curso-ia/novo' as any} className="text-sm bg-gradient-to-r from-brand-600 to-purple-600 text-white font-medium px-4 py-2 rounded-lg shadow hover:shadow-md">✨ Gerar com IA</Link>
+          </div>
         </div>
         <AdminList
           title="Todos os cursos"
