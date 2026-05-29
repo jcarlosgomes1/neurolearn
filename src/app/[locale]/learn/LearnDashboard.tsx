@@ -58,7 +58,7 @@ export function LearnDashboard() {
         ) : (
           <div className="space-y-3">
             {dash.my_courses.map((e) => (
-              <Link key={e.id} href={`/curso/${e.course_id}` as any} className="flex items-center gap-3 p-3 rounded-lg border border-slate-100 hover:bg-slate-50 transition-colors">
+              <Link key={e.id} href={`/learn/curso/${e.course_id}/aula/0/0` as any} className="flex items-center gap-3 p-3 rounded-lg border border-slate-100 hover:bg-slate-50 hover:border-brand-200 transition-all active:scale-[0.99] touch-manipulation">
                 <div className="text-3xl flex-shrink-0">{e.nl_courses?.emoji || '📚'}</div>
                 <div className="flex-1 min-w-0">
                   <div className="font-medium text-slate-900 truncate">{e.nl_courses?.title || 'Curso'}</div>
