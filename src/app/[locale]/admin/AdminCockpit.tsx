@@ -73,6 +73,25 @@ export function AdminCockpit() {
           <Stat icon="🛡" label="Admins" value={dash.admins} accent="slate" />
           <Stat icon="📚" label="Cursos publicados" value={dash.courses_published} accent="emerald" href="/admin/cursos" />
         </div>
+
+        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <Link href={"/admin/curso-ia/novo" as any} className="group bg-gradient-to-r from-brand-600 to-purple-600 rounded-xl p-4 sm:p-5 text-white hover:shadow-lg active:scale-[0.99] transition-all flex items-center gap-3 touch-manipulation">
+            <span className="text-2xl flex-shrink-0">✨</span>
+            <div className="flex-1 min-w-0">
+              <div className="font-semibold">Gerar curso com IA</div>
+              <div className="text-xs text-white/80 mt-0.5">Cria curso completo a partir de um tópico</div>
+            </div>
+            <span className="text-white/70 group-hover:text-white text-lg flex-shrink-0">→</span>
+          </Link>
+          <Link href={"/admin/instrutores-ai" as any} className="group bg-white rounded-xl border border-slate-200 p-4 sm:p-5 hover:border-brand-300 hover:shadow-md active:scale-[0.99] transition-all flex items-center gap-3 touch-manipulation">
+            <span className="text-2xl flex-shrink-0">🤖</span>
+            <div className="flex-1 min-w-0">
+              <div className="font-semibold text-slate-900">AI Features dos Instrutores</div>
+              <div className="text-xs text-slate-500 mt-0.5">Activa funcionalidades AI por instrutor</div>
+            </div>
+            <span className="text-slate-300 group-hover:text-brand-500 text-lg flex-shrink-0">→</span>
+          </Link>
+        </div>
       </div>
 
       <div>
