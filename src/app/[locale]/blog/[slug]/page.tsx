@@ -9,37 +9,66 @@ import { notFound } from 'next/navigation';
 
 export const revalidate = 300;
 
+interface BlogPost {
+  id: string;
+  slug: string;
+  category: string | null;
+  tags: string[] | null;
+  featured_image_url: string | null;
+  published_at: string | null;
+  author_name: string | null;
+}
+
+interface Translation {
+  post_id?: string;
+  lang: string;
+  title: string;
+  excerpt: string | null;
+  content_md: string | null;
+  reading_time_minutes: number | null;
+}
+
+interface RelatedItem {
+  id: string;
+  slug: string;
+  category: string | null;
+  featured_image_url: string | null;
+  published_at: string | null;
+  tr: Translation;
+}
+
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string; locale: string }> }) {
   const { slug, locale } = await params;
   const sb = await createClient();
   const { data: post } = await sb.from('nl_blog_posts')
     .select('id, slug, category, tags, featured_image_url, published_at, author_name')
-    .eq('slug', slug).not('published_at', 'is', null).maybeSingle();
+    .eq('slug', slug).not('published_at', 'is', null).maybeSingle<BlogPost>();
   if (!post) notFound();
 
   const { data: t } = await sb.from('nl_blog_post_translations')
-    .select('title, excerpt, content_md, lang, reading_time_minutes')
+    .select('lang, title, excerpt, content_md, reading_time_minutes')
     .eq('post_id', post.id).or(`lang.eq.${locale},lang.eq.pt`);
-  const translation = t?.find((x) => x.lang === locale) || t?.[0];
+  const translation = (t as Translation[] | null)?.find((x) => x.lang === locale) || (t as Translation[] | null)?.[0];
   if (!translation) notFound();
 
-  // Related posts (mesma categoria, excluindo este)
   const { data: relatedRaw } = post.category
     ? await sb.from('nl_blog_posts').select('id, slug, category, featured_image_url, published_at')
         .eq('category', post.category).neq('id', post.id).not('published_at', 'is', null)
         .order('published_at', { ascending: false }).limit(3)
     : { data: [] };
-  const relatedIds = (relatedRaw || []).map((r) => r.id);
+  const relatedIds = (relatedRaw || []).map((r: { id: string }) => r.id);
   const { data: relTrs } = relatedIds.length ? await sb.from('nl_blog_post_translations')
     .select('post_id, lang, title, reading_time_minutes').in('post_id', relatedIds) : { data: [] };
-  const relTrsMap = new Map<string, any>();
-  (relTrs || []).forEach((rt: any) => {
-    const ex = relTrsMap.get(rt.post_id);
+  const relTrsMap = new Map<string, Translation>();
+  ((relTrs as Translation[]) || []).forEach((rt) => {
+    const ex = relTrsMap.get(rt.post_id!);
     if (!ex || (rt.lang === locale && ex.lang !== locale) || (rt.lang === 'pt' && ex.lang !== locale && ex.lang !== 'pt')) {
-      relTrsMap.set(rt.post_id, rt);
+      relTrsMap.set(rt.post_id!, rt);
     }
   });
-  const related = (relatedRaw || []).map((r) => ({ ...r, tr: relTrsMap.get(r.id) })).filter((r) => r.tr);
+  const related: RelatedItem[] = ((relatedRaw as Array<{ id: string; slug: string; category: string | null; featured_image_url: string | null; published_at: string | null }>) || [])
+    .map((r) => ({ ...r, tr: relTrsMap.get(r.id)! }))
+    .filter((r) => !!r.tr);
 
   const blocks = await getHomeBlocks(locale);
 
@@ -47,7 +76,6 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     <>
       <Header />
       <main className="bg-white min-h-screen">
-        {/* HERO IMAGE */}
         {post.featured_image_url && (
           <div className="relative h-[40vh] sm:h-[55vh] max-h-[600px] w-full overflow-hidden bg-slate-100">
             <img src={post.featured_image_url} alt={translation.title} className="w-full h-full object-cover" />
@@ -80,7 +108,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
           {post.tags && post.tags.length > 0 && (
             <div className="mt-10 pt-6 border-t border-slate-100 flex flex-wrap gap-2">
-              {post.tags.map((tag) => (
+              {post.tags.map((tag: string) => (
                 <span key={tag} className="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full">#{tag}</span>
               ))}
             </div>
@@ -92,7 +120,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <h2 className="text-2xl font-bold text-slate-900 mb-8">Continua a ler</h2>
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {related.map((r: any) => (
+                {related.map((r) => (
                   <Link key={r.id} href={`/blog/${r.slug}` as any} className="group bg-white rounded-xl overflow-hidden border border-slate-200 hover:shadow-md transition-all">
                     {r.featured_image_url ? (
                       <div className="aspect-[16/10] overflow-hidden">
