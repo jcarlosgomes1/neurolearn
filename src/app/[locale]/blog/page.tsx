@@ -1,6 +1,7 @@
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/sections/Footer';
 import { Link } from '@/i18n/routing';
+import { CoverImage } from '@/components/shared/CoverImage';
 import { createClient } from '@/lib/supabase/server';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
 import { fmtDate } from '@/lib/utils/cn';
@@ -26,17 +27,27 @@ type Translation = {
   reading_time_minutes: number | null;
 };
 
+const CATEGORY_EMOJI: Record<string, string> = {
+  'Ferramentas': '🛠',
+  'Mercado': '📊',
+  'Técnico': '⚙️',
+  'Tecnico': '⚙️',
+  'Prático': '🎯',
+  'Pratico': '🎯',
+  'Caso de estudo': '💼',
+};
+
 export default async function BlogPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const sb = await createClient();
   const { data: posts } = await sb.from('nl_blog_posts')
     .select('id, slug, category, tags, featured_image_url, published_at, author_name')
     .not('published_at', 'is', null).order('published_at', { ascending: false }).limit(24);
-  const ids = (posts || []).map((p) => p.id);
+  const ids = (posts || []).map((p: Post) => p.id);
   const { data: trs } = ids.length ? await sb.from('nl_blog_post_translations')
     .select('post_id, lang, title, excerpt, reading_time_minutes').in('post_id', ids) : { data: [] };
   const trsByPost = new Map<string, Translation>();
-  (trs || []).forEach((t: Translation) => {
+  ((trs as Translation[]) || []).forEach((t) => {
     const existing = trsByPost.get(t.post_id);
     if (!existing || (t.lang === locale && existing.lang !== locale) || (t.lang === 'pt' && existing.lang !== locale && existing.lang !== 'pt')) {
       trsByPost.set(t.post_id, t);
@@ -44,7 +55,7 @@ export default async function BlogPage({ params }: { params: Promise<{ locale: s
   });
   const blocks = await getHomeBlocks(locale);
 
-  const enriched = (posts || []).map((p: Post) => ({ ...p, tr: trsByPost.get(p.id) }));
+  const enriched = ((posts as Post[]) || []).map((p) => ({ ...p, tr: trsByPost.get(p.id) }));
   const [hero, ...rest] = enriched;
 
   return (
@@ -53,8 +64,9 @@ export default async function BlogPage({ params }: { params: Promise<{ locale: s
       <main className="bg-white min-h-screen">
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14 pb-6 sm:pb-10">
           <div className="text-center sm:text-left max-w-2xl">
-            <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 tracking-tight">Blog NeuroLearn</h1>
-            <p className="mt-3 text-lg text-slate-600">IA aplicada a quem trabalha, em português. Sem hype, com prática.</p>
+            <span className="inline-block text-xs font-semibold uppercase tracking-widest text-brand-700 bg-brand-50 px-3 py-1 rounded-full mb-4">📝 Blog</span>
+            <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 tracking-tight">IA aplicada a quem trabalha</h1>
+            <p className="mt-4 text-lg text-slate-600 leading-relaxed">Em português. Sem hype, com prática. Para profissionais que querem usar IA com bom senso.</p>
           </div>
         </section>
 
@@ -69,13 +81,15 @@ export default async function BlogPage({ params }: { params: Promise<{ locale: s
               <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12 sm:mb-16">
                 <Link href={`/blog/${hero.slug}` as any} className="group block bg-slate-50 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300">
                   <div className="grid md:grid-cols-2 gap-0">
-                    {hero.featured_image_url ? (
-                      <div className="aspect-[16/10] md:aspect-auto overflow-hidden">
-                        <img src={hero.featured_image_url} alt={hero.tr.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="eager" />
-                      </div>
-                    ) : (
-                      <div className="aspect-[16/10] md:aspect-auto bg-gradient-to-br from-brand-100 to-purple-100 flex items-center justify-center text-7xl">📝</div>
-                    )}
+                    <CoverImage
+                      src={hero.featured_image_url}
+                      alt={hero.tr.title}
+                      seed={hero.slug}
+                      category={hero.category}
+                      emoji={CATEGORY_EMOJI[hero.category || ''] || '📝'}
+                      aspectRatio="16/10"
+                      priority
+                    />
                     <div className="p-6 sm:p-10 flex flex-col justify-center">
                       {hero.category && <span className="self-start text-xs font-semibold uppercase tracking-wider text-brand-700 bg-brand-50 px-2.5 py-1 rounded-full mb-4">{hero.category}</span>}
                       <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 leading-tight group-hover:text-brand-700 transition-colors">{hero.tr.title}</h2>
@@ -96,13 +110,14 @@ export default async function BlogPage({ params }: { params: Promise<{ locale: s
                 <div className="grid gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-3">
                   {rest.filter((p) => p.tr).map((p) => (
                     <Link key={p.id} href={`/blog/${p.slug}` as any} className="group flex flex-col bg-white rounded-xl overflow-hidden border border-slate-200 hover:border-slate-300 hover:shadow-lg transition-all duration-300">
-                      {p.featured_image_url ? (
-                        <div className="aspect-[16/10] overflow-hidden bg-slate-100">
-                          <img src={p.featured_image_url} alt={p.tr!.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
-                        </div>
-                      ) : (
-                        <div className="aspect-[16/10] bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-5xl">📝</div>
-                      )}
+                      <CoverImage
+                        src={p.featured_image_url}
+                        alt={p.tr!.title}
+                        seed={p.slug}
+                        category={p.category}
+                        emoji={CATEGORY_EMOJI[p.category || ''] || '📝'}
+                        aspectRatio="16/10"
+                      />
                       <div className="p-5 flex flex-col flex-1">
                         {p.category && <span className="self-start text-[11px] font-semibold uppercase tracking-wider text-brand-700 bg-brand-50 px-2 py-0.5 rounded-full mb-3">{p.category}</span>}
                         <h3 className="text-lg font-bold text-slate-900 leading-snug group-hover:text-brand-700 transition-colors line-clamp-2">{p.tr!.title}</h3>
