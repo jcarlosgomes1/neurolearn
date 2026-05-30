@@ -5,6 +5,7 @@ import { Link, useRouter } from '@/i18n/routing';
 import { callAgentOps } from '@/lib/api/client';
 import { toast } from 'sonner';
 import { LessonTutor } from '@/components/lesson/LessonTutor';
+import { MermaidRender } from '@/components/shared/MermaidRender';
 
 interface Lesson {
   id?: string;
@@ -17,6 +18,9 @@ interface Lesson {
     code?: string | null;
     tip?: string | null;
     q?: { q: string; o: string[]; c: number; e?: string } | null;
+    hero_image_url?: string | null;
+    hero_image_query?: string | null;
+    diagram?: string | null;
   };
 }
 
@@ -109,6 +113,11 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
               </div>
             </div>
 
+            {c.hero_image_url && (
+              <div className="mb-6 rounded-xl overflow-hidden aspect-[21/9] bg-slate-100">
+                <img src={c.hero_image_url} alt={lesson.title} className="w-full h-full object-cover" loading="eager" />
+              </div>
+            )}
             {!c.p?.length ? (
               <div className="bg-white rounded-xl border-2 border-dashed border-slate-200 p-8 text-center">
                 <div className="text-3xl mb-2">📝</div>
@@ -121,6 +130,13 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
                     <p key={i} className="text-slate-700 leading-relaxed">{p}</p>
                   ))}
                 </div>
+
+                {c.diagram && (
+                  <div>
+                    <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Esquema visual</h3>
+                    <MermaidRender code={c.diagram} />
+                  </div>
+                )}
 
                 {c.kp && c.kp.length > 0 && (
                   <div className="bg-brand-50 border border-brand-100 rounded-lg p-4">
