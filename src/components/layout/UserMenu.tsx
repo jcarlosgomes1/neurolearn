@@ -3,7 +3,7 @@
 import { Link } from '@/i18n/routing';
 import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { useRouter } from '@/i18n/routing';
+import { toast } from 'sonner';
 
 interface Props {
   email: string;
@@ -24,8 +24,8 @@ const AREA_LINK = {
 
 export function UserMenu({ email, area }: Props) {
   const [open, setOpen] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const router = useRouter();
 
   useEffect(() => {
     const close = (e: MouseEvent) => {
@@ -36,10 +36,35 @@ export function UserMenu({ email, area }: Props) {
   }, []);
 
   async function signOut() {
-    const sb = createClient();
-    await sb.auth.signOut();
-    router.refresh();
-    router.push('/');
+    if (signingOut) return;
+    setSigningOut(true);
+    try {
+      const sb = createClient();
+      // 1. SignOut local com scope global para limpar todos os tokens
+      await sb.auth.signOut({ scope: 'global' });
+    } catch (e) {
+      console.error('signOut error:', e);
+    }
+    // 2. Apagar TODOS os cookies de Supabase manualmente (defensivo)
+    try {
+      document.cookie.split(';').forEach((c) => {
+        const eq = c.indexOf('=');
+        const name = (eq > -1 ? c.substr(0, eq) : c).trim();
+        if (name.startsWith('sb-')) {
+          document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+          document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=${location.hostname}`;
+        }
+      });
+    } catch {}
+    // 3. Apagar localStorage Supabase (defensivo)
+    try {
+      Object.keys(localStorage).forEach((k) => {
+        if (k.startsWith('sb-') || k.includes('supabase')) localStorage.removeItem(k);
+      });
+    } catch {}
+    // 4. Forçar reload completo da página (não router.push) para o middleware SSR reler os cookies
+    toast.success('Sessão terminada');
+    window.location.href = '/';
   }
 
   return (
@@ -56,7 +81,7 @@ export function UserMenu({ email, area }: Props) {
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-60 bg-white rounded-lg shadow-lg border border-slate-200 py-1 animate-fade-in">
+        <div className="absolute right-0 mt-2 w-60 bg-white rounded-lg shadow-lg border border-slate-200 py-1 animate-fade-in z-50">
           <div className="px-4 py-2 border-b border-slate-100">
             <div className="text-xs text-slate-500">{AREA_LABEL[area]}</div>
             <div className="text-sm font-medium text-slate-900 truncate">{email}</div>
@@ -70,9 +95,10 @@ export function UserMenu({ email, area }: Props) {
           <div className="border-t border-slate-100 my-1" />
           <button
             onClick={signOut}
-            className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+            disabled={signingOut}
+            className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50"
           >
-            Sair
+            {signingOut ? 'A terminar sessão...' : 'Sair'}
           </button>
         </div>
       )}
