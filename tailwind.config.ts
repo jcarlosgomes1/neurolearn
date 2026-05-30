@@ -21,8 +21,34 @@ const config: Config = {
         'fade-in': { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
         'slide-up': { '0%': { opacity: '0', transform: 'translateY(12px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
       },
+      typography: {
+        DEFAULT: {
+          css: {
+            maxWidth: 'none',
+            color: '#334155',
+            '--tw-prose-headings': '#0f172a',
+            '--tw-prose-bold': '#0f172a',
+            '--tw-prose-links': '#4753f0',
+            '--tw-prose-quote-borders': '#4753f0',
+            fontSize: '1.0625rem',
+            lineHeight: '1.7',
+            h2: { fontWeight: '700', marginTop: '2.5em', marginBottom: '0.75em' },
+            h3: { fontWeight: '600', marginTop: '1.8em', marginBottom: '0.5em' },
+            p: { marginTop: '1em', marginBottom: '1em' },
+            'p:first-of-type::first-letter': {
+              fontSize: '3.5em',
+              fontWeight: '700',
+              float: 'left',
+              lineHeight: '0.85',
+              marginRight: '0.08em',
+              marginTop: '0.05em',
+              color: '#4753f0',
+            },
+          },
+        },
+      },
     },
   },
-  plugins: [],
+  plugins: [require('@tailwindcss/typography')],
 };
 export default config;
