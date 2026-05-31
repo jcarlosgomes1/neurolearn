@@ -33,7 +33,7 @@ export function Footer({ data }: { data: FooterData }) {
               <li><Link href={'/essentials' as any} className="hover:text-white transition-colors">Essentials</Link></li>
               <li><Link href={'/empresas' as any} className="hover:text-white transition-colors">Empresas</Link></li>
               <li><Link href={'/blog' as any} className="hover:text-white transition-colors">Blog</Link></li>
-              <li><Link href={'/teach' as any} className="hover:text-white transition-colors">Ensinar na NeuroLearn</Link></li>
+              <li><Link href={'/candidatar' as any} className="hover:text-white transition-colors">Ensinar na NeuroLearn →</Link></li>
             </ul>
           </div>
 
