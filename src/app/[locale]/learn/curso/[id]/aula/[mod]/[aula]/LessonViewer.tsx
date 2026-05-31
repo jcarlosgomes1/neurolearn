@@ -8,6 +8,7 @@ import { LessonTutor } from '@/components/lesson/LessonTutor';
 import { MermaidRender } from '@/components/shared/MermaidRender';
 import { CoverImage } from '@/components/shared/CoverImage';
 import { VideoEmbed } from '@/components/shared/VideoEmbed';
+import { ReviewSystem } from '@/components/course/ReviewSystem';
 
 interface Lesson {
   id?: string;
@@ -300,6 +301,9 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
                 </Link>
               ) : <div />}
             </div>
+
+            {/* Review system aparece na ultima aula */}
+            {!nextLesson && <ReviewSystem courseId={courseId} courseTitle={course.title} />}
           </div>
 
           {/* TUTOR DESKTOP */}
