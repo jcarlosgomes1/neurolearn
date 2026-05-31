@@ -100,6 +100,7 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
   const hasVideo = !!(lesson.video_url || lesson.stream_url);
 
   const tutorContext = {
+    course_id: courseId,
     course_title: course.title,
     course_level: course.level || undefined,
     module_title: mod.title,
