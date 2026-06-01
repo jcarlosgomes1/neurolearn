@@ -1,0 +1,23 @@
+import { Header } from '@/components/layout/Header';
+import { MarketingView } from './MarketingView';
+import { createClient } from '@/lib/supabase/server';
+import { redirect } from '@/i18n/routing';
+
+export const metadata = { title: 'Marketing · Admin' };
+
+export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const sb = await createClient();
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) redirect({ href: '/login', locale });
+  const { data: profile } = await sb.from('nl_profiles').select('role').eq('id', user!.id).single();
+  if (!profile || !['admin','super_admin'].includes(profile.role)) redirect({ href: '/admin', locale });
+  return (
+    <>
+      <Header />
+      <main className="bg-slate-50 min-h-screen">
+        <MarketingView />
+      </main>
+    </>
+  );
+}
