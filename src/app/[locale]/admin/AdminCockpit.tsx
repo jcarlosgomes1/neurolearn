@@ -96,6 +96,7 @@ export function AdminCockpit() {
           <Shortcut href="/admin/preview" emoji="👀" label="Ver como aluno" sub="Preview do catálogo" />
           <Shortcut href="/admin/cms" emoji="📝" label="CMS" sub="Editar textos do site" />
           <Shortcut href="/admin/marketing" emoji="📢" label="Marketing" sub="Aprovar blog & social" />
+          <Shortcut href="/admin/social" emoji="📣" label="Social" sub="LinkedIn / Twitter publishing" />
           <Shortcut href="/admin/candidaturas" emoji="🎓" label="Candidaturas" sub="Revê novos instrutores" />
           <Shortcut href="/admin/instrutores-ai" emoji="🤖" label="AI Features" sub="Por instrutor" />
           <Shortcut href="/admin/tutor-config" emoji="🧠" label="Tutor AI" sub="Configurar tutor alunos" />
