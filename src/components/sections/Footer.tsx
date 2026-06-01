@@ -1,8 +1,10 @@
 import { Link } from '@/i18n/routing';
+import { useTranslations } from 'next-intl';
 
 interface FooterData { brand?: string }
 
 export function Footer({ data }: { data: FooterData }) {
+  const t = useTranslations();
   const year = new Date().getFullYear();
   return (
     <footer className="bg-slate-900 text-slate-400">
@@ -14,7 +16,7 @@ export function Footer({ data }: { data: FooterData }) {
               <span>NeuroLearn</span>
             </div>
             <p className="mt-3 text-sm max-w-xs leading-relaxed">
-              {data?.brand || 'Practical, applied AI training for professionals. Hands-on courses, verifiable certificates, multilingual.'}
+              {data?.brand || t('footer.brand_tagline')}
             </p>
             <div className="mt-5 flex gap-3">
               <a href="https://www.linkedin.com/company/neurolearn" target="_blank" rel="noopener" aria-label="LinkedIn" className="w-9 h-9 rounded-lg bg-slate-800 hover:bg-brand-600 flex items-center justify-center transition-colors text-white">in</a>
@@ -25,40 +27,40 @@ export function Footer({ data }: { data: FooterData }) {
           </div>
 
           <div>
-            <h3 className="text-white font-semibold text-sm mb-3">Platform</h3>
+            <h3 className="text-white font-semibold text-sm mb-3">{t('footer.platform')}</h3>
             <ul className="space-y-2 text-sm">
-              <li><Link href={'/cursos' as any} className="hover:text-white transition-colors">Courses</Link></li>
-              <li><Link href={'/essentials' as any} className="hover:text-white transition-colors">Essentials</Link></li>
-              <li><Link href={'/empresas' as any} className="hover:text-white transition-colors">For business</Link></li>
-              <li><Link href={'/blog' as any} className="hover:text-white transition-colors">Blog</Link></li>
-              <li><Link href={'/candidatar' as any} className="hover:text-white transition-colors">Teach on NeuroLearn →</Link></li>
+              <li><Link href={'/cursos' as any} className="hover:text-white transition-colors">{t('nav.courses')}</Link></li>
+              <li><Link href={'/essentials' as any} className="hover:text-white transition-colors">{t('nav.essentials')}</Link></li>
+              <li><Link href={'/empresas' as any} className="hover:text-white transition-colors">{t('nav.business')}</Link></li>
+              <li><Link href={'/blog' as any} className="hover:text-white transition-colors">{t('nav.blog')}</Link></li>
+              <li><Link href={'/candidatar' as any} className="hover:text-white transition-colors">{t('nav.teach')} →</Link></li>
             </ul>
           </div>
 
           <div>
-            <h3 className="text-white font-semibold text-sm mb-3">Company</h3>
+            <h3 className="text-white font-semibold text-sm mb-3">{t('nav.company')}</h3>
             <ul className="space-y-2 text-sm">
-              <li><Link href={'/legal/about' as any} className="hover:text-white transition-colors">About</Link></li>
-              <li><Link href={'/legal/faq' as any} className="hover:text-white transition-colors">FAQ</Link></li>
-              <li><a href="mailto:hello@neurolearn.pt" className="hover:text-white transition-colors">Contact</a></li>
+              <li><Link href={'/legal/about' as any} className="hover:text-white transition-colors">{t('footer.about')}</Link></li>
+              <li><Link href={'/legal/faq' as any} className="hover:text-white transition-colors">{t('footer.faq')}</Link></li>
+              <li><a href="mailto:hello@neurolearn.pt" className="hover:text-white transition-colors">{t('footer.contact')}</a></li>
             </ul>
           </div>
 
           <div>
-            <h3 className="text-white font-semibold text-sm mb-3">Legal</h3>
+            <h3 className="text-white font-semibold text-sm mb-3">{t('nav.legal')}</h3>
             <ul className="space-y-2 text-sm">
-              <li><Link href={'/legal/terms' as any} className="hover:text-white transition-colors">Terms</Link></li>
-              <li><Link href={'/legal/privacy' as any} className="hover:text-white transition-colors">Privacy</Link></li>
-              <li><Link href={'/legal/cookies' as any} className="hover:text-white transition-colors">Cookies</Link></li>
-              <li><Link href={'/legal/refunds' as any} className="hover:text-white transition-colors">Refunds</Link></li>
-              <li><Link href={'/legal/legal-notice' as any} className="hover:text-white transition-colors">Legal notice</Link></li>
+              <li><Link href={'/legal/terms' as any} className="hover:text-white transition-colors">{t('footer.terms')}</Link></li>
+              <li><Link href={'/legal/privacy' as any} className="hover:text-white transition-colors">{t('footer.privacy')}</Link></li>
+              <li><Link href={'/legal/cookies' as any} className="hover:text-white transition-colors">{t('footer.cookies')}</Link></li>
+              <li><Link href={'/legal/refunds' as any} className="hover:text-white transition-colors">{t('footer.refunds')}</Link></li>
+              <li><Link href={'/legal/legal-notice' as any} className="hover:text-white transition-colors">{t('footer.legal')}</Link></li>
             </ul>
           </div>
         </div>
 
         <div className="mt-12 pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-          <span>© {year} NeuroLearn. All rights reserved.</span>
-          <span className="text-slate-500">Built with care.</span>
+          <span>© {year} NeuroLearn. {t('footer.rights')}.</span>
+          <span className="text-slate-500">{t('footer.built_with_care')}</span>
         </div>
       </div>
     </footer>
