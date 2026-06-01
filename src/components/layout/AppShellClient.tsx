@@ -26,6 +26,7 @@ const ADMIN_NAV: NavItem[] = [
   { href: '/admin/instrutores', label: 'Instrutores', emoji: '👨‍🏫', group: 'Pessoas' },
   { href: '/admin/instrutores-ai', label: 'AI por instrutor', emoji: '🧠', group: 'Pessoas' },
   { href: '/admin/payments', label: 'Payments', emoji: '💳', group: 'Operações' },
+  { href: '/admin/video', label: 'Vídeo (Mux)', emoji: '🎥', group: 'Operações' },
   { href: '/admin/jobs', label: 'Jobs', emoji: '⚙️', group: 'Operações' },
   { href: '/admin/tutor-config', label: 'Tutor config', emoji: '🤖', group: 'Operações' },
 ];

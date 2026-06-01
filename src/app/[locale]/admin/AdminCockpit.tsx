@@ -131,6 +131,14 @@ export function AdminCockpit() {
             </div>
             <span className="text-slate-300 group-hover:text-brand-500 text-lg flex-shrink-0">→</span>
           </Link>
+          <Link href={"/admin/video" as any} className="group bg-white rounded-xl border border-slate-200 p-4 sm:p-5 hover:border-brand-300 hover:shadow-md active:scale-[0.99] transition-all flex items-center gap-3 touch-manipulation">
+            <span className="text-2xl flex-shrink-0">🎥</span>
+            <div className="flex-1 min-w-0">
+              <div className="font-semibold text-slate-900">Vídeo</div>
+              <div className="text-xs text-slate-500 mt-0.5">Configurar Mux (preparado)</div>
+            </div>
+            <span className="text-slate-300 group-hover:text-brand-500 text-lg flex-shrink-0">→</span>
+          </Link>
         </div>
       </div>
 
