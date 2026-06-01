@@ -5,37 +5,38 @@ import { Link, useRouter } from '@/i18n/routing';
 import { SUPABASE_URL } from '@/lib/supabase/config';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 const EMOJIS = ['📚','🤖','🧠','💡','📊','🎨','⚙️','🚀','📈','🔬','💬','🎯','📝','🎓','🛠','🔮','💼','🌐'];
 
-const LEVELS = [
-  { v: 'beginner', label: 'Iniciante', desc: 'Assume zero conhecimento' },
-  { v: 'intermediate', label: 'Intermédio', desc: 'Bases já assumidas' },
-  { v: 'advanced', label: 'Avançado', desc: 'Profundidade técnica' },
+const LEVELS: { v: 'beginner' | 'intermediate' | 'advanced'; labelKey: string; descKey: string }[] = [
+  { v: 'beginner', labelKey: 'cgf.lvl_beginner', descKey: 'cgf.lvl_beginner_desc' },
+  { v: 'intermediate', labelKey: 'cgf.lvl_intermediate', descKey: 'cgf.lvl_intermediate_desc' },
+  { v: 'advanced', labelKey: 'cgf.lvl_advanced', descKey: 'cgf.lvl_advanced_desc' },
 ];
 
-const TONES = [
-  { v: 'didactic', label: 'Didático', emoji: '🎓', desc: 'Professor experiente, passo a passo' },
-  { v: 'technical', label: 'Técnico', emoji: '⚙️', desc: 'Rigoroso, terminologia precisa' },
-  { v: 'practical', label: 'Prático', emoji: '🛠', desc: 'Hands-on, orientado à ação' },
-  { v: 'inspirational', label: 'Inspirador', emoji: '✨', desc: 'Casos reais, motivador' },
+const TONES: { v: 'didactic' | 'technical' | 'practical' | 'inspirational'; labelKey: string; descKey: string; emoji: string }[] = [
+  { v: 'didactic', labelKey: 'cgf.tone_didactic', descKey: 'cgf.tone_didactic_desc', emoji: '🎓' },
+  { v: 'technical', labelKey: 'cgf.tone_technical', descKey: 'cgf.tone_technical_desc', emoji: '⚙️' },
+  { v: 'practical', labelKey: 'cgf.tone_practical', descKey: 'cgf.tone_practical_desc', emoji: '🛠' },
+  { v: 'inspirational', labelKey: 'cgf.tone_inspirational', descKey: 'cgf.tone_inspirational_desc', emoji: '✨' },
 ];
 
-const DEPTHS = [
-  { v: 'summary', label: 'Resumido', desc: '2-3 parágrafos por aula' },
-  { v: 'normal', label: 'Normal', desc: '4-6 parágrafos por aula' },
-  { v: 'extensive', label: 'Extensivo', desc: '6-10 parágrafos por aula' },
+const DEPTHS: { v: 'summary' | 'normal' | 'extensive'; labelKey: string; descKey: string }[] = [
+  { v: 'summary', labelKey: 'cgf.depth_summary', descKey: 'cgf.depth_summary_desc' },
+  { v: 'normal', labelKey: 'cgf.depth_normal', descKey: 'cgf.depth_normal_desc' },
+  { v: 'extensive', labelKey: 'cgf.depth_extensive', descKey: 'cgf.depth_extensive_desc' },
 ];
 
-const COURSE_TYPES = [
-  { v: 'essential', label: 'AI Essential', desc: 'Curso grátis curado pela equipa' },
-  { v: 'ai_generated', label: 'AI Generated', desc: 'Curso pago sem instrutor humano' },
+const COURSE_TYPES: { v: 'essential' | 'ai_generated'; labelKey: string; descKey: string }[] = [
+  { v: 'essential', labelKey: 'cgf.ct_essential', descKey: 'cgf.ct_essential_desc' },
+  { v: 'ai_generated', labelKey: 'cgf.ct_ai_gen', descKey: 'cgf.ct_ai_gen_desc' },
 ];
 
-const FORMATS = [
-  { v: 'reading', label: 'Leitura', emoji: '📖' },
-  { v: 'video', label: 'Vídeo', emoji: '🎬' },
-  { v: 'exercise', label: 'Exercício', emoji: '✍️' },
+const FORMATS: { v: string; labelKey: string; emoji: string }[] = [
+  { v: 'reading', labelKey: 'cgf.fmt_reading', emoji: '📖' },
+  { v: 'video', labelKey: 'cgf.fmt_video', emoji: '🎬' },
+  { v: 'exercise', labelKey: 'cgf.fmt_exercise', emoji: '✍️' },
 ];
 
 const LANGUAGES = [
@@ -47,21 +48,19 @@ const LANGUAGES = [
 
 function suggestPrice(numModules: number, lessonsPerModule: number, avgMinutes: number, level: string, courseType: string): number {
   if (courseType === 'essential') return 0;
-  // Heurística: base por hora × multiplicador de nível
   const totalHours = (numModules * lessonsPerModule * avgMinutes) / 60;
   const levelMult: Record<string, number> = { beginner: 1, intermediate: 1.3, advanced: 1.7 };
-  const baseHourPrice = 15; // €15/hora de conteúdo
+  const baseHourPrice = 15;
   const raw = totalHours * baseHourPrice * (levelMult[level] || 1);
-  // Arredonda para o próximo .99 ou .49
   const rounded = Math.max(19, Math.round(raw / 10) * 10 - 1);
   return Math.min(rounded, 299);
 }
 
 export function CourseGeneratorForm() {
+  const t = useTranslations();
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
 
-  // Config state
   const [topic, setTopic] = useState('');
   const [language, setLanguage] = useState('pt');
   const [emoji, setEmoji] = useState('📚');
@@ -87,13 +86,13 @@ export function CourseGeneratorForm() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!topic.trim()) { toast.error('Define o tópico do curso'); return; }
-    if (formats.length === 0) { toast.error('Escolhe pelo menos um formato'); return; }
+    if (!topic.trim()) { toast.error(t('cgf.toast_topic_required')); return; }
+    if (formats.length === 0) { toast.error(t('cgf.toast_format_required')); return; }
     setSubmitting(true);
     try {
       const sb = createClient();
       const { data: { session } } = await sb.auth.getSession();
-      if (!session) { toast.error('Inicia sessão como admin'); setSubmitting(false); return; }
+      if (!session) { toast.error(t('cgf.toast_admin_required')); setSubmitting(false); return; }
 
       const config = {
         topic: topic.trim(),
@@ -110,8 +109,8 @@ export function CourseGeneratorForm() {
         body: JSON.stringify({ config }),
       });
       const data = await res.json();
-      if (!data.ok) throw new Error(data.error || 'Falha ao iniciar geração');
-      toast.success('Geração iniciada! A acompanhar progresso...');
+      if (!data.ok) throw new Error(data.error || t('cgf.toast_gen_failed'));
+      toast.success(t('cgf.toast_gen_started'));
       router.push(`/admin/curso-ia/${data.job_id}` as any);
     } catch (err: any) {
       toast.error(err.message);
@@ -120,156 +119,151 @@ export function CourseGeneratorForm() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 animate-fade-in">
-      <Link href={'/admin' as any} className="text-sm text-brand-600 hover:underline">← Cockpit</Link>
+      <Link href={'/admin' as any} className="text-sm text-brand-600 hover:underline">{t('cgf.back')}</Link>
       <div className="mt-2 mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">✨ Gerar curso com IA</h1>
-        <p className="text-sm text-slate-500 mt-1">Configura todos os parâmetros. O agente Claude gera estrutura e conteúdo completo.</p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">{t('cgf.title')}</h1>
+        <p className="text-sm text-slate-500 mt-1">{t('cgf.subtitle')}</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* CARD 1: Tópico e identidade */}
         <section className="bg-white rounded-xl border border-slate-200 p-5 sm:p-6 space-y-4">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">1. Tópico e identidade</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">{t('cgf.card1')}</h2>
           <div>
-            <label className="label">Tópico do curso *</label>
+            <label className="label">{t('cgf.topic_label')}</label>
             <textarea
               className="input min-h-[80px]"
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
-              placeholder="Ex: Prompt engineering aplicado ao direito empresarial em Portugal. Foco em análise de contratos, jurisprudência e due diligence com Claude e GPT."
+              placeholder={t('cgf.topic_placeholder')}
               required
             />
-            <p className="text-xs text-slate-400 mt-1">Quanto mais específico, melhor o resultado.</p>
+            <p className="text-xs text-slate-400 mt-1">{t('cgf.topic_hint')}</p>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-[1fr_120px_120px] gap-4">
             <div>
-              <label className="label">Idioma</label>
+              <label className="label">{t('cgf.language')}</label>
               <select className="input" value={language} onChange={(e) => setLanguage(e.target.value)}>
                 {LANGUAGES.map((l) => <option key={l.v} value={l.v}>{l.label}</option>)}
               </select>
             </div>
             <div>
-              <label className="label">Categoria</label>
+              <label className="label">{t('cgf.category')}</label>
               <input className="input" value={category} onChange={(e) => setCategory(e.target.value)} />
             </div>
             <div>
-              <label className="label">Emoji</label>
+              <label className="label">{t('cgf.emoji')}</label>
               <select className="input text-xl" value={emoji} onChange={(e) => setEmoji(e.target.value)}>
                 {EMOJIS.map((em) => <option key={em} value={em}>{em}</option>)}
               </select>
             </div>
           </div>
           <div>
-            <label className="label">Tipo de curso</label>
+            <label className="label">{t('cgf.course_type')}</label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {COURSE_TYPES.map((t) => (
-                <button key={t.v} type="button" onClick={() => setCourseType(t.v as any)} className={`text-left p-3 rounded-lg border transition-all ${courseType === t.v ? 'border-brand-500 bg-brand-50' : 'border-slate-200 hover:border-slate-300'}`}>
-                  <div className="font-medium text-sm text-slate-900">{t.label}</div>
-                  <div className="text-xs text-slate-500 mt-0.5">{t.desc}</div>
+              {COURSE_TYPES.map((ct) => (
+                <button key={ct.v} type="button" onClick={() => setCourseType(ct.v)} className={`text-left p-3 rounded-lg border transition-all ${courseType === ct.v ? 'border-brand-500 bg-brand-50' : 'border-slate-200 hover:border-slate-300'}`}>
+                  <div className="font-medium text-sm text-slate-900">{t(ct.labelKey)}</div>
+                  <div className="text-xs text-slate-500 mt-0.5">{t(ct.descKey)}</div>
                 </button>
               ))}
             </div>
           </div>
         </section>
 
-        {/* CARD 2: Estrutura modular */}
         <section className="bg-white rounded-xl border border-slate-200 p-5 sm:p-6 space-y-4">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">2. Estrutura modular</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">{t('cgf.card2')}</h2>
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="label">Módulos</label>
+              <label className="label">{t('cgf.modules')}</label>
               <input type="number" min="1" max="12" className="input text-center text-lg font-semibold" value={numModules} onChange={(e) => setNumModules(Math.min(12, Math.max(1, parseInt(e.target.value) || 1)))} />
             </div>
             <div>
-              <label className="label">Aulas / módulo</label>
+              <label className="label">{t('cgf.lessons_per')}</label>
               <input type="number" min="1" max="10" className="input text-center text-lg font-semibold" value={lessonsPerModule} onChange={(e) => setLessonsPerModule(Math.min(10, Math.max(1, parseInt(e.target.value) || 1)))} />
             </div>
             <div>
-              <label className="label">Min / aula</label>
+              <label className="label">{t('cgf.min_per_lesson')}</label>
               <select className="input text-center text-lg font-semibold" value={avgMinutes} onChange={(e) => setAvgMinutes(parseInt(e.target.value))}>
                 {[5, 10, 15, 20, 30, 45, 60].map((m) => <option key={m} value={m}>{m}</option>)}
               </select>
             </div>
           </div>
           <div className="bg-slate-50 rounded-lg p-3 grid grid-cols-3 gap-2 text-center text-sm">
-            <div><div className="font-semibold text-slate-900">{totalLessons}</div><div className="text-xs text-slate-500">aulas totais</div></div>
-            <div><div className="font-semibold text-slate-900">{totalHours.toFixed(1)}h</div><div className="text-xs text-slate-500">duração total</div></div>
-            <div><div className="font-semibold text-slate-900">{courseType === 'essential' ? 'Grátis' : `€${suggestedPrice}`}</div><div className="text-xs text-slate-500">preço sugerido</div></div>
+            <div><div className="font-semibold text-slate-900">{totalLessons}</div><div className="text-xs text-slate-500">{t('cgf.total_lessons')}</div></div>
+            <div><div className="font-semibold text-slate-900">{totalHours.toFixed(1)}h</div><div className="text-xs text-slate-500">{t('cgf.total_duration')}</div></div>
+            <div><div className="font-semibold text-slate-900">{courseType === 'essential' ? t('cgf.free') : `€${suggestedPrice}`}</div><div className="text-xs text-slate-500">{t('cgf.suggested_price')}</div></div>
           </div>
           {courseType === 'ai_generated' && (
-            <p className="text-xs text-slate-500">💡 Sugestão de preço baseada em duração × nível. Podes ajustar depois no editor.</p>
+            <p className="text-xs text-slate-500">{t('cgf.price_hint')}</p>
           )}
         </section>
 
-        {/* CARD 3: Nível e tom */}
         <section className="bg-white rounded-xl border border-slate-200 p-5 sm:p-6 space-y-4">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">3. Nível e tom</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">{t('cgf.card3')}</h2>
           <div>
-            <label className="label">Nível do curso</label>
+            <label className="label">{t('cgf.level')}</label>
             <div className="grid grid-cols-3 gap-2">
               {LEVELS.map((l) => (
-                <button key={l.v} type="button" onClick={() => setLevel(l.v as any)} className={`p-3 rounded-lg border text-left transition-all ${level === l.v ? 'border-brand-500 bg-brand-50' : 'border-slate-200 hover:border-slate-300'}`}>
-                  <div className="font-medium text-sm text-slate-900">{l.label}</div>
-                  <div className="text-[11px] text-slate-500 mt-0.5">{l.desc}</div>
+                <button key={l.v} type="button" onClick={() => setLevel(l.v)} className={`p-3 rounded-lg border text-left transition-all ${level === l.v ? 'border-brand-500 bg-brand-50' : 'border-slate-200 hover:border-slate-300'}`}>
+                  <div className="font-medium text-sm text-slate-900">{t(l.labelKey)}</div>
+                  <div className="text-[11px] text-slate-500 mt-0.5">{t(l.descKey)}</div>
                 </button>
               ))}
             </div>
           </div>
           <div>
-            <label className="label">Tom de comunicação</label>
+            <label className="label">{t('cgf.tone')}</label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {TONES.map((t) => (
-                <button key={t.v} type="button" onClick={() => setTone(t.v as any)} className={`p-3 rounded-lg border text-left transition-all ${tone === t.v ? 'border-brand-500 bg-brand-50' : 'border-slate-200 hover:border-slate-300'}`}>
-                  <div className="text-lg">{t.emoji}</div>
-                  <div className="font-medium text-sm text-slate-900 mt-1">{t.label}</div>
-                  <div className="text-[11px] text-slate-500 mt-0.5 leading-tight">{t.desc}</div>
+              {TONES.map((tn) => (
+                <button key={tn.v} type="button" onClick={() => setTone(tn.v)} className={`p-3 rounded-lg border text-left transition-all ${tone === tn.v ? 'border-brand-500 bg-brand-50' : 'border-slate-200 hover:border-slate-300'}`}>
+                  <div className="text-lg">{tn.emoji}</div>
+                  <div className="font-medium text-sm text-slate-900 mt-1">{t(tn.labelKey)}</div>
+                  <div className="text-[11px] text-slate-500 mt-0.5 leading-tight">{t(tn.descKey)}</div>
                 </button>
               ))}
             </div>
           </div>
           <div>
-            <label className="label">Profundidade do conteúdo</label>
+            <label className="label">{t('cgf.depth')}</label>
             <div className="grid grid-cols-3 gap-2">
               {DEPTHS.map((d) => (
-                <button key={d.v} type="button" onClick={() => setDepth(d.v as any)} className={`p-3 rounded-lg border text-left transition-all ${depth === d.v ? 'border-brand-500 bg-brand-50' : 'border-slate-200 hover:border-slate-300'}`}>
-                  <div className="font-medium text-sm text-slate-900">{d.label}</div>
-                  <div className="text-[11px] text-slate-500 mt-0.5">{d.desc}</div>
+                <button key={d.v} type="button" onClick={() => setDepth(d.v)} className={`p-3 rounded-lg border text-left transition-all ${depth === d.v ? 'border-brand-500 bg-brand-50' : 'border-slate-200 hover:border-slate-300'}`}>
+                  <div className="font-medium text-sm text-slate-900">{t(d.labelKey)}</div>
+                  <div className="text-[11px] text-slate-500 mt-0.5">{t(d.descKey)}</div>
                 </button>
               ))}
             </div>
           </div>
           <div>
-            <label className="label">Formatos das aulas (mistura)</label>
+            <label className="label">{t('cgf.formats')}</label>
             <div className="grid grid-cols-3 gap-2">
               {FORMATS.map((f) => (
                 <button key={f.v} type="button" onClick={() => toggleFormat(f.v)} className={`p-3 rounded-lg border text-center transition-all ${formats.includes(f.v) ? 'border-brand-500 bg-brand-50' : 'border-slate-200 hover:border-slate-300'}`}>
                   <div className="text-2xl">{f.emoji}</div>
-                  <div className="font-medium text-sm text-slate-900 mt-1">{f.label}</div>
-                  {formats.includes(f.v) && <div className="text-[10px] text-brand-600 font-bold mt-0.5">✓ INCLUÍDO</div>}
+                  <div className="font-medium text-sm text-slate-900 mt-1">{t(f.labelKey)}</div>
+                  {formats.includes(f.v) && <div className="text-[10px] text-brand-600 font-bold mt-0.5">{t('cgf.included')}</div>}
                 </button>
               ))}
             </div>
           </div>
         </section>
 
-        {/* CARD 4: Calibração fina */}
         <section className="bg-white rounded-xl border border-slate-200 p-5 sm:p-6 space-y-4">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">4. Calibração fina (opcional)</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">{t('cgf.card4')}</h2>
           <div>
-            <label className="label">Tópicos obrigatórios (1 por linha)</label>
-            <textarea className="input min-h-[80px]" value={priorityTopics} onChange={(e) => setPriorityTopics(e.target.value)} placeholder="GDPR e dados pessoais&#10;Limitações do Claude vs GPT&#10;Casos de uso em Portugal" />
-            <p className="text-xs text-slate-400 mt-1">O agente garante que cobre estes tópicos.</p>
+            <label className="label">{t('cgf.priority_topics')}</label>
+            <textarea className="input min-h-[80px]" value={priorityTopics} onChange={(e) => setPriorityTopics(e.target.value)} placeholder="GDPR&#10;Claude vs GPT&#10;Casos PT" />
+            <p className="text-xs text-slate-400 mt-1">{t('cgf.priority_topics_hint')}</p>
           </div>
           <div>
-            <label className="label">Instruções extra para o agente</label>
-            <textarea className="input min-h-[60px]" value={extraInstructions} onChange={(e) => setExtraInstructions(e.target.value)} placeholder="Ex: evita exemplos americanos, foca em PME portuguesas, inclui referências à legislação europeia" />
+            <label className="label">{t('cgf.extra')}</label>
+            <textarea className="input min-h-[60px]" value={extraInstructions} onChange={(e) => setExtraInstructions(e.target.value)} />
           </div>
         </section>
 
-        {/* Submit */}
         <div className="sticky bottom-4 z-10">
           <button type="submit" disabled={submitting || !topic.trim()} className="w-full bg-gradient-to-r from-brand-600 to-purple-600 text-white font-semibold py-3.5 rounded-xl shadow-lg disabled:opacity-50 hover:shadow-xl transition-all">
-            {submitting ? '⏳ A iniciar geração...' : `✨ Gerar curso de ${totalLessons} aulas (~${Math.ceil(totalLessons * 0.7)} min de geração)`}
+            {submitting ? t('cgf.submit_starting') : t('cgf.submit_label', { n: totalLessons, m: Math.ceil(totalLessons * 0.7) })}
           </button>
         </div>
       </form>
