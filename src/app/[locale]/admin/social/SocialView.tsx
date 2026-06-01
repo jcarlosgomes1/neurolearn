@@ -17,6 +17,12 @@ interface PublishLog {
   error_message: string | null; created_at: string;
 }
 
+interface SocialPost {
+  id: string; platform: string; variant: string | null; lang: string;
+  content: string; hashtags: string[] | null; cta: string | null;
+  status: string; created_at: string; image_url: string | null;
+}
+
 const PROVIDER_META: Record<string, { label: string; emoji: string; color: string }> = {
   linkedin: { label: 'LinkedIn', emoji: '💼', color: 'bg-blue-50 text-blue-700 border-blue-200' },
   twitter: { label: 'Twitter / X', emoji: '🐦', color: 'bg-slate-50 text-slate-700 border-slate-200' },
@@ -27,12 +33,13 @@ export function SocialView() {
   const searchParams = useSearchParams();
   const [connections, setConnections] = useState<Connection[]>([]);
   const [logs, setLogs] = useState<PublishLog[]>([]);
+  const [pendingPosts, setPendingPosts] = useState<SocialPost[]>([]);
   const [linkedinConfigured, setLinkedinConfigured] = useState(false);
   const [twitterConfigured, setTwitterConfigured] = useState(false);
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState<string | null>(null);
+  const [publishing, setPublishing] = useState<string | null>(null);
 
-  // Toast after callback redirect
   useEffect(() => {
     const connected = searchParams.get('connected');
     const error = searchParams.get('error');
@@ -61,10 +68,17 @@ export function SocialView() {
       setTwitterConfigured(data.twitter_configured);
 
       const sb = createClient();
-      const { data: logsData } = await sb.from('nl_social_publish_logs')
-        .select('id, provider, external_post_url, status, error_message, created_at')
-        .order('created_at', { ascending: false }).limit(20);
-      setLogs((logsData as PublishLog[]) || []);
+      const [logsRes, postsRes] = await Promise.all([
+        sb.from('nl_social_publish_logs')
+          .select('id, provider, external_post_url, status, error_message, created_at')
+          .order('created_at', { ascending: false }).limit(20),
+        sb.from('nl_social_posts')
+          .select('id, platform, variant, lang, content, hashtags, cta, status, created_at, image_url')
+          .in('status', ['approved', 'draft', 'pending'])
+          .order('created_at', { ascending: false }).limit(30),
+      ]);
+      setLogs((logsRes.data as PublishLog[]) || []);
+      setPendingPosts((postsRes.data as SocialPost[]) || []);
     } catch (e: any) { toast.error(e.message); }
     finally { setLoading(false); }
   }
@@ -91,6 +105,23 @@ export function SocialView() {
       toast.success('Conta desligada');
       load();
     } catch (e: any) { toast.error(e.message); }
+  }
+
+  async function publishPost(postId: string, override?: string) {
+    setPublishing(postId);
+    try {
+      const data = await callApi('social-publish', { social_post_id: postId, override_provider: override });
+      if (!data.ok) {
+        if (data.error === 'no_active_connection') { toast.error(`Liga ${data.provider} primeiro`); }
+        else if (data.error === 'already_published') { toast.error('Já publicado'); }
+        else { toast.error(data.detail || data.error); }
+        return;
+      }
+      toast.success('Publicado! ✓');
+      window.open(data.external_url, '_blank');
+      load();
+    } catch (e: any) { toast.error(e.message); }
+    finally { setPublishing(null); }
   }
 
   const activeConnections = connections.filter(c => c.is_active);
@@ -148,6 +179,47 @@ export function SocialView() {
               );
             })}
           </section>
+
+          {pendingPosts.length > 0 && (
+            <section className="mt-8">
+              <h2 className="text-lg font-bold text-slate-900 mb-3">📋 Posts prontos a publicar <span className="text-sm font-normal text-slate-500">({pendingPosts.length})</span></h2>
+              <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100">
+                {pendingPosts.map(post => {
+                  const platMeta = PROVIDER_META[post.platform] || { label: post.platform, emoji: '📣', color: '' };
+                  const hasConn = !!activeByProvider[post.platform];
+                  const isPublishing = publishing === post.id;
+                  return (
+                    <div key={post.id} className="p-4">
+                      <div className="flex items-start gap-3">
+                        <span className="text-2xl flex-shrink-0">{platMeta.emoji}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap mb-1">
+                            <span className="text-sm font-semibold text-slate-900">{platMeta.label}</span>
+                            <span className="text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded-full">{post.status}</span>
+                            {post.variant && <span className="text-[10px] text-slate-400">{post.variant}</span>}
+                            <span className="text-[10px] text-slate-400">{post.lang}</span>
+                          </div>
+                          <p className="text-sm text-slate-700 whitespace-pre-wrap line-clamp-3">{post.content}</p>
+                          {post.hashtags && post.hashtags.length > 0 && (
+                            <div className="mt-1.5 flex flex-wrap gap-1">
+                              {post.hashtags.slice(0, 6).map(t => (
+                                <span key={t} className="text-[10px] bg-brand-50 text-brand-700 px-1.5 py-0.5 rounded">#{t.replace('#', '')}</span>
+                              ))}
+                            </div>
+                          )}
+                          {post.cta && <div className="text-xs text-purple-700 mt-1.5 italic">CTA: {post.cta}</div>}
+                        </div>
+                        <button onClick={() => publishPost(post.id)} disabled={!hasConn || isPublishing || post.status === 'published'}
+                          className="text-xs bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-medium px-3 py-2 rounded-md whitespace-nowrap flex-shrink-0">
+                          {isPublishing ? '⏳ A publicar...' : !hasConn ? '🔒 Sem ligação' : '🚀 Publicar agora'}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
 
           <section className="mt-8 bg-blue-50 border border-blue-200 rounded-xl p-5">
             <h3 className="font-bold text-slate-900 mb-3">🔧 Setup de cada plataforma</h3>
