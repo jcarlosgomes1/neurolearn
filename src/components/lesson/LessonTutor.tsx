@@ -9,10 +9,13 @@ import { toast } from 'sonner';
 interface Msg { role: 'user' | 'assistant'; content: string }
 
 interface LessonContext {
+  course_id?: string;
   course_title: string;
   course_level?: string;
   module_title: string;
+  module_index?: number;
   lesson_title: string;
+  lesson_index?: number;
   lesson_type?: string;
   paragraphs?: string[];
   key_points?: string[];
@@ -32,6 +35,8 @@ export function LessonTutor({ context, onClose }: { context: LessonContext; onCl
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
+  const [loadingHistory, setLoadingHistory] = useState(true);
+  const [hasHistory, setHasHistory] = useState(false);
   const [remaining, setRemaining] = useState<number | null>(null);
   const [dailyLimit, setDailyLimit] = useState<number | null>(null);
   const [disabled, setDisabled] = useState(false);
@@ -42,8 +47,44 @@ export function LessonTutor({ context, onClose }: { context: LessonContext; onCl
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages, sending]);
 
-  // Reset conversa se mudar de aula
-  useEffect(() => { setMessages([]); setInput(''); setDisabled(false); setDisabledReason(null); }, [context.lesson_title, context.module_title]);
+  // Carregar histórico ao montar / mudar aula
+  useEffect(() => {
+    let cancelled = false;
+    async function loadHistory() {
+      setLoadingHistory(true);
+      setMessages([]);
+      setHasHistory(false);
+      setInput('');
+      setDisabled(false);
+      setDisabledReason(null);
+
+      if (!context.course_id || context.module_index === undefined || context.lesson_index === undefined) {
+        // Sem indices, não há como carregar histórico
+        setLoadingHistory(false);
+        return;
+      }
+
+      try {
+        const sb = createClient();
+        const { data: { session } } = await sb.auth.getSession();
+        if (!session) { setLoadingHistory(false); return; }
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/lesson-tutor`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+          body: JSON.stringify({ action: 'load_history', lesson_context: context }),
+        });
+        const data = await res.json();
+        if (cancelled) return;
+        if (data.ok && data.has_history && Array.isArray(data.messages)) {
+          setMessages(data.messages.map((m: any) => ({ role: m.role, content: m.content })));
+          setHasHistory(true);
+        }
+      } catch { /* silent */ }
+      finally { if (!cancelled) setLoadingHistory(false); }
+    }
+    loadHistory();
+    return () => { cancelled = true; };
+  }, [context.course_id, context.module_index, context.lesson_index]);
 
   async function send(text: string) {
     if (!text.trim() || sending || disabled) return;
@@ -78,6 +119,7 @@ export function LessonTutor({ context, onClose }: { context: LessonContext; onCl
         setSending(false); return;
       }
       setMessages([...next, { role: 'assistant', content: data.answer || '...' }]);
+      setHasHistory(true);
       if (typeof data.remaining_today === 'number') setRemaining(data.remaining_today);
       if (typeof data.daily_limit === 'number') setDailyLimit(data.daily_limit);
     } catch (e: any) {
@@ -95,7 +137,9 @@ export function LessonTutor({ context, onClose }: { context: LessonContext; onCl
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-500 to-purple-500 flex items-center justify-center text-white text-sm">🧠</div>
           <div className="min-w-0">
             <div className="text-sm font-semibold text-slate-900">Tutor AI</div>
-            <div className="text-[11px] text-slate-500 truncate">Sobre esta aula</div>
+            <div className="text-[11px] text-slate-500 truncate">
+              {hasHistory ? `${messages.length} mensagens · histórico guardado` : 'Sobre esta aula'}
+            </div>
           </div>
         </div>
         {onClose && (
@@ -110,7 +154,16 @@ export function LessonTutor({ context, onClose }: { context: LessonContext; onCl
       )}
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
-        {messages.length === 0 && !disabled && (
+        {loadingHistory && (
+          <div className="flex justify-center py-8">
+            <div className="flex gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-slate-300 animate-bounce" style={{ animationDelay: '0ms' }} />
+              <span className="w-2 h-2 rounded-full bg-slate-300 animate-bounce" style={{ animationDelay: '150ms' }} />
+              <span className="w-2 h-2 rounded-full bg-slate-300 animate-bounce" style={{ animationDelay: '300ms' }} />
+            </div>
+          </div>
+        )}
+        {!loadingHistory && messages.length === 0 && !disabled && (
           <div className="text-center text-sm text-slate-500 py-6">
             <p>Olá! Sou o teu tutor para esta aula.</p>
             <p className="mt-1">Pergunta-me o que quiseres sobre <strong>{context.lesson_title}</strong>.</p>
@@ -121,6 +174,13 @@ export function LessonTutor({ context, onClose }: { context: LessonContext; onCl
                 </button>
               ))}
             </div>
+          </div>
+        )}
+        {!loadingHistory && hasHistory && messages.length > 0 && (
+          <div className="text-[11px] text-center text-slate-400 mb-3 flex items-center gap-2 justify-center">
+            <span className="h-px bg-slate-200 flex-1" />
+            <span>📜 conversa anterior</span>
+            <span className="h-px bg-slate-200 flex-1" />
           </div>
         )}
         {messages.map((m, i) => (
@@ -151,11 +211,11 @@ export function LessonTutor({ context, onClose }: { context: LessonContext; onCl
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            disabled={sending || disabled}
-            placeholder={disabled ? 'Tutor indisponível' : 'Pergunta sobre esta aula...'}
+            disabled={sending || disabled || loadingHistory}
+            placeholder={disabled ? 'Tutor indisponível' : loadingHistory ? 'A carregar...' : 'Pergunta sobre esta aula...'}
             className="flex-1 px-3 py-2.5 rounded-lg border border-slate-200 focus:border-brand-400 focus:outline-none text-sm disabled:bg-slate-50 disabled:text-slate-400"
           />
-          <button type="submit" disabled={sending || disabled || !input.trim()} className="bg-brand-600 hover:bg-brand-700 disabled:opacity-40 text-white font-medium px-4 rounded-lg text-sm transition-colors flex-shrink-0">
+          <button type="submit" disabled={sending || disabled || loadingHistory || !input.trim()} className="bg-brand-600 hover:bg-brand-700 disabled:opacity-40 text-white font-medium px-4 rounded-lg text-sm transition-colors flex-shrink-0">
             Enviar
           </button>
         </form>
