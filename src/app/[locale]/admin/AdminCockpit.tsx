@@ -24,6 +24,20 @@ function groupApprovals(approvals: any[]) {
   return groups;
 }
 
+interface ShortcutProps { href: string; emoji: string; label: string; sub?: string; highlight?: boolean }
+function Shortcut({ href, emoji, label, sub, highlight }: ShortcutProps) {
+  return (
+    <Link href={href as any} className={`group rounded-xl p-4 hover:shadow-md active:scale-[0.99] transition-all flex items-center gap-3 touch-manipulation ${highlight ? 'bg-gradient-to-r from-brand-600 to-purple-600 text-white' : 'bg-white border border-slate-200 hover:border-brand-300'}`}>
+      <span className="text-2xl flex-shrink-0">{emoji}</span>
+      <div className="flex-1 min-w-0">
+        <div className={`font-semibold text-sm ${highlight ? 'text-white' : 'text-slate-900'}`}>{label}</div>
+        {sub && <div className={`text-[11px] mt-0.5 truncate ${highlight ? 'text-white/80' : 'text-slate-500'}`}>{sub}</div>}
+      </div>
+      <span className={`text-base flex-shrink-0 ${highlight ? 'text-white/70 group-hover:text-white' : 'text-slate-300 group-hover:text-brand-500'}`}>→</span>
+    </Link>
+  );
+}
+
 export function AdminCockpit() {
   const [dash, setDash] = useState<any>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -59,92 +73,42 @@ export function AdminCockpit() {
   const compliance = dash.compliance_issues || [];
 
   return (
-    <div className="max-w-7xl mx-auto px-6 lg:px-8 py-8 space-y-8 animate-fade-in">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8 animate-fade-in">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Cockpit Administrador</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Cockpit Administrador</h1>
         <p className="text-slate-500 text-sm mt-1">Visão geral da plataforma e dos agentes</p>
       </div>
 
       <div>
-        <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Pessoas</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-4 gap-4">
+        <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Pessoas & Catálogo</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Stat icon="🎓" label="Estudantes" value={dash.students} accent="brand" />
           <Stat icon="👨‍🏫" label="Instrutores" value={dash.instructors} accent="purple" href="/admin/instrutores" />
           <Stat icon="🛡" label="Admins" value={dash.admins} accent="slate" />
           <Stat icon="📚" label="Cursos publicados" value={dash.courses_published} accent="emerald" href="/admin/cursos" />
         </div>
+      </div>
 
-        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-3">
-          <Link href={"/admin/curso-ia/novo" as any} className="group bg-gradient-to-r from-brand-600 to-purple-600 rounded-xl p-4 sm:p-5 text-white hover:shadow-lg active:scale-[0.99] transition-all flex items-center gap-3 touch-manipulation">
-            <span className="text-2xl flex-shrink-0">✨</span>
-            <div className="flex-1 min-w-0">
-              <div className="font-semibold">Gerar curso com IA</div>
-              <div className="text-xs text-white/80 mt-0.5">Cria curso completo a partir de um tópico</div>
-            </div>
-            <span className="text-white/70 group-hover:text-white text-lg flex-shrink-0">→</span>
-          </Link>
-          <Link href={"/admin/instrutores-ai" as any} className="group bg-white rounded-xl border border-slate-200 p-4 sm:p-5 hover:border-brand-300 hover:shadow-md active:scale-[0.99] transition-all flex items-center gap-3 touch-manipulation">
-            <span className="text-2xl flex-shrink-0">🤖</span>
-            <div className="flex-1 min-w-0">
-              <div className="font-semibold text-slate-900">AI Features dos Instrutores</div>
-              <div className="text-xs text-slate-500 mt-0.5">Activa funcionalidades AI por instrutor</div>
-            </div>
-            <span className="text-slate-300 group-hover:text-brand-500 text-lg flex-shrink-0">→</span>
-          </Link>
-          <Link href={"/admin/tutor-config" as any} className="group bg-white rounded-xl border border-slate-200 p-4 sm:p-5 hover:border-brand-300 hover:shadow-md active:scale-[0.99] transition-all flex items-center gap-3 touch-manipulation">
-            <span className="text-2xl flex-shrink-0">🧠</span>
-            <div className="flex-1 min-w-0">
-              <div className="font-semibold text-slate-900">Tutor AI para alunos</div>
-              <div className="text-xs text-slate-500 mt-0.5">Activa e configura o tutor durante as aulas</div>
-            </div>
-            <span className="text-slate-300 group-hover:text-brand-500 text-lg flex-shrink-0">→</span>
-          </Link>
-          <Link href={"/admin/candidaturas" as any} className="group bg-white rounded-xl border border-slate-200 p-4 sm:p-5 hover:border-brand-300 hover:shadow-md active:scale-[0.99] transition-all flex items-center gap-3 touch-manipulation">
-            <span className="text-2xl flex-shrink-0">🎓</span>
-            <div className="flex-1 min-w-0">
-              <div className="font-semibold text-slate-900">Candidaturas a instrutor</div>
-              <div className="text-xs text-slate-500 mt-0.5">Revê candidatos com scoring AI</div>
-            </div>
-            <span className="text-slate-300 group-hover:text-brand-500 text-lg flex-shrink-0">→</span>
-          </Link>
-          <Link href={"/admin/eventos" as any} className="group bg-white rounded-xl border border-slate-200 p-4 sm:p-5 hover:border-brand-300 hover:shadow-md active:scale-[0.99] transition-all flex items-center gap-3 touch-manipulation">
-            <span className="text-2xl flex-shrink-0">📡</span>
-            <div className="flex-1 min-w-0">
-              <div className="font-semibold text-slate-900">Eventos da plataforma</div>
-              <div className="text-xs text-slate-500 mt-0.5">Stream em tempo real de tudo o que acontece</div>
-            </div>
-            <span className="text-slate-300 group-hover:text-brand-500 text-lg flex-shrink-0">→</span>
-          </Link>
-          <Link href={"/admin/marketing" as any} className="group bg-white rounded-xl border border-slate-200 p-4 sm:p-5 hover:border-brand-300 hover:shadow-md active:scale-[0.99] transition-all flex items-center gap-3 touch-manipulation">
-            <span className="text-2xl flex-shrink-0">📢</span>
-            <div className="flex-1 min-w-0">
-              <div className="font-semibold text-slate-900">Marketing</div>
-              <div className="text-xs text-slate-500 mt-0.5">Aprovar blog & social do agente</div>
-            </div>
-            <span className="text-slate-300 group-hover:text-brand-500 text-lg flex-shrink-0">→</span>
-          </Link>
-          <Link href={"/admin/payments" as any} className="group bg-white rounded-xl border border-slate-200 p-4 sm:p-5 hover:border-brand-300 hover:shadow-md active:scale-[0.99] transition-all flex items-center gap-3 touch-manipulation">
-            <span className="text-2xl flex-shrink-0">💳</span>
-            <div className="flex-1 min-w-0">
-              <div className="font-semibold text-slate-900">Payments</div>
-              <div className="text-xs text-slate-500 mt-0.5">Configurar Stripe (preparado)</div>
-            </div>
-            <span className="text-slate-300 group-hover:text-brand-500 text-lg flex-shrink-0">→</span>
-          </Link>
-          <Link href={"/admin/video" as any} className="group bg-white rounded-xl border border-slate-200 p-4 sm:p-5 hover:border-brand-300 hover:shadow-md active:scale-[0.99] transition-all flex items-center gap-3 touch-manipulation">
-            <span className="text-2xl flex-shrink-0">🎥</span>
-            <div className="flex-1 min-w-0">
-              <div className="font-semibold text-slate-900">Vídeo</div>
-              <div className="text-xs text-slate-500 mt-0.5">Configurar Mux (preparado)</div>
-            </div>
-            <span className="text-slate-300 group-hover:text-brand-500 text-lg flex-shrink-0">→</span>
-          </Link>
+      <div>
+        <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Atalhos rápidos</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+          <Shortcut href="/admin/curso-ia/novo" emoji="✨" label="Gerar curso com IA" sub="A partir de um tópico" highlight />
+          <Shortcut href="/admin/preview" emoji="👀" label="Ver como aluno" sub="Preview do catálogo" />
+          <Shortcut href="/admin/marketing" emoji="📢" label="Marketing" sub="Aprovar blog & social" />
+          <Shortcut href="/admin/candidaturas" emoji="🎓" label="Candidaturas" sub="Revê novos instrutores" />
+          <Shortcut href="/admin/instrutores-ai" emoji="🤖" label="AI Features" sub="Por instrutor" />
+          <Shortcut href="/admin/tutor-config" emoji="🧠" label="Tutor AI" sub="Configurar tutor alunos" />
+          <Shortcut href="/admin/eventos" emoji="📡" label="Eventos" sub="Stream em tempo real" />
+          <Shortcut href="/admin/payments" emoji="💳" label="Payments" sub="Stripe (preparado)" />
+          <Shortcut href="/admin/video" emoji="🎥" label="Vídeo" sub="Mux (preparado)" />
+          <Shortcut href="/admin/jobs" emoji="⚙" label="Jobs" sub="Background workers" />
+          <Shortcut href="/admin/agentes" emoji="🤝" label="Agentes" sub="API keys & quotas" />
         </div>
       </div>
 
       <div>
         <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Operacional</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Stat icon="🤖" label="Agentes activos" value={dash.active_agents} accent="brand" href="/admin/agentes" />
           <Stat icon="⚙" label="Jobs pendentes" value={dash.pending_jobs} accent="amber" href="/admin/jobs" />
           <Stat icon="✋" label="Aprovações" value={dash.pending_approvals} accent={dash.pending_approvals > 0 ? 'amber' : 'slate'} href="#aprovacoes" />
