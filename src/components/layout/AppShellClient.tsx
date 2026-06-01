@@ -3,7 +3,7 @@
 import { Link } from '@/i18n/routing';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { UserMenu } from './UserMenu';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
@@ -15,47 +15,62 @@ interface Props {
   children: React.ReactNode;
 }
 
-interface NavItem { href: string; label: string; emoji: string; group?: string }
+interface NavItem { href: string; labelKey: string; emoji: string; groupKey: string }
 
 const ADMIN_NAV: NavItem[] = [
-  { href: '/admin', label: 'Cockpit', emoji: '🎛', group: 'Overview' },
-  { href: '/admin/eventos', label: 'Eventos', emoji: '📡', group: 'Overview' },
-  { href: '/admin/cursos', label: 'Cursos', emoji: '📚', group: 'Conteúdo' },
-  { href: '/admin/marketing', label: 'Marketing', emoji: '📢', group: 'Conteúdo' },
-  { href: '/admin/candidaturas', label: 'Candidaturas', emoji: '🎓', group: 'Pessoas' },
-  { href: '/admin/instrutores', label: 'Instrutores', emoji: '👨‍🏫', group: 'Pessoas' },
-  { href: '/admin/instrutores-ai', label: 'AI por instrutor', emoji: '🧠', group: 'Pessoas' },
-  { href: '/admin/payments', label: 'Payments', emoji: '💳', group: 'Operações' },
-  { href: '/admin/video', label: 'Vídeo (Mux)', emoji: '🎥', group: 'Operações' },
-  { href: '/admin/jobs', label: 'Jobs', emoji: '⚙️', group: 'Operações' },
-  { href: '/admin/tutor-config', label: 'Tutor config', emoji: '🤖', group: 'Operações' },
+  { href: '/admin', labelKey: 'shell.admin.cockpit', emoji: '🎛', groupKey: 'shell.group.overview' },
+  { href: '/admin/eventos', labelKey: 'shell.admin.events', emoji: '📡', groupKey: 'shell.group.overview' },
+  { href: '/admin/cursos', labelKey: 'shell.admin.courses', emoji: '📚', groupKey: 'shell.group.content' },
+  { href: '/admin/preview', labelKey: 'shell.admin.preview', emoji: '👀', groupKey: 'shell.group.content' },
+  { href: '/admin/marketing', labelKey: 'shell.admin.marketing', emoji: '📢', groupKey: 'shell.group.content' },
+  { href: '/admin/candidaturas', labelKey: 'shell.admin.applications', emoji: '🎓', groupKey: 'shell.group.people' },
+  { href: '/admin/instrutores', labelKey: 'shell.admin.instructors', emoji: '👨‍🏫', groupKey: 'shell.group.people' },
+  { href: '/admin/instrutores-ai', labelKey: 'shell.admin.ai_features', emoji: '🧠', groupKey: 'shell.group.people' },
+  { href: '/admin/payments', labelKey: 'shell.admin.payments', emoji: '💳', groupKey: 'shell.group.operations' },
+  { href: '/admin/video', labelKey: 'shell.admin.video', emoji: '🎥', groupKey: 'shell.group.operations' },
+  { href: '/admin/jobs', labelKey: 'shell.admin.jobs', emoji: '⚙️', groupKey: 'shell.group.operations' },
+  { href: '/admin/tutor-config', labelKey: 'shell.admin.tutor_config', emoji: '🤖', groupKey: 'shell.group.operations' },
 ];
 
 const INSTRUCTOR_NAV: NavItem[] = [
-  { href: '/teach', label: 'Dashboard', emoji: '📊', group: 'Visão geral' },
-  { href: '/teach/novo', label: 'Criar curso', emoji: '✨', group: 'Conteúdo' },
-  { href: '/teach?tab=courses', label: 'Os meus cursos', emoji: '📚', group: 'Conteúdo' },
-  { href: '/teach?tab=students', label: 'Estudantes', emoji: '👥', group: 'Comunidade' },
-  { href: '/teach?tab=reviews', label: 'Avaliações', emoji: '⭐', group: 'Comunidade' },
-  { href: '/teach?tab=payouts', label: 'Pagamentos', emoji: '💰', group: 'Operações' },
+  { href: '/teach', labelKey: 'shell.instructor.dashboard', emoji: '📊', groupKey: 'shell.group.overview' },
+  { href: '/teach/novo', labelKey: 'shell.instructor.create', emoji: '✨', groupKey: 'shell.group.content' },
+  { href: '/teach?tab=courses', labelKey: 'shell.instructor.my_courses', emoji: '📚', groupKey: 'shell.group.content' },
+  { href: '/teach?tab=students', labelKey: 'shell.instructor.students', emoji: '👥', groupKey: 'shell.group.community' },
+  { href: '/teach?tab=reviews', labelKey: 'shell.instructor.reviews', emoji: '⭐', groupKey: 'shell.group.community' },
+  { href: '/teach?tab=payouts', labelKey: 'shell.instructor.payouts', emoji: '💰', groupKey: 'shell.group.operations' },
 ];
 
 const STUDENT_NAV: NavItem[] = [
-  { href: '/learn', label: 'A minha aprendizagem', emoji: '📚', group: 'Aprender' },
-  { href: '/cursos', label: 'Explorar cursos', emoji: '🔍', group: 'Aprender' },
-  { href: '/search', label: 'Pesquisar', emoji: '🔎', group: 'Aprender' },
-  { href: '/learn?tab=certificates', label: 'Certificados', emoji: '🏆', group: 'Resultados' },
-  { href: '/learn?tab=notes', label: 'Notas', emoji: '📝', group: 'Resultados' },
+  { href: '/learn', labelKey: 'shell.student.learning', emoji: '📚', groupKey: 'shell.group.learn' },
+  { href: '/cursos', labelKey: 'shell.student.explore', emoji: '🔍', groupKey: 'shell.group.learn' },
+  { href: '/search', labelKey: 'shell.student.search', emoji: '🔎', groupKey: 'shell.group.learn' },
+  { href: '/learn?tab=certificates', labelKey: 'shell.student.certificates', emoji: '🏆', groupKey: 'shell.group.results' },
+  { href: '/learn?tab=notes', labelKey: 'shell.student.notes', emoji: '📝', groupKey: 'shell.group.results' },
 ];
 
-const ROLE_META: Record<string, { label: string; badge: string }> = {
-  admin: { label: 'Admin', badge: 'bg-rose-100 text-rose-700' },
-  instructor: { label: 'Instrutor', badge: 'bg-amber-100 text-amber-700' },
-  student: { label: 'Aluno', badge: 'bg-emerald-100 text-emerald-700' },
+const FALLBACK_LABELS: Record<string, string> = {
+  'shell.admin.cockpit': 'Cockpit', 'shell.admin.events': 'Eventos', 'shell.admin.courses': 'Cursos',
+  'shell.admin.preview': 'Ver como aluno', 'shell.admin.marketing': 'Marketing', 'shell.admin.applications': 'Candidaturas',
+  'shell.admin.instructors': 'Instrutores', 'shell.admin.ai_features': 'AI por instrutor', 'shell.admin.payments': 'Payments',
+  'shell.admin.video': 'Vídeo (Mux)', 'shell.admin.jobs': 'Jobs', 'shell.admin.tutor_config': 'Tutor config',
+  'shell.instructor.dashboard': 'Dashboard', 'shell.instructor.create': 'Criar curso', 'shell.instructor.my_courses': 'Os meus cursos',
+  'shell.instructor.students': 'Estudantes', 'shell.instructor.reviews': 'Avaliações', 'shell.instructor.payouts': 'Pagamentos',
+  'shell.student.learning': 'A minha aprendizagem', 'shell.student.explore': 'Explorar cursos', 'shell.student.search': 'Pesquisar',
+  'shell.student.certificates': 'Certificados', 'shell.student.notes': 'Notas',
+  'shell.group.overview': 'Visão geral', 'shell.group.content': 'Conteúdo', 'shell.group.people': 'Pessoas',
+  'shell.group.operations': 'Operações', 'shell.group.community': 'Comunidade', 'shell.group.learn': 'Aprender', 'shell.group.results': 'Resultados',
+  'shell.role.admin': 'Admin', 'shell.role.instructor': 'Instrutor', 'shell.role.student': 'Aluno',
+  'nav.open_menu': 'Abrir menu', 'nav.search': 'Pesquisar',
 };
 
 export function AppShellClient({ role, pageTitle, session, children }: Props) {
-  const t = useTranslations();
+  const tr = useTranslations();
+  function t(key: string): string {
+    try { const v = tr(key); if (!v || v === key) return FALLBACK_LABELS[key] || key; return v; }
+    catch { return FALLBACK_LABELS[key] || key; }
+  }
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
 
@@ -67,15 +82,17 @@ export function AppShellClient({ role, pageTitle, session, children }: Props) {
   }, [sidebarOpen]);
 
   const nav = role === 'admin' ? ADMIN_NAV : role === 'instructor' ? INSTRUCTOR_NAV : STUDENT_NAV;
-  const meta = ROLE_META[role];
+  const roleBadge = role === 'admin' ? 'bg-rose-100 text-rose-700' : role === 'instructor' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700';
+  const roleLabel = t(`shell.role.${role}`);
 
-  // Group nav items
-  const groups = nav.reduce((acc, item) => {
-    const g = item.group || 'Outros';
-    if (!acc[g]) acc[g] = [];
-    acc[g].push(item);
-    return acc;
-  }, {} as Record<string, NavItem[]>);
+  const groups = useMemo(() => {
+    const acc: Record<string, { groupKey: string; items: NavItem[] }> = {};
+    for (const item of nav) {
+      if (!acc[item.groupKey]) acc[item.groupKey] = { groupKey: item.groupKey, items: [] };
+      acc[item.groupKey].items.push(item);
+    }
+    return Object.values(acc);
+  }, [nav]);
 
   function isActive(href: string): boolean {
     const cleanHref = href.split('?')[0];
@@ -87,34 +104,25 @@ export function AppShellClient({ role, pageTitle, session, children }: Props) {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* TOPBAR */}
       <header className="sticky top-0 z-40 bg-white border-b border-slate-200 h-14 flex items-center px-3 sm:px-4 gap-2">
-        {/* Hamburger mobile */}
-        <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          aria-label={t('nav.open_menu')}
-          className="lg:hidden w-10 h-10 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-700 transition-colors active:scale-95"
-        >
+        <button onClick={() => setSidebarOpen(!sidebarOpen)} aria-label={t('nav.open_menu')}
+          className="lg:hidden w-10 h-10 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-700 transition-colors active:scale-95">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
         </button>
 
-        {/* Logo */}
         <Link href="/" className="flex items-center gap-2 font-bold text-slate-900 group">
           <span className="text-2xl group-hover:scale-110 transition-transform">🧠</span>
           <span className="hidden sm:inline text-base tracking-tight">NeuroLearn</span>
         </Link>
 
-        {/* Role badge */}
-        <span className={`hidden sm:inline-flex items-center text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${meta.badge}`}>
-          {meta.label}
+        <span className={`hidden sm:inline-flex items-center text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${roleBadge}`}>
+          {roleLabel}
         </span>
 
-        {/* Page title (desktop) */}
         {pageTitle && <span className="hidden md:inline text-sm text-slate-400 ml-2">/ {pageTitle}</span>}
 
         <div className="flex-1" />
 
-        {/* Right actions */}
         <Link href={'/search' as any} aria-label={t('nav.search')} className="w-9 h-9 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-600">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
         </Link>
@@ -123,12 +131,10 @@ export function AppShellClient({ role, pageTitle, session, children }: Props) {
       </header>
 
       <div className="flex">
-        {/* SIDEBAR DESKTOP */}
         <aside className="hidden lg:flex w-60 flex-shrink-0 sticky top-14 h-[calc(100vh-3.5rem)] border-r border-slate-200 bg-white flex-col overflow-y-auto">
-          <SidebarContent groups={groups} isActive={isActive} />
+          <SidebarContent groups={groups} isActive={isActive} t={t} />
         </aside>
 
-        {/* SIDEBAR MOBILE DRAWER */}
         {sidebarOpen && (
           <div className="lg:hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm" onClick={() => setSidebarOpen(false)}>
             <aside className="absolute top-0 left-0 bottom-0 w-72 max-w-[85%] bg-white shadow-2xl overflow-y-auto" onClick={(e) => e.stopPropagation()}>
@@ -136,45 +142,37 @@ export function AppShellClient({ role, pageTitle, session, children }: Props) {
                 <div className="flex items-center gap-2">
                   <span className="text-2xl">🧠</span>
                   <span className="font-bold text-slate-900">NeuroLearn</span>
-                  <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full ${meta.badge}`}>{meta.label}</span>
+                  <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full ${roleBadge}`}>{roleLabel}</span>
                 </div>
                 <button onClick={() => setSidebarOpen(false)} className="w-9 h-9 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-600">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M6 6l12 12M6 18L18 6"/></svg>
                 </button>
               </div>
-              <SidebarContent groups={groups} isActive={isActive} />
+              <SidebarContent groups={groups} isActive={isActive} t={t} />
             </aside>
           </div>
         )}
 
-        {/* CONTENT */}
-        <main className="flex-1 min-w-0">
-          {children}
-        </main>
+        <main className="flex-1 min-w-0">{children}</main>
       </div>
     </div>
   );
 }
 
-function SidebarContent({ groups, isActive }: { groups: Record<string, NavItem[]>; isActive: (href: string) => boolean }) {
+function SidebarContent({ groups, isActive, t }: { groups: { groupKey: string; items: NavItem[] }[]; isActive: (href: string) => boolean; t: (k: string) => string }) {
   return (
     <nav className="flex-1 px-3 py-4 space-y-5">
-      {Object.entries(groups).map(([groupName, items]) => (
-        <div key={groupName}>
-          <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-3 mb-2">{groupName}</h3>
+      {groups.map((group) => (
+        <div key={group.groupKey}>
+          <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-3 mb-2">{t(group.groupKey)}</h3>
           <div className="space-y-0.5">
-            {items.map((item) => {
+            {group.items.map((item) => {
               const active = isActive(item.href);
               return (
-                <Link
-                  key={item.href}
-                  href={item.href as any}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    active ? 'bg-brand-50 text-brand-700' : 'text-slate-700 hover:bg-slate-50'
-                  }`}
-                >
+                <Link key={item.href} href={item.href as any}
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${active ? 'bg-brand-50 text-brand-700' : 'text-slate-700 hover:bg-slate-50'}`}>
                   <span className="text-base">{item.emoji}</span>
-                  <span className="truncate">{item.label}</span>
+                  <span className="truncate">{t(item.labelKey)}</span>
                 </Link>
               );
             })}

@@ -1,10 +1,12 @@
 import { Header } from '@/components/layout/Header';
 import { Link } from '@/i18n/routing';
 import { LoginForm } from './LoginForm';
+import { getTranslations } from 'next-intl/server';
 
 export const metadata = { title: 'Entrar' };
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const t = await getTranslations();
   return (
     <>
       <Header />
@@ -13,14 +15,14 @@ export default function LoginPage() {
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
             <div className="text-center mb-6">
               <span className="text-4xl">🧠</span>
-              <h1 className="text-2xl font-bold text-slate-900 mt-2">Entrar</h1>
-              <p className="text-sm text-slate-500 mt-1">Acede à tua área NeuroLearn</p>
+              <h1 className="text-2xl font-bold text-slate-900 mt-2">{t('login.title')}</h1>
+              <p className="text-sm text-slate-500 mt-1">{t('login.subtitle')}</p>
             </div>
             <LoginForm />
             <p className="text-center text-sm text-slate-500 mt-6">
-              Ainda não tens conta?{' '}
+              {t('login.no_account')}{' '}
               <Link href={'/register' as any} className="text-brand-600 hover:underline font-medium">
-                Regista-te grátis
+                {t('login.signup_free')}
               </Link>
             </p>
           </div>
