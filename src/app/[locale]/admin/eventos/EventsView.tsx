@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from '@/i18n/routing';
 import { createClient } from '@/lib/supabase/client';
+import { useTranslations, useLocale } from 'next-intl';
 
 interface EventRow {
   id: number;
@@ -31,20 +32,32 @@ const TYPE_META: Record<string, { emoji: string; color: string }> = {
   credits_denied: { emoji: '🚫', color: 'bg-rose-50 text-rose-700' },
 };
 
-function fmt(iso: string): string {
-  const diff = (Date.now() - new Date(iso).getTime()) / 1000;
-  if (diff < 60) return `há ${Math.floor(diff)}s`;
-  if (diff < 3600) return `há ${Math.floor(diff/60)}m`;
-  if (diff < 86400) return `há ${Math.floor(diff/3600)}h`;
-  return new Date(iso).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short' });
+function localeToBcp(locale: string): string {
+  if (locale === 'pt') return 'pt-PT';
+  if (locale === 'en') return 'en-GB';
+  if (locale === 'es') return 'es-ES';
+  if (locale === 'fr') return 'fr-FR';
+  return 'pt-PT';
 }
 
 export function EventsView() {
+  const t = useTranslations();
+  const locale = useLocale();
+  const bcp = localeToBcp(locale);
+
   const [events, setEvents] = useState<EventRow[]>([]);
   const [counts, setCounts] = useState<Counts[]>([]);
   const [filter, setFilter] = useState<string>('all');
   const [loading, setLoading] = useState(true);
   const [autoRefresh, setAutoRefresh] = useState(true);
+
+  function fmt(iso: string): string {
+    const diff = (Date.now() - new Date(iso).getTime()) / 1000;
+    if (diff < 60) return t('events.ago_s', { n: Math.floor(diff) });
+    if (diff < 3600) return t('events.ago_m', { n: Math.floor(diff / 60) });
+    if (diff < 86400) return t('events.ago_h', { n: Math.floor(diff / 3600) });
+    return new Date(iso).toLocaleDateString(bcp, { day: '2-digit', month: 'short' });
+  }
 
   async function load() {
     const sb = createClient();
@@ -53,7 +66,6 @@ export function EventsView() {
     const { data } = await q;
     setEvents((data as EventRow[]) || []);
 
-    // Contadores das últimas 24h (consulta separada)
     const { data: countsData } = await sb.from('nl_events')
       .select('event_type')
       .gte('occurred_at', new Date(Date.now() - 86400000).toISOString());
@@ -74,22 +86,21 @@ export function EventsView() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-      <Link href={'/admin' as any} className="text-sm text-brand-600 hover:underline">← Cockpit</Link>
+      <Link href={'/admin' as any} className="text-sm text-brand-600 hover:underline">{t('events.back')}</Link>
       <div className="mt-3 flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">📡 Eventos da plataforma</h1>
-          <p className="text-sm text-slate-500 mt-1 tabular-nums">{total24h.toLocaleString('pt-PT')} eventos nas últimas 24h · {events.length} mostrados</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">{t('events.title')}</h1>
+          <p className="text-sm text-slate-500 mt-1 tabular-nums">{t('events.subtitle', { total: total24h.toLocaleString(bcp), shown: events.length })}</p>
         </div>
         <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
           <input type="checkbox" checked={autoRefresh} onChange={(e) => setAutoRefresh(e.target.checked)} className="w-4 h-4 accent-brand-600" />
-          Auto-refresh 10s
+          {t('events.auto_refresh')}
         </label>
       </div>
 
-      {/* Contadores 24h */}
       <div className="mt-5 flex gap-2 overflow-x-auto pb-2">
         <button onClick={() => setFilter('all')} className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium ${filter==='all' ? 'bg-slate-900 text-white' : 'bg-white border border-slate-200 text-slate-700'}`}>
-          Tudo <span className="tabular-nums opacity-70">{total24h}</span>
+          {t('events.filter_all')} <span className="tabular-nums opacity-70">{total24h}</span>
         </button>
         {counts.slice(0, 12).map((c) => {
           const meta = TYPE_META[c.event_type] || { emoji: '•', color: 'bg-slate-50' };
@@ -104,13 +115,12 @@ export function EventsView() {
         })}
       </div>
 
-      {/* Lista */}
       {loading ? (
-        <div className="text-center py-12 text-slate-500">A carregar...</div>
+        <div className="text-center py-12 text-slate-500">{t('events.loading')}</div>
       ) : events.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-xl border border-slate-200 mt-5">
           <div className="text-4xl mb-2">📭</div>
-          <p className="text-slate-600">Sem eventos neste filtro.</p>
+          <p className="text-slate-600">{t('events.empty')}</p>
         </div>
       ) : (
         <div className="mt-5 bg-white rounded-2xl border border-slate-200 overflow-hidden">
@@ -126,7 +136,7 @@ export function EventsView() {
                       <span className="text-xs text-slate-400 tabular-nums">{fmt(ev.occurred_at)}</span>
                     </div>
                     <div className="text-xs text-slate-500 mt-0.5 flex flex-wrap gap-x-3">
-                      {ev.actor_kind === 'system' ? <span>🤖 sistema</span> : ev.actor_id ? <span>👤 {ev.actor_id.slice(0,8)}</span> : null}
+                      {ev.actor_kind === 'system' ? <span>{t('events.actor_system')}</span> : ev.actor_id ? <span>👤 {ev.actor_id.slice(0,8)}</span> : null}
                       {ev.subject_kind && ev.subject_id && <span>{ev.subject_kind}: {ev.subject_id.slice(0, 12)}</span>}
                       {ev.parent_kind && ev.parent_id && <span>{ev.parent_kind}: {ev.parent_id.slice(0, 12)}</span>}
                     </div>
