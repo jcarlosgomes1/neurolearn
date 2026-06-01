@@ -22,6 +22,7 @@ const ADMIN_NAV: NavItem[] = [
   { href: '/admin/eventos', labelKey: 'shell.admin.events', emoji: '📡', groupKey: 'shell.group.overview' },
   { href: '/admin/cursos', labelKey: 'shell.admin.courses', emoji: '📚', groupKey: 'shell.group.content' },
   { href: '/admin/preview', labelKey: 'shell.admin.preview', emoji: '👀', groupKey: 'shell.group.content' },
+  { href: '/admin/cms', labelKey: 'shell.admin.cms', emoji: '📝', groupKey: 'shell.group.content' },
   { href: '/admin/marketing', labelKey: 'shell.admin.marketing', emoji: '📢', groupKey: 'shell.group.content' },
   { href: '/admin/candidaturas', labelKey: 'shell.admin.applications', emoji: '🎓', groupKey: 'shell.group.people' },
   { href: '/admin/instrutores', labelKey: 'shell.admin.instructors', emoji: '👨‍🏫', groupKey: 'shell.group.people' },
@@ -51,7 +52,8 @@ const STUDENT_NAV: NavItem[] = [
 
 const FALLBACK_LABELS: Record<string, string> = {
   'shell.admin.cockpit': 'Cockpit', 'shell.admin.events': 'Eventos', 'shell.admin.courses': 'Cursos',
-  'shell.admin.preview': 'Ver como aluno', 'shell.admin.marketing': 'Marketing', 'shell.admin.applications': 'Candidaturas',
+  'shell.admin.preview': 'Ver como aluno',
+  'shell.admin.cms': 'CMS', 'shell.admin.marketing': 'Marketing', 'shell.admin.applications': 'Candidaturas',
   'shell.admin.instructors': 'Instrutores', 'shell.admin.ai_features': 'AI por instrutor', 'shell.admin.payments': 'Payments',
   'shell.admin.video': 'Vídeo (Mux)', 'shell.admin.jobs': 'Jobs', 'shell.admin.tutor_config': 'Tutor config',
   'shell.instructor.dashboard': 'Dashboard', 'shell.instructor.create': 'Criar curso', 'shell.instructor.my_courses': 'Os meus cursos',
