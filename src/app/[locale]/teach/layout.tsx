@@ -9,8 +9,9 @@ export default async function TeachLayout({ children, params }: { children: Reac
   if (!user) redirect({ href: '/login', locale });
   const { data: profile } = await sb.from('nl_profiles').select('role').eq('id', user!.id).single();
   if (!profile || !['admin', 'super_admin', 'instructor'].includes(profile.role)) redirect({ href: '/', locale });
+  const isAdmin = profile ? ['admin', 'super_admin'].includes(profile.role) : false;
   return (
-    <AppShell role={['admin','super_admin'].includes(profile.role) ? 'admin' : 'instructor'}>
+    <AppShell role={isAdmin ? 'admin' : 'instructor'}>
       {children}
     </AppShell>
   );
