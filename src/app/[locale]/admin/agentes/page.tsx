@@ -1,4 +1,3 @@
-import { Header } from '@/components/layout/Header';
 import { AdminList } from '../AdminList';
 
 export const metadata = { title: 'Agentes · Admin' };
@@ -6,8 +5,7 @@ export const metadata = { title: 'Agentes · Admin' };
 export default function Page() {
   return (
     <>
-      <Header />
-      <main className="bg-slate-50 min-h-screen">
+
         <AdminList
           title="Agentes activos"
           action="list_agents"
@@ -19,7 +17,7 @@ export default function Page() {
             { key: 'last_active_at', label: 'Última atividade', kind: 'reltime' },
           ]}
         />
-      </main>
+      
     </>
   );
 }

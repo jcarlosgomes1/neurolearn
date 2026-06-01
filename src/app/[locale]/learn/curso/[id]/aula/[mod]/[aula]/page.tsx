@@ -1,4 +1,3 @@
-import { Header } from '@/components/layout/Header';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { LessonViewer } from './LessonViewer';
@@ -23,8 +22,7 @@ export default async function Page({ params }: { params: Promise<{ id: string; m
 
   return (
     <>
-      <Header />
-      <main className="bg-slate-50 min-h-screen">
+
         <LessonViewer
           courseId={id}
           course={{ id: course.id, title: course.title, subtitle: course.subtitle, emoji: course.emoji, level: course.level, modules: course.modules || [] }}
@@ -32,7 +30,7 @@ export default async function Page({ params }: { params: Promise<{ id: string; m
           lessonIndex={aulaIdx}
           locale={locale}
         />
-      </main>
+      
     </>
   );
 }

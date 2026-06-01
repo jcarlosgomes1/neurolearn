@@ -1,4 +1,3 @@
-import { Header } from '@/components/layout/Header';
 import { Link } from '@/i18n/routing';
 import { AdminList } from '../AdminList';
 
@@ -7,8 +6,7 @@ export const metadata = { title: 'Cursos · Admin' };
 export default function Page() {
   return (
     <>
-      <Header />
-      <main className="bg-slate-50 min-h-screen">
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 flex items-center justify-between gap-2 flex-wrap">
           <p className="text-sm text-slate-500">Edita cursos existentes ou cria novos AI Essentials.</p>
           <div className="flex gap-2 flex-wrap">
@@ -33,7 +31,7 @@ export default function Page() {
           linkKey="id"
           linkLabel="Editar"
         />
-      </main>
+      
     </>
   );
 }

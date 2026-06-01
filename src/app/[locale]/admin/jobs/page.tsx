@@ -1,4 +1,3 @@
-import { Header } from '@/components/layout/Header';
 import { AdminList } from '../AdminList';
 
 export const metadata = { title: 'Jobs · Admin' };
@@ -6,8 +5,7 @@ export const metadata = { title: 'Jobs · Admin' };
 export default function Page() {
   return (
     <>
-      <Header />
-      <main className="bg-slate-50 min-h-screen">
+
         <AdminList
           title="Jobs"
           action="list_jobs"
@@ -19,7 +17,7 @@ export default function Page() {
             { key: 'created_at', label: 'Criado', kind: 'reltime' },
           ]}
         />
-      </main>
+      
     </>
   );
 }
