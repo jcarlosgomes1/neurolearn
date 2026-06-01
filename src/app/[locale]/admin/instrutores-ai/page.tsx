@@ -1,4 +1,3 @@
-import { Header } from '@/components/layout/Header';
 import { Link } from '@/i18n/routing';
 import { AIFeaturesList } from './AIFeaturesList';
 
@@ -7,8 +6,7 @@ export const metadata = { title: 'AI Features dos Instrutores · Admin' };
 export default function Page() {
   return (
     <>
-      <Header />
-      <main className="bg-slate-50 min-h-screen">
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           <Link href={'/admin' as any} className="text-sm text-brand-600 hover:underline">← Cockpit</Link>
           <div className="mt-2 mb-6 flex items-start justify-between gap-3 flex-wrap">
@@ -19,7 +17,7 @@ export default function Page() {
           </div>
           <AIFeaturesList />
         </div>
-      </main>
+      
     </>
   );
 }

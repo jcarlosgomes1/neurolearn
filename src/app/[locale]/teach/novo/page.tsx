@@ -1,4 +1,3 @@
-import { Header } from '@/components/layout/Header';
 import { CreateCourseForm } from './CreateCourseForm';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from '@/i18n/routing';
@@ -17,10 +16,9 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   }
   return (
     <>
-      <Header />
-      <main className="bg-slate-50 min-h-screen">
+
         <CreateCourseForm />
-      </main>
+      
     </>
   );
 }

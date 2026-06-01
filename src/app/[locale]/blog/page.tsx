@@ -63,7 +63,7 @@ export default async function BlogPage({ params }: { params: Promise<{ locale: s
     <>
       <Header />
       <main className="bg-white min-h-screen">
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14 pb-6 sm:pb-10">
+        <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14 pb-6 sm:pb-10">
           <div className="text-center sm:text-left max-w-2xl">
             <span className="inline-block text-xs font-semibold uppercase tracking-widest text-brand-700 bg-brand-50 px-3 py-1 rounded-full mb-4">{t('blog.eyebrow')}</span>
             <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 tracking-tight">{t('blog.title')}</h1>
@@ -79,7 +79,7 @@ export default async function BlogPage({ params }: { params: Promise<{ locale: s
         ) : (
           <>
             {hero && hero.tr && (
-              <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12 sm:mb-16">
+              <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mb-12 sm:mb-16">
                 <Link href={`/blog/${hero.slug}` as any} className="group block bg-slate-50 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300">
                   <div className="grid md:grid-cols-2 gap-0">
                     <CoverImage
@@ -107,7 +107,7 @@ export default async function BlogPage({ params }: { params: Promise<{ locale: s
             )}
 
             {rest.length > 0 && (
-              <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 sm:pb-24">
+              <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 sm:pb-24">
                 <div className="grid gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-3">
                   {rest.filter((p) => p.tr).map((p) => (
                     <Link key={p.id} href={`/blog/${p.slug}` as any} className="group flex flex-col bg-white rounded-xl overflow-hidden border border-slate-200 hover:border-slate-300 hover:shadow-lg transition-all duration-300">
