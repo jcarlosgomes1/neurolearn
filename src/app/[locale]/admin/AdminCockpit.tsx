@@ -94,6 +94,7 @@ export function AdminCockpit() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
           <Shortcut href="/admin/curso-ia/novo" emoji="✨" label="Gerar curso com IA" sub="A partir de um tópico" highlight />
           <Shortcut href="/admin/preview" emoji="👀" label="Ver como aluno" sub="Preview do catálogo" />
+          <Shortcut href="/admin/cms" emoji="📝" label="CMS" sub="Editar textos do site" />
           <Shortcut href="/admin/marketing" emoji="📢" label="Marketing" sub="Aprovar blog & social" />
           <Shortcut href="/admin/candidaturas" emoji="🎓" label="Candidaturas" sub="Revê novos instrutores" />
           <Shortcut href="/admin/instrutores-ai" emoji="🤖" label="AI Features" sub="Por instrutor" />
