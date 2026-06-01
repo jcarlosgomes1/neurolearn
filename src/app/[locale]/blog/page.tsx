@@ -65,8 +65,8 @@ export default async function BlogPage({ params }: { params: Promise<{ locale: s
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14 pb-6 sm:pb-10">
           <div className="text-center sm:text-left max-w-2xl">
             <span className="inline-block text-xs font-semibold uppercase tracking-widest text-brand-700 bg-brand-50 px-3 py-1 rounded-full mb-4">📝 Blog</span>
-            <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 tracking-tight">IA aplicada a quem trabalha</h1>
-            <p className="mt-4 text-lg text-slate-600 leading-relaxed">Em português. Sem hype, com prática. Para profissionais que querem usar IA com bom senso.</p>
+            <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 tracking-tight">Applied AI for people who build</h1>
+            <p className="mt-4 text-lg text-slate-600 leading-relaxed">No hype. Just hands-on insights for professionals putting AI to work.</p>
           </div>
         </section>
 

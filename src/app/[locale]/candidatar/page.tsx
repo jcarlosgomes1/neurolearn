@@ -18,23 +18,23 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
         <section className="bg-gradient-to-br from-brand-50 via-purple-50 to-white pt-16 pb-12">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
             <span className="inline-block text-xs font-semibold uppercase tracking-widest text-brand-700 bg-white px-3 py-1.5 rounded-full mb-5 shadow-sm">🎓 Programa de instrutores</span>
-            <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 tracking-tight leading-[1.1] text-balance">Ensina IA aplicada a quem faz, em português</h1>
-            <p className="mt-5 text-lg sm:text-xl text-slate-600 leading-relaxed text-balance">Procuramos especialistas com experiência real para criar cursos sobre IA aplicada ao trabalho. Sem hype, com prática.</p>
+            <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 tracking-tight leading-[1.1] text-balance">Teach applied AI to people who build</h1>
+            <p className="mt-5 text-lg sm:text-xl text-slate-600 leading-relaxed text-balance">We're looking for practitioners with real-world experience to build hands-on AI courses. No hype, just useful skills.</p>
             <div className="mt-8 grid sm:grid-cols-3 gap-4 max-w-2xl mx-auto">
               <div className="bg-white rounded-xl p-4 border border-slate-100">
                 <div className="text-2xl mb-1">💰</div>
-                <div className="text-sm font-semibold text-slate-900">50% de receita</div>
-                <div className="text-xs text-slate-500 mt-1">No teu próprio curso</div>
+                <div className="text-sm font-semibold text-slate-900">50% revenue share</div>
+                <div className="text-xs text-slate-500 mt-1">On every course you launch</div>
               </div>
               <div className="bg-white rounded-xl p-4 border border-slate-100">
                 <div className="text-2xl mb-1">🛠</div>
-                <div className="text-sm font-semibold text-slate-900">IA inclusa</div>
-                <div className="text-xs text-slate-500 mt-1">Gera aulas com Claude</div>
+                <div className="text-sm font-semibold text-slate-900">AI-assisted authoring</div>
+                <div className="text-xs text-slate-500 mt-1">Tools to draft lessons faster</div>
               </div>
               <div className="bg-white rounded-xl p-4 border border-slate-100">
-                <div className="text-2xl mb-1">🇵🇹</div>
-                <div className="text-sm font-semibold text-slate-900">Mercado lusófono</div>
-                <div className="text-xs text-slate-500 mt-1">PT-PT, sem competição</div>
+                <div className="text-2xl mb-1">🌍</div>
+                <div className="text-sm font-semibold text-slate-900">Global audience</div>
+                <div className="text-xs text-slate-500 mt-1">Courses in any language</div>
               </div>
             </div>
           </div>

@@ -1,8 +1,6 @@
 import { Link } from '@/i18n/routing';
 
-interface FooterData {
-  brand?: string;
-}
+interface FooterData { brand?: string }
 
 export function Footer({ data }: { data: FooterData }) {
   const year = new Date().getFullYear();
@@ -16,7 +14,7 @@ export function Footer({ data }: { data: FooterData }) {
               <span>NeuroLearn</span>
             </div>
             <p className="mt-3 text-sm max-w-xs leading-relaxed">
-              {data?.brand || 'A plataforma portuguesa para aprenderes inteligência artificial com cursos práticos, sempre actualizados e certificados verificáveis.'}
+              {data?.brand || 'Practical, applied AI training for professionals. Hands-on courses, verifiable certificates, multilingual.'}
             </p>
             <div className="mt-5 flex gap-3">
               <a href="https://www.linkedin.com/company/neurolearn" target="_blank" rel="noopener" aria-label="LinkedIn" className="w-9 h-9 rounded-lg bg-slate-800 hover:bg-brand-600 flex items-center justify-center transition-colors text-white">in</a>
@@ -27,40 +25,40 @@ export function Footer({ data }: { data: FooterData }) {
           </div>
 
           <div>
-            <h3 className="text-white font-semibold text-sm mb-3">Plataforma</h3>
+            <h3 className="text-white font-semibold text-sm mb-3">Platform</h3>
             <ul className="space-y-2 text-sm">
-              <li><Link href={'/cursos' as any} className="hover:text-white transition-colors">Cursos</Link></li>
+              <li><Link href={'/cursos' as any} className="hover:text-white transition-colors">Courses</Link></li>
               <li><Link href={'/essentials' as any} className="hover:text-white transition-colors">Essentials</Link></li>
-              <li><Link href={'/empresas' as any} className="hover:text-white transition-colors">Empresas</Link></li>
+              <li><Link href={'/empresas' as any} className="hover:text-white transition-colors">For business</Link></li>
               <li><Link href={'/blog' as any} className="hover:text-white transition-colors">Blog</Link></li>
-              <li><Link href={'/candidatar' as any} className="hover:text-white transition-colors">Ensinar na NeuroLearn →</Link></li>
+              <li><Link href={'/candidatar' as any} className="hover:text-white transition-colors">Teach on NeuroLearn →</Link></li>
             </ul>
           </div>
 
           <div>
-            <h3 className="text-white font-semibold text-sm mb-3">Empresa</h3>
+            <h3 className="text-white font-semibold text-sm mb-3">Company</h3>
             <ul className="space-y-2 text-sm">
-              <li><Link href={'/legal/about' as any} className="hover:text-white transition-colors">Sobre nós</Link></li>
+              <li><Link href={'/legal/about' as any} className="hover:text-white transition-colors">About</Link></li>
               <li><Link href={'/legal/faq' as any} className="hover:text-white transition-colors">FAQ</Link></li>
-              <li><a href="mailto:hello@neurolearn.pt" className="hover:text-white transition-colors">Contacto</a></li>
+              <li><a href="mailto:hello@neurolearn.pt" className="hover:text-white transition-colors">Contact</a></li>
             </ul>
           </div>
 
           <div>
             <h3 className="text-white font-semibold text-sm mb-3">Legal</h3>
             <ul className="space-y-2 text-sm">
-              <li><Link href={'/legal/terms' as any} className="hover:text-white transition-colors">Termos & Condições</Link></li>
-              <li><Link href={'/legal/privacy' as any} className="hover:text-white transition-colors">Privacidade</Link></li>
+              <li><Link href={'/legal/terms' as any} className="hover:text-white transition-colors">Terms</Link></li>
+              <li><Link href={'/legal/privacy' as any} className="hover:text-white transition-colors">Privacy</Link></li>
               <li><Link href={'/legal/cookies' as any} className="hover:text-white transition-colors">Cookies</Link></li>
-              <li><Link href={'/legal/refunds' as any} className="hover:text-white transition-colors">Reembolsos</Link></li>
-              <li><Link href={'/legal/legal-notice' as any} className="hover:text-white transition-colors">Aviso legal</Link></li>
+              <li><Link href={'/legal/refunds' as any} className="hover:text-white transition-colors">Refunds</Link></li>
+              <li><Link href={'/legal/legal-notice' as any} className="hover:text-white transition-colors">Legal notice</Link></li>
             </ul>
           </div>
         </div>
 
         <div className="mt-12 pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-          <span>© {year} NeuroLearn. Todos os direitos reservados.</span>
-          <span className="text-slate-500">Feito com 🧠 NeuroLearn AI, revisto pela nossa equipa.</span>
+          <span>© {year} NeuroLearn. All rights reserved.</span>
+          <span className="text-slate-500">Built with care.</span>
         </div>
       </div>
     </footer>
