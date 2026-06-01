@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Link } from '@/i18n/routing';
 import { callAgentOps } from '@/lib/api/client';
 import { DashboardSkeleton } from '@/components/shared/DashboardSkeleton';
+import { useTranslations } from 'next-intl';
 
 interface Row {
   id: string;
@@ -22,14 +23,15 @@ interface Row {
   active_features_count: number;
 }
 
-const FEATURE_BADGES = [
-  { key: 'can_generate_lessons', label: 'Aulas', emoji: '📝' },
-  { key: 'can_generate_full_courses', label: 'Cursos', emoji: '🚀' },
-  { key: 'can_use_ai_tutor', label: 'Tutor', emoji: '🧠' },
-  { key: 'can_use_pricing_advisor', label: 'Preço', emoji: '💰' },
+const FEATURE_BADGES: { key: string; labelKey: string; emoji: string }[] = [
+  { key: 'can_generate_lessons', labelKey: 'ai_feat.feat_lessons', emoji: '📝' },
+  { key: 'can_generate_full_courses', labelKey: 'ai_feat.feat_courses', emoji: '🚀' },
+  { key: 'can_use_ai_tutor', labelKey: 'ai_feat.feat_tutor', emoji: '🧠' },
+  { key: 'can_use_pricing_advisor', labelKey: 'ai_feat.feat_price', emoji: '💰' },
 ];
 
 export function AIFeaturesList() {
+  const t = useTranslations();
   const [rows, setRows] = useState<Row[] | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
@@ -46,7 +48,7 @@ export function AIFeaturesList() {
     return (
       <div className="bg-white rounded-xl border-2 border-dashed border-slate-200 p-8 text-center">
         <div className="text-3xl mb-2">👨‍🏫</div>
-        <p className="text-sm text-slate-500">Sem instrutores aprovados ainda. Quando aprovares candidaturas, vão aparecer aqui.</p>
+        <p className="text-sm text-slate-500">{t('ai_feat.no_approved_instructors')}</p>
       </div>
     );
   }
@@ -69,17 +71,15 @@ export function AIFeaturesList() {
               <div className="font-semibold text-slate-900 truncate">{row.display_name}</div>
               <div className="mt-1.5 flex flex-wrap gap-1.5">
                 {row.active_features_count === 0 ? (
-                  <span className="text-xs text-slate-400">Nenhuma feature activa</span>
+                  <span className="text-xs text-slate-400">{t('ai_feat.no_features_active')}</span>
                 ) : (
                   FEATURE_BADGES.filter((b) => row.features[b.key as keyof typeof row.features]).map((b) => (
-                    <span key={b.key} className="text-xs bg-brand-50 text-brand-700 px-2 py-0.5 rounded-full">{b.emoji} {b.label}</span>
+                    <span key={b.key} className="text-xs bg-brand-50 text-brand-700 px-2 py-0.5 rounded-full">{b.emoji} {t(b.labelKey)}</span>
                   ))
                 )}
               </div>
               {credits > 0 && (
-                <div className="mt-1.5 text-xs text-slate-500">
-                  Créditos: <strong className="text-slate-900">{used}/{credits}</strong> usados este mês
-                </div>
+                <div className="mt-1.5 text-xs text-slate-500">{t('ai_feat.credits_used', { used, total: credits })}</div>
               )}
             </div>
             <span className="text-slate-300 group-hover:text-brand-500 transition-colors text-lg flex-shrink-0">→</span>
