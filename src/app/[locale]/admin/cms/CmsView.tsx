@@ -9,6 +9,8 @@ import { toast } from 'sonner';
 interface HomeBlock { slug: string; lang: string; data: any; updated_at: string }
 interface LegalPage { id: number; page_slug: string; lang_code: string; title: string; last_updated_label: string | null; is_active: boolean; updated_at: string }
 
+interface EditingState { source: string; slug: string; lang: string; data: any }
+
 const SLUG_DISPLAY: Record<string, { label: string; emoji: string; group: string }> = {
   hero: { label: 'Hero', emoji: '🎯', group: 'Home pública' },
   features: { label: 'Features', emoji: '✨', group: 'Home pública' },
@@ -27,7 +29,7 @@ export function CmsView() {
   const [homeBlocks, setHomeBlocks] = useState<HomeBlock[]>([]);
   const [legalPages, setLegalPages] = useState<LegalPage[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState<{ source: string; slug: string; lang: string; data: any } | null>(null);
+  const [editing, setEditing] = useState<EditingState | null>(null);
   const [saving, setSaving] = useState(false);
   const [translating, setTranslating] = useState<string | null>(null);
 
@@ -82,14 +84,18 @@ export function CmsView() {
     setTranslating(`${source}:${slug}`);
     try {
       const data = await callApi('auto_translate', { source, slug });
-      const okLangs = Object.entries(data.translated).filter(([_, v]) => v).map(([k]) => k.toUpperCase());
+      const okLangs = Object.entries(data.translated).filter(([, v]) => v).map(([k]) => k.toUpperCase());
       toast.success(`Traduzido para ${okLangs.join(', ')}`);
       load();
     } catch (e: any) { toast.error(e.message); }
     finally { setTranslating(null); }
   }
 
-  // Agrupa blocos por slug → langs disponíveis
+  function updateEditingData(newData: any) {
+    if (!editing) return;
+    setEditing({ ...editing, data: newData });
+  }
+
   const blocksBySlug = homeBlocks.reduce((acc, b) => {
     if (!acc[b.slug]) acc[b.slug] = {};
     acc[b.slug][b.lang] = b;
@@ -192,16 +198,18 @@ export function CmsView() {
         </>
       )}
 
-      {editing && <EditModal editing={editing} onClose={() => setEditing(null)} onSave={save} onChange={(data) => setEditing({ ...editing, data })} saving={saving} />}
+      {editing && <EditModal editing={editing} onClose={() => setEditing(null)} onSave={save} onChange={updateEditingData} saving={saving} />}
     </div>
   );
 }
 
-function EditModal({ editing, onClose, onSave, onChange, saving }: any) {
+interface EditModalProps { editing: EditingState; onClose: () => void; onSave: () => void; onChange: (data: any) => void; saving: boolean }
+
+function EditModal({ editing, onClose, onSave, onChange, saving }: EditModalProps) {
   const [jsonText, setJsonText] = useState(JSON.stringify(editing.data, null, 2));
   const [error, setError] = useState<string | null>(null);
 
-  function tryParse() {
+  function tryParse(): boolean {
     try {
       const parsed = JSON.parse(jsonText);
       setError(null);
