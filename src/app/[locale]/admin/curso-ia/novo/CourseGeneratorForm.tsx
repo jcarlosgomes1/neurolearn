@@ -39,11 +39,11 @@ const FORMATS: { v: string; labelKey: string; emoji: string }[] = [
   { v: 'exercise', labelKey: 'cgf.fmt_exercise', emoji: '✍️' },
 ];
 
-const LANGUAGES = [
-  { v: 'pt', label: 'Português (PT)' },
-  { v: 'en', label: 'English' },
-  { v: 'es', label: 'Español' },
-  { v: 'fr', label: 'Français' },
+const LANGUAGES: { v: string; labelKey: string }[] = [
+  { v: 'pt', labelKey: 'cgf.lang_pt' },
+  { v: 'en', labelKey: 'cgf.lang_en' },
+  { v: 'es', labelKey: 'cgf.lang_es' },
+  { v: 'fr', labelKey: 'cgf.lang_fr' },
 ];
 
 function suggestPrice(numModules: number, lessonsPerModule: number, avgMinutes: number, level: string, courseType: string): number {
@@ -143,7 +143,7 @@ export function CourseGeneratorForm() {
             <div>
               <label className="label">{t('cgf.language')}</label>
               <select className="input" value={language} onChange={(e) => setLanguage(e.target.value)}>
-                {LANGUAGES.map((l) => <option key={l.v} value={l.v}>{l.label}</option>)}
+                {LANGUAGES.map((l) => <option key={l.v} value={l.v}>{t(l.labelKey)}</option>)}
               </select>
             </div>
             <div>
@@ -252,12 +252,12 @@ export function CourseGeneratorForm() {
           <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">{t('cgf.card4')}</h2>
           <div>
             <label className="label">{t('cgf.priority_topics')}</label>
-            <textarea className="input min-h-[80px]" value={priorityTopics} onChange={(e) => setPriorityTopics(e.target.value)} placeholder="GDPR&#10;Claude vs GPT&#10;Casos PT" />
+            <textarea className="input min-h-[80px]" value={priorityTopics} onChange={(e) => setPriorityTopics(e.target.value)} placeholder={t('cgf.priority_placeholder')} />
             <p className="text-xs text-slate-400 mt-1">{t('cgf.priority_topics_hint')}</p>
           </div>
           <div>
             <label className="label">{t('cgf.extra')}</label>
-            <textarea className="input min-h-[60px]" value={extraInstructions} onChange={(e) => setExtraInstructions(e.target.value)} />
+            <textarea className="input min-h-[60px]" value={extraInstructions} onChange={(e) => setExtraInstructions(e.target.value)} placeholder={t('cgf.extra_placeholder')} />
           </div>
         </section>
 
