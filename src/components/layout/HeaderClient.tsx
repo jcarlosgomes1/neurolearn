@@ -1,0 +1,151 @@
+'use client';
+
+import { Link } from '@/i18n/routing';
+import { LanguageSwitcher } from './LanguageSwitcher';
+import { UserMenu } from './UserMenu';
+import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
+
+interface Session { email: string; area: 'student' | 'instructor' | 'admin' }
+
+const NAV: Array<{ href: string; label: string }> = [
+  { href: '/cursos', label: 'Cursos' },
+  { href: '/essentials', label: 'Essentials' },
+  { href: '/empresas', label: 'Empresas' },
+  { href: '/blog', label: 'Blog' },
+];
+
+export function HeaderClient({ session }: { session: Session | null }) {
+  const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+
+  // Fechar menu quando navegação muda
+  useEffect(() => { setOpen(false); }, [pathname]);
+  // Bloquear scroll quando aberto
+  useEffect(() => {
+    if (open) document.body.style.overflow = 'hidden';
+    else document.body.style.overflow = '';
+    return () => { document.body.style.overflow = ''; };
+  }, [open]);
+
+  return (
+    <>
+      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200/60">
+        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+          <Link href="/" className="flex items-center gap-2 font-bold text-slate-900 group">
+            <span className="text-2xl transition-transform group-hover:scale-110">🧠</span>
+            <span className="text-lg tracking-tight">NeuroLearn</span>
+          </Link>
+
+          {/* Desktop nav */}
+          <nav className="hidden md:flex items-center gap-1">
+            {NAV.map((item) => (
+              <Link key={item.href} href={item.href as any} className="btn-ghost">{item.label}</Link>
+            ))}
+          </nav>
+
+          {/* Right side actions */}
+          <div className="flex items-center gap-1 sm:gap-2">
+            <Link href={'/search' as any} aria-label="Search" className="w-9 h-9 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-700 transition-colors">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
+            </Link>
+            <div className="hidden sm:block"><LanguageSwitcher /></div>
+            {session ? (
+              <div className="hidden sm:block"><UserMenu email={session.email} area={session.area} /></div>
+            ) : (
+              <Link href={'/login' as any} className="hidden sm:inline-flex btn-primary text-sm py-2 px-4">Sign in</Link>
+            )}
+
+            {/* Mobile menu trigger */}
+            <button
+              onClick={() => setOpen(!open)}
+              aria-label={open ? 'Close menu' : 'Open menu'}
+              aria-expanded={open}
+              className="md:hidden w-10 h-10 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-700 transition-colors active:scale-95"
+            >
+              {open ? (
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M6 6l12 12M6 18L18 6"/></svg>
+              ) : (
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+              )}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Mobile drawer */}
+      {open && (
+        <div className="md:hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm" onClick={() => setOpen(false)}>
+          <div className="absolute top-0 right-0 bottom-0 w-[88%] max-w-sm bg-white shadow-2xl flex flex-col " onClick={(e) => e.stopPropagation()}>
+            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+              <span className="font-bold text-slate-900">Menu</span>
+              <button onClick={() => setOpen(false)} aria-label="Close menu" className="w-9 h-9 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-600">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M6 6l12 12M6 18L18 6"/></svg>
+              </button>
+            </div>
+
+            {/* User block no topo */}
+            {session ? (
+              <div className="px-5 py-4 bg-slate-50 border-b border-slate-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-brand-600 text-white font-bold flex items-center justify-center">
+                    {session.email[0]?.toUpperCase()}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs text-slate-500 capitalize">{session.area}</div>
+                    <div className="text-sm font-medium text-slate-900 truncate">{session.email}</div>
+                  </div>
+                </div>
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <Link href={(session.area === 'admin' ? '/admin' : session.area === 'instructor' ? '/teach' : '/learn') as any} className="text-sm bg-white border border-slate-200 hover:border-slate-300 rounded-lg py-2 text-center font-medium text-slate-700">
+                    Dashboard
+                  </Link>
+                  <Link href={'/learn' as any} className="text-sm bg-white border border-slate-200 hover:border-slate-300 rounded-lg py-2 text-center font-medium text-slate-700">
+                    Learning
+                  </Link>
+                </div>
+              </div>
+            ) : null}
+
+            {/* Nav links */}
+            <nav className="flex-1 overflow-y-auto px-3 py-4">
+              {NAV.map((item) => (
+                <Link key={item.href} href={item.href as any}
+                  className="flex items-center gap-3 px-3 py-3.5 rounded-lg hover:bg-slate-50 text-slate-800 font-medium transition-colors">
+                  {item.label}
+                </Link>
+              ))}
+              <div className="my-3 border-t border-slate-100" />
+              <Link href={'/search' as any} className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-slate-50 text-slate-700 text-sm">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
+                Search
+              </Link>
+              <Link href={'/candidatar' as any} className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-slate-50 text-slate-700 text-sm">
+                <span>🎓</span> Teach on NeuroLearn
+              </Link>
+              <Link href={'/legal/faq' as any} className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-slate-50 text-slate-700 text-sm">
+                <span>❓</span> FAQ
+              </Link>
+              <Link href={'/legal/about' as any} className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-slate-50 text-slate-700 text-sm">
+                <span>ℹ️</span> About
+              </Link>
+            </nav>
+
+            {/* Footer do drawer */}
+            <div className="px-5 py-4 border-t border-slate-100 space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-xs text-slate-500">Language</span>
+                <LanguageSwitcher />
+              </div>
+              {!session && (
+                <Link href={'/login' as any} className="btn-primary w-full text-center text-sm py-3 block">
+                  Sign in
+                </Link>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
