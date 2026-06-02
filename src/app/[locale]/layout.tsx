@@ -3,6 +3,7 @@ import { getMessages, getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { Toaster } from 'sonner';
 import { routing } from '@/i18n/routing';
+import { OnboardingGate } from '@/components/auth/OnboardingGate';
 import '@/app/globals.css';
 
 export async function generateMetadata() {
@@ -44,6 +45,7 @@ export default async function LocaleLayout({
     <html lang={locale}>
       <body className="min-h-screen bg-slate-50 font-sans antialiased">
         <NextIntlClientProvider locale={locale} messages={messages}>
+          <OnboardingGate />
           {children}
           <Toaster richColors position="top-right" />
         </NextIntlClientProvider>
