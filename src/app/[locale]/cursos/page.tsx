@@ -7,7 +7,11 @@ import { getHomeBlocks } from '@/lib/api/home-blocks';
 import { getTranslations } from 'next-intl/server';
 
 export const revalidate = 60;
-export const metadata = { title: 'Todos os cursos', description: 'Explora todos os cursos de IA da NeuroLearn.' };
+
+export async function generateMetadata() {
+  const t = await getTranslations();
+  return { title: t('catalog.meta_title'), description: t('catalog.meta_desc') };
+}
 
 export default async function CoursesPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;

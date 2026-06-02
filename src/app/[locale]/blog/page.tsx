@@ -8,7 +8,11 @@ import { fmtDate } from '@/lib/utils/cn';
 import { getTranslations } from 'next-intl/server';
 
 export const revalidate = 300;
-export const metadata = { title: 'Blog · NeuroLearn' };
+
+export async function generateMetadata() {
+  const t = await getTranslations();
+  return { title: t('blog.meta_title') };
+}
 
 type Post = {
   id: string;

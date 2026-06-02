@@ -1,13 +1,18 @@
 import { ComingSoon } from '@/components/shared/ComingSoon';
+import { getTranslations } from 'next-intl/server';
 
-export const metadata = { title: 'Página não encontrada' };
+export async function generateMetadata() {
+  const t = await getTranslations();
+  return { title: t('nf.meta_title') };
+}
 
-export default function LocaleNotFound() {
+export default async function LocaleNotFound() {
+  const t = await getTranslations();
   return (
     <ComingSoon
       emoji="🔍"
-      title="Página não encontrada"
-      description="A página que procuras não existe ou ainda está em construção. Volta à página inicial ou explora os nossos cursos."
+      title={t('nf.title')}
+      description={t('nf.description')}
     />
   );
 }
