@@ -21,6 +21,10 @@ interface Application {
   ai_score_total: number | null; ai_score_credibility: number | null; ai_score_pedagogy: number | null;
   ai_score_differentiation: number | null; ai_score_format: number | null; ai_score_language_quality: number | null;
   ai_summary: string | null; ai_red_flags: string[] | null; ai_strengths: string[] | null; ai_processed_at: string | null;
+  proposed_email_subject: string | null; proposed_email_html: string | null; proposed_email_text: string | null;
+  proposed_email_decision: 'approve' | 'reject' | 'waitlist' | null;
+  proposed_email_at: string | null; proposed_email_model: string | null;
+  email_sent_at: string | null; email_sent_subject: string | null;
   status: string; admin_notes: string | null; applied_at: string;
 }
 
@@ -96,6 +100,7 @@ export function CandidaturasList() {
           { v: 'shortlisted', labelKey: 'candlist.f.short', count: counts.shortlisted || 0 },
           { v: 'screening_passed', labelKey: 'candlist.f.ai_ok', count: counts.screening_passed || 0 },
           { v: 'under_review', labelKey: 'candlist.f.review', count: counts.under_review || 0 },
+          { v: 'waitlisted', labelKey: 'candlist.f.waitlisted', count: counts.waitlisted || 0 },
           { v: 'auto_rejected', labelKey: 'candlist.f.ai_no', count: counts.auto_rejected || 0 },
           { v: 'approved', labelKey: 'candlist.f.approved', count: counts.approved || 0 },
           { v: 'rejected', labelKey: 'candlist.f.rejected', count: counts.rejected || 0 },
@@ -126,6 +131,9 @@ export function CandidaturasList() {
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="font-semibold text-slate-900 text-base sm:text-lg">{app.full_name}</h3>
                       <span className={`text-[11px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full ${statusColor}`}>{t(statusKey)}</span>
+                      {app.proposed_email_subject && !app.email_sent_at && (
+                        <span className="text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-violet-100 text-violet-700">{t('candlist.email_ready')}</span>
+                      )}
                     </div>
                     <p className="text-sm text-slate-600 mt-0.5">{app.job_title}{app.current_company && ` · ${app.current_company}`}</p>
                     <p className="text-sm text-slate-700 mt-2 font-medium">&quot;{app.proposed_course_title}&quot;</p>
@@ -154,12 +162,18 @@ export function CandidaturasList() {
   );
 }
 
+type ActionState = 'idle' | 'approving' | 'rejecting' | 'waitlisting' | 'rescoring' | 'regenerating';
+
 function DetailModal({ app, onClose, onReload, fmtDate }: { app: Application; onClose: () => void; onReload: () => void; fmtDate: (iso: string) => string }) {
   const t = useTranslations();
-  const [action, setAction] = useState<'idle' | 'approving' | 'rejecting' | 'rescoring'>('idle');
-  const [rejectReason, setRejectReason] = useState('');
-  const [showRejectInput, setShowRejectInput] = useState(false);
+  const [action, setAction] = useState<ActionState>('idle');
   const [revenueShare, setRevenueShare] = useState(50);
+
+  // Email proposal editing state
+  const [editingEmail, setEditingEmail] = useState(false);
+  const [emailSubject, setEmailSubject] = useState(app.proposed_email_subject || '');
+  const [emailHtml, setEmailHtml] = useState(app.proposed_email_html || '');
+  const [emailDecision, setEmailDecision] = useState<'approve' | 'reject' | 'waitlist'>(app.proposed_email_decision || 'approve');
 
   async function api(actionName: string, body: Record<string, unknown> = {}) {
     const sb = createClient();
@@ -173,21 +187,35 @@ function DetailModal({ app, onClose, onReload, fmtDate }: { app: Application; on
     return resp.json();
   }
 
-  async function approve() {
+  async function regenerateEmail(decision: 'approve' | 'reject' | 'waitlist') {
     if (action !== 'idle') return;
-    setAction('approving');
-    const r = await api('approve', { revenue_share_pct: revenueShare });
-    if (r?.ok) { toast.success(t('candlist.approved_msg')); onClose(); onReload(); }
-    else { toast.error(r?.error || t('candlist.failure')); setAction('idle'); }
+    setAction('regenerating');
+    setEmailDecision(decision);
+    const r = await api('propose_decision_email', { decision });
+    if (r?.ok && r.proposal) {
+      setEmailSubject(r.proposal.subject);
+      setEmailHtml(r.proposal.html);
+      toast.success(t('candlist.email_regenerated'));
+      onReload();
+    } else { toast.error(r?.error || t('candlist.failure')); }
+    setAction('idle');
   }
 
-  async function reject() {
+  async function sendDecision(decision: 'approve' | 'reject' | 'waitlist') {
     if (action !== 'idle') return;
-    if (!showRejectInput) { setShowRejectInput(true); return; }
-    setAction('rejecting');
-    const r = await api('reject', { decision_reason: rejectReason });
-    if (r?.ok) { toast.success(t('candlist.rejected_msg')); onClose(); onReload(); }
-    else { toast.error(r?.error || t('candlist.failure')); setAction('idle'); }
+    const stateMap = { approve: 'approving', reject: 'rejecting', waitlist: 'waitlisting' } as const;
+    setAction(stateMap[decision]);
+    const payload: Record<string, unknown> = {
+      edited_subject: emailSubject,
+      edited_html: emailHtml,
+    };
+    if (decision === 'approve') payload.revenue_share_pct = revenueShare;
+    const r = await api(decision, payload);
+    if (r?.ok) {
+      const msgMap = { approve: 'candlist.approved_msg', reject: 'candlist.rejected_msg', waitlist: 'candlist.waitlisted_msg' };
+      toast.success(t(msgMap[decision]));
+      onClose(); onReload();
+    } else { toast.error(r?.error || t('candlist.failure')); setAction('idle'); }
   }
 
   async function rescore() {
@@ -198,6 +226,9 @@ function DetailModal({ app, onClose, onReload, fmtDate }: { app: Application; on
     else { toast.error(r?.error || t('candlist.failure')); }
     setAction('idle');
   }
+
+  const hasProposal = !!emailSubject && !!emailHtml;
+  const decisionAccent = emailDecision === 'approve' ? 'emerald' : emailDecision === 'waitlist' ? 'amber' : 'rose';
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto" onClick={onClose}>
@@ -248,6 +279,78 @@ function DetailModal({ app, onClose, onReload, fmtDate }: { app: Application; on
                   </div>
                 )}
               </div>
+            </section>
+          )}
+
+          {/* DECISION EMAIL PROPOSAL SECTION */}
+          {!['approved', 'rejected'].includes(app.status) && (
+            <section className={`bg-${decisionAccent}-50/30 border border-${decisionAccent}-100 rounded-xl p-5`}>
+              <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">✉️ {t('candlist.proposed_email')}</h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    {hasProposal
+                      ? t('candlist.proposed_email_desc')
+                      : t('candlist.no_proposed_email')}
+                    {app.proposed_email_model && <span className="ml-2 px-1.5 py-0.5 bg-slate-100 rounded text-[10px] font-mono">{app.proposed_email_model.replace('claude-', '').replace(/-\d+$/, '')}</span>}
+                  </p>
+                </div>
+                <div className="flex gap-1 items-center">
+                  <span className="text-xs text-slate-600 mr-1">{t('candlist.regen_as')}</span>
+                  <button onClick={() => regenerateEmail('approve')} disabled={action !== 'idle'} className={`text-[11px] font-semibold px-2 py-1 rounded ${emailDecision === 'approve' ? 'bg-emerald-600 text-white' : 'bg-white border border-emerald-200 text-emerald-700 hover:bg-emerald-50'} disabled:opacity-50`}>✓ {t('candlist.dec.approve')}</button>
+                  <button onClick={() => regenerateEmail('waitlist')} disabled={action !== 'idle'} className={`text-[11px] font-semibold px-2 py-1 rounded ${emailDecision === 'waitlist' ? 'bg-amber-600 text-white' : 'bg-white border border-amber-200 text-amber-700 hover:bg-amber-50'} disabled:opacity-50`}>⏳ {t('candlist.dec.waitlist')}</button>
+                  <button onClick={() => regenerateEmail('reject')} disabled={action !== 'idle'} className={`text-[11px] font-semibold px-2 py-1 rounded ${emailDecision === 'reject' ? 'bg-rose-600 text-white' : 'bg-white border border-rose-200 text-rose-700 hover:bg-rose-50'} disabled:opacity-50`}>✕ {t('candlist.dec.reject')}</button>
+                </div>
+              </div>
+
+              {action === 'regenerating' && (
+                <div className="text-center py-8 text-sm text-slate-500">
+                  <div className="inline-block animate-pulse">⚡ {t('candlist.regenerating')}</div>
+                </div>
+              )}
+
+              {action !== 'regenerating' && !hasProposal && (
+                <button onClick={() => regenerateEmail(emailDecision)} className="w-full bg-white border border-dashed border-slate-300 hover:border-brand-400 rounded-lg py-6 text-sm text-slate-600 hover:text-brand-700">
+                  ⚡ {t('candlist.generate_email')}
+                </button>
+              )}
+
+              {action !== 'regenerating' && hasProposal && (
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{t('candlist.email_subject')}</label>
+                    {editingEmail ? (
+                      <input value={emailSubject} onChange={(e) => setEmailSubject(e.target.value)} className="input mt-1" />
+                    ) : (
+                      <p className="mt-1 text-sm font-semibold text-slate-800">{emailSubject}</p>
+                    )}
+                  </div>
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{t('candlist.email_body')}</label>
+                      <button onClick={() => setEditingEmail((v) => !v)} className="text-[11px] text-brand-600 hover:underline font-semibold">
+                        {editingEmail ? t('candlist.preview') : t('candlist.edit')}
+                      </button>
+                    </div>
+                    {editingEmail ? (
+                      <textarea value={emailHtml} onChange={(e) => setEmailHtml(e.target.value)} className="input min-h-[260px] font-mono text-xs" />
+                    ) : (
+                      <div className="bg-white border border-slate-200 rounded-lg p-3 max-h-[400px] overflow-y-auto text-sm">
+                        <div dangerouslySetInnerHTML={{ __html: emailHtml }} />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </section>
+          )}
+
+          {/* Already-sent email indicator */}
+          {app.email_sent_at && (
+            <section className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+              <div className="text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">✉️ {t('candlist.email_sent')}</div>
+              <p className="text-sm text-slate-700"><strong>{app.email_sent_subject}</strong></p>
+              <p className="text-xs text-slate-500 mt-1">{t('candlist.sent_at', { d: fmtDate(app.email_sent_at) })}</p>
             </section>
           )}
 
@@ -304,15 +407,9 @@ function DetailModal({ app, onClose, onReload, fmtDate }: { app: Application; on
         </div>
 
         {!['approved', 'rejected'].includes(app.status) && (
-          <div className="border-t border-slate-200 p-5 bg-slate-50 flex-shrink-0 space-y-3">
-            {showRejectInput && (
-              <div>
-                <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">{t('candlist.reject_reason')}</label>
-                <textarea value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} className="input mt-1 min-h-[80px]" placeholder={t('candlist.reject_placeholder')} />
-              </div>
-            )}
+          <div className="border-t border-slate-200 p-5 bg-slate-50 flex-shrink-0">
             <div className="flex items-center gap-2 flex-wrap">
-              {!showRejectInput && (
+              {emailDecision === 'approve' && (
                 <div className="flex items-center gap-2 mr-auto">
                   <label className="text-xs text-slate-600 font-medium">{t('candlist.revenue')}</label>
                   <select value={revenueShare} onChange={(e) => setRevenueShare(parseInt(e.target.value))} className="text-sm border border-slate-200 rounded px-2 py-1">
@@ -320,14 +417,18 @@ function DetailModal({ app, onClose, onReload, fmtDate }: { app: Application; on
                   </select>
                 </div>
               )}
-              <button onClick={reject} disabled={action !== 'idle' || (showRejectInput && !rejectReason)} className="bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white text-sm font-semibold px-4 py-2 rounded-lg">
-                {action === 'rejecting' ? t('candlist.rejecting') : showRejectInput ? t('candlist.confirm_reject') : t('candlist.reject_btn')}
-              </button>
-              {!showRejectInput && (
-                <button onClick={approve} disabled={action !== 'idle'} className="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-sm font-semibold px-5 py-2 rounded-lg shadow">
-                  {action === 'approving' ? t('candlist.approving') : t('candlist.approve_create')}
+              <div className="ml-auto flex gap-2 items-center">
+                <p className="text-xs text-slate-500 mr-2">{hasProposal ? t('candlist.send_as') : t('candlist.no_email_yet')}</p>
+                <button onClick={() => sendDecision('reject')} disabled={action !== 'idle' || !hasProposal} className="bg-rose-600 hover:bg-rose-700 disabled:opacity-40 text-white text-sm font-semibold px-3 py-2 rounded-lg">
+                  {action === 'rejecting' ? t('candlist.rejecting') : `✕ ${t('candlist.dec.reject')}`}
                 </button>
-              )}
+                <button onClick={() => sendDecision('waitlist')} disabled={action !== 'idle' || !hasProposal} className="bg-amber-600 hover:bg-amber-700 disabled:opacity-40 text-white text-sm font-semibold px-3 py-2 rounded-lg">
+                  {action === 'waitlisting' ? t('candlist.waitlisting') : `⏳ ${t('candlist.dec.waitlist')}`}
+                </button>
+                <button onClick={() => sendDecision('approve')} disabled={action !== 'idle' || !hasProposal} className="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow">
+                  {action === 'approving' ? t('candlist.approving') : `✓ ${t('candlist.approve_create')}`}
+                </button>
+              </div>
             </div>
           </div>
         )}
