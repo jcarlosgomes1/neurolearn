@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import { fmtCents } from '@/lib/utils/cn';
 
@@ -15,6 +16,7 @@ export interface CourseCardData {
 }
 
 export function CourseCard({ course }: { course: CourseCardData }) {
+  const t = useTranslations('course_card');
   return (
     <Link
       href={`/curso/${course.id}` as any}
@@ -33,7 +35,7 @@ export function CourseCard({ course }: { course: CourseCardData }) {
         )}
         {course.course_type === 'pro' && (
           <span className="px-2 py-0.5 rounded-full bg-brand-100 text-brand-700 font-medium">
-            Pro
+            {t('pro')}
           </span>
         )}
         {course.enrollments_count && course.enrollments_count > 0 ? (

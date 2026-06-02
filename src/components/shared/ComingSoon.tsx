@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import { Header } from '@/components/layout/Header';
 
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export function ComingSoon({ emoji, title, description, features }: Props) {
+  const t = useTranslations('coming_soon');
   return (
     <>
       <Header />
@@ -22,7 +24,7 @@ export function ComingSoon({ emoji, title, description, features }: Props) {
 
           {features && features.length > 0 && (
             <div className="mt-8 bg-white rounded-xl border border-slate-200 p-6 text-left">
-              <p className="text-sm font-semibold text-slate-900 mb-3">A construir agora:</p>
+              <p className="text-sm font-semibold text-slate-900 mb-3">{t('building')}</p>
               <ul className="space-y-2">
                 {features.map((f, i) => (
                   <li key={i} className="flex items-start gap-2 text-sm text-slate-700">
@@ -35,8 +37,8 @@ export function ComingSoon({ emoji, title, description, features }: Props) {
           )}
 
           <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Link href="/" className="btn-secondary">← Voltar à página inicial</Link>
-            <Link href={'/cursos' as any} className="btn-primary">Ver cursos</Link>
+            <Link href="/" className="btn-secondary">{t('back_home')}</Link>
+            <Link href={'/cursos' as any} className="btn-primary">{t('see_courses')}</Link>
           </div>
         </div>
       </main>

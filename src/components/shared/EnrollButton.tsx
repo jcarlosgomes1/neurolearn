@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
 import { createClient } from '@/lib/supabase/client';
 import { callAgentOps } from '@/lib/api/client';
@@ -8,6 +9,7 @@ import { toast } from 'sonner';
 import { AuthGate } from './AuthGate';
 
 export function EnrollButton({ courseId, priceLabel, courseTitle }: { courseId: string; priceLabel: string; courseTitle?: string }) {
+  const t = useTranslations('enroll');
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
@@ -17,14 +19,14 @@ export function EnrollButton({ courseId, priceLabel, courseTitle }: { courseId: 
     try {
       const r = await callAgentOps<{ enrolled?: boolean; already_enrolled?: boolean }>('enroll_course', { course_id: courseId });
       if (r.already_enrolled) {
-        toast.success('Já estás inscrito! A abrir o curso...');
+        toast.success(t('already'));
       } else {
-        toast.success('Inscrição confirmada! 🎉');
+        toast.success(t('confirmed'));
       }
       router.push('/learn' as any);
       router.refresh();
     } catch (e: any) {
-      toast.error(e.message === 'not_authenticated' ? 'Inicia sessão primeiro' : e.message);
+      toast.error(e.message === 'not_authenticated' ? t('sign_in_first') : e.message);
     } finally { setLoading(false); }
   }
 
@@ -43,14 +45,14 @@ export function EnrollButton({ courseId, priceLabel, courseTitle }: { courseId: 
   return (
     <>
       <button onClick={handleEnroll} disabled={loading} className="block w-full text-center bg-brand-600 text-white font-semibold py-3 rounded-lg hover:bg-brand-700 transition-colors shadow-md disabled:opacity-50">
-        {loading ? 'A processar...' : `Inscrever-me · ${priceLabel}`}
+        {loading ? t('processing') : t('button', { price: priceLabel })}
       </button>
       <AuthGate
         open={showAuth}
         onClose={() => setShowAuth(false)}
         onSuccess={enrollAndGo}
-        title={courseTitle ? `Inscreve-te em "${courseTitle}"` : 'Inscreve-te neste curso'}
-        description="Cria conta em 30 segundos ou entra na tua. Depois fazemos a tua inscrição automaticamente."
+        title={courseTitle ? t('auth_title', { title: courseTitle }) : t('auth_title_fallback')}
+        description={t('auth_desc')}
       />
     </>
   );
