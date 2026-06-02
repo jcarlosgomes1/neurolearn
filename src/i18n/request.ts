@@ -7,8 +7,6 @@ import en from './messages/en.json';
 import es from './messages/es.json';
 import fr from './messages/fr.json';
 
-// Static imports — bundled at build time. No runtime fetch, no network dependency.
-// To update: re-run the build pipeline that regenerates these JSON files.
 const FLAT_MESSAGES: Record<string, Record<string, string>> = {
   pt: pt as Record<string, string>,
   en: en as Record<string, string>,
@@ -31,14 +29,38 @@ export default getRequestConfig(async ({ requestLocale }) => {
 
 function flattenToNamespaced(flat: Record<string, string>): AbstractIntlMessages {
   const result: any = {};
-  for (const [key, value] of Object.entries(flat)) {
+  // Sort by depth DESC so deeper paths (e.g. "course.level.advanced") establish
+  // nested structure FIRST. Shallower siblings (e.g. "course.level") are then
+  // skipped if they would collide with an existing object — preventing the
+  // "Cannot create property X on string Y" runtime error from next-intl.
+  const sortedKeys = Object.keys(flat).sort(
+    (a, b) => b.split('.').length - a.split('.').length
+  );
+
+  for (const key of sortedKeys) {
+    const value = flat[key];
     const parts = key.split('.');
     let cur = result;
+    let blocked = false;
+
     for (let i = 0; i < parts.length - 1; i++) {
-      cur[parts[i]] = cur[parts[i]] || {};
-      cur = cur[parts[i]];
+      const seg = parts[i];
+      if (typeof cur[seg] === 'string') {
+        // A shallower string is occupying the slot we need to nest under. Skip.
+        blocked = true;
+        break;
+      }
+      if (!cur[seg]) cur[seg] = {};
+      cur = cur[seg];
     }
-    cur[parts[parts.length - 1]] = value;
+    if (blocked) continue;
+
+    const lastPart = parts[parts.length - 1];
+    if (typeof cur[lastPart] === 'object' && cur[lastPart] !== null) {
+      // A deeper nested object already lives here; do not overwrite with string.
+      continue;
+    }
+    cur[lastPart] = value;
   }
   return result as AbstractIntlMessages;
 }
