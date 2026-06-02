@@ -1,4 +1,5 @@
 import { Link } from '@/i18n/routing';
+import { useTranslations } from 'next-intl';
 
 interface Plan {
   id: string;
@@ -23,6 +24,7 @@ interface HeaderData {
 }
 
 export function Pricing({ header, plans }: { header: HeaderData; plans: PlansData }) {
+  const t = useTranslations();
   if (!plans?.items?.length) return null;
   return (
     <section className="py-20 bg-white" id="pricing">
@@ -44,7 +46,7 @@ export function Pricing({ header, plans }: { header: HeaderData; plans: PlansDat
             >
               {plan.popular && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-brand-600 text-white text-xs font-semibold">
-                  {header.popular || 'Popular'}
+                  {header.popular || t('pricing.most_popular')}
                 </div>
               )}
               <h3 className="text-xl font-bold text-slate-900">{plan.name}</h3>
@@ -73,7 +75,7 @@ export function Pricing({ header, plans }: { header: HeaderData; plans: PlansDat
                     : 'border border-slate-300 text-slate-700 hover:bg-slate-50'
                 }`}
               >
-                {header.cta || 'Começar'}
+                {header.cta || t('btn.start')}
               </Link>
             </div>
           ))}

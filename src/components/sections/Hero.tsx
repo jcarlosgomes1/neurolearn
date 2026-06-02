@@ -1,4 +1,5 @@
 import { Link } from '@/i18n/routing';
+import { useTranslations } from 'next-intl';
 
 interface HeroData {
   badge?: string;
@@ -10,6 +11,7 @@ interface HeroData {
 }
 
 export function Hero({ data }: { data: HeroData }) {
+  const t = useTranslations();
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-brand-50 via-white to-brand-50/50">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(91,108,255,0.15),transparent_50%)]" />
@@ -29,10 +31,10 @@ export function Hero({ data }: { data: HeroData }) {
         </p>
         <div className="mt-10 flex flex-wrap gap-3 animate-slide-up [animation-delay:0.2s]">
           <Link href={'/register' as any} className="btn-primary text-base px-6 py-3">
-            {data.btn_primary || 'Começar grátis'}
+            {data.btn_primary || t('cms.fallback.start_free')}
           </Link>
           <Link href={'/cursos' as any} className="btn-secondary text-base px-6 py-3">
-            {data.btn_secondary || 'Ver cursos'}
+            {data.btn_secondary || t('coming_soon.see_courses')}
           </Link>
         </div>
         {data.trust && (

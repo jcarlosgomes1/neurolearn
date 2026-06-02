@@ -1,4 +1,5 @@
 import { Link } from '@/i18n/routing';
+import { useTranslations } from 'next-intl';
 
 interface CtaData {
   title: string;
@@ -9,6 +10,7 @@ interface CtaData {
 }
 
 export function FinalCta({ data }: { data: CtaData }) {
+  const t = useTranslations();
   return (
     <section className="py-20">
       <div className="max-w-4xl mx-auto px-4">
@@ -28,13 +30,13 @@ export function FinalCta({ data }: { data: CtaData }) {
                 href={'/register' as any}
                 className="bg-white text-brand-700 font-semibold px-6 py-3 rounded-lg hover:bg-brand-50 transition-colors shadow-lg"
               >
-                {data.btn1 || 'Começar grátis'}
+                {data.btn1 || t('cms.fallback.start_free')}
               </Link>
               <Link
                 href={'/cursos' as any}
                 className="border border-white/40 text-white font-semibold px-6 py-3 rounded-lg hover:bg-white/10 transition-colors"
               >
-                {data.btn2 || 'Ver cursos'}
+                {data.btn2 || t('coming_soon.see_courses')}
               </Link>
             </div>
             {data.note && (
