@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import { SUPABASE_URL } from '@/lib/supabase/config';
 import { createClient } from '@/lib/supabase/client';
@@ -11,21 +12,10 @@ interface LegalPage { id: number; page_slug: string; lang_code: string; title: s
 
 interface EditingState { source: string; slug: string; lang: string; data: any }
 
-const SLUG_DISPLAY: Record<string, { label: string; emoji: string; group: string }> = {
-  hero: { label: 'Hero', emoji: '🎯', group: 'Home pública' },
-  features: { label: 'Features', emoji: '✨', group: 'Home pública' },
-  stats: { label: 'Stats', emoji: '📊', group: 'Home pública' },
-  testimonials: { label: 'Testemunhos', emoji: '💬', group: 'Home pública' },
-  plans: { label: 'Planos', emoji: '💳', group: 'Pricing' },
-  pricing_header: { label: 'Header Pricing', emoji: '📑', group: 'Pricing' },
-  cta_section: { label: 'CTA final', emoji: '🚀', group: 'Home pública' },
-  faq: { label: 'FAQ home', emoji: '❓', group: 'Home pública' },
-  footer_brand: { label: 'Footer brand', emoji: '🦶', group: 'Footer' },
-};
-
 const LANG_LABEL: Record<string, string> = { pt: '🇵🇹 PT', en: '🇬🇧 EN', es: '🇪🇸 ES', fr: '🇫🇷 FR' };
 
 export function CmsView() {
+  const t = useTranslations('cms_admin');
   const [homeBlocks, setHomeBlocks] = useState<HomeBlock[]>([]);
   const [legalPages, setLegalPages] = useState<LegalPage[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,17 +23,29 @@ export function CmsView() {
   const [saving, setSaving] = useState(false);
   const [translating, setTranslating] = useState<string | null>(null);
 
+  const SLUG_DISPLAY: Record<string, { label: string; emoji: string; group: string }> = {
+    hero: { label: t('slug.hero'), emoji: '🎯', group: t('group_home') },
+    features: { label: t('slug.features'), emoji: '✨', group: t('group_home') },
+    stats: { label: t('slug.stats'), emoji: '📊', group: t('group_home') },
+    testimonials: { label: t('slug.testimonials'), emoji: '💬', group: t('group_home') },
+    plans: { label: t('slug.plans'), emoji: '💳', group: t('group_pricing') },
+    pricing_header: { label: t('slug.pricing_header'), emoji: '📑', group: t('group_pricing') },
+    cta_section: { label: t('slug.cta_section'), emoji: '🚀', group: t('group_home') },
+    faq: { label: t('slug.faq'), emoji: '❓', group: t('group_home') },
+    footer_brand: { label: t('slug.footer_brand'), emoji: '🦶', group: t('group_footer') },
+  };
+
   async function callApi(action: string, body: any = {}) {
     const sb = createClient();
     const { data: { session } } = await sb.auth.getSession();
-    if (!session) throw new Error('Sem sessão');
+    if (!session) throw new Error(t('err_no_session'));
     const res = await fetch(`${SUPABASE_URL}/functions/v1/cms-admin`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
       body: JSON.stringify({ action, ...body }),
     });
     const data = await res.json();
-    if (!data.ok) throw new Error(data.error || 'API error');
+    if (!data.ok) throw new Error(data.error || t('err_api'));
     return data;
   }
 
@@ -60,7 +62,7 @@ export function CmsView() {
   async function startEdit(source: string, slug: string, lang: string) {
     try {
       const data = await callApi('get', { source, slug, lang });
-      if (!data.item) { toast.error('Item não encontrado'); return; }
+      if (!data.item) { toast.error(t('err_not_found')); return; }
       const editData = source === 'nl_home_blocks' 
         ? data.item.data 
         : { title: data.item.title, content_md: data.item.content_md, last_updated_label: data.item.last_updated_label };
@@ -73,7 +75,7 @@ export function CmsView() {
     setSaving(true);
     try {
       await callApi('save', editing);
-      toast.success('Guardado');
+      toast.success(t('toast_saved'));
       setEditing(null);
       load();
     } catch (e: any) { toast.error(e.message); }
@@ -85,7 +87,7 @@ export function CmsView() {
     try {
       const data = await callApi('auto_translate', { source, slug });
       const okLangs = Object.entries(data.translated).filter(([, v]) => v).map(([k]) => k.toUpperCase());
-      toast.success(`Traduzido para ${okLangs.join(', ')}`);
+      toast.success(t('toast_translated', { langs: okLangs.join(', ') }));
       load();
     } catch (e: any) { toast.error(e.message); }
     finally { setTranslating(null); }
@@ -110,21 +112,21 @@ export function CmsView() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-      <Link href={'/admin' as any} className="text-sm text-brand-600 hover:underline">← Cockpit</Link>
+      <Link href={'/admin' as any} className="text-sm text-brand-600 hover:underline">{t('back')}</Link>
       <div className="mt-3">
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">📝 CMS</h1>
-        <p className="text-sm text-slate-500 mt-1">Edita todos os textos públicos do site (hero, features, FAQ, footer, páginas legais). Traduções automáticas para EN/ES/FR.</p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">{t('title')}</h1>
+        <p className="text-sm text-slate-500 mt-1">{t('subtitle')}</p>
       </div>
 
       {loading ? (
-        <div className="mt-8 text-center text-slate-400 py-10">A carregar...</div>
+        <div className="mt-8 text-center text-slate-400 py-10">{t('loading')}</div>
       ) : (
         <>
           <section className="mt-6">
-            <h2 className="text-lg font-bold text-slate-900 mb-3">🏠 Blocos da home & páginas públicas</h2>
+            <h2 className="text-lg font-bold text-slate-900 mb-3">{t('home_section')}</h2>
             <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100">
               {Object.keys(blocksBySlug).sort().map(slug => {
-                const meta = SLUG_DISPLAY[slug] || { label: slug, emoji: '📄', group: 'Outros' };
+                const meta = SLUG_DISPLAY[slug] || { label: slug, emoji: '📄', group: t('group_other') };
                 const langs = blocksBySlug[slug];
                 return (
                   <div key={slug} className="p-4 sm:p-5">
@@ -136,14 +138,14 @@ export function CmsView() {
                       </div>
                       <button onClick={() => autoTranslate('nl_home_blocks', slug)} disabled={translating === `nl_home_blocks:${slug}`}
                         className="text-xs bg-purple-50 hover:bg-purple-100 text-purple-700 font-medium px-3 py-1.5 rounded-md disabled:opacity-50">
-                        {translating === `nl_home_blocks:${slug}` ? '⏳ A traduzir...' : '🌍 Auto-traduzir PT → EN/ES/FR'}
+                        {translating === `nl_home_blocks:${slug}` ? t('translating') : t('auto_translate')}
                       </button>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {(['pt', 'en', 'es', 'fr'] as const).map(lang => (
                         <button key={lang} onClick={() => startEdit('nl_home_blocks', slug, lang)}
                           className={`text-xs font-medium px-3 py-1.5 rounded-md border ${langs[lang] ? 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700' : 'bg-amber-50 hover:bg-amber-100 border-amber-200 text-amber-700'}`}>
-                          {LANG_LABEL[lang]} {!langs[lang] && '+ criar'}
+                          {LANG_LABEL[lang]} {!langs[lang] && t('create')}
                         </button>
                       ))}
                     </div>
@@ -154,7 +156,7 @@ export function CmsView() {
           </section>
 
           <section className="mt-8">
-            <h2 className="text-lg font-bold text-slate-900 mb-3">📋 Páginas legais</h2>
+            <h2 className="text-lg font-bold text-slate-900 mb-3">{t('legal_section')}</h2>
             <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100">
               {Object.keys(pagesBySlug).sort().map(slug => {
                 const langs = pagesBySlug[slug];
@@ -169,14 +171,14 @@ export function CmsView() {
                       </div>
                       <button onClick={() => autoTranslate('nl_legal_pages', slug)} disabled={translating === `nl_legal_pages:${slug}`}
                         className="text-xs bg-purple-50 hover:bg-purple-100 text-purple-700 font-medium px-3 py-1.5 rounded-md disabled:opacity-50">
-                        {translating === `nl_legal_pages:${slug}` ? '⏳ A traduzir...' : '🌍 Auto-traduzir PT → EN/ES/FR'}
+                        {translating === `nl_legal_pages:${slug}` ? t('translating') : t('auto_translate')}
                       </button>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {(['pt', 'en', 'es', 'fr'] as const).map(lang => (
                         <button key={lang} onClick={() => startEdit('nl_legal_pages', slug, lang)}
                           className={`text-xs font-medium px-3 py-1.5 rounded-md border ${langs[lang] ? 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700' : 'bg-amber-50 hover:bg-amber-100 border-amber-200 text-amber-700'}`}>
-                          {LANG_LABEL[lang]} {!langs[lang] && '+ criar'}
+                          {LANG_LABEL[lang]} {!langs[lang] && t('create')}
                         </button>
                       ))}
                     </div>
@@ -187,12 +189,12 @@ export function CmsView() {
           </section>
 
           <section className="mt-8 bg-blue-50 border border-blue-200 rounded-xl p-5">
-            <h3 className="font-bold text-slate-900 mb-2">💡 Como usar</h3>
+            <h3 className="font-bold text-slate-900 mb-2">{t('howto_title')}</h3>
             <ol className="space-y-1.5 text-sm text-slate-700">
-              <li><strong>1.</strong> Edita o conteúdo PT primeiro (é o master).</li>
-              <li><strong>2.</strong> Clica "🌍 Auto-traduzir" — gera EN/ES/FR automaticamente via Claude.</li>
-              <li><strong>3.</strong> Revê cada idioma e ajusta se necessário.</li>
-              <li><strong>4.</strong> O site refresca o conteúdo dentro de 60 segundos (revalidate de Next.js).</li>
+              <li><strong>1.</strong> {t('howto_1')}</li>
+              <li><strong>2.</strong> {t('howto_2')}</li>
+              <li><strong>3.</strong> {t('howto_3')}</li>
+              <li><strong>4.</strong> {t('howto_4')}</li>
             </ol>
           </section>
         </>
@@ -206,6 +208,7 @@ export function CmsView() {
 interface EditModalProps { editing: EditingState; onClose: () => void; onSave: () => void; onChange: (data: any) => void; saving: boolean }
 
 function EditModal({ editing, onClose, onSave, onChange, saving }: EditModalProps) {
+  const t = useTranslations('cms_admin');
   const [jsonText, setJsonText] = useState(JSON.stringify(editing.data, null, 2));
   const [error, setError] = useState<string | null>(null);
 
@@ -230,7 +233,7 @@ function EditModal({ editing, onClose, onSave, onChange, saving }: EditModalProp
       <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
         <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
           <div>
-            <div className="font-bold text-slate-900">Editar {editing.slug}</div>
+            <div className="font-bold text-slate-900">{t('modal_title', { slug: editing.slug })}</div>
             <div className="text-xs text-slate-500 font-mono">{editing.source} · {editing.lang.toUpperCase()}</div>
           </div>
           <button onClick={onClose} className="w-9 h-9 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-600">
@@ -239,7 +242,7 @@ function EditModal({ editing, onClose, onSave, onChange, saving }: EditModalProp
         </div>
 
         <div className="flex-1 overflow-y-auto p-5">
-          <p className="text-xs text-slate-500 mb-2">Edita o JSON do bloco. Os campos serão usados no site directamente.</p>
+          <p className="text-xs text-slate-500 mb-2">{t('modal_desc')}</p>
           <textarea
             value={jsonText}
             onChange={(e) => { setJsonText(e.target.value); setError(null); }}
@@ -247,13 +250,13 @@ function EditModal({ editing, onClose, onSave, onChange, saving }: EditModalProp
             className="w-full h-96 font-mono text-xs p-3 bg-slate-50 border border-slate-200 rounded-lg focus:border-brand-400 focus:outline-none"
             spellCheck={false}
           />
-          {error && <p className="mt-2 text-sm text-rose-600">⚠ JSON inválido: {error}</p>}
+          {error && <p className="mt-2 text-sm text-rose-600">{t('json_invalid', { err: error })}</p>}
         </div>
 
         <div className="px-5 py-4 border-t border-slate-200 flex justify-end gap-2">
-          <button onClick={onClose} disabled={saving} className="text-sm font-medium px-4 py-2 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700">Cancelar</button>
+          <button onClick={onClose} disabled={saving} className="text-sm font-medium px-4 py-2 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700">{t('cancel')}</button>
           <button onClick={handleSave} disabled={saving || !!error} className="text-sm font-medium px-4 py-2 rounded-md bg-brand-600 hover:bg-brand-700 text-white disabled:opacity-50">
-            {saving ? 'A guardar...' : 'Guardar'}
+            {saving ? t('saving') : t('save')}
           </button>
         </div>
       </div>
