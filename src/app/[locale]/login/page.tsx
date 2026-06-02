@@ -3,7 +3,10 @@ import { Link } from '@/i18n/routing';
 import { LoginForm } from './LoginForm';
 import { getTranslations } from 'next-intl/server';
 
-export const metadata = { title: 'Entrar' };
+export async function generateMetadata() {
+  const t = await getTranslations();
+  return { title: t('login.meta_title') };
+}
 
 export default async function LoginPage() {
   const t = await getTranslations();

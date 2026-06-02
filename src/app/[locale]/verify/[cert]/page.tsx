@@ -2,12 +2,18 @@ import { Header } from '@/components/layout/Header';
 import { Link } from '@/i18n/routing';
 import { fmtDate } from '@/lib/utils/cn';
 import { SUPABASE_URL } from '@/lib/supabase/config';
+import { getTranslations } from 'next-intl/server';
 
 export const dynamic = 'force-dynamic';
-export const metadata = { title: 'Verificar certificado' };
+
+export async function generateMetadata() {
+  const t = await getTranslations();
+  return { title: t('verify.meta_title') };
+}
 
 export default async function VerifyPage({ params }: { params: Promise<{ cert: string }> }) {
   const { cert } = await params;
+  const t = await getTranslations();
   let result: any = null;
   try {
     const res = await fetch(`${SUPABASE_URL}/functions/v1/agent-ops`, {
@@ -29,23 +35,23 @@ export default async function VerifyPage({ params }: { params: Promise<{ cert: s
           {valid ? (
             <>
               <div className="text-6xl mb-3">✅</div>
-              <h1 className="text-2xl font-bold text-emerald-700">Certificado válido</h1>
+              <h1 className="text-2xl font-bold text-emerald-700">{t('verify.title_valid')}</h1>
               <div className="mt-6 space-y-3 text-left bg-slate-50 rounded-lg p-4">
-                <Row label="Número" value={result.certificate.certificate_number} mono />
-                <Row label="Atribuído a" value={result.certificate.recipient_name} />
-                <Row label="Curso" value={result.certificate.course_title} />
-                <Row label="Emitido em" value={fmtDate(result.certificate.issued_at)} />
+                <Row label={t('verify.row_number')} value={result.certificate.certificate_number} mono />
+                <Row label={t('verify.row_recipient')} value={result.certificate.recipient_name} />
+                <Row label={t('verify.row_course')} value={result.certificate.course_title} />
+                <Row label={t('verify.row_issued')} value={fmtDate(result.certificate.issued_at)} />
               </div>
-              <p className="mt-6 text-xs text-slate-500">🧠 Emitido por NeuroLearn</p>
+              <p className="mt-6 text-xs text-slate-500">{t('verify.issued_by')}</p>
             </>
           ) : (
             <>
               <div className="text-6xl mb-3">❌</div>
-              <h1 className="text-2xl font-bold text-rose-700">Certificado não encontrado</h1>
-              <p className="mt-3 text-sm text-slate-600">O número <span className="font-mono">{cert}</span> não corresponde a nenhum certificado emitido.</p>
+              <h1 className="text-2xl font-bold text-rose-700">{t('verify.title_invalid')}</h1>
+              <p className="mt-3 text-sm text-slate-600">{t('verify.not_found_pre')} <span className="font-mono">{cert}</span> {t('verify.not_found_post')}</p>
             </>
           )}
-          <Link href="/" className="mt-8 inline-block text-sm text-brand-600 hover:underline">← Voltar à página inicial</Link>
+          <Link href="/" className="mt-8 inline-block text-sm text-brand-600 hover:underline">{t('verify.back_home')}</Link>
         </div>
       </main>
     </>

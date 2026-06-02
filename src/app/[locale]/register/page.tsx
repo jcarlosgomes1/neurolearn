@@ -3,7 +3,10 @@ import { Link } from '@/i18n/routing';
 import { RegisterForm } from './RegisterForm';
 import { getTranslations } from 'next-intl/server';
 
-export const metadata = { title: 'Criar conta' };
+export async function generateMetadata() {
+  const t = await getTranslations();
+  return { title: t('register.meta_title') };
+}
 
 export default async function RegisterPage() {
   const t = await getTranslations();

@@ -6,6 +6,7 @@ import { Link } from '@/i18n/routing';
 import { createClient } from '@/lib/supabase/server';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
 import { fmtDate } from '@/lib/utils/cn';
+import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 export const revalidate = 300;
@@ -45,16 +46,17 @@ const CATEGORY_EMOJI: Record<string, string> = {
 
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string; locale: string }> }) {
   const { slug, locale } = await params;
+  const t = await getTranslations();
   const sb = await createClient();
   const { data: post } = await sb.from('nl_blog_posts')
     .select('id, slug, category, tags, featured_image_url, published_at, author_name')
     .eq('slug', slug).not('published_at', 'is', null).maybeSingle<BlogPost>();
   if (!post) notFound();
 
-  const { data: t } = await sb.from('nl_blog_post_translations')
+  const { data: tr } = await sb.from('nl_blog_post_translations')
     .select('lang, title, excerpt, content_md, reading_time_minutes')
     .eq('post_id', post.id).or(`lang.eq.${locale},lang.eq.pt`);
-  const translation = (t as Translation[] | null)?.find((x) => x.lang === locale) || (t as Translation[] | null)?.[0];
+  const translation = (tr as Translation[] | null)?.find((x) => x.lang === locale) || (tr as Translation[] | null)?.[0];
   if (!translation) notFound();
 
   const { data: relatedRaw } = post.category
@@ -99,7 +101,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
         <article className="max-w-3xl mx-auto px-4 sm:px-6 py-10 sm:py-14 -mt-16 sm:-mt-24 relative">
           <div className="bg-white rounded-2xl shadow-xl border border-slate-100 p-6 sm:p-10">
-            <Link href={'/blog' as any} className="text-sm text-brand-600 hover:underline">← Todos os artigos</Link>
+            <Link href={'/blog' as any} className="text-sm text-brand-600 hover:underline">{t('blog.back')}</Link>
 
             {post.category && <span className="inline-block mt-4 text-xs font-semibold uppercase tracking-wider text-brand-700 bg-brand-50 px-2.5 py-1 rounded-full">{post.category}</span>}
 
@@ -108,7 +110,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             <div className="mt-5 flex flex-wrap items-center gap-2 text-sm text-slate-500">
               {post.author_name && <span className="font-medium text-slate-700">{post.author_name}</span>}
               {post.published_at && <><span>·</span><span>{fmtDate(post.published_at)}</span></>}
-              {translation.reading_time_minutes && <><span>·</span><span>{translation.reading_time_minutes} min de leitura</span></>}
+              {translation.reading_time_minutes && <><span>·</span><span>{translation.reading_time_minutes} {t('blog.read_time_unit')}</span></>}
             </div>
 
             {translation.excerpt && (
@@ -132,7 +134,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         {related.length > 0 && (
           <section className="bg-slate-50 py-12 sm:py-16">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <h2 className="text-2xl font-bold text-slate-900 mb-8">Continua a ler</h2>
+              <h2 className="text-2xl font-bold text-slate-900 mb-8">{t('blog.related')}</h2>
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {related.map((r) => (
                   <Link key={r.id} href={`/blog/${r.slug}` as any} className="group bg-white rounded-xl overflow-hidden border border-slate-200 hover:shadow-md transition-all">
@@ -148,7 +150,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                       <h3 className="font-bold text-slate-900 leading-snug group-hover:text-brand-700 transition-colors line-clamp-2">{r.tr.title}</h3>
                       <div className="mt-2 flex items-center gap-2 text-xs text-slate-500">
                         {r.published_at && <span>{fmtDate(r.published_at)}</span>}
-                        {r.tr.reading_time_minutes && <><span>·</span><span>{r.tr.reading_time_minutes} min</span></>}
+                        {r.tr.reading_time_minutes && <><span>·</span><span>{r.tr.reading_time_minutes} {t('blog.min_unit')}</span></>}
                       </div>
                     </div>
                   </Link>
