@@ -14,30 +14,35 @@ export default getRequestConfig(async ({ requestLocale }) => {
 
   try {
     const ctrl = new AbortController();
-    const timeoutId = setTimeout(() => ctrl.abort(), 4000);
+    // 15s timeout — accommodates cold starts on Vercel + Supabase
+    const timeoutId = setTimeout(() => ctrl.abort(), 15000);
 
+    // Dedicated lightweight endpoint: returns ONLY i18n flat keys (~75KB).
+    // Cache-Control on response gives us s-maxage=3600 at edge + stale-while-revalidate=86400.
     const res = await fetch(
-      `${SUPABASE_URL}/functions/v1/app-bootstrap?lang=${locale}`,
+      `${SUPABASE_URL}/functions/v1/messages?lang=${locale}`,
       {
         signal: ctrl.signal,
         headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` },
-        next: { revalidate: 300, tags: [`bootstrap:${locale}`] },
+        // Server-side Next.js cache: 1h fresh, then revalidate in background.
+        next: { revalidate: 3600, tags: [`messages:${locale}`] },
       }
     );
     clearTimeout(timeoutId);
     if (res.ok) {
       const data = await res.json();
-      if (data?.i18n && typeof data.i18n === 'object' && Object.keys(data.i18n).length > 0) {
-        // Merge: backend overrides fallback
-        const merged = flattenToNamespaced(data.i18n);
+      if (data?.ok && data?.messages && typeof data.messages === 'object' && Object.keys(data.messages).length > 0) {
+        const merged = flattenToNamespaced(data.messages);
         messages = deepMerge(FALLBACK_MESSAGES, merged);
+      } else {
+        console.warn(`[i18n] messages endpoint returned ok=false or empty for ${locale}`);
       }
     } else {
-      console.warn(`[i18n] bootstrap returned ${res.status} for ${locale}`);
+      console.warn(`[i18n] messages endpoint returned ${res.status} for ${locale}`);
     }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    console.warn(`[i18n] bootstrap fetch failed for ${locale}: ${msg} — using fallback`);
+    console.warn(`[i18n] messages fetch failed for ${locale}: ${msg} — using fallback`);
   }
 
   return { locale, messages };
