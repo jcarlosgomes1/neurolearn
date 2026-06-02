@@ -1,23 +1,11 @@
-import { AdminList } from '../AdminList';
+import { JobsClient } from './JobsClient';
+import { getTranslations } from 'next-intl/server';
 
-export const metadata = { title: 'Jobs · Admin' };
+export async function generateMetadata() {
+  const t = await getTranslations();
+  return { title: t('jobs.meta_title') };
+}
 
 export default function Page() {
-  return (
-    <>
-
-        <AdminList
-          title="Jobs"
-          action="list_jobs"
-          dataKey="rows"
-          backHref="/admin"
-          columns={[
-            { key: 'job_type', label: 'Tipo', primary: true },
-            { key: 'status', label: 'Estado', kind: 'badge' },
-            { key: 'created_at', label: 'Criado', kind: 'reltime' },
-          ]}
-        />
-      
-    </>
-  );
+  return <JobsClient />;
 }

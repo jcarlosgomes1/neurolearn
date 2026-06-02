@@ -1,23 +1,11 @@
-import { AdminList } from '../AdminList';
+import { AgentsClient } from './AgentsClient';
+import { getTranslations } from 'next-intl/server';
 
-export const metadata = { title: 'Agentes · Admin' };
+export async function generateMetadata() {
+  const t = await getTranslations();
+  return { title: t('agts.meta_title') };
+}
 
 export default function Page() {
-  return (
-    <>
-
-        <AdminList
-          title="Agentes activos"
-          action="list_agents"
-          dataKey="agents"
-          backHref="/admin"
-          columns={[
-            { key: 'name', label: 'Agente', primary: true },
-            { key: 'status', label: 'Estado', kind: 'badge' },
-            { key: 'last_active_at', label: 'Última atividade', kind: 'reltime' },
-          ]}
-        />
-      
-    </>
-  );
+  return <AgentsClient />;
 }
