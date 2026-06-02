@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
 import { SUPABASE_URL } from '@/lib/supabase/config';
 import { createClient } from '@/lib/supabase/client';
@@ -35,25 +36,16 @@ interface Course {
   hero_image_url: string | null;
 }
 
-const LEVELS: Array<['beginner'|'intermediate'|'advanced', string, string]> = [
-  ['beginner', 'Iniciante', 'Sem pré-requisitos'],
-  ['intermediate', 'Intermédio', 'Já tem alguma base'],
-  ['advanced', 'Avançado', 'Domínio sólido'],
-];
-const DURATIONS: Array<[string, string, number, number]> = [
-  ['short', 'Curto · ~2h', 3, 3],
-  ['medium', 'Médio · ~5h', 5, 4],
-  ['long', 'Profundo · ~10h', 7, 5],
-];
-const TONES: Array<['didactic'|'practical'|'technical'|'inspirational', string]> = [
-  ['didactic', 'Didáctico'],
-  ['practical', 'Prático'],
-  ['technical', 'Técnico'],
-  ['inspirational', 'Inspirador'],
-];
 const EMOJIS = ['📘','🤖','🧠','💡','📊','🎨','⚙️','🚀','📈','🔬','💬','🎯','🛠','✨'];
 
+const DURATION_STRUCT: Record<string, [number, number]> = {
+  short: [3, 3],
+  medium: [5, 4],
+  long: [7, 5],
+};
+
 export function CreateCourseForm() {
+  const t = useTranslations('create_course');
   const router = useRouter();
   const [phase, setPhase] = useState<Phase>('prompt');
   const [prompt, setPrompt] = useState('');
@@ -67,7 +59,23 @@ export function CreateCourseForm() {
   const [course, setCourse] = useState<Course | null>(null);
   const [savingMeta, setSavingMeta] = useState(false);
 
-  // Poll status durante generation
+  const LEVELS: Array<['beginner'|'intermediate'|'advanced', string, string]> = [
+    ['beginner', t('level.beginner'), t('level.beginner_hint')],
+    ['intermediate', t('level.intermediate'), t('level.intermediate_hint')],
+    ['advanced', t('level.advanced'), t('level.advanced_hint')],
+  ];
+  const DURATIONS: Array<[string, string, number, number]> = [
+    ['short', t('duration.short'), DURATION_STRUCT.short[0], DURATION_STRUCT.short[1]],
+    ['medium', t('duration.medium'), DURATION_STRUCT.medium[0], DURATION_STRUCT.medium[1]],
+    ['long', t('duration.long'), DURATION_STRUCT.long[0], DURATION_STRUCT.long[1]],
+  ];
+  const TONES: Array<['didactic'|'practical'|'technical'|'inspirational', string]> = [
+    ['didactic', t('tone.didactic')],
+    ['practical', t('tone.practical')],
+    ['technical', t('tone.technical')],
+    ['inspirational', t('tone.inspirational')],
+  ];
+
   useEffect(() => {
     if (phase !== 'generating' || !job) return;
     const interval = setInterval(async () => {
@@ -82,22 +90,22 @@ export function CreateCourseForm() {
           setPhase('review');
           clearInterval(interval);
         } else if (data.status === 'failed') {
-          toast.error('Falha: ' + (data.error_message || 'erro desconhecido'));
+          toast.error(t('err_fail', { msg: data.error_message || t('err_unknown') }));
           setPhase('configuring');
           clearInterval(interval);
         }
       } catch (e) { console.error(e); }
     }, 2500);
     return () => clearInterval(interval);
-  }, [phase, job]);
+  }, [phase, job, t]);
 
   async function startGeneration() {
     if (!prompt.trim() || prompt.trim().length < 10) {
-      toast.error('Descreve com pelo menos 10 caracteres');
+      toast.error(t('err_min_chars'));
       return;
     }
     setPhase('generating');
-    setJob({ id: 'pending', course_id: 'pending', status: 'pending', progress_total: 0, progress_done: 0, current_step: 'A iniciar...', error_message: null });
+    setJob({ id: 'pending', course_id: 'pending', status: 'pending', progress_total: 0, progress_done: 0, current_step: t('starting'), error_message: null });
 
     const dur = DURATIONS.find((d) => d[0] === duration) || DURATIONS[1];
     const formats: ('reading'|'video'|'exercise')[] = ['reading'];
@@ -107,7 +115,7 @@ export function CreateCourseForm() {
     try {
       const sb = createClient();
       const { data: { session } } = await sb.auth.getSession();
-      if (!session) { toast.error('Sessão expirou'); setPhase('configuring'); return; }
+      if (!session) { toast.error(t('session_expired')); setPhase('configuring'); return; }
       const resp = await fetch(`${SUPABASE_URL}/functions/v1/generate-full-course`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
@@ -130,11 +138,11 @@ export function CreateCourseForm() {
       });
       const data = await resp.json();
       if (!data.ok) {
-        toast.error(data.error || 'Falha ao iniciar geração');
+        toast.error(data.error || t('gen_failed'));
         setPhase('configuring');
         return;
       }
-      setJob({ id: data.job_id, course_id: data.course_id, status: 'pending', progress_total: 0, progress_done: 0, current_step: 'A criar estrutura...', error_message: null });
+      setJob({ id: data.job_id, course_id: data.course_id, status: 'pending', progress_total: 0, progress_done: 0, current_step: t('creating_struct'), error_message: null });
     } catch (e: any) {
       toast.error(e.message);
       setPhase('configuring');
@@ -147,7 +155,7 @@ export function CreateCourseForm() {
     const sb = createClient();
     const { error } = await sb.from('nl_courses').update(updates).eq('id', course.id);
     if (error) toast.error(error.message);
-    else { setCourse({ ...course, ...updates }); toast.success('Guardado'); }
+    else { setCourse({ ...course, ...updates }); toast.success(t('saved')); }
     setSavingMeta(false);
   }
 
@@ -163,57 +171,55 @@ export function CreateCourseForm() {
       published: isAdmin,
     }).eq('id', course.id);
     if (error) { toast.error(error.message); return; }
-    toast.success(isAdmin ? 'Curso publicado!' : 'Submetido para aprovação. Recebes resposta por email.');
+    toast.success(isAdmin ? t('course_published') : t('submitted'));
     router.push(`/teach/curso/${course.id}` as any);
   }
 
-  // === FASE 1: PROMPT ===
   if (phase === 'prompt') {
     return (
       <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-10 pb-16">
         <div className="text-center mb-8">
-          <span className="inline-block text-xs font-semibold uppercase tracking-widest text-brand-700 bg-brand-50 px-3 py-1 rounded-full mb-4">✨ Criar curso com IA</span>
-          <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">O que queres ensinar?</h1>
-          <p className="mt-3 text-slate-600 max-w-xl mx-auto">Descreve em linguagem natural. Quanto mais específico, melhor.</p>
+          <span className="inline-block text-xs font-semibold uppercase tracking-widest text-brand-700 bg-brand-50 px-3 py-1 rounded-full mb-4">{t('badge_create')}</span>
+          <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">{t('heading')}</h1>
+          <p className="mt-3 text-slate-600 max-w-xl mx-auto">{t('subheading')}</p>
         </div>
 
         <textarea
           value={prompt} onChange={(e) => setPrompt(e.target.value)}
           autoFocus
-          placeholder='Ex: "Como usar o Claude para escrever propostas comerciais em PT-PT, com prompts prontos a copiar e exemplos do antes-depois. Para vendedores e consultores."'
+          placeholder={t('prompt_ph')}
           rows={6}
           className="w-full p-5 text-base bg-white border-2 border-slate-200 focus:border-brand-500 rounded-2xl outline-none resize-none transition-colors leading-relaxed"
         />
-        <div className="mt-2 text-xs text-slate-400 text-right tabular-nums">{prompt.length} caracteres · min 10</div>
+        <div className="mt-2 text-xs text-slate-400 text-right tabular-nums">{t('char_count', { n: prompt.length })}</div>
 
         <button onClick={() => setPhase('configuring')} disabled={prompt.trim().length < 10}
           className="mt-6 w-full bg-brand-600 hover:bg-brand-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold py-4 rounded-2xl text-base transition-all shadow-sm">
-          Continuar →
+          {t('continue')}
         </button>
 
         <div className="mt-8 text-center text-xs text-slate-400">
-          A IA gera estrutura completa, módulos, aulas com conteúdo, quiz, dicas e imagens. Tu revês e ajustas tudo antes de publicar.
+          {t('explainer')}
         </div>
       </div>
     );
   }
 
-  // === FASE 2: CONFIG RÁPIDA ===
   if (phase === 'configuring') {
     return (
       <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-8 pb-16 space-y-6">
         <div>
-          <button onClick={() => setPhase('prompt')} className="text-sm text-slate-500 hover:text-slate-900">← Mudar descrição</button>
-          <h2 className="mt-2 text-2xl font-bold text-slate-900">Afina a geração</h2>
-          <p className="text-sm text-slate-500 mt-1">Estas escolhas guiam a IA. Tudo é editável depois.</p>
+          <button onClick={() => setPhase('prompt')} className="text-sm text-slate-500 hover:text-slate-900">{t('change_desc')}</button>
+          <h2 className="mt-2 text-2xl font-bold text-slate-900">{t('refine')}</h2>
+          <p className="text-sm text-slate-500 mt-1">{t('refine_sub')}</p>
         </div>
 
         <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
-          <div className="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">A tua descrição</div>
+          <div className="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">{t('your_desc')}</div>
           <p className="text-sm text-slate-700 leading-relaxed">{prompt}</p>
         </div>
 
-        <Section title="Nível dos alunos">
+        <Section title={t('level_label')}>
           <div className="grid grid-cols-3 gap-2">
             {LEVELS.map(([v, l, hint]) => (
               <button key={v} onClick={() => setLevel(v)}
@@ -225,19 +231,19 @@ export function CreateCourseForm() {
           </div>
         </Section>
 
-        <Section title="Profundidade">
+        <Section title={t('depth_label')}>
           <div className="grid grid-cols-3 gap-2">
             {DURATIONS.map(([v, l, mods, aulas]) => (
               <button key={v} onClick={() => setDuration(v)}
                 className={`p-3 rounded-xl border-2 text-left transition-all ${duration === v ? 'border-brand-500 bg-brand-50' : 'border-slate-200 bg-white hover:border-slate-300'}`}>
                 <div className="font-semibold text-sm text-slate-900">{l}</div>
-                <div className="text-xs text-slate-500 mt-0.5 tabular-nums">{mods} módulos × {aulas} aulas</div>
+                <div className="text-xs text-slate-500 mt-0.5 tabular-nums">{t('duration.struct', { m: mods, l: aulas })}</div>
               </button>
             ))}
           </div>
         </Section>
 
-        <Section title="Tom de comunicação">
+        <Section title={t('tone_label')}>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {TONES.map(([v, l]) => (
               <button key={v} onClick={() => setTone(v)}
@@ -248,27 +254,27 @@ export function CreateCourseForm() {
           </div>
         </Section>
 
-        <Section title="Tipos de aula">
+        <Section title={t('types_label')}>
           <div className="space-y-2">
             <label className="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-xl cursor-pointer">
               <input type="checkbox" checked readOnly className="w-5 h-5 rounded text-brand-600 accent-brand-600" />
               <div className="flex-1">
-                <div className="font-medium text-sm text-slate-900">📖 Leitura</div>
-                <div className="text-xs text-slate-500">Sempre incluída — base da aula</div>
+                <div className="font-medium text-sm text-slate-900">{t('type.reading')}</div>
+                <div className="text-xs text-slate-500">{t('type.reading_hint')}</div>
               </div>
             </label>
             <label className="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-slate-300">
               <input type="checkbox" checked={includeVideo} onChange={(e) => setIncludeVideo(e.target.checked)} className="w-5 h-5 rounded text-brand-600 accent-brand-600" />
               <div className="flex-1">
-                <div className="font-medium text-sm text-slate-900">🎬 Vídeo</div>
-                <div className="text-xs text-slate-500">Algumas aulas em formato vídeo</div>
+                <div className="font-medium text-sm text-slate-900">{t('type.video')}</div>
+                <div className="text-xs text-slate-500">{t('type.video_hint')}</div>
               </div>
             </label>
             <label className="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-slate-300">
               <input type="checkbox" checked={includeExercises} onChange={(e) => setIncludeExercises(e.target.checked)} className="w-5 h-5 rounded text-brand-600 accent-brand-600" />
               <div className="flex-1">
-                <div className="font-medium text-sm text-slate-900">✍️ Exercícios</div>
-                <div className="text-xs text-slate-500">Aulas práticas com tarefas concretas</div>
+                <div className="font-medium text-sm text-slate-900">{t('type.exercise')}</div>
+                <div className="text-xs text-slate-500">{t('type.exercise_hint')}</div>
               </div>
             </label>
           </div>
@@ -276,49 +282,47 @@ export function CreateCourseForm() {
 
         <div className="pt-2">
           <button onClick={startGeneration} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-4 rounded-2xl text-base shadow">
-            ✨ Gerar curso completo com IA
+            {t('generate_btn')}
           </button>
-          <p className="text-xs text-slate-400 text-center mt-2">Geração leva 1-3 minutos. Aguarda nesta página.</p>
+          <p className="text-xs text-slate-400 text-center mt-2">{t('generate_hint')}</p>
         </div>
       </div>
     );
   }
 
-  // === FASE 3: GENERATING ===
   if (phase === 'generating') {
     const pct = job && job.progress_total > 0 ? Math.round((job.progress_done / job.progress_total) * 100) : 0;
     return (
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-16 text-center">
         <div className="text-6xl mb-6 animate-pulse">🧠</div>
-        <h2 className="text-2xl font-bold text-slate-900 mb-2">A construir o teu curso...</h2>
-        <p className="text-sm text-slate-500 mb-8">{job?.current_step || 'A iniciar...'}</p>
+        <h2 className="text-2xl font-bold text-slate-900 mb-2">{t('building')}</h2>
+        <p className="text-sm text-slate-500 mb-8">{job?.current_step || t('starting')}</p>
 
         {job && job.progress_total > 0 && (
           <div className="max-w-md mx-auto">
             <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
               <div className="h-full bg-gradient-to-r from-brand-500 to-purple-500 transition-all duration-500" style={{ width: `${pct}%` }} />
             </div>
-            <div className="mt-2 text-xs text-slate-500 tabular-nums">{job.progress_done} / {job.progress_total} aulas geradas · {pct}%</div>
+            <div className="mt-2 text-xs text-slate-500 tabular-nums">{t('progress', { done: job.progress_done, total: job.progress_total, pct })}</div>
           </div>
         )}
 
         <p className="mt-10 text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
-          A IA primeiro desenha a estrutura completa para garantir que as aulas se complementam. Depois gera cada aula com contexto da anterior e da seguinte para manter coerência.
+          {t('gen_explainer')}
         </p>
       </div>
     );
   }
 
-  // === FASE 4: REVIEW ===
   if (phase === 'review' && course) {
     return (
       <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 pb-16">
         <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
           <div className="flex items-center gap-3">
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full">
-              ✓ Gerado
+              {t('generated_badge')}
             </span>
-            <span className="text-xs text-slate-400">Edita o que quiseres antes de publicar</span>
+            <span className="text-xs text-slate-400">{t('edit_before')}</span>
           </div>
         </div>
 
@@ -328,12 +332,12 @@ export function CreateCourseForm() {
           </div>
         )}
 
-        <EditableField label="Título" value={course.title} onSave={(v) => saveCourseMeta({ title: v })} large saving={savingMeta} />
-        <EditableField label="Subtítulo" value={course.subtitle || ''} onSave={(v) => saveCourseMeta({ subtitle: v })} saving={savingMeta} />
-        <EditableField label="Descrição" value={course.description || ''} onSave={(v) => saveCourseMeta({ description: v })} multiline saving={savingMeta} />
+        <EditableField label={t('f_title')} value={course.title} onSave={(v) => saveCourseMeta({ title: v })} large saving={savingMeta} />
+        <EditableField label={t('f_subtitle')} value={course.subtitle || ''} onSave={(v) => saveCourseMeta({ subtitle: v })} saving={savingMeta} />
+        <EditableField label={t('f_description')} value={course.description || ''} onSave={(v) => saveCourseMeta({ description: v })} multiline saving={savingMeta} />
 
         <div className="mt-8">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-3">📚 Módulos e aulas ({course.modules.length} módulos · {course.modules.reduce((s,m) => s + m.lessons.length, 0)} aulas)</h3>
+          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-3">{t('modules_summary', { m: course.modules.length, l: course.modules.reduce((s,m) => s + m.lessons.length, 0) })}</h3>
           <div className="space-y-3">
             {course.modules.map((mod, mi) => (
               <details key={mod.id || mi} className="bg-white border border-slate-200 rounded-xl overflow-hidden group">
@@ -341,7 +345,7 @@ export function CreateCourseForm() {
                   <span className="w-7 h-7 rounded-full bg-brand-100 text-brand-700 font-bold text-xs flex items-center justify-center flex-shrink-0">{mi + 1}</span>
                   <div className="flex-1 min-w-0">
                     <div className="font-semibold text-slate-900 text-sm truncate">{mod.title}</div>
-                    <div className="text-xs text-slate-500">{mod.lessons.length} aulas</div>
+                    <div className="text-xs text-slate-500">{t('lessons_short', { n: mod.lessons.length })}</div>
                   </div>
                   <span className="text-slate-400 text-xs group-open:rotate-90 transition-transform">▶</span>
                 </summary>
@@ -350,7 +354,7 @@ export function CreateCourseForm() {
                     <div key={l.id || li} className="px-4 py-2.5 border-b border-slate-100 last:border-0 flex items-center gap-3 text-sm">
                       <span className="text-xs text-slate-400 font-mono tabular-nums w-6">{li + 1}.</span>
                       <span className="flex-1 text-slate-700 truncate">{l.title}</span>
-                      <span className="text-xs text-slate-400">{l.duration_minutes}min</span>
+                      <span className="text-xs text-slate-400">{t('min_short', { n: l.duration_minutes })}</span>
                     </div>
                   ))}
                 </div>
@@ -361,10 +365,10 @@ export function CreateCourseForm() {
 
         <div className="mt-10 flex gap-3 flex-wrap">
           <button onClick={() => router.push(`/teach/curso/${course.id}` as any)} className="flex-1 bg-white hover:bg-slate-50 text-slate-700 font-semibold py-3.5 rounded-xl border-2 border-slate-200">
-            Continuar a editar
+            {t('continue_editing')}
           </button>
           <button onClick={publishOrSubmit} className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3.5 rounded-xl shadow">
-            ✓ Publicar / Submeter
+            {t('publish_submit')}
           </button>
         </div>
       </div>
@@ -386,6 +390,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function EditableField({ label, value, onSave, multiline, large, saving }: {
   label: string; value: string; onSave: (v: string) => void; multiline?: boolean; large?: boolean; saving?: boolean;
 }) {
+  const t = useTranslations('create_course');
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
   useEffect(() => setDraft(value), [value]);
@@ -395,9 +400,9 @@ function EditableField({ label, value, onSave, multiline, large, saving }: {
       <div className="mb-4">
         <div className="flex items-center justify-between mb-1">
           <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">{label}</span>
-          <button onClick={() => setEditing(true)} className="text-xs text-brand-600 hover:underline">Editar</button>
+          <button onClick={() => setEditing(true)} className="text-xs text-brand-600 hover:underline">{t('edit')}</button>
         </div>
-        <div className={`${large ? 'text-2xl sm:text-3xl font-bold text-slate-900 leading-tight' : multiline ? 'text-slate-700 leading-relaxed whitespace-pre-wrap' : 'text-slate-900 font-medium'}`}>{value || <span className="text-slate-400 italic font-normal text-base">(vazio — clica em Editar)</span>}</div>
+        <div className={`${large ? 'text-2xl sm:text-3xl font-bold text-slate-900 leading-tight' : multiline ? 'text-slate-700 leading-relaxed whitespace-pre-wrap' : 'text-slate-900 font-medium'}`}>{value || <span className="text-slate-400 italic font-normal text-base">{t('empty_field')}</span>}</div>
       </div>
     );
   }
@@ -411,9 +416,9 @@ function EditableField({ label, value, onSave, multiline, large, saving }: {
         <input value={draft} onChange={(e) => setDraft(e.target.value)} className={`mt-1 w-full p-3 border-2 border-brand-300 rounded-xl outline-none focus:border-brand-500 ${large ? 'text-xl font-bold' : ''}`} autoFocus />
       )}
       <div className="mt-2 flex gap-2 justify-end">
-        <button onClick={() => { setDraft(value); setEditing(false); }} className="text-sm text-slate-600 hover:text-slate-900 px-3 py-1.5">Cancelar</button>
+        <button onClick={() => { setDraft(value); setEditing(false); }} className="text-sm text-slate-600 hover:text-slate-900 px-3 py-1.5">{t('cancel')}</button>
         <button onClick={() => { onSave(draft); setEditing(false); }} disabled={saving} className="text-sm bg-brand-600 text-white px-4 py-1.5 rounded-lg disabled:opacity-50 font-semibold">
-          {saving ? 'A guardar...' : 'Guardar'}
+          {saving ? t('saving') : t('save')}
         </button>
       </div>
     </div>

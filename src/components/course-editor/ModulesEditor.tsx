@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { LessonEditor } from './LessonEditor';
 
 export interface Lesson {
@@ -26,11 +27,12 @@ interface Props {
 function genId() { return 'm_' + Math.random().toString(36).slice(2, 8); }
 
 export function ModulesEditor({ course, modules, onChange }: Props) {
+  const t = useTranslations('mod_editor');
   const [openModule, setOpenModule] = useState<number | null>(modules.length === 0 ? null : 0);
   const [editingLesson, setEditingLesson] = useState<{ mod: number; les: number } | null>(null);
 
   function addModule() {
-    const next = [...modules, { id: genId(), title: `Módulo ${modules.length + 1}`, description: '', lessons: [] }];
+    const next = [...modules, { id: genId(), title: t('module_n', { n: modules.length + 1 }), description: '', lessons: [] }];
     onChange(next);
     setOpenModule(next.length - 1);
   }
@@ -38,7 +40,7 @@ export function ModulesEditor({ course, modules, onChange }: Props) {
     onChange(modules.map((m, i) => i === idx ? { ...m, ...patch } : m));
   }
   function deleteModule(idx: number) {
-    if (!confirm('Apagar este módulo e todas as suas aulas?')) return;
+    if (!confirm(t('confirm_del_module'))) return;
     onChange(modules.filter((_, i) => i !== idx));
     setOpenModule(null);
   }
@@ -48,14 +50,14 @@ export function ModulesEditor({ course, modules, onChange }: Props) {
   }
   function addLesson(modIdx: number) {
     const lesIdx = modules[modIdx].lessons.length;
-    onChange(modules.map((m, i) => i === modIdx ? { ...m, lessons: [...m.lessons, { id: genId(), title: `Aula ${lesIdx + 1}`, type: 'reading' as const, duration_minutes: 15 }] } : m));
+    onChange(modules.map((m, i) => i === modIdx ? { ...m, lessons: [...m.lessons, { id: genId(), title: t('lesson_n', { n: lesIdx + 1 }), type: 'reading' as const, duration_minutes: 15 }] } : m));
     setEditingLesson({ mod: modIdx, les: lesIdx });
   }
   function updateLesson(modIdx: number, lesIdx: number, patch: Partial<Lesson>) {
     onChange(modules.map((m, i) => i === modIdx ? { ...m, lessons: m.lessons.map((l, j) => j === lesIdx ? { ...l, ...patch } : l) } : m));
   }
   function deleteLesson(modIdx: number, lesIdx: number) {
-    if (!confirm('Apagar esta aula?')) return;
+    if (!confirm(t('confirm_del_lesson'))) return;
     onChange(modules.map((m, i) => i === modIdx ? { ...m, lessons: m.lessons.filter((_, j) => j !== lesIdx) } : m));
     setEditingLesson(null);
   }
@@ -88,8 +90,8 @@ export function ModulesEditor({ course, modules, onChange }: Props) {
       {modules.length === 0 ? (
         <div className="bg-white rounded-xl border-2 border-dashed border-slate-300 p-12 text-center">
           <div className="text-4xl mb-3">📚</div>
-          <p className="text-slate-600 mb-4">Ainda não tens módulos. Começa por adicionar o primeiro.</p>
-          <button onClick={addModule} className="btn-primary">+ Adicionar primeiro módulo</button>
+          <p className="text-slate-600 mb-4">{t('empty_msg')}</p>
+          <button onClick={addModule} className="btn-primary">{t('add_first')}</button>
         </div>
       ) : (
         <>
@@ -98,8 +100,8 @@ export function ModulesEditor({ course, modules, onChange }: Props) {
               <div className="p-4 flex items-center gap-3 hover:bg-slate-50 cursor-pointer" onClick={() => setOpenModule(openModule === i ? null : i)}>
                 <span className="text-slate-300 text-sm font-mono w-6">{i + 1}</span>
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-slate-900 truncate">{mod.title || 'Sem título'}</div>
-                  <div className="text-xs text-slate-500">{mod.lessons.length} aulas</div>
+                  <div className="font-medium text-slate-900 truncate">{mod.title || t('untitled')}</div>
+                  <div className="text-xs text-slate-500">{t('lessons_count', { n: mod.lessons.length })}</div>
                 </div>
                 <div className="flex gap-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
                   <button onClick={() => moveModule(i, -1)} disabled={i === 0} className="w-8 h-8 rounded hover:bg-slate-100 disabled:opacity-30">↑</button>
@@ -112,21 +114,21 @@ export function ModulesEditor({ course, modules, onChange }: Props) {
                 <div className="border-t border-slate-100 p-4 space-y-4 bg-slate-50/50">
                   <div className="grid sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="label">Título do módulo</label>
+                      <label className="label">{t('title_label')}</label>
                       <input className="input" value={mod.title} onChange={(e) => updateModule(i, { title: e.target.value })} />
                     </div>
                     <div>
-                      <label className="label">Descrição curta</label>
+                      <label className="label">{t('desc_label')}</label>
                       <input className="input" value={mod.description || ''} onChange={(e) => updateModule(i, { description: e.target.value })} />
                     </div>
                   </div>
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-sm font-semibold text-slate-700">Aulas</h4>
-                      <button onClick={() => addLesson(i)} className="text-xs bg-brand-600 text-white px-3 py-1.5 rounded-md hover:bg-brand-700">+ Adicionar aula</button>
+                      <h4 className="text-sm font-semibold text-slate-700">{t('lessons_header')}</h4>
+                      <button onClick={() => addLesson(i)} className="text-xs bg-brand-600 text-white px-3 py-1.5 rounded-md hover:bg-brand-700">{t('add_lesson')}</button>
                     </div>
                     {mod.lessons.length === 0 ? (
-                      <p className="text-xs text-slate-500 py-3">Sem aulas neste módulo.</p>
+                      <p className="text-xs text-slate-500 py-3">{t('no_lessons')}</p>
                     ) : (
                       <ul className="space-y-2">
                         {mod.lessons.map((les, j) => (
@@ -134,13 +136,13 @@ export function ModulesEditor({ course, modules, onChange }: Props) {
                             <span className="text-slate-300 text-xs font-mono w-6">{i + 1}.{j + 1}</span>
                             <span className="text-lg">{les.type === 'video' ? '🎬' : les.type === 'exercise' ? '✍️' : '📖'}</span>
                             <div className="flex-1 min-w-0">
-                              <div className="font-medium text-sm text-slate-900 truncate">{les.title || 'Sem título'}</div>
-                              <div className="text-xs text-slate-500">{les.duration_minutes || 0} min · {les.content?.p?.length ? `✓ Conteúdo (${les.content.p.length} parágrafos)` : 'Sem conteúdo'}</div>
+                              <div className="font-medium text-sm text-slate-900 truncate">{les.title || t('untitled')}</div>
+                              <div className="text-xs text-slate-500">{les.content?.p?.length ? t('with_content', { m: les.duration_minutes || 0, n: les.content.p.length }) : t('without_content', { m: les.duration_minutes || 0 })}</div>
                             </div>
                             <div className="flex gap-1 flex-shrink-0">
                               <button onClick={() => moveLesson(i, j, -1)} disabled={j === 0} className="w-7 h-7 rounded hover:bg-slate-100 disabled:opacity-30 text-xs">↑</button>
                               <button onClick={() => moveLesson(i, j, 1)} disabled={j === mod.lessons.length - 1} className="w-7 h-7 rounded hover:bg-slate-100 disabled:opacity-30 text-xs">↓</button>
-                              <button onClick={() => setEditingLesson({ mod: i, les: j })} className="text-xs bg-slate-100 hover:bg-brand-100 hover:text-brand-700 px-3 py-1.5 rounded-md font-medium">Editar</button>
+                              <button onClick={() => setEditingLesson({ mod: i, les: j })} className="text-xs bg-slate-100 hover:bg-brand-100 hover:text-brand-700 px-3 py-1.5 rounded-md font-medium">{t('edit')}</button>
                             </div>
                           </li>
                         ))}
@@ -151,7 +153,7 @@ export function ModulesEditor({ course, modules, onChange }: Props) {
               )}
             </div>
           ))}
-          <button onClick={addModule} className="w-full py-3 border-2 border-dashed border-slate-300 rounded-xl text-slate-500 hover:border-brand-300 hover:text-brand-600 hover:bg-brand-50/30 transition-colors text-sm font-medium">+ Adicionar módulo</button>
+          <button onClick={addModule} className="w-full py-3 border-2 border-dashed border-slate-300 rounded-xl text-slate-500 hover:border-brand-300 hover:text-brand-600 hover:bg-brand-50/30 transition-colors text-sm font-medium">{t('add_module')}</button>
         </>
       )}
     </div>

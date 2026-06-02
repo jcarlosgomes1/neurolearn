@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { Link, useRouter } from '@/i18n/routing';
 import { callAgentOps } from '@/lib/api/client';
 import { DashboardSkeleton } from '@/components/shared/DashboardSkeleton';
@@ -32,6 +33,7 @@ interface Props {
 }
 
 export function CourseEditor({ courseId, backHref, mode = 'instructor' }: Props) {
+  const t = useTranslations('course_editor');
   const isAdmin = mode === 'admin';
   const DETAIL_ACTION = isAdmin ? 'admin_course_detail' : 'teach_course_detail';
   const UPDATE_ACTION = isAdmin ? 'admin_update_course' : 'teach_update_course';
@@ -63,28 +65,28 @@ export function CourseEditor({ courseId, backHref, mode = 'instructor' }: Props)
         emoji: course.emoji, level: course.level, category: course.category, price_cents: course.price_cents,
         modules: course.modules, topics: course.topics,
       });
-      toast.success('Guardado');
+      toast.success(t('saved'));
       setDirty(false);
     } catch (e: any) { toast.error(e.message); } finally { setSaving(false); }
   }
 
   async function submitForReview() {
     if (!course) return;
-    if (dirty) { toast.error('Guarda primeiro as alterações'); return; }
-    if (!confirm('Submeter este curso para aprovação?')) return;
+    if (dirty) { toast.error(t('save_first')); return; }
+    if (!confirm(t('confirm_submit'))) return;
     try {
       await callAgentOps('teach_submit_course_for_review', { course_id: course.id });
-      toast.success('Submetido para aprovação');
+      toast.success(t('submitted'));
       router.push(backHref as any);
     } catch (e: any) { toast.error(e.message); }
   }
 
   async function togglePublished() {
     if (!course) return;
-    if (!confirm(course.published ? 'Despublicar este curso?' : 'Publicar este curso agora?')) return;
+    if (!confirm(course.published ? t('confirm_unpublish') : t('confirm_publish'))) return;
     try {
       await callAgentOps('admin_update_course', { course_id: course.id, published: !course.published });
-      toast.success(course.published ? 'Despublicado' : 'Publicado');
+      toast.success(course.published ? t('unpublished') : t('published_toast'));
       setCourse((c) => c ? { ...c, published: !c.published } : c);
       setDirty(false);
     } catch (e: any) { toast.error(e.message); }
@@ -93,8 +95,8 @@ export function CourseEditor({ courseId, backHref, mode = 'instructor' }: Props)
   if (err) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-16 text-center">
-        <p className="text-slate-700 font-medium">{err === 'not_owner_or_not_found' ? 'Curso não encontrado ou sem permissão.' : err === 'admin_required' ? 'Acesso restrito a administradores.' : err}</p>
-        <Link href={backHref as any} className="btn-primary mt-6 inline-flex">← Voltar</Link>
+        <p className="text-slate-700 font-medium">{err === 'not_owner_or_not_found' ? t('err_not_owner') : err === 'admin_required' ? t('err_admin') : err}</p>
+        <Link href={backHref as any} className="btn-primary mt-6 inline-flex">{t('back')}</Link>
       </div>
     );
   }
@@ -107,32 +109,32 @@ export function CourseEditor({ courseId, backHref, mode = 'instructor' }: Props)
     <div className="max-w-7xl mx-auto px-6 lg:px-8 py-8 space-y-6 animate-fade-in">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="min-w-0">
-          <Link href={backHref as any} className="text-sm text-brand-600 hover:underline">← Voltar</Link>
-          <h1 className="text-2xl font-bold text-slate-900 mt-1 truncate">{course.emoji || '📘'} {course.title || 'Sem título'}</h1>
+          <Link href={backHref as any} className="text-sm text-brand-600 hover:underline">{t('back')}</Link>
+          <h1 className="text-2xl font-bold text-slate-900 mt-1 truncate">{course.emoji || '📘'} {course.title || t('untitled')}</h1>
           <div className="text-sm text-slate-500 mt-1 flex flex-wrap items-center gap-2">
-            <span className={`px-2 py-0.5 rounded-full text-xs ${course.published ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>{course.published ? 'Publicado' : (course.approval_status || 'Rascunho')}</span>
+            <span className={`px-2 py-0.5 rounded-full text-xs ${course.published ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>{course.published ? t('published') : (course.approval_status || t('draft'))}</span>
             {course.course_type && <><span>·</span><span className="text-xs">{course.course_type}</span></>}
-            <span>·</span><span>{(course.modules || []).length} módulos</span>
-            <span>·</span><span>{lessonCount} aulas</span>
-            {lessonCount > 0 && <><span>·</span><span>{generatedCount}/{lessonCount} com conteúdo</span></>}
+            <span>·</span><span>{t('modules', { n: (course.modules || []).length })}</span>
+            <span>·</span><span>{t('lessons', { n: lessonCount })}</span>
+            {lessonCount > 0 && <><span>·</span><span>{t('with_content_count', { done: generatedCount, total: lessonCount })}</span></>}
           </div>
         </div>
         <div className="flex gap-2 flex-shrink-0 items-center">
-          {dirty && <span className="text-xs text-amber-600">Alterações por guardar</span>}
+          {dirty && <span className="text-xs text-amber-600">{t('dirty')}</span>}
           {isAdmin && (
             <button onClick={togglePublished} className={course.published ? 'btn-secondary' : 'bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-5 py-2.5 rounded-lg text-sm'}>
-              {course.published ? 'Despublicar' : '✓ Publicar agora'}
+              {course.published ? t('unpublish_btn') : t('publish_now')}
             </button>
           )}
-          <button onClick={save} disabled={saving || !dirty} className="btn-primary disabled:opacity-50">{saving ? 'A guardar...' : 'Guardar'}</button>
+          <button onClick={save} disabled={saving || !dirty} className="btn-primary disabled:opacity-50">{saving ? t('saving') : t('save')}</button>
         </div>
       </div>
 
       <div className="border-b border-slate-200">
         <nav className="flex gap-1 -mb-px overflow-x-auto">
-          {(['info','modules','publish'] as const).map((t) => (
-            <button key={t} onClick={() => setTab(t)} className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${tab === t ? 'border-brand-600 text-brand-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>
-              {t === 'info' ? 'Informação' : t === 'modules' ? `Módulos e aulas (${lessonCount})` : 'Publicar'}
+          {(['info','modules','publish'] as const).map((tk) => (
+            <button key={tk} onClick={() => setTab(tk)} className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${tab === tk ? 'border-brand-600 text-brand-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>
+              {tk === 'info' ? t('tab_info') : tk === 'modules' ? t('tab_modules', { n: lessonCount }) : t('tab_publish')}
             </button>
           ))}
         </nav>
@@ -143,45 +145,45 @@ export function CourseEditor({ courseId, backHref, mode = 'instructor' }: Props)
           <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
             <div className="grid sm:grid-cols-[80px_1fr] gap-4 items-start">
               <div>
-                <label className="label">Emoji</label>
+                <label className="label">{t('emoji')}</label>
                 <input className="input text-2xl text-center" value={course.emoji || ''} onChange={(e) => update({ emoji: e.target.value })} maxLength={2} />
               </div>
               <div>
-                <label className="label">Título *</label>
+                <label className="label">{t('title_required')}</label>
                 <input className="input" value={course.title} onChange={(e) => update({ title: e.target.value })} />
               </div>
             </div>
             <div>
-              <label className="label">Subtítulo</label>
-              <input className="input" value={course.subtitle || ''} onChange={(e) => update({ subtitle: e.target.value })} placeholder="Uma frase que resume o valor do curso" />
+              <label className="label">{t('subtitle')}</label>
+              <input className="input" value={course.subtitle || ''} onChange={(e) => update({ subtitle: e.target.value })} placeholder={t('subtitle_ph')} />
             </div>
             <div>
-              <label className="label">Descrição</label>
+              <label className="label">{t('description')}</label>
               <textarea className="input min-h-[120px]" value={course.description || ''} onChange={(e) => update({ description: e.target.value })} />
             </div>
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <label className="label">Nível</label>
+                <label className="label">{t('level')}</label>
                 <select className="input" value={course.level || 'beginner'} onChange={(e) => update({ level: e.target.value })}>
-                  <option value="beginner">Iniciante</option>
-                  <option value="intermediate">Intermédio</option>
-                  <option value="advanced">Avançado</option>
+                  <option value="beginner">{t('level.beginner')}</option>
+                  <option value="intermediate">{t('level.intermediate')}</option>
+                  <option value="advanced">{t('level.advanced')}</option>
                 </select>
               </div>
               <div>
-                <label className="label">Categoria</label>
+                <label className="label">{t('category')}</label>
                 <input className="input" value={course.category || ''} onChange={(e) => update({ category: e.target.value })} placeholder="ai" />
               </div>
               <div>
-                <label className="label">Preço (€)</label>
+                <label className="label">{t('price_eur')}</label>
                 <input type="number" min="0" step="1" className="input" value={(course.price_cents / 100).toFixed(0)} onChange={(e) => update({ price_cents: Math.round(parseFloat(e.target.value || '0') * 100) })} />
               </div>
             </div>
           </div>
           <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <label className="label">Tópicos (o que o aluno vai aprender)</label>
-            <p className="text-xs text-slate-500 mb-3">Uma linha por tópico</p>
-            <textarea className="input min-h-[140px]" value={(course.topics || []).join('\n')} onChange={(e) => update({ topics: e.target.value.split('\n').filter(Boolean) })} placeholder="Como usar prompts eficazes&#10;Integrar com APIs&#10;Avaliar resultados" />
+            <label className="label">{t('topics_label')}</label>
+            <p className="text-xs text-slate-500 mb-3">{t('topics_hint')}</p>
+            <textarea className="input min-h-[140px]" value={(course.topics || []).join('\n')} onChange={(e) => update({ topics: e.target.value.split('\n').filter(Boolean) })} placeholder={t('topics_ph')} />
           </div>
         </div>
       )}
@@ -193,30 +195,30 @@ export function CourseEditor({ courseId, backHref, mode = 'instructor' }: Props)
       {tab === 'publish' && (
         <div className="max-w-2xl space-y-4">
           <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <h2 className="font-semibold text-slate-900 mb-3">Estado actual</h2>
+            <h2 className="font-semibold text-slate-900 mb-3">{t('current_state')}</h2>
             <ul className="space-y-2 text-sm">
-              <li className="flex items-center justify-between"><span>Publicado</span>{course.published ? <span className="text-emerald-600">✓ Sim</span> : <span className="text-slate-400">Não</span>}</li>
-              <li className="flex items-center justify-between"><span>Estado de aprovação</span><span className="font-mono text-xs">{course.approval_status || 'draft'}</span></li>
-              <li className="flex items-center justify-between"><span>Módulos</span><span className="font-semibold">{(course.modules || []).length}</span></li>
-              <li className="flex items-center justify-between"><span>Aulas</span><span className="font-semibold">{lessonCount}</span></li>
-              <li className="flex items-center justify-between"><span>Aulas com conteúdo</span><span className="font-semibold">{generatedCount}/{lessonCount}</span></li>
-              <li className="flex items-center justify-between"><span>Preço</span><span className="font-semibold">{fmtCents(course.price_cents, course.currency || 'EUR')}</span></li>
+              <li className="flex items-center justify-between"><span>{t('s_published')}</span>{course.published ? <span className="text-emerald-600">{t('s_yes')}</span> : <span className="text-slate-400">{t('s_no')}</span>}</li>
+              <li className="flex items-center justify-between"><span>{t('s_approval')}</span><span className="font-mono text-xs">{course.approval_status || 'draft'}</span></li>
+              <li className="flex items-center justify-between"><span>{t('s_modules')}</span><span className="font-semibold">{(course.modules || []).length}</span></li>
+              <li className="flex items-center justify-between"><span>{t('s_lessons')}</span><span className="font-semibold">{lessonCount}</span></li>
+              <li className="flex items-center justify-between"><span>{t('s_lessons_with')}</span><span className="font-semibold">{generatedCount}/{lessonCount}</span></li>
+              <li className="flex items-center justify-between"><span>{t('s_price')}</span><span className="font-semibold">{fmtCents(course.price_cents, course.currency || 'EUR')}</span></li>
             </ul>
           </div>
           {!isAdmin ? (
             <div className="bg-white rounded-xl border border-slate-200 p-6">
-              <h2 className="font-semibold text-slate-900 mb-3">Submeter para aprovação</h2>
-              <p className="text-sm text-slate-600 mb-4">Depois de submetido, um admin vai rever e publicar o curso. Recomendado: ter pelo menos 3 módulos e todas as aulas com conteúdo gerado.</p>
+              <h2 className="font-semibold text-slate-900 mb-3">{t('submit_title')}</h2>
+              <p className="text-sm text-slate-600 mb-4">{t('submit_desc')}</p>
               <button onClick={submitForReview} disabled={dirty || course.approval_status === 'pending_review' || course.published} className="btn-primary disabled:opacity-50">
-                {course.published ? 'Já publicado' : course.approval_status === 'pending_review' ? 'A aguardar revisão...' : 'Submeter para revisão'}
+                {course.published ? t('already_published') : course.approval_status === 'pending_review' ? t('awaiting_review') : t('submit_btn')}
               </button>
             </div>
           ) : (
             <div className="bg-white rounded-xl border border-slate-200 p-6">
-              <h2 className="font-semibold text-slate-900 mb-3">Publicação directa (admin)</h2>
-              <p className="text-sm text-slate-600 mb-4">Como administrador podes publicar ou despublicar este curso sem passar pelo fluxo de aprovação.</p>
+              <h2 className="font-semibold text-slate-900 mb-3">{t('admin_publish_title')}</h2>
+              <p className="text-sm text-slate-600 mb-4">{t('admin_publish_desc')}</p>
               <button onClick={togglePublished} className={course.published ? 'btn-secondary' : 'bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-5 py-2.5 rounded-lg text-sm'}>
-                {course.published ? 'Despublicar curso' : '✓ Publicar agora'}
+                {course.published ? t('unpublish_course') : t('publish_now')}
               </button>
             </div>
           )}
