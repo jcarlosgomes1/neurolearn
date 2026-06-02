@@ -51,30 +51,8 @@ const STUDENT_NAV: NavItem[] = [
   { href: '/learn?tab=notes', labelKey: 'shell.student.notes', emoji: '📝', groupKey: 'shell.group.results' },
 ];
 
-const FALLBACK_LABELS: Record<string, string> = {
-  'shell.admin.cockpit': 'Cockpit', 'shell.admin.events': 'Eventos', 'shell.admin.courses': 'Cursos',
-  'shell.admin.preview': 'Ver como aluno',
-  'shell.admin.cms': 'CMS', 'shell.admin.marketing': 'Marketing',
-  'shell.admin.social': 'Social', 'shell.admin.applications': 'Candidaturas',
-  'shell.admin.instructors': 'Instrutores', 'shell.admin.ai_features': 'AI por instrutor', 'shell.admin.payments': 'Payments',
-  'shell.admin.video': 'Vídeo (Mux)', 'shell.admin.jobs': 'Jobs', 'shell.admin.tutor_config': 'Tutor config',
-  'shell.instructor.dashboard': 'Dashboard', 'shell.instructor.create': 'Criar curso', 'shell.instructor.my_courses': 'Os meus cursos',
-  'shell.instructor.students': 'Estudantes', 'shell.instructor.reviews': 'Avaliações', 'shell.instructor.payouts': 'Pagamentos',
-  'shell.student.learning': 'A minha aprendizagem', 'shell.student.explore': 'Explorar cursos', 'shell.student.search': 'Pesquisar',
-  'shell.student.certificates': 'Certificados', 'shell.student.notes': 'Notas',
-  'shell.group.overview': 'Visão geral', 'shell.group.content': 'Conteúdo', 'shell.group.people': 'Pessoas',
-  'shell.group.operations': 'Operações', 'shell.group.community': 'Comunidade', 'shell.group.learn': 'Aprender', 'shell.group.results': 'Resultados',
-  'shell.role.admin': 'Admin', 'shell.role.instructor': 'Instrutor', 'shell.role.student': 'Aluno',
-  'nav.open_menu': 'Abrir menu', 'nav.search': 'Pesquisar',
-};
-
 export function AppShellClient({ role, pageTitle, session, children }: Props) {
-  const tr = useTranslations();
-  function t(key: string): string {
-    try { const v = tr(key); if (!v || v === key) return FALLBACK_LABELS[key] || key; return v; }
-    catch { return FALLBACK_LABELS[key] || key; }
-  }
-
+  const t = useTranslations();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
 

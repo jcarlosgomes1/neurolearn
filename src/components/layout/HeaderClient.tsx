@@ -9,27 +9,10 @@ import { useTranslations } from 'next-intl';
 
 interface Session { email: string; area: 'student' | 'instructor' | 'admin' }
 
-const FALLBACKS: Record<string, string> = {
-  'nav.courses': 'Cursos', 'nav.essentials': 'Essentials', 'nav.business': 'Empresas',
-  'nav.blog': 'Blog', 'nav.search': 'Pesquisar', 'nav.menu': 'Menu',
-  'nav.open_menu': 'Abrir menu', 'nav.close_menu': 'Fechar menu',
-  'nav.signin': 'Entrar', 'nav.dashboard': 'Dashboard', 'nav.my_learning': 'A minha aprendizagem',
-  'nav.teach': 'Ensinar', 'nav.about': 'Sobre', 'nav.language': 'Idioma', 'footer.faq': 'FAQ',
-};
-
 export function HeaderClient({ session }: { session: Session | null }) {
-  const tr = useTranslations();
+  const t = useTranslations();
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
-
-  // t com fallback defensivo: se key não existe, devolve label PT
-  function t(key: string): string {
-    try {
-      const v = tr(key);
-      if (!v || v === key) return FALLBACKS[key] || key;
-      return v;
-    } catch { return FALLBACKS[key] || key; }
-  }
 
   useEffect(() => { setOpen(false); }, [pathname]);
   useEffect(() => {
