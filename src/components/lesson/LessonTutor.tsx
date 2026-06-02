@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { SUPABASE_URL } from '@/lib/supabase/config';
 import { createClient } from '@/lib/supabase/client';
 import { Markdown } from '@/components/shared/Markdown';
@@ -24,14 +25,9 @@ interface LessonContext {
   language?: string;
 }
 
-const SUGGESTIONS_PT = [
-  'Podes explicar de outra forma?',
-  'Dá um exemplo prático',
-  'O que devo saber antes desta aula?',
-  'Faz-me uma pergunta para eu testar a matéria',
-];
-
 export function LessonTutor({ context, onClose }: { context: LessonContext; onClose?: () => void }) {
+  const t = useTranslations('lesson_tutor');
+  const SUGGESTIONS = [t('s1'), t('s2'), t('s3'), t('s4')];
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
@@ -47,7 +43,6 @@ export function LessonTutor({ context, onClose }: { context: LessonContext; onCl
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages, sending]);
 
-  // Carregar histórico ao montar / mudar aula
   useEffect(() => {
     let cancelled = false;
     async function loadHistory() {
@@ -59,7 +54,6 @@ export function LessonTutor({ context, onClose }: { context: LessonContext; onCl
       setDisabledReason(null);
 
       if (!context.course_id || context.module_index === undefined || context.lesson_index === undefined) {
-        // Sem indices, não há como carregar histórico
         setLoadingHistory(false);
         return;
       }
@@ -96,7 +90,7 @@ export function LessonTutor({ context, onClose }: { context: LessonContext; onCl
       const sb = createClient();
       const { data: { session } } = await sb.auth.getSession();
       if (!session) {
-        toast.error('Inicia sessão para usares o tutor');
+        toast.error(t('sign_in'));
         setSending(false); setMessages(messages); return;
       }
       const res = await fetch(`${SUPABASE_URL}/functions/v1/lesson-tutor`, {
@@ -108,12 +102,12 @@ export function LessonTutor({ context, onClose }: { context: LessonContext; onCl
       if (!data.ok) {
         if (data.error === 'daily_limit_reached') {
           setDisabled(true);
-          setDisabledReason(`Atingiste o limite diário de ${data.daily_limit || dailyLimit || 20} mensagens ao tutor. Volta amanhã!`);
+          setDisabledReason(t('daily_limit', { n: data.daily_limit || dailyLimit || 20 }));
         } else if (data.error === 'tutor_disabled_by_admin') {
           setDisabled(true);
-          setDisabledReason('O tutor AI foi desactivado pelo administrador.');
+          setDisabledReason(t('disabled_admin'));
         } else {
-          toast.error(data.error || 'Falha do tutor');
+          toast.error(data.error || t('failure'));
         }
         setMessages(messages);
         setSending(false); return;
@@ -136,20 +130,20 @@ export function LessonTutor({ context, onClose }: { context: LessonContext; onCl
         <div className="flex items-center gap-2 min-w-0">
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-500 to-purple-500 flex items-center justify-center text-white text-sm">🧠</div>
           <div className="min-w-0">
-            <div className="text-sm font-semibold text-slate-900">Tutor AI</div>
+            <div className="text-sm font-semibold text-slate-900">{t('title')}</div>
             <div className="text-[11px] text-slate-500 truncate">
-              {hasHistory ? `${messages.length} mensagens · histórico guardado` : 'Sobre esta aula'}
+              {hasHistory ? t('history_label', { n: messages.length }) : t('about_lesson')}
             </div>
           </div>
         </div>
         {onClose && (
-          <button onClick={onClose} aria-label="Fechar tutor" className="text-slate-400 hover:text-slate-700 text-2xl leading-none w-8 h-8 flex items-center justify-center flex-shrink-0">×</button>
+          <button onClick={onClose} aria-label={t('close_aria')} className="text-slate-400 hover:text-slate-700 text-2xl leading-none w-8 h-8 flex items-center justify-center flex-shrink-0">×</button>
         )}
       </div>
 
       {remaining !== null && (
         <div className={`px-4 py-1.5 text-[11px] flex-shrink-0 ${isLow ? 'bg-amber-50 text-amber-700' : 'bg-slate-50 text-slate-500'}`}>
-          {remaining} {remaining === 1 ? 'mensagem restante' : 'mensagens restantes'} hoje
+          {remaining === 1 ? t('remaining_singular', { n: remaining }) : t('remaining_plural', { n: remaining })}
         </div>
       )}
 
@@ -165,10 +159,10 @@ export function LessonTutor({ context, onClose }: { context: LessonContext; onCl
         )}
         {!loadingHistory && messages.length === 0 && !disabled && (
           <div className="text-center text-sm text-slate-500 py-6">
-            <p>Olá! Sou o teu tutor para esta aula.</p>
-            <p className="mt-1">Pergunta-me o que quiseres sobre <strong>{context.lesson_title}</strong>.</p>
+            <p>{t('intro_hi')}</p>
+            <p className="mt-1">{t('intro_ask')} <strong>{context.lesson_title}</strong>.</p>
             <div className="mt-5 space-y-1.5 text-left">
-              {SUGGESTIONS_PT.map((s) => (
+              {SUGGESTIONS.map((s) => (
                 <button key={s} onClick={() => send(s)} className="block w-full text-left px-3 py-2 bg-slate-50 hover:bg-brand-50 rounded-lg text-xs text-slate-700 hover:text-brand-700 transition-colors">
                   💬 {s}
                 </button>
@@ -179,7 +173,7 @@ export function LessonTutor({ context, onClose }: { context: LessonContext; onCl
         {!loadingHistory && hasHistory && messages.length > 0 && (
           <div className="text-[11px] text-center text-slate-400 mb-3 flex items-center gap-2 justify-center">
             <span className="h-px bg-slate-200 flex-1" />
-            <span>📜 conversa anterior</span>
+            <span>{t('prev_conversation')}</span>
             <span className="h-px bg-slate-200 flex-1" />
           </div>
         )}
@@ -212,11 +206,11 @@ export function LessonTutor({ context, onClose }: { context: LessonContext; onCl
             value={input}
             onChange={(e) => setInput(e.target.value)}
             disabled={sending || disabled || loadingHistory}
-            placeholder={disabled ? 'Tutor indisponível' : loadingHistory ? 'A carregar...' : 'Pergunta sobre esta aula...'}
+            placeholder={disabled ? t('unavailable') : loadingHistory ? t('loading') : t('placeholder')}
             className="flex-1 px-3 py-2.5 rounded-lg border border-slate-200 focus:border-brand-400 focus:outline-none text-sm disabled:bg-slate-50 disabled:text-slate-400"
           />
           <button type="submit" disabled={sending || disabled || loadingHistory || !input.trim()} className="bg-brand-600 hover:bg-brand-700 disabled:opacity-40 text-white font-medium px-4 rounded-lg text-sm transition-colors flex-shrink-0">
-            Enviar
+            {t('send')}
           </button>
         </form>
       </div>

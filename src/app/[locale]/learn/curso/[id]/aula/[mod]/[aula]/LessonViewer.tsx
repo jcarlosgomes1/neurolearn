@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Link, useRouter } from '@/i18n/routing';
 import { callAgentOps } from '@/lib/api/client';
 import { toast } from 'sonner';
@@ -31,20 +32,21 @@ interface Lesson {
 interface Module { id?: string; title: string; description?: string; lessons: Lesson[] }
 interface Course { id: string; title: string; subtitle: string | null; emoji: string | null; level: string | null; modules: Module[] }
 
-const TYPE_META: Record<string, { emoji: string; label: string; color: string }> = {
-  video: { emoji: '🎬', label: 'Vídeo', color: 'text-rose-700 bg-rose-50' },
-  exercise: { emoji: '✍️', label: 'Exercício', color: 'text-purple-700 bg-purple-50' },
-  reading: { emoji: '📖', label: 'Leitura', color: 'text-brand-700 bg-brand-50' },
-  live: { emoji: '🔴', label: 'Sessão ao vivo', color: 'text-emerald-700 bg-emerald-50' },
-};
-
 export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, locale }: { courseId: string; course: Course; moduleIndex: number; lessonIndex: number; locale: string }) {
+  const t = useTranslations('lesson_viewer');
   const router = useRouter();
   const [tutorOpen, setTutorOpen] = useState(false);
   const [quizPick, setQuizPick] = useState<number | null>(null);
   const [quizReveal, setQuizReveal] = useState(false);
   const [completing, setCompleting] = useState(false);
   const [completed, setCompleted] = useState<boolean | null>(null);
+
+  const TYPE_META: Record<string, { emoji: string; label: string; color: string }> = {
+    video: { emoji: '🎬', label: t('type.video'), color: 'text-rose-700 bg-rose-50' },
+    exercise: { emoji: '✍️', label: t('type.exercise'), color: 'text-purple-700 bg-purple-50' },
+    reading: { emoji: '📖', label: t('type.reading'), color: 'text-brand-700 bg-brand-50' },
+    live: { emoji: '🔴', label: t('type.live'), color: 'text-emerald-700 bg-emerald-50' },
+  };
 
   const mod = course.modules[moduleIndex];
   const lesson = mod?.lessons[lessonIndex];
@@ -63,8 +65,8 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
   if (!mod || !lesson) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-16 text-center">
-        <p className="text-slate-700 font-medium">Aula não encontrada.</p>
-        <Link href={'/learn' as any} className="btn-primary mt-6 inline-flex">← Os meus cursos</Link>
+        <p className="text-slate-700 font-medium">{t('not_found')}</p>
+        <Link href={'/learn' as any} className="btn-primary mt-6 inline-flex">{t('my_courses')}</Link>
       </div>
     );
   }
@@ -72,7 +74,7 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
   const prevLesson = lessonIndex > 0
     ? { modIdx: moduleIndex, lesIdx: lessonIndex - 1, title: mod.lessons[lessonIndex - 1].title }
     : moduleIndex > 0
-      ? { modIdx: moduleIndex - 1, lesIdx: course.modules[moduleIndex - 1].lessons.length - 1, title: course.modules[moduleIndex - 1].lessons.slice(-1)[0]?.title || 'Anterior' }
+      ? { modIdx: moduleIndex - 1, lesIdx: course.modules[moduleIndex - 1].lessons.length - 1, title: course.modules[moduleIndex - 1].lessons.slice(-1)[0]?.title || t('fallback_prev_title') }
       : null;
   const nextLesson = lessonIndex < mod.lessons.length - 1
     ? { modIdx: moduleIndex, lesIdx: lessonIndex + 1, title: mod.lessons[lessonIndex + 1].title }
@@ -86,9 +88,9 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
     try {
       await callAgentOps('mark_lesson_complete', { course_id: courseId, module_index: moduleIndex, lesson_index: lessonIndex, lesson_id: lesson.id, completed: true });
       setCompleted(true);
-      toast.success('Aula concluída! 🎉');
+      toast.success(t('completed_toast'));
       if (nextLesson) setTimeout(() => router.push(`/learn/curso/${courseId}/aula/${nextLesson.modIdx}/${nextLesson.lesIdx}` as any), 800);
-      else { toast.success('Parabéns, terminaste o curso!'); setTimeout(() => router.push('/learn' as any), 1500); }
+      else { toast.success(t('course_done')); setTimeout(() => router.push('/learn' as any), 1500); }
     } catch (e: any) { toast.error(e.message); } finally { setCompleting(false); }
   }
 
@@ -116,10 +118,9 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
 
   return (
     <>
-      {/* Progress bar fixo no topo */}
       <div className="sticky top-16 z-20 bg-white/85 backdrop-blur-sm border-b border-slate-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center gap-3">
-          <Link href={'/learn' as any} className="text-xs text-slate-500 hover:text-slate-900 flex-shrink-0">← Os meus cursos</Link>
+          <Link href={'/learn' as any} className="text-xs text-slate-500 hover:text-slate-900 flex-shrink-0">{t('my_courses')}</Link>
           <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
             <div className="h-full bg-gradient-to-r from-brand-500 to-purple-500 transition-all duration-500" style={{ width: `${progressPct}%` }} />
           </div>
@@ -129,9 +130,7 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
         <div className="flex gap-6 lg:gap-8">
-          {/* COLUNA PRINCIPAL */}
           <div className="flex-1 min-w-0 max-w-3xl mx-auto lg:mx-0">
-            {/* Header da aula */}
             <header className="mb-6">
               <div className="text-xs text-slate-400 font-medium uppercase tracking-wider flex items-center gap-2 flex-wrap">
                 <span>{course.emoji} {course.title}</span>
@@ -141,17 +140,16 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 mt-2 leading-[1.15] tracking-tight text-balance">{lesson.title}</h1>
               <div className="mt-4 flex items-center gap-2 flex-wrap text-sm">
                 <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${typeMeta.color}`}>{typeMeta.emoji} {typeMeta.label}</span>
-                {lesson.duration_minutes && <span className="text-slate-500">⏱ {lesson.duration_minutes} min</span>}
-                {completed && <span className="text-emerald-600 font-medium">✓ Concluída</span>}
-                {isLive && <span className="text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full text-xs font-medium animate-pulse">● Ao vivo</span>}
+                {lesson.duration_minutes && <span className="text-slate-500">⏱ {t('minutes', { n: lesson.duration_minutes })}</span>}
+                {completed && <span className="text-emerald-600 font-medium">{t('completed')}</span>}
+                {isLive && <span className="text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full text-xs font-medium animate-pulse">{t('live_badge')}</span>}
               </div>
             </header>
 
-            {/* Vídeo / Stream tem prioridade sobre hero */}
             {hasVideo ? (
               <div className="mb-8">
                 <VideoEmbed url={(lesson.stream_url || lesson.video_url)!} title={lesson.title} />
-                {isLive && <p className="mt-2 text-xs text-slate-500 text-center">Sessão síncrona com o instrutor. Coloca dúvidas no chat lateral.</p>}
+                {isLive && <p className="mt-2 text-xs text-slate-500 text-center">{t('live_note')}</p>}
               </div>
             ) : c.hero_image_url ? (
               <div className="mb-8 rounded-2xl overflow-hidden shadow-sm">
@@ -167,16 +165,14 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
               </div>
             ) : null}
 
-            {/* Conteúdo */}
             {!c.p?.length && !hasVideo ? (
               <div className="bg-white rounded-2xl border-2 border-dashed border-slate-200 p-12 text-center">
                 <div className="text-4xl mb-3">📝</div>
-                <p className="text-slate-700 font-medium">Esta aula ainda não tem conteúdo gerado.</p>
-                <p className="text-sm text-slate-500 mt-1">O instrutor está a preparar.</p>
+                <p className="text-slate-700 font-medium">{t('empty_title')}</p>
+                <p className="text-sm text-slate-500 mt-1">{t('empty_sub')}</p>
               </div>
             ) : (
               <article className="space-y-10">
-                {/* Parágrafos editoriais */}
                 {c.p && c.p.length > 0 && (
                   <div className="prose prose-slate prose-lg max-w-none">
                     {c.p.map((p, i) => (
@@ -185,21 +181,19 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
                   </div>
                 )}
 
-                {/* Diagrama Mermaid */}
                 {c.diagram && (
                   <section>
                     <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-3 flex items-center gap-2">
-                      <span className="w-6 h-px bg-slate-300" /> Esquema visual <span className="flex-1 h-px bg-slate-100" />
+                      <span className="w-6 h-px bg-slate-300" /> {t('diagram_label')} <span className="flex-1 h-px bg-slate-100" />
                     </h3>
                     <MermaidRender code={c.diagram} />
                   </section>
                 )}
 
-                {/* Pontos-chave */}
                 {c.kp && c.kp.length > 0 && (
                   <section className="bg-gradient-to-br from-brand-50 to-purple-50 border border-brand-100 rounded-2xl p-6 sm:p-7">
                     <h3 className="text-sm font-bold uppercase tracking-widest text-brand-700 mb-4 flex items-center gap-2">
-                      ✦ Pontos-chave da aula
+                      {t('key_points')}
                     </h3>
                     <ul className="space-y-3">
                       {c.kp.map((k, i) => (
@@ -212,11 +206,10 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
                   </section>
                 )}
 
-                {/* Código */}
                 {c.code && (
                   <section>
                     <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-3 flex items-center gap-2">
-                      <span className="w-6 h-px bg-slate-300" /> Exemplo prático <span className="flex-1 h-px bg-slate-100" />
+                      <span className="w-6 h-px bg-slate-300" /> {t('code_label')} <span className="flex-1 h-px bg-slate-100" />
                     </h3>
                     <div className="bg-slate-900 rounded-xl overflow-hidden shadow-lg">
                       <div className="bg-slate-800 px-4 py-2 flex items-center gap-1.5">
@@ -229,19 +222,17 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
                   </section>
                 )}
 
-                {/* Dica */}
                 {c.tip && (
                   <section className="border-l-4 border-amber-400 bg-amber-50/50 pl-5 pr-4 py-4 rounded-r-lg">
-                    <h3 className="text-xs font-bold uppercase tracking-widest text-amber-800 mb-1">💡 Dica do instrutor</h3>
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-amber-800 mb-1">{t('tip_label')}</h3>
                     <p className="text-slate-700 italic">{c.tip}</p>
                   </section>
                 )}
 
-                {/* Quiz */}
                 {c.q?.q && c.q.o && (
                   <section className="bg-white border-2 border-purple-200 rounded-2xl p-6 sm:p-7">
                     <div className="flex items-center gap-2 mb-4">
-                      <span className="text-xs font-bold uppercase tracking-widest text-purple-700">🎯 Verifica o que aprendeste</span>
+                      <span className="text-xs font-bold uppercase tracking-widest text-purple-700">{t('quiz_header')}</span>
                     </div>
                     <p className="text-lg font-semibold text-slate-900 mb-5">{c.q.q}</p>
                     <div className="space-y-2.5">
@@ -263,10 +254,10 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
                       })}
                     </div>
                     {!quizReveal ? (
-                      <button onClick={() => setQuizReveal(true)} disabled={quizPick === null} className="mt-5 bg-purple-600 hover:bg-purple-700 disabled:opacity-40 text-white text-sm font-semibold px-5 py-2.5 rounded-lg shadow">Confirmar resposta</button>
+                      <button onClick={() => setQuizReveal(true)} disabled={quizPick === null} className="mt-5 bg-purple-600 hover:bg-purple-700 disabled:opacity-40 text-white text-sm font-semibold px-5 py-2.5 rounded-lg shadow">{t('quiz_confirm')}</button>
                     ) : c.q.e && (
                       <div className="mt-5 bg-slate-50 rounded-lg p-4 border border-slate-200">
-                        <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Explicação</p>
+                        <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">{t('quiz_explanation')}</p>
                         <p className="text-sm text-slate-700">{c.q.e}</p>
                       </div>
                     )}
@@ -275,26 +266,25 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
               </article>
             )}
 
-            {/* Action bar inferior */}
             <div className="mt-10 pt-6 border-t border-slate-100 flex items-center justify-between gap-3 flex-wrap">
               {prevLesson ? (
                 <Link href={`/learn/curso/${courseId}/aula/${prevLesson.modIdx}/${prevLesson.lesIdx}` as any} className="group flex items-center gap-2 max-w-[45%]">
                   <span className="text-slate-400 group-hover:text-brand-600 transition-colors text-lg flex-shrink-0">←</span>
                   <div className="min-w-0">
-                    <div className="text-[10px] uppercase tracking-wider text-slate-400 font-medium">Anterior</div>
+                    <div className="text-[10px] uppercase tracking-wider text-slate-400 font-medium">{t('previous')}</div>
                     <div className="text-sm text-slate-700 group-hover:text-brand-700 truncate font-medium">{prevLesson.title}</div>
                   </div>
                 </Link>
               ) : <div />}
 
               <button onClick={markComplete} disabled={completing} className={`px-6 py-3 rounded-xl text-sm font-semibold transition-all shadow-sm ${completed ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-md'} disabled:opacity-50`}>
-                {completing ? '...' : completed ? '✓ Concluída' : nextLesson ? '✓ Concluir e seguir' : '🎓 Concluir curso'}
+                {completing ? '...' : completed ? t('completed') : nextLesson ? t('complete_next') : t('complete_course')}
               </button>
 
               {nextLesson ? (
                 <Link href={`/learn/curso/${courseId}/aula/${nextLesson.modIdx}/${nextLesson.lesIdx}` as any} className="group flex items-center gap-2 max-w-[45%] text-right">
                   <div className="min-w-0">
-                    <div className="text-[10px] uppercase tracking-wider text-slate-400 font-medium">Próxima</div>
+                    <div className="text-[10px] uppercase tracking-wider text-slate-400 font-medium">{t('next')}</div>
                     <div className="text-sm text-slate-700 group-hover:text-brand-700 truncate font-medium">{nextLesson.title}</div>
                   </div>
                   <span className="text-slate-400 group-hover:text-brand-600 transition-colors text-lg flex-shrink-0">→</span>
@@ -302,11 +292,9 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
               ) : <div />}
             </div>
 
-            {/* Review system aparece na ultima aula */}
             {!nextLesson && <ReviewSystem courseId={courseId} courseTitle={course.title} />}
           </div>
 
-          {/* TUTOR DESKTOP */}
           <aside className="hidden lg:flex w-[360px] xl:w-[400px] flex-shrink-0 sticky top-28 self-start h-[calc(100vh-8rem)]">
             <div className="w-full rounded-2xl border border-slate-200 shadow-sm overflow-hidden bg-white">
               <LessonTutor context={tutorContext} />
@@ -315,8 +303,7 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
         </div>
       </div>
 
-      {/* TUTOR MOBILE */}
-      <button onClick={() => setTutorOpen(true)} aria-label="Abrir tutor AI"
+      <button onClick={() => setTutorOpen(true)} aria-label={t('open_tutor_aria')}
         className="lg:hidden fixed bottom-5 right-5 z-30 w-14 h-14 rounded-full bg-gradient-to-br from-brand-500 to-purple-500 text-white text-2xl shadow-lg active:scale-95 transition-transform">
         🧠
       </button>
