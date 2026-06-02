@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 export function MermaidRender({ code, className = '' }: { code: string; className?: string }) {
+  const t = useTranslations('mer');
   const ref = useRef<HTMLDivElement>(null);
   const [err, setErr] = useState<string | null>(null);
   const [rendered, setRendered] = useState(false);
@@ -39,16 +41,16 @@ export function MermaidRender({ code, className = '' }: { code: string; classNam
       } catch (e: any) {
         if (cancelled) return;
         console.error('Mermaid render failed:', e);
-        setErr(e?.message || 'Falha a renderizar diagrama');
+        setErr(e?.message || t('err_render'));
       }
     })();
     return () => { cancelled = true; };
-  }, [code]);
+  }, [code, t]);
 
   if (err) {
     return (
       <div className={`bg-slate-50 border border-slate-200 rounded-lg p-4 ${className}`}>
-        <p className="text-xs text-slate-500 mb-2">Não foi possível renderizar o diagrama. Código bruto:</p>
+        <p className="text-xs text-slate-500 mb-2">{t('err_explain')}</p>
         <pre className="text-xs bg-white p-3 rounded border border-slate-100 overflow-x-auto"><code>{code}</code></pre>
       </div>
     );
@@ -60,7 +62,7 @@ export function MermaidRender({ code, className = '' }: { code: string; classNam
       {!rendered && !err && (
         <div className="flex items-center gap-2 text-sm text-slate-400">
           <span className="inline-block w-4 h-4 border-2 border-slate-200 border-t-brand-500 rounded-full animate-spin" />
-          A preparar diagrama...
+          {t('preparing')}
         </div>
       )}
     </div>

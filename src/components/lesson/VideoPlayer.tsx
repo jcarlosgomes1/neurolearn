@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface Props {
   playbackId?: string | null;
@@ -21,6 +22,7 @@ declare global {
 }
 
 export function VideoPlayer({ playbackId, videoUrl, thumbnail, title, aspectRatio, signedToken, onTimeUpdate, onEnded }: Props) {
+  const t = useTranslations('vp');
   const videoRef = useRef<HTMLVideoElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
@@ -33,14 +35,12 @@ export function VideoPlayer({ playbackId, videoUrl, thumbnail, title, aspectRati
     if (!src || !videoRef.current) return;
     const video = videoRef.current;
 
-    // Safari (iOS, macOS) suporta HLS nativamente
     if (video.canPlayType('application/vnd.apple.mpegurl')) {
       video.src = src;
       setReady(true);
       return;
     }
 
-    // Outros browsers: carregar HLS.js via CDN se ainda não carregado
     function loadHls() {
       return new Promise<void>((resolve, reject) => {
         if (window.Hls) return resolve();
@@ -62,22 +62,22 @@ export function VideoPlayer({ playbackId, videoUrl, thumbnail, title, aspectRati
 
     let hls: any = null;
     loadHls().then(() => {
-      if (!window.Hls) { setError('HLS.js indisponível'); return; }
+      if (!window.Hls) { setError(t('err_hls_unavailable')); return; }
       if (window.Hls.isSupported()) {
         hls = new window.Hls();
         hls.loadSource(src);
         hls.attachMedia(video);
         hls.on(window.Hls.Events.MANIFEST_PARSED, () => setReady(true));
         hls.on(window.Hls.Events.ERROR, (_e: unknown, data: any) => {
-          if (data.fatal) setError(`Erro de streaming: ${data.type}`);
+          if (data.fatal) setError(t('err_streaming', { type: data.type }));
         });
       } else {
-        setError('Browser não suporta HLS');
+        setError(t('err_no_hls'));
       }
     }).catch((e) => setError(e.message));
 
     return () => { if (hls) hls.destroy(); };
-  }, [src]);
+  }, [src, t]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -100,7 +100,7 @@ export function VideoPlayer({ playbackId, videoUrl, thumbnail, title, aspectRati
     return (
       <div className="bg-slate-100 rounded-xl flex items-center justify-center text-slate-400" style={{ paddingTop, position: 'relative' }}>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-sm">Sem vídeo</span>
+          <span className="text-sm">{t('no_video')}</span>
         </div>
       </div>
     );
@@ -115,7 +115,7 @@ export function VideoPlayer({ playbackId, videoUrl, thumbnail, title, aspectRati
         poster={thumbnail || undefined}
         preload="metadata"
         className="absolute inset-0 w-full h-full"
-        aria-label={title || 'Lesson video'}
+        aria-label={title || t('aria_label')}
       >
         {videoRef.current?.canPlayType('application/vnd.apple.mpegurl') && <source src={src} type="application/vnd.apple.mpegurl" />}
       </video>
