@@ -1,22 +1,25 @@
 import { NextIntlClientProvider } from 'next-intl';
-import { getMessages } from 'next-intl/server';
+import { getMessages, getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { Toaster } from 'sonner';
 import { routing } from '@/i18n/routing';
 import '@/app/globals.css';
 
-export const metadata = {
-  title: {
-    default: 'NeuroLearn — Cursos de IA',
-    template: '%s · NeuroLearn',
-  },
-  description: 'Plataforma portuguesa de cursos de inteligência artificial.',
-  metadataBase: new URL('https://neurolearn-rosy.vercel.app'),
-  openGraph: {
-    type: 'website',
-    siteName: 'NeuroLearn',
-  },
-};
+export async function generateMetadata() {
+  const t = await getTranslations();
+  return {
+    title: {
+      default: t('site.meta_title_default'),
+      template: '%s · NeuroLearn',
+    },
+    description: t('site.meta_description'),
+    metadataBase: new URL('https://neurolearn-rosy.vercel.app'),
+    openGraph: {
+      type: 'website',
+      siteName: 'NeuroLearn',
+    },
+  };
+}
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
