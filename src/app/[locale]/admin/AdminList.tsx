@@ -5,13 +5,9 @@ import { Link } from '@/i18n/routing';
 import { callAgentOps } from '@/lib/api/client';
 import { DashboardSkeleton } from '@/components/shared/DashboardSkeleton';
 import { fmtCents, relTime } from '@/lib/utils/cn';
+import { useTranslations } from 'next-intl';
 
-interface Column {
-  key: string;
-  label: string;
-  primary?: boolean;
-  kind?: 'cents' | 'rating' | 'badge' | 'reltime';
-}
+interface Column { key: string; label: string; primary?: boolean; kind?: 'cents' | 'rating' | 'badge' | 'reltime' }
 
 interface Props {
   title: string;
@@ -39,6 +35,7 @@ function renderCell(row: any, col: Column) {
 }
 
 export function AdminList({ title, action, dataKey, backHref, columns, linkPrefix, linkSuffix, linkKey, linkLabel }: Props) {
+  const t = useTranslations();
   const [rows, setRows] = useState<any[] | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
@@ -49,8 +46,8 @@ export function AdminList({ title, action, dataKey, backHref, columns, linkPrefi
   if (err) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-16 text-center">
-        <p className="text-slate-700 font-medium">{err === 'admin_required' || err === 'unauthorized' ? 'Acesso restrito a administradores.' : err === 'not_authenticated' ? 'Inicia sessão primeiro.' : err}</p>
-        <Link href={'/login' as any} className="btn-primary mt-6 inline-flex">Entrar</Link>
+        <p className="text-slate-700 font-medium">{err === 'admin_required' || err === 'unauthorized' ? t('acom.access_restricted') : err === 'not_authenticated' ? t('acom.signin_first') : err}</p>
+        <Link href={'/login' as any} className="btn-primary mt-6 inline-flex">{t('acom.btn_signin')}</Link>
       </div>
     );
   }
@@ -59,12 +56,12 @@ export function AdminList({ title, action, dataKey, backHref, columns, linkPrefi
   return (
     <div className="max-w-7xl mx-auto px-6 lg:px-8 py-8 space-y-6 animate-fade-in">
       <div>
-        <Link href={backHref as any} className="text-sm text-brand-600 hover:underline">← Cockpit</Link>
+        <Link href={backHref as any} className="text-sm text-brand-600 hover:underline">{t('acom.back_cockpit')}</Link>
         <h1 className="text-2xl font-bold text-slate-900 mt-1">{title}</h1>
-        <p className="text-slate-500 text-sm">{rows.length} registos</p>
+        <p className="text-slate-500 text-sm">{t('acom.records_count', { n: rows.length })}</p>
       </div>
       {rows.length === 0 ? (
-        <div className="bg-white rounded-xl border border-slate-200 p-6 text-sm text-slate-500">Sem registos.</div>
+        <div className="bg-white rounded-xl border border-slate-200 p-6 text-sm text-slate-500">{t('acom.no_records')}</div>
       ) : (
         <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
           <div className="overflow-x-auto">
@@ -78,7 +75,7 @@ export function AdminList({ title, action, dataKey, backHref, columns, linkPrefi
                     {columns.map((c) => <td key={c.key} className={`px-4 py-3 ${c.primary ? 'font-medium text-slate-900' : 'text-slate-600'}`}>{renderCell(row, c)}</td>)}
                     {linkPrefix && linkKey && (
                       <td className="px-4 py-3 text-right">
-                        <Link href={`${linkPrefix}${row[linkKey]}${linkSuffix || ''}` as any} className="text-xs bg-brand-600 text-white px-3 py-1.5 rounded-md hover:bg-brand-700">{linkLabel || 'Abrir'}</Link>
+                        <Link href={`${linkPrefix}${row[linkKey]}${linkSuffix || ''}` as any} className="text-xs bg-brand-600 text-white px-3 py-1.5 rounded-md hover:bg-brand-700">{linkLabel || t('acom.btn_open')}</Link>
                       </td>
                     )}
                   </tr>

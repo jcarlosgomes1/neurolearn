@@ -6,8 +6,10 @@ import { callAgentOps } from '@/lib/api/client';
 import { Stat } from '@/components/shared/Stat';
 import { DashboardSkeleton } from '@/components/shared/DashboardSkeleton';
 import { fmtCents, relTime } from '@/lib/utils/cn';
+import { useTranslations } from 'next-intl';
 
 export function TeachDashboard() {
+  const t = useTranslations();
   const [dash, setDash] = useState<any>(null);
   const [err, setErr] = useState<string | null>(null);
 
@@ -19,14 +21,14 @@ export function TeachDashboard() {
 
   if (err) {
     const friendly =
-      err === 'no_instructor_record' ? 'Ainda não és instrutor. Submete uma candidatura para começar a ensinar.' :
-      err === 'instructor_not_approved' ? 'A tua candidatura a instrutor está a ser revista.' :
-      err === 'not_authenticated' ? 'Inicia sessão primeiro.' : err;
+      err === 'no_instructor_record' ? t('teach.err_no_instructor') :
+      err === 'instructor_not_approved' ? t('teach.err_not_approved') :
+      err === 'not_authenticated' ? t('teach.err_signin') : err;
     return (
       <div className="max-w-2xl mx-auto px-4 py-16 text-center">
         <div className="text-5xl mb-4">🎓</div>
         <p className="text-slate-700 font-medium">{friendly}</p>
-        <Link href={'/' as any} className="btn-primary mt-6 inline-flex">Voltar ao início</Link>
+        <Link href={'/' as any} className="btn-primary mt-6 inline-flex">{t('teach.btn_back_home')}</Link>
       </div>
     );
   }
@@ -37,24 +39,24 @@ export function TeachDashboard() {
     <div className="max-w-7xl mx-auto px-6 lg:px-8 py-8 space-y-6 animate-fade-in">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Painel Instrutor</h1>
-          <p className="text-slate-500 text-sm mt-1">Gestão dos teus cursos e receitas</p>
+          <h1 className="text-2xl font-bold text-slate-900">{t('teach.title')}</h1>
+          <p className="text-slate-500 text-sm mt-1">{t('teach.subtitle')}</p>
         </div>
-        <Link href={'/teach/novo' as any} className="btn-primary">+ Criar curso</Link>
+        <Link href={'/teach/novo' as any} className="btn-primary">{t('teach.btn_new_course')}</Link>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-        <Stat icon="📚" label="Cursos" value={`${s.courses_published}/${s.courses_total}`} accent="brand" href="#meus-cursos" />
-        <Stat icon="👥" label="Alunos" value={s.total_students} accent="purple" href="#meus-cursos" />
-        <Stat icon="💰" label="Receita" value={fmtCents(s.total_earnings_cents)} accent="emerald" href="#meus-cursos" />
-        <Stat icon="⏱" label="Disponível" value={fmtCents(s.available_payout_cents)} accent="amber" href="#meus-cursos" />
-        <Stat icon="★" label="Rating" value={s.avg_rating ?? '—'} accent="rose" href="#meus-cursos" />
+        <Stat icon="📚" label={t('teach.stat_courses')} value={`${s.courses_published}/${s.courses_total}`} accent="brand" href="#meus-cursos" />
+        <Stat icon="👥" label={t('teach.stat_students')} value={s.total_students} accent="purple" href="#meus-cursos" />
+        <Stat icon="💰" label={t('teach.stat_revenue')} value={fmtCents(s.total_earnings_cents)} accent="emerald" href="#meus-cursos" />
+        <Stat icon="⏱" label={t('teach.stat_available')} value={fmtCents(s.available_payout_cents)} accent="amber" href="#meus-cursos" />
+        <Stat icon="★" label={t('teach.stat_rating')} value={s.avg_rating ?? '—'} accent="rose" href="#meus-cursos" />
       </div>
 
       <section id="meus-cursos" className="scroll-mt-24 bg-white rounded-xl border border-slate-200 p-5">
-        <h2 className="font-semibold text-slate-900 mb-4">Os meus cursos</h2>
+        <h2 className="font-semibold text-slate-900 mb-4">{t('teach.my_courses')}</h2>
         {dash.my_courses.length === 0 ? (
-          <div className="text-center py-6"><p className="text-sm text-slate-500 mb-3">Sem cursos ainda.</p><Link href={'/teach/novo' as any} className="btn-primary inline-flex">+ Criar o meu primeiro curso</Link></div>
+          <div className="text-center py-6"><p className="text-sm text-slate-500 mb-3">{t('teach.no_courses')}</p><Link href={'/teach/novo' as any} className="btn-primary inline-flex">{t('teach.btn_first_course')}</Link></div>
         ) : (
           <div className="space-y-2">
             {dash.my_courses.map((c: any) => (
@@ -63,7 +65,7 @@ export function TeachDashboard() {
                   <span className="text-2xl flex-shrink-0">{c.emoji || '📘'}</span>
                   <div className="min-w-0">
                     <div className="font-medium text-slate-900 truncate">{c.title}</div>
-                    <div className="text-xs text-slate-500">{c.enrollments_count || 0} alunos · {c.published ? '✅ Publicado' : '📝 Rascunho'}</div>
+                    <div className="text-xs text-slate-500">{t('teach.students_count', { n: c.enrollments_count || 0 })} · {c.published ? t('teach.published') : t('teach.draft')}</div>
                   </div>
                 </div>
                 {c.rating_avg && <span className="text-sm text-amber-600 flex-shrink-0 ml-3">★ {Number(c.rating_avg).toFixed(1)}</span>}
@@ -75,9 +77,9 @@ export function TeachDashboard() {
 
       <div className="grid md:grid-cols-2 gap-6">
         <section className="bg-white rounded-xl border border-slate-200 p-5">
-          <h2 className="font-semibold text-slate-900 mb-4">Últimos payouts</h2>
+          <h2 className="font-semibold text-slate-900 mb-4">{t('teach.payouts_title')}</h2>
           {dash.recent_payouts.length === 0 ? (
-            <p className="text-sm text-slate-500">Sem payouts ainda.</p>
+            <p className="text-sm text-slate-500">{t('teach.no_payouts')}</p>
           ) : (
             <ul className="space-y-2">
               {dash.recent_payouts.map((p: any) => (
@@ -97,15 +99,15 @@ export function TeachDashboard() {
         </section>
 
         <section className="bg-white rounded-xl border border-slate-200 p-5">
-          <h2 className="font-semibold text-slate-900 mb-4">Reviews recentes</h2>
+          <h2 className="font-semibold text-slate-900 mb-4">{t('teach.reviews_title')}</h2>
           {dash.recent_reviews.length === 0 ? (
-            <p className="text-sm text-slate-500">Sem reviews ainda.</p>
+            <p className="text-sm text-slate-500">{t('teach.no_reviews')}</p>
           ) : (
             <ul className="space-y-3">
               {dash.recent_reviews.slice(0, 5).map((r: any) => (
                 <li key={r.id} className="text-sm py-2 border-b border-slate-100 last:border-0">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="font-medium text-slate-900 truncate">{r.nl_courses?.title || 'Curso'}</span>
+                    <span className="font-medium text-slate-900 truncate">{r.nl_courses?.title || t('teach.course_fallback')}</span>
                     <span className="text-amber-500 flex-shrink-0">{'★'.repeat(r.rating || 0)}</span>
                   </div>
                   {r.body && <p className="text-xs text-slate-600 mt-1 line-clamp-2">{r.body}</p>}
