@@ -1,6 +1,10 @@
 import { AdminCockpit } from './AdminCockpit';
+import { getTranslations } from 'next-intl/server';
 
-export const metadata = { title: 'Cockpit Admin' };
+export async function generateMetadata() {
+  const t = await getTranslations();
+  return { title: t('admin_meta.cockpit') };
+}
 
 export default function AdminPage() {
   return <AdminCockpit />;
