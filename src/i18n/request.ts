@@ -1,8 +1,20 @@
 import { getRequestConfig } from 'next-intl/server';
 import type { AbstractIntlMessages } from 'next-intl';
 import { routing } from './routing';
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from '@/lib/supabase/config';
 import { FALLBACK_MESSAGES } from './fallback';
+import pt from './messages/pt.json';
+import en from './messages/en.json';
+import es from './messages/es.json';
+import fr from './messages/fr.json';
+
+// Static imports — bundled at build time. No runtime fetch, no network dependency.
+// To update: re-run the build pipeline that regenerates these JSON files.
+const FLAT_MESSAGES: Record<string, Record<string, string>> = {
+  pt: pt as Record<string, string>,
+  en: en as Record<string, string>,
+  es: es as Record<string, string>,
+  fr: fr as Record<string, string>,
+};
 
 export default getRequestConfig(async ({ requestLocale }) => {
   let locale = await requestLocale;
@@ -10,40 +22,9 @@ export default getRequestConfig(async ({ requestLocale }) => {
     locale = routing.defaultLocale;
   }
 
-  let messages: AbstractIntlMessages = FALLBACK_MESSAGES;
-
-  try {
-    const ctrl = new AbortController();
-    // 15s timeout — accommodates cold starts on Vercel + Supabase
-    const timeoutId = setTimeout(() => ctrl.abort(), 15000);
-
-    // Dedicated lightweight endpoint: returns ONLY i18n flat keys (~75KB).
-    // Cache-Control on response gives us s-maxage=3600 at edge + stale-while-revalidate=86400.
-    const res = await fetch(
-      `${SUPABASE_URL}/functions/v1/messages?lang=${locale}`,
-      {
-        signal: ctrl.signal,
-        headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` },
-        // Server-side Next.js cache: 1h fresh, then revalidate in background.
-        next: { revalidate: 3600, tags: [`messages:${locale}`] },
-      }
-    );
-    clearTimeout(timeoutId);
-    if (res.ok) {
-      const data = await res.json();
-      if (data?.ok && data?.messages && typeof data.messages === 'object' && Object.keys(data.messages).length > 0) {
-        const merged = flattenToNamespaced(data.messages);
-        messages = deepMerge(FALLBACK_MESSAGES, merged);
-      } else {
-        console.warn(`[i18n] messages endpoint returned ok=false or empty for ${locale}`);
-      }
-    } else {
-      console.warn(`[i18n] messages endpoint returned ${res.status} for ${locale}`);
-    }
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.warn(`[i18n] messages fetch failed for ${locale}: ${msg} — using fallback`);
-  }
+  const flat = FLAT_MESSAGES[locale] || FLAT_MESSAGES.pt;
+  const nested = flattenToNamespaced(flat);
+  const messages: AbstractIntlMessages = deepMerge(FALLBACK_MESSAGES, nested);
 
   return { locale, messages };
 });
