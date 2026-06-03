@@ -3,15 +3,27 @@
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
+import { Link } from '@/i18n/routing';
+import { useTranslations } from 'next-intl';
 
 interface FaqData {
   title?: string;
   items: { q: string; a: string }[];
 }
 
-export function Faq({ data }: { data: FaqData }) {
+interface Props {
+  data: FaqData;
+  /** Maximum items to display on the page. If items.length > maxItems, a "See more" link is shown. Default 6. */
+  maxItems?: number;
+}
+
+export function Faq({ data, maxItems = 6 }: Props) {
+  const t = useTranslations();
   const [open, setOpen] = useState<number | null>(0);
   if (!data?.items?.length) return null;
+
+  const visible = data.items.slice(0, maxItems);
+  const hasMore = data.items.length > maxItems;
 
   return (
     <section className="py-20 bg-white">
@@ -22,7 +34,7 @@ export function Faq({ data }: { data: FaqData }) {
           </h2>
         )}
         <div className="space-y-3">
-          {data.items.map((item, i) => {
+          {visible.map((item, i) => {
             const isOpen = open === i;
             return (
               <div
@@ -60,6 +72,14 @@ export function Faq({ data }: { data: FaqData }) {
             );
           })}
         </div>
+        {hasMore && (
+          <div className="mt-8 text-center">
+            <Link href={'/legal/faq' as any} className="inline-flex items-center gap-2 text-sm font-semibold text-brand-700 hover:text-brand-800 hover:underline">
+              {t('faq.see_all', { n: data.items.length })}
+              <span aria-hidden>→</span>
+            </Link>
+          </div>
+        )}
       </div>
     </section>
   );

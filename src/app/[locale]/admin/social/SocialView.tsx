@@ -52,8 +52,11 @@ export function SocialView() {
   const [connecting, setConnecting] = useState<string | null>(null);
   const [publishing, setPublishing] = useState<string | null>(null);
   const [schedulingId, setSchedulingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editDraft, setEditDraft] = useState<{ content: string; hashtags: string; cta: string }>({ content: '', hashtags: '', cta: '' });
   const [scheduleInputs, setScheduleInputs] = useState<Record<string, string>>({});
   const [savingSchedule, setSavingSchedule] = useState<string | null>(null);
+  const [savingEdit, setSavingEdit] = useState<string | null>(null);
 
   useEffect(() => {
     const connected = searchParams.get('connected');
@@ -87,7 +90,7 @@ export function SocialView() {
           .order('created_at', { ascending: false }).limit(20),
         supabase.from('nl_social_posts')
           .select('id, platform, variant, lang, content, hashtags, cta, status, created_at, image_url, scheduled_at')
-          .in('status', ['approved', 'draft', 'pending', 'publishing'])
+          .in('status', ['approved', 'draft', 'pending', 'pending_review', 'publishing'])
           .order('created_at', { ascending: false }).limit(30),
       ]);
       setLogs((logsRes.data as PublishLog[]) || []);
@@ -164,6 +167,51 @@ export function SocialView() {
     setSavingSchedule(null);
   }
 
+  function startEdit(post: SocialPost) {
+    setEditingId(post.id);
+    setEditDraft({
+      content: post.content,
+      hashtags: (post.hashtags || []).join(', '),
+      cta: post.cta || '',
+    });
+  }
+
+  async function saveEdit(postId: string) {
+    setSavingEdit(postId);
+    const hashtags = editDraft.hashtags.split(',').map(h => h.trim()).filter(Boolean);
+    const { error } = await supabase.from('nl_social_posts').update({
+      content: editDraft.content,
+      hashtags,
+      cta: editDraft.cta || null,
+    }).eq('id', postId);
+    if (error) toast.error(error.message);
+    else {
+      toast.success(t('edit.toast_saved'));
+      setPendingPosts((prev) => prev.map((p) => p.id === postId ? { ...p, content: editDraft.content, hashtags, cta: editDraft.cta || null } : p));
+      setEditingId(null);
+    }
+    setSavingEdit(null);
+  }
+
+  async function approvePost(postId: string) {
+    const { error } = await supabase.from('nl_social_posts').update({ status: 'approved' }).eq('id', postId);
+    if (error) toast.error(error.message);
+    else {
+      toast.success(t('edit.toast_approved'));
+      setPendingPosts((prev) => prev.map((p) => p.id === postId ? { ...p, status: 'approved' } : p));
+    }
+  }
+
+  async function rejectPost(postId: string) {
+    if (!confirm(t('edit.confirm_reject'))) return;
+    const { error } = await supabase.from('nl_social_posts').update({ status: 'rejected' }).eq('id', postId);
+    if (error) toast.error(error.message);
+    else {
+      toast.success(t('edit.toast_rejected'));
+      setPendingPosts((prev) => prev.filter((p) => p.id !== postId));
+    }
+  }
+
   const activeConnections = connections.filter(c => c.is_active);
   const activeByProvider = activeConnections.reduce((acc, c) => { acc[c.provider] = c; return acc; }, {} as Record<string, Connection>);
 
@@ -229,7 +277,8 @@ export function SocialView() {
                   const hasConn = !!activeByProvider[post.platform];
                   const isPublishing = publishing === post.id;
                   const isScheduling = schedulingId === post.id;
-                  const isSaving = savingSchedule === post.id;
+                  const isEditing = editingId === post.id;
+                  const isSaving = savingSchedule === post.id || savingEdit === post.id;
                   const isScheduled = !!post.scheduled_at;
                   return (
                     <div key={post.id} className="p-4">
@@ -247,15 +296,51 @@ export function SocialView() {
                               </span>
                             )}
                           </div>
-                          <p className="text-sm text-slate-700 whitespace-pre-wrap line-clamp-3">{post.content}</p>
-                          {post.hashtags && post.hashtags.length > 0 && (
-                            <div className="mt-1.5 flex flex-wrap gap-1">
-                              {post.hashtags.slice(0, 6).map(tag => (
-                                <span key={tag} className="text-[10px] bg-brand-50 text-brand-700 px-1.5 py-0.5 rounded">#{tag.replace('#', '')}</span>
-                              ))}
+
+                          {isEditing ? (
+                            <div className="mt-2 space-y-2 bg-slate-50 p-3 rounded-lg">
+                              <div>
+                                <label className="block text-xs font-semibold text-slate-700 mb-1">{t('edit.content')} <span className="text-slate-400 font-normal">({editDraft.content.length} chars)</span></label>
+                                <textarea value={editDraft.content} onChange={(e) => setEditDraft({ ...editDraft, content: e.target.value })} rows={5}
+                                  className="w-full text-sm p-2 bg-white border border-slate-200 rounded focus:border-brand-400 focus:outline-none" />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-semibold text-slate-700 mb-1">{t('edit.hashtags')}</label>
+                                <input type="text" value={editDraft.hashtags} onChange={(e) => setEditDraft({ ...editDraft, hashtags: e.target.value })}
+                                  placeholder="ia, automacao, pme"
+                                  className="w-full text-sm p-2 bg-white border border-slate-200 rounded focus:border-brand-400 focus:outline-none" />
+                                <p className="text-[10px] text-slate-400 mt-0.5">{t('edit.hashtags_hint')}</p>
+                              </div>
+                              <div>
+                                <label className="block text-xs font-semibold text-slate-700 mb-1">{t('edit.cta')}</label>
+                                <input type="text" value={editDraft.cta} onChange={(e) => setEditDraft({ ...editDraft, cta: e.target.value })}
+                                  className="w-full text-sm p-2 bg-white border border-slate-200 rounded focus:border-brand-400 focus:outline-none" />
+                              </div>
+                              <div className="flex gap-2 pt-1">
+                                <button onClick={() => saveEdit(post.id)} disabled={isSaving}
+                                  className="text-xs bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white font-medium px-3 py-2 rounded-md">
+                                  {isSaving ? t('edit.saving') : t('edit.save')}
+                                </button>
+                                <button onClick={() => setEditingId(null)}
+                                  className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-3 py-2 rounded-md">
+                                  {t('edit.cancel')}
+                                </button>
+                              </div>
                             </div>
+                          ) : (
+                            <>
+                              <p className="text-sm text-slate-700 whitespace-pre-wrap line-clamp-4">{post.content}</p>
+                              {post.hashtags && post.hashtags.length > 0 && (
+                                <div className="mt-1.5 flex flex-wrap gap-1">
+                                  {post.hashtags.slice(0, 6).map(tag => (
+                                    <span key={tag} className="text-[10px] bg-brand-50 text-brand-700 px-1.5 py-0.5 rounded">#{tag.replace('#', '')}</span>
+                                  ))}
+                                </div>
+                              )}
+                              {post.cta && <div className="text-xs text-purple-700 mt-1.5 italic">{t('cta_label', { cta: post.cta })}</div>}
+                            </>
                           )}
-                          {post.cta && <div className="text-xs text-purple-700 mt-1.5 italic">{t('cta_label', { cta: post.cta })}</div>}
+
                           {isScheduling && (
                             <div className="mt-3 p-3 bg-slate-50 rounded-lg flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
                               <input type="datetime-local"
@@ -275,23 +360,39 @@ export function SocialView() {
                             </div>
                           )}
                         </div>
-                        <div className="flex flex-col gap-1.5 flex-shrink-0">
-                          <button onClick={() => publishPost(post.id)} disabled={!hasConn || isPublishing || post.status === 'published'}
-                            className="text-xs bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-medium px-3 py-2 rounded-md whitespace-nowrap">
-                            {isPublishing ? t('publishing') : !hasConn ? t('no_link') : t('publish_now')}
-                          </button>
-                          {!isScheduled ? (
-                            <button onClick={() => setSchedulingId(isScheduling ? null : post.id)} disabled={!hasConn}
-                              className="text-xs bg-violet-100 hover:bg-violet-200 text-violet-700 font-medium px-3 py-2 rounded-md whitespace-nowrap disabled:opacity-40">
-                              📅 {t('sched.schedule')}
+                        {!isEditing && (
+                          <div className="flex flex-col gap-1.5 flex-shrink-0">
+                            <button onClick={() => startEdit(post)} disabled={isSaving}
+                              className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-3 py-2 rounded-md whitespace-nowrap">
+                              ✎ {t('edit.btn_edit')}
                             </button>
-                          ) : (
-                            <button onClick={() => unschedulePost(post.id)} disabled={isSaving}
-                              className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-3 py-2 rounded-md whitespace-nowrap disabled:opacity-50">
-                              {t('sched.unschedule')}
+                            {post.status === 'pending_review' && (
+                              <button onClick={() => approvePost(post.id)} disabled={isSaving}
+                                className="text-xs bg-amber-100 hover:bg-amber-200 text-amber-700 font-medium px-3 py-2 rounded-md whitespace-nowrap">
+                                ✓ {t('edit.btn_approve')}
+                              </button>
+                            )}
+                            <button onClick={() => publishPost(post.id)} disabled={!hasConn || isPublishing || post.status === 'published'}
+                              className="text-xs bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-medium px-3 py-2 rounded-md whitespace-nowrap">
+                              {isPublishing ? t('publishing') : !hasConn ? t('no_link') : t('publish_now')}
                             </button>
-                          )}
-                        </div>
+                            {!isScheduled ? (
+                              <button onClick={() => setSchedulingId(isScheduling ? null : post.id)} disabled={!hasConn}
+                                className="text-xs bg-violet-100 hover:bg-violet-200 text-violet-700 font-medium px-3 py-2 rounded-md whitespace-nowrap disabled:opacity-40">
+                                📅 {t('sched.schedule')}
+                              </button>
+                            ) : (
+                              <button onClick={() => unschedulePost(post.id)} disabled={isSaving}
+                                className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-3 py-2 rounded-md whitespace-nowrap disabled:opacity-50">
+                                {t('sched.unschedule')}
+                              </button>
+                            )}
+                            <button onClick={() => rejectPost(post.id)} disabled={isSaving}
+                              className="text-xs bg-white border border-rose-200 hover:bg-rose-50 text-rose-700 font-medium px-3 py-2 rounded-md whitespace-nowrap">
+                              {t('edit.btn_reject')}
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </div>
                   );

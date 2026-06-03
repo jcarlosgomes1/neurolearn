@@ -15,16 +15,30 @@ interface KPIs {
 }
 
 interface Approval {
-  id: string; action: string; reason: string | null; params: Record<string, any>;
+  id: string; action: string; reason: string | null; params: Record<string, unknown>;
   status: string; created_at: string; expires_at: string | null;
+}
+
+interface BlogTranslation {
+  lang: string; title: string; excerpt: string | null;
+  content_md: string; reading_time_minutes: number | null;
+}
+
+interface BlogPostInfo {
+  id: string; slug: string; category: string | null; requires_factcheck?: boolean; factcheck_notes?: string | null;
+}
+
+interface SocialPostInfo {
+  id: string; platform: string; variant: string; lang: string;
+  content: string; hashtags: string[]; cta: string | null;
 }
 
 interface ApprovalDetail {
   kind: 'blog_post' | 'social_posts' | 'course' | 'instructor_application' | 'other';
   approval: Approval;
-  post?: any; translations?: any[];
-  social_posts?: Array<{ id: string; platform: string; variant: string; lang: string; content: string; hashtags: string[]; cta: string | null }>;
-  source_post?: any; course?: any; application?: any;
+  post?: BlogPostInfo; translations?: BlogTranslation[];
+  social_posts?: SocialPostInfo[];
+  source_post?: { slug: string };
 }
 
 interface Topic {
@@ -35,6 +49,7 @@ interface Topic {
 interface BlogPost {
   id: string; slug: string; status: string; category: string | null;
   published_at: string | null; view_count: number | null; created_at: string;
+  requires_factcheck?: boolean; factcheck_notes?: string | null;
 }
 
 const ACTION_META: Record<string, { emoji: string; labelKey: string; color: string }> = {
@@ -58,7 +73,7 @@ function isExpired(iso: string | null): boolean {
   return !!iso && new Date(iso).getTime() < Date.now();
 }
 
-async function adminOps<T>(action: string, payload: Record<string, any> = {}): Promise<T | null> {
+async function adminOps<T>(action: string, payload: Record<string, unknown> = {}): Promise<T | null> {
   const sb = createClient();
   const { data: { session } } = await sb.auth.getSession();
   if (!session) return null;
@@ -86,8 +101,8 @@ export function MarketingView() {
     const [aps, tps, ps, blogs, social, sevenDay] = await Promise.all([
       adminOps<{ ok: boolean; rows: Approval[] }>('list_pending_approvals'),
       adminOps<{ ok: boolean; topics: Topic[] }>('list_topics', { limit: 50 }),
-      adminOps<{ ok: boolean; posts: BlogPost[] }>('list_blog_posts', { limit: 30, status: 'draft' }),
-      sb.from('nl_blog_posts').select('id, status').then(r => r.data || []),
+      adminOps<{ ok: boolean; posts: BlogPost[] }>('list_blog_posts', { limit: 30, status: 'pending_review' }),
+      sb.from('nl_blog_posts').select('id, status, requires_factcheck').then(r => r.data || []),
       sb.from('nl_social_posts').select('id, status').then(r => r.data || []),
       sb.from('nl_blog_topics').select('id, created_at').gte('created_at', new Date(Date.now() - 7 * 86400000).toISOString()).then(r => r.data || []),
     ]);
@@ -97,11 +112,11 @@ export function MarketingView() {
     const approvalsList = aps?.rows || [];
     setKpis({
       blog_total: blogs.length,
-      blog_published: blogs.filter((b: any) => b.status === 'published').length,
-      blog_drafts: blogs.filter((b: any) => b.status === 'draft').length,
-      social_pending: social.filter((s: any) => s.status === 'pending_review').length,
-      social_approved: social.filter((s: any) => s.status === 'approved').length,
-      social_published: social.filter((s: any) => s.status === 'published').length,
+      blog_published: blogs.filter((b) => (b as { status: string }).status === 'published').length,
+      blog_drafts: blogs.filter((b) => (b as { status: string }).status === 'pending_review').length,
+      social_pending: social.filter((s) => (s as { status: string }).status === 'pending_review').length,
+      social_approved: social.filter((s) => (s as { status: string }).status === 'approved').length,
+      social_published: social.filter((s) => (s as { status: string }).status === 'published').length,
       topics_total: tps?.topics?.length || 0,
       topics_new_7d: sevenDay.length,
       approvals_pending: approvalsList.length,
@@ -118,10 +133,24 @@ export function MarketingView() {
     else toast.error(t('mkt.toast_open_fail'));
   }
 
-  async function decide(id: string, decision: 'approved' | 'rejected', note?: string) {
-    if (busy.has(id)) return;
+  async function openBlogPostForEdit(postId: string) {
+    const sb = createClient();
+    const { data: post } = await sb.from('nl_blog_posts').select('id, slug, category, requires_factcheck, factcheck_notes').eq('id', postId).single();
+    const { data: translations } = await sb.from('nl_blog_post_translations').select('lang, title, excerpt, content_md, reading_time_minutes').eq('post_id', postId);
+    if (!post) { toast.error(t('mkt.toast_open_fail')); return; }
+    // Synthetic approval detail (no approval needed, just edit)
+    setSelected({
+      kind: 'blog_post',
+      approval: { id: 'edit:' + postId, action: 'edit_blog_post', reason: null, params: {}, status: 'editing', created_at: new Date().toISOString(), expires_at: null },
+      post: post as BlogPostInfo,
+      translations: (translations as BlogTranslation[]) || [],
+    });
+  }
+
+  async function decide(id: string, decision: 'approved' | 'rejected') {
+    if (busy.has(id) || id.startsWith('edit:')) return;
     setBusy((s) => new Set([...s, id]));
-    const r = await adminOps<{ ok: boolean; error?: string }>('decide_approval', { approval_id: id, decision, note });
+    const r = await adminOps<{ ok: boolean; error?: string }>('decide_approval', { approval_id: id, decision });
     if (r?.ok) {
       toast.success(decision === 'approved' ? t('mkt.toast_approved') : t('mkt.toast_rejected'));
       setSelected(null);
@@ -130,6 +159,37 @@ export function MarketingView() {
       toast.error(r?.error || t('mkt.toast_fail'));
     }
     setBusy((s) => { const n = new Set(s); n.delete(id); return n; });
+  }
+
+  async function saveBlogEdits(postId: string, factcheckOK: boolean, translations: BlogTranslation[]) {
+    const sb = createClient();
+    // Update each translation
+    for (const tr of translations) {
+      const { error } = await sb.from('nl_blog_post_translations').update({
+        title: tr.title, excerpt: tr.excerpt, content_md: tr.content_md, reading_time_minutes: tr.reading_time_minutes,
+      }).eq('post_id', postId).eq('lang', tr.lang);
+      if (error) { toast.error(error.message); return false; }
+    }
+    if (factcheckOK) {
+      const { error } = await sb.from('nl_blog_posts').update({ requires_factcheck: false, factcheck_notes: null }).eq('id', postId);
+      if (error) { toast.error(error.message); return false; }
+    }
+    toast.success(t('mkt.toast_saved'));
+    await loadAll();
+    return true;
+  }
+
+  async function saveSocialEdits(socialPosts: SocialPostInfo[]) {
+    const sb = createClient();
+    for (const sp of socialPosts) {
+      const { error } = await sb.from('nl_social_posts').update({
+        content: sp.content, hashtags: sp.hashtags, cta: sp.cta,
+      }).eq('id', sp.id);
+      if (error) { toast.error(error.message); return false; }
+    }
+    toast.success(t('mkt.toast_saved'));
+    await loadAll();
+    return true;
   }
 
   async function triggerScout() {
@@ -223,9 +283,8 @@ export function MarketingView() {
                     </div>
                   </div>
                   <div className="flex gap-2 flex-shrink-0 w-full sm:w-auto">
-                    <button onClick={() => openApproval(ap.id)} className="text-sm bg-white border border-slate-200 hover:border-slate-300 px-3 py-2 rounded-lg flex-1 sm:flex-none">{t('mkt.btn_view')}</button>
+                    <button onClick={() => openApproval(ap.id)} className="text-sm bg-white border border-slate-200 hover:border-slate-300 px-3 py-2 rounded-lg flex-1 sm:flex-none">{t('mkt.btn_view_edit')}</button>
                     <button onClick={() => decide(ap.id, 'rejected')} disabled={busy.has(ap.id)} className="text-sm bg-white border border-rose-200 hover:bg-rose-50 text-rose-700 px-3 py-2 rounded-lg disabled:opacity-40 flex-1 sm:flex-none">{t('mkt.btn_reject')}</button>
-                    <button onClick={() => decide(ap.id, 'approved')} disabled={busy.has(ap.id)} className="text-sm bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white px-3 py-2 rounded-lg font-semibold flex-1 sm:flex-none">{busy.has(ap.id) ? '...' : t('mkt.btn_approve')}</button>
                   </div>
                 </div>
               );
@@ -268,9 +327,15 @@ export function MarketingView() {
               {posts.slice(0, 10).map((p) => (
                 <div key={p.id} className="p-3 hover:bg-slate-50 flex items-center gap-3">
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-semibold text-slate-900 truncate">{p.slug}</h3>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-sm font-semibold text-slate-900 truncate">{p.slug}</h3>
+                      {p.requires_factcheck && (
+                        <span className="text-[10px] font-bold uppercase tracking-wider bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded-full">⚠ {t('mkt.factcheck_needed')}</span>
+                      )}
+                    </div>
                     <div className="text-[10px] text-slate-400 mt-0.5">{p.category} · {t('mkt.ago', { t: fmtRelative(p.created_at) })}</div>
                   </div>
+                  <button onClick={() => openBlogPostForEdit(p.id)} className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1.5 rounded-md font-medium flex-shrink-0">✎ {t('mkt.btn_edit')}</button>
                   <button onClick={() => generateSocialFromPost(p.id)} className="text-xs bg-brand-600 hover:bg-brand-700 text-white px-2.5 py-1.5 rounded-md font-medium flex-shrink-0">{t('mkt.btn_to_social')}</button>
                 </div>
               ))}
@@ -279,7 +344,7 @@ export function MarketingView() {
         </section>
       </div>
 
-      {selected && <DetailModal detail={selected} onClose={() => setSelected(null)} onDecide={decide} busy={busy.has(selected.approval.id)} t={t} />}
+      {selected && <DetailModal detail={selected} onClose={() => setSelected(null)} onDecide={decide} onSaveBlog={saveBlogEdits} onSaveSocial={saveSocialEdits} busy={busy.has(selected.approval.id)} t={t} />}
     </div>
   );
 }
@@ -296,69 +361,147 @@ function Kpi({ label, value, sub, highlight, warning }: KpiProps) {
   );
 }
 
-interface DetailModalProps { detail: ApprovalDetail; onClose: () => void; onDecide: (id: string, d: 'approved'|'rejected') => void; busy: boolean; t: (k: string, p?: any) => string }
-function DetailModal({ detail, onClose, onDecide, busy, t }: DetailModalProps) {
+interface DetailModalProps {
+  detail: ApprovalDetail;
+  onClose: () => void;
+  onDecide: (id: string, d: 'approved'|'rejected') => void;
+  onSaveBlog: (postId: string, factcheckOK: boolean, translations: BlogTranslation[]) => Promise<boolean>;
+  onSaveSocial: (sp: SocialPostInfo[]) => Promise<boolean>;
+  busy: boolean;
+  t: (k: string, p?: Record<string, unknown>) => string;
+}
+
+function DetailModal({ detail, onClose, onDecide, onSaveBlog, onSaveSocial, busy, t }: DetailModalProps) {
+  const isEditMode = detail.approval.id.startsWith('edit:');
   const titleKey = detail.kind === 'blog_post' ? 'mkt.modal_blog' : detail.kind === 'social_posts' ? 'mkt.modal_social' : 'mkt.modal_other';
+  const [translations, setTranslations] = useState<BlogTranslation[]>(detail.translations || []);
+  const [socials, setSocials] = useState<SocialPostInfo[]>(detail.social_posts || []);
+  const [factcheckOK, setFactcheckOK] = useState(!detail.post?.requires_factcheck);
+  const [saving, setSaving] = useState(false);
+
+  async function handleSaveAndApprove(approvalId: string) {
+    setSaving(true);
+    if (detail.kind === 'blog_post' && detail.post) {
+      const ok = await onSaveBlog(detail.post.id, factcheckOK, translations);
+      if (ok && !isEditMode) onDecide(approvalId, 'approved');
+      if (ok && isEditMode) onClose();
+    } else if (detail.kind === 'social_posts') {
+      const ok = await onSaveSocial(socials);
+      if (ok && !isEditMode) onDecide(approvalId, 'approved');
+      if (ok && isEditMode) onClose();
+    }
+    setSaving(false);
+  }
+
+  function updateTranslation(lang: string, field: keyof BlogTranslation, value: unknown) {
+    setTranslations((prev) => prev.map((tr) => tr.lang === lang ? { ...tr, [field]: value } : tr));
+  }
+  function updateSocial(idx: number, field: keyof SocialPostInfo, value: unknown) {
+    setSocials((prev) => prev.map((sp, i) => i === idx ? { ...sp, [field]: value } : sp));
+  }
+
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto" onClick={onClose}>
-      <div className="bg-white w-full sm:max-w-3xl sm:rounded-2xl shadow-2xl max-h-[95vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-white w-full sm:max-w-4xl sm:rounded-2xl shadow-2xl max-h-[95vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between p-5 border-b border-slate-100 flex-shrink-0">
-          <div>
+          <div className="min-w-0">
             <h2 className="font-bold text-slate-900 text-lg">{t(titleKey)}</h2>
-            <p className="text-xs text-slate-500">{detail.approval.reason}</p>
+            <p className="text-xs text-slate-500 truncate">{detail.approval.reason || (isEditMode ? t('mkt.edit_mode') : '')}</p>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-700 text-3xl leading-none w-9 h-9 flex items-center justify-center">×</button>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-700 text-3xl leading-none w-9 h-9 flex items-center justify-center flex-shrink-0">×</button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
+          {/* Factcheck warning banner */}
+          {detail.post?.requires_factcheck && (
+            <div className="bg-rose-50 border-2 border-rose-200 rounded-xl p-4">
+              <div className="flex items-start gap-2">
+                <span className="text-rose-700 text-lg">⚠</span>
+                <div className="flex-1">
+                  <div className="font-bold text-rose-900 text-sm">{t('mkt.factcheck_banner_title')}</div>
+                  <p className="text-xs text-rose-700 mt-1 leading-relaxed">{t('mkt.factcheck_banner_desc')}</p>
+                  {detail.post.factcheck_notes && <p className="text-xs text-rose-600 mt-2 italic">{detail.post.factcheck_notes}</p>}
+                </div>
+              </div>
+              <label className="mt-3 flex items-center gap-2 text-sm font-medium text-rose-900 cursor-pointer">
+                <input type="checkbox" checked={factcheckOK} onChange={(e) => setFactcheckOK(e.target.checked)} className="rounded border-rose-300" />
+                {t('mkt.factcheck_confirm')}
+              </label>
+            </div>
+          )}
+
           {detail.kind === 'blog_post' && detail.post && (
             <>
-              <div>
-                <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">{t('mkt.slug_label')}</div>
-                <div className="text-sm text-slate-900 font-mono">{detail.post.slug}</div>
+              <div className="text-xs text-slate-500">
+                <span className="font-semibold uppercase tracking-wider">{t('mkt.slug_label')}</span> <code className="text-slate-900">{detail.post.slug}</code>
+                {detail.post.category && <span className="ml-3 inline-block text-xs bg-brand-50 text-brand-700 px-2 py-0.5 rounded-full">{detail.post.category}</span>}
               </div>
-              {detail.post.category && (
-                <div><span className="inline-block text-xs bg-brand-50 text-brand-700 px-2 py-0.5 rounded-full">{detail.post.category}</span></div>
-              )}
-              {(detail.translations || []).map((tr: any) => (
-                <div key={tr.lang} className="border-l-2 border-slate-200 pl-3">
-                  <div className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1">{tr.lang}</div>
-                  <h3 className="font-bold text-slate-900">{tr.title}</h3>
-                  {tr.excerpt && <p className="text-sm text-slate-600 mt-1">{tr.excerpt}</p>}
-                  {tr.reading_time_minutes && <div className="text-xs text-slate-500 mt-1">{t('mkt.reading_min', { n: tr.reading_time_minutes })}</div>}
-                  {tr.content_md && (
-                    <details className="mt-2">
-                      <summary className="text-xs text-brand-600 cursor-pointer hover:underline">{t('mkt.see_full_content', { n: tr.content_md.length })}</summary>
-                      <pre className="mt-2 text-xs text-slate-700 bg-slate-50 p-3 rounded whitespace-pre-wrap font-sans">{tr.content_md}</pre>
-                    </details>
-                  )}
+              {translations.map((tr) => (
+                <div key={tr.lang} className="border border-slate-200 rounded-lg p-4 bg-slate-50">
+                  <div className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-3">🌐 {tr.lang.toUpperCase()}</div>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">{t('mkt.field_title')}</label>
+                      <input type="text" value={tr.title} onChange={(e) => updateTranslation(tr.lang, 'title', e.target.value)}
+                        className="w-full text-sm p-2 bg-white border border-slate-200 rounded-lg focus:border-brand-400 focus:outline-none" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">{t('mkt.field_excerpt')}</label>
+                      <textarea value={tr.excerpt || ''} onChange={(e) => updateTranslation(tr.lang, 'excerpt', e.target.value)} rows={2}
+                        className="w-full text-sm p-2 bg-white border border-slate-200 rounded-lg focus:border-brand-400 focus:outline-none" />
+                    </div>
+                    <div>
+                      <label className="flex items-center justify-between text-xs font-semibold text-slate-700 mb-1">
+                        <span>{t('mkt.field_content')}</span>
+                        <span className="text-slate-400 font-normal">{tr.content_md.length} chars</span>
+                      </label>
+                      <textarea value={tr.content_md} onChange={(e) => updateTranslation(tr.lang, 'content_md', e.target.value)} rows={14}
+                        className="w-full font-mono text-xs p-3 bg-white border border-slate-200 rounded-lg focus:border-brand-400 focus:outline-none" spellCheck={false} />
+                      <p className="text-[10px] text-slate-400 mt-1">Markdown · ## títulos · **negrito** · *itálico* · [link](url) · - listas</p>
+                    </div>
+                  </div>
                 </div>
               ))}
             </>
           )}
 
-          {detail.kind === 'social_posts' && detail.social_posts && (
+          {detail.kind === 'social_posts' && socials.length > 0 && (
             <>
               {detail.source_post && (
                 <div className="text-xs text-slate-500">{t('mkt.for_post')} <span className="font-mono">{detail.source_post.slug}</span></div>
               )}
-              <div className="space-y-3">
-                {detail.social_posts.map((sp) => (
-                  <div key={sp.id} className="bg-slate-50 rounded-lg p-4 border border-slate-200">
-                    <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
-                      <span className="text-xs font-bold uppercase tracking-wider text-slate-700">{PLATFORM_EMOJI[sp.platform] || '•'} {sp.platform}</span>
-                      <span className="text-[10px] text-slate-400">{sp.variant} · {sp.lang}</span>
-                    </div>
-                    <p className="text-sm text-slate-800 whitespace-pre-wrap">{sp.content}</p>
-                    {sp.hashtags && sp.hashtags.length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-1">
-                        {sp.hashtags.map((h, i) => <span key={i} className="text-xs text-brand-600">#{h.replace(/^#/, '')}</span>)}
-                      </div>
-                    )}
-                    {sp.cta && <div className="mt-2 text-xs text-slate-500 italic">{t('mkt.cta_label')} {sp.cta}</div>}
+              {socials.map((sp, idx) => (
+                <div key={sp.id} className="border border-slate-200 rounded-lg p-4 bg-slate-50">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                      {PLATFORM_EMOJI[sp.platform] || '•'} {sp.platform}
+                    </span>
+                    <span className="text-[10px] text-slate-400">{sp.variant} · {sp.lang}</span>
                   </div>
-                ))}
-              </div>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="flex items-center justify-between text-xs font-semibold text-slate-700 mb-1">
+                        <span>{t('mkt.field_content')}</span>
+                        <span className="text-slate-400 font-normal">{sp.content.length} chars</span>
+                      </label>
+                      <textarea value={sp.content} onChange={(e) => updateSocial(idx, 'content', e.target.value)} rows={5}
+                        className="w-full text-sm p-2 bg-white border border-slate-200 rounded-lg focus:border-brand-400 focus:outline-none" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">{t('mkt.field_hashtags')}</label>
+                      <input type="text" value={sp.hashtags.join(', ')} onChange={(e) => updateSocial(idx, 'hashtags', e.target.value.split(',').map(h => h.trim()).filter(Boolean))}
+                        placeholder="ia, automacao, pme"
+                        className="w-full text-sm p-2 bg-white border border-slate-200 rounded-lg focus:border-brand-400 focus:outline-none" />
+                      <p className="text-[10px] text-slate-400 mt-1">{t('mkt.hashtags_hint')}</p>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">{t('mkt.field_cta')}</label>
+                      <input type="text" value={sp.cta || ''} onChange={(e) => updateSocial(idx, 'cta', e.target.value)}
+                        className="w-full text-sm p-2 bg-white border border-slate-200 rounded-lg focus:border-brand-400 focus:outline-none" />
+                    </div>
+                  </div>
+                </div>
+              ))}
             </>
           )}
 
@@ -368,8 +511,17 @@ function DetailModal({ detail, onClose, onDecide, busy, t }: DetailModalProps) {
         </div>
 
         <div className="border-t border-slate-200 p-5 bg-slate-50 flex gap-2 flex-shrink-0">
-          <button onClick={() => onDecide(detail.approval.id, 'rejected')} disabled={busy} className="flex-1 bg-white border-2 border-rose-200 hover:bg-rose-50 text-rose-700 text-sm font-semibold py-2.5 rounded-lg disabled:opacity-40">{t('mkt.modal_reject')}</button>
-          <button onClick={() => onDecide(detail.approval.id, 'approved')} disabled={busy} className="flex-1 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-sm font-semibold py-2.5 rounded-lg shadow">{busy ? t('mkt.modal_processing') : t('mkt.modal_approve_publish')}</button>
+          {!isEditMode && (
+            <button onClick={() => onDecide(detail.approval.id, 'rejected')} disabled={busy || saving}
+              className="flex-1 bg-white border-2 border-rose-200 hover:bg-rose-50 text-rose-700 text-sm font-semibold py-2.5 rounded-lg disabled:opacity-40">
+              {t('mkt.modal_reject')}
+            </button>
+          )}
+          <button onClick={() => handleSaveAndApprove(detail.approval.id)} 
+            disabled={busy || saving || (detail.post?.requires_factcheck && !factcheckOK)}
+            className="flex-1 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-sm font-semibold py-2.5 rounded-lg shadow">
+            {saving ? t('mkt.modal_saving') : isEditMode ? t('mkt.modal_save_only') : t('mkt.modal_save_and_approve')}
+          </button>
         </div>
       </div>
     </div>
