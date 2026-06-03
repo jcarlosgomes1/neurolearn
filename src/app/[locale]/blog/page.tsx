@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
 import { fmtDate } from '@/lib/utils/cn';
 import { getTranslations } from 'next-intl/server';
+import { BlogClient } from './BlogClient';
 
 export const revalidate = 300;
 
@@ -48,7 +49,7 @@ export default async function BlogPage({ params }: { params: Promise<{ locale: s
   const sb = await createClient();
   const { data: posts } = await sb.from('nl_blog_posts')
     .select('id, slug, category, tags, featured_image_url, published_at, author_name')
-    .not('published_at', 'is', null).order('published_at', { ascending: false }).limit(24);
+    .not('published_at', 'is', null).order('published_at', { ascending: false }).limit(48);
   const ids = (posts || []).map((p: Post) => p.id);
   const { data: trs } = ids.length ? await sb.from('nl_blog_post_translations')
     .select('post_id, lang, title, excerpt, reading_time_minutes').in('post_id', ids) : { data: [] };
@@ -60,7 +61,7 @@ export default async function BlogPage({ params }: { params: Promise<{ locale: s
     }
   });
   const blocks = await getHomeBlocks(locale);
-  const enriched = ((posts as Post[]) || []).map((p) => ({ ...p, tr: trsByPost.get(p.id) }));
+  const enriched = ((posts as Post[]) || []).map((p) => ({ ...p, tr: trsByPost.get(p.id) || null }));
   const [hero, ...rest] = enriched;
 
   return (
@@ -110,33 +111,7 @@ export default async function BlogPage({ params }: { params: Promise<{ locale: s
               </section>
             )}
 
-            {rest.length > 0 && (
-              <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 sm:pb-24">
-                <div className="grid gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-3">
-                  {rest.filter((p) => p.tr).map((p) => (
-                    <Link key={p.id} href={`/blog/${p.slug}` as any} className="group flex flex-col bg-white rounded-xl overflow-hidden border border-slate-200 hover:border-slate-300 hover:shadow-lg transition-all duration-300">
-                      <CoverImage
-                        src={p.featured_image_url}
-                        alt={p.tr!.title}
-                        seed={p.slug}
-                        category={p.category}
-                        emoji={CATEGORY_EMOJI[p.category || ''] || '📝'}
-                        aspectRatio="16/10"
-                      />
-                      <div className="p-5 flex flex-col flex-1">
-                        {p.category && <span className="self-start text-[11px] font-semibold uppercase tracking-wider text-brand-700 bg-brand-50 px-2 py-0.5 rounded-full mb-3">{p.category}</span>}
-                        <h3 className="text-lg font-bold text-slate-900 leading-snug group-hover:text-brand-700 transition-colors line-clamp-2">{p.tr!.title}</h3>
-                        {p.tr!.excerpt && <p className="mt-2 text-sm text-slate-600 leading-relaxed line-clamp-3 flex-1">{p.tr!.excerpt}</p>}
-                        <div className="mt-4 flex items-center gap-2 text-xs text-slate-500">
-                          {p.published_at && <span>{fmtDate(p.published_at)}</span>}
-                          {p.tr!.reading_time_minutes && <><span>·</span><span>{p.tr!.reading_time_minutes} {t('blog.min_read')}</span></>}
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </section>
-            )}
+            {rest.length > 0 && <BlogClient posts={rest} />}
           </>
         )}
 

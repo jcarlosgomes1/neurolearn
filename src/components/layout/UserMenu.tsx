@@ -20,8 +20,10 @@ const AREA_LINK = {
 export function UserMenu({ email, area }: Props) {
   const t = useTranslations('user_menu');
   const [open, setOpen] = useState(false);
+  const [hovering, setHovering] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const hoverTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const close = (e: MouseEvent) => {
@@ -31,6 +33,15 @@ export function UserMenu({ email, area }: Props) {
     return () => document.removeEventListener('mousedown', close);
   }, []);
 
+  function handleEnter() {
+    if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
+    setHovering(true);
+  }
+  function handleLeave() {
+    hoverTimeout.current = setTimeout(() => setHovering(false), 150);
+  }
+
+  const isOpen = open || hovering;
   const areaLabel = t(`area.${area}` as any);
 
   async function signOut() {
@@ -62,7 +73,7 @@ export function UserMenu({ email, area }: Props) {
   }
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} className="relative" onMouseEnter={handleEnter} onMouseLeave={handleLeave}>
       <button
         onClick={() => setOpen(!open)}
         className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-slate-100 transition-colors"
@@ -74,16 +85,16 @@ export function UserMenu({ email, area }: Props) {
         <span className="hidden sm:inline text-sm text-slate-700">{areaLabel}</span>
       </button>
 
-      {open && (
+      {isOpen && (
         <div className="absolute right-0 mt-2 w-60 bg-white rounded-lg shadow-lg border border-slate-200 py-1 animate-fade-in z-50">
           <div className="px-4 py-2 border-b border-slate-100">
             <div className="text-xs text-slate-500">{areaLabel}</div>
             <div className="text-sm font-medium text-slate-900 truncate">{email}</div>
           </div>
-          <Link href={AREA_LINK[area] as any} className="block px-4 py-2 text-sm hover:bg-slate-50" onClick={() => setOpen(false)}>
+          <Link href={AREA_LINK[area] as any} className="block px-4 py-2 text-sm hover:bg-slate-50" onClick={() => { setOpen(false); setHovering(false); }}>
             {t('dashboard')}
           </Link>
-          <Link href={'/learn' as any} className="block px-4 py-2 text-sm hover:bg-slate-50" onClick={() => setOpen(false)}>
+          <Link href={'/learn' as any} className="block px-4 py-2 text-sm hover:bg-slate-50" onClick={() => { setOpen(false); setHovering(false); }}>
             {t('learning')}
           </Link>
           <div className="border-t border-slate-100 my-1" />
