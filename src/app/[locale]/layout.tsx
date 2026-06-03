@@ -2,8 +2,11 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { Toaster } from 'sonner';
+import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import { routing } from '@/i18n/routing';
 import { OnboardingGate } from '@/components/auth/OnboardingGate';
+import { CookieBanner } from '@/components/legal/CookieBanner';
 import '@/app/globals.css';
 
 export async function generateMetadata() {
@@ -48,7 +51,10 @@ export default async function LocaleLayout({
           <OnboardingGate />
           {children}
           <Toaster richColors position="top-right" />
+          <CookieBanner />
         </NextIntlClientProvider>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
