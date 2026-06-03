@@ -27,26 +27,21 @@ interface Progress {
   data: Record<string, unknown> | null;
 }
 
+interface CuratedLesson {
+  course: { id: string; title: string; subtitle: string | null; emoji: string | null; category: string | null; level: string | null };
+  lesson: { module_index: number; lesson_index: number; title: string; objective: string | null; duration_minutes: number; type: string | null };
+}
+
 const INTEREST_TOPICS = [
-  { slug: 'ai', emoji: '🤖' },
-  { slug: 'ml', emoji: '🧠' },
-  { slug: 'data', emoji: '📊' },
-  { slug: 'design', emoji: '🎨' },
-  { slug: 'web', emoji: '🌐' },
-  { slug: 'mobile', emoji: '📱' },
-  { slug: 'devops', emoji: '⚙️' },
-  { slug: 'product', emoji: '🚀' },
-  { slug: 'leadership', emoji: '🧭' },
-  { slug: 'business', emoji: '💼' },
-  { slug: 'security', emoji: '🔒' },
-  { slug: 'cloud', emoji: '☁️' },
+  { slug: 'ai', emoji: '🤖' }, { slug: 'ml', emoji: '🧠' }, { slug: 'data', emoji: '📊' },
+  { slug: 'design', emoji: '🎨' }, { slug: 'web', emoji: '🌐' }, { slug: 'mobile', emoji: '📱' },
+  { slug: 'devops', emoji: '⚙️' }, { slug: 'product', emoji: '🚀' }, { slug: 'leadership', emoji: '🧭' },
+  { slug: 'business', emoji: '💼' }, { slug: 'security', emoji: '🔒' }, { slug: 'cloud', emoji: '☁️' },
 ] as const;
 
 const GOALS = [
-  { slug: 'career', emoji: '📈' },
-  { slug: 'side_project', emoji: '🛠️' },
-  { slug: 'team', emoji: '👥' },
-  { slug: 'curiosity', emoji: '🔭' },
+  { slug: 'career', emoji: '📈' }, { slug: 'side_project', emoji: '🛠️' },
+  { slug: 'team', emoji: '👥' }, { slug: 'curiosity', emoji: '🔭' },
 ] as const;
 
 export function StudentWizard() {
@@ -62,9 +57,13 @@ export function StudentWizard() {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [saving, setSaving] = useState(false);
 
-  // Step-specific state
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [selectedGoal, setSelectedGoal] = useState<string | null>(null);
+
+  // Curated starter lesson
+  const [curated, setCurated] = useState<CuratedLesson | null>(null);
+  const [curatedLoading, setCuratedLoading] = useState(false);
+  const [curatedFetched, setCuratedFetched] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -74,7 +73,6 @@ export function StudentWizard() {
       if (cancelled) return;
       setUserId(user.id);
 
-      // Read existing profile to pre-fill
       const { data: profile } = await supabase
         .from('nl_profiles')
         .select('interests, goal, onboarding_completed_at')
@@ -83,13 +81,11 @@ export function StudentWizard() {
       if (profile?.interests) setSelectedInterests(profile.interests);
       if (profile?.goal) setSelectedGoal(profile.goal);
 
-      // If already completed, redirect home
       if (profile?.onboarding_completed_at) {
         router.replace('/' as any);
         return;
       }
 
-      // Load steps (with i18n)
       const { data: stepRows } = await supabase
         .from('nl_onboarding_flows')
         .select(`id, step_key, step_order, required, skippable, points, icon, estimated_seconds,
@@ -114,7 +110,6 @@ export function StudentWizard() {
       }));
       setSteps(mapped);
 
-      // Load existing progress
       const { data: progRows } = await supabase
         .from('nl_onboarding_progress')
         .select('step_key, status, data')
@@ -124,7 +119,6 @@ export function StudentWizard() {
       (progRows || []).forEach((p) => { pmap[p.step_key] = p as Progress; });
       setProgress(pmap);
 
-      // Resume at the first incomplete step
       const firstIncomplete = mapped.findIndex((s) => !pmap[s.step_key] || (pmap[s.step_key].status !== 'completed' && pmap[s.step_key].status !== 'skipped'));
       setCurrentIdx(firstIncomplete === -1 ? mapped.length - 1 : firstIncomplete);
       setLoading(false);
@@ -132,7 +126,32 @@ export function StudentWizard() {
     return () => { cancelled = true; };
   }, [supabase, router, locale]);
 
+  // Pré-carregar aula curada quando o user chega ao step "first_lesson" (ou perto)
   const current = steps[currentIdx];
+  useEffect(() => {
+    if (!current || curatedFetched) return;
+    if (current.step_key !== 'first_lesson') return;
+    setCuratedLoading(true);
+    setCuratedFetched(true);
+    (async () => {
+      try {
+        const { data, error } = await supabase.rpc('nl_pick_curated_starter_lesson', { p_lang: locale });
+        if (error) {
+          console.error('curated_lesson_error', error);
+          setCurated(null);
+        } else if (data?.ok) {
+          setCurated({ course: data.course, lesson: data.lesson });
+        } else {
+          setCurated(null);
+        }
+      } catch (e) {
+        console.error('curated_lesson_exception', e);
+        setCurated(null);
+      } finally {
+        setCuratedLoading(false);
+      }
+    })();
+  }, [current, supabase, locale, curatedFetched]);
 
   async function saveProgress(stepKey: string, status: Progress['status'], data: Record<string, unknown> | null) {
     if (!userId) return;
@@ -166,15 +185,26 @@ export function StudentWizard() {
   async function handleContinue() {
     if (!current) return;
 
-    // Per-step side effects
     if (current.step_key === 'interests') {
       if (selectedInterests.length < 1) { toast.error(t('onboarding.pick_at_least_one')); return; }
       await persistProfile({ interests: selectedInterests });
       await saveProgress('interests', 'completed', { interests: selectedInterests });
+      // Reset curated cache (interests podem ter mudado, próxima vez recurar)
+      setCuratedFetched(false);
+      setCurated(null);
     } else if (current.step_key === 'goal') {
       if (!selectedGoal) { toast.error(t('onboarding.pick_goal')); return; }
       await persistProfile({ goal: selectedGoal });
       await saveProgress('goal', 'completed', { goal: selectedGoal });
+    } else if (current.step_key === 'first_lesson' && curated) {
+      // Marca step completed E navega para a aula curada
+      await saveProgress('first_lesson', 'completed', {
+        course_id: curated.course.id,
+        module_index: curated.lesson.module_index,
+        lesson_index: curated.lesson.lesson_index,
+      });
+      router.push(`/learn/curso/${curated.course.id}/aula/${curated.lesson.module_index}/${curated.lesson.lesson_index}` as any);
+      return;
     } else {
       await saveProgress(current.step_key, 'completed', null);
     }
@@ -282,10 +312,48 @@ export function StudentWizard() {
 
             {current.step_key === 'first_lesson' && (
               <div className="rounded-xl bg-gradient-to-br from-violet-50 to-brand-50 border border-violet-100 p-5">
-                <p className="text-sm text-slate-700 mb-4">{t('onboarding.first_lesson.body')}</p>
-                <button onClick={() => handleLinkStep('/cursos')} className="text-sm font-semibold bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-lg">
-                  📚 {t('onboarding.first_lesson.cta')}
-                </button>
+                {curatedLoading ? (
+                  <div className="text-center py-6">
+                    <div className="inline-flex items-center gap-2 text-sm text-slate-600">
+                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.25" />
+                        <path d="M22 12a10 10 0 0 0-10-10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                      </svg>
+                      {t('onboarding.first_lesson.loading')}
+                    </div>
+                  </div>
+                ) : curated ? (
+                  <>
+                    <div className="text-[10px] uppercase tracking-wider font-semibold text-violet-600 mb-3">
+                      ✨ {t('onboarding.first_lesson.curated_label')}
+                    </div>
+                    <div className="bg-white/70 backdrop-blur rounded-lg p-4 border border-violet-100">
+                      <div className="flex items-start gap-3">
+                        <div className="text-3xl flex-shrink-0">{curated.course.emoji || '📚'}</div>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="font-bold text-slate-900 leading-tight">{curated.lesson.title}</h3>
+                          <div className="text-xs text-slate-500 mt-1">
+                            {t('onboarding.first_lesson.from_course')} · {curated.course.title}
+                          </div>
+                          {curated.lesson.objective && (
+                            <p className="text-sm text-slate-700 mt-3 leading-relaxed">{curated.lesson.objective}</p>
+                          )}
+                          <div className="flex items-center gap-2 mt-3 text-xs text-slate-500">
+                            <span>⏱ {t('onboarding.first_lesson.minutes', { n: curated.lesson.duration_minutes })}</span>
+                            {curated.course.level && <><span>·</span><span className="capitalize">{curated.course.level}</span></>}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm text-slate-700 mb-4">{t('onboarding.first_lesson.no_lesson')}</p>
+                    <button onClick={() => handleLinkStep('/cursos')} className="text-sm font-semibold bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-lg">
+                      📚 {t('onboarding.first_lesson.cta')}
+                    </button>
+                  </>
+                )}
               </div>
             )}
 
@@ -306,8 +374,16 @@ export function StudentWizard() {
                 {current.skip_label}
               </button>
             ) : <span />}
-            <button onClick={handleContinue} disabled={saving} className="bg-gradient-to-r from-brand-600 to-violet-600 hover:from-brand-700 hover:to-violet-700 text-white text-sm font-semibold px-6 py-2.5 rounded-lg shadow-sm disabled:opacity-50">
-              {saving ? t('onboarding.saving') : (current.cta_label || t('onboarding.continue'))}
+            <button
+              onClick={handleContinue}
+              disabled={saving || (current.step_key === 'first_lesson' && curatedLoading)}
+              className="bg-gradient-to-r from-brand-600 to-violet-600 hover:from-brand-700 hover:to-violet-700 text-white text-sm font-semibold px-6 py-2.5 rounded-lg shadow-sm disabled:opacity-50"
+            >
+              {saving
+                ? t('onboarding.saving')
+                : current.step_key === 'first_lesson' && curated
+                  ? t('onboarding.first_lesson.see_lesson_btn')
+                  : (current.cta_label || t('onboarding.continue'))}
             </button>
           </div>
         </div>
