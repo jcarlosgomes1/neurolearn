@@ -8,6 +8,7 @@ import { getHomeBlocks } from '@/lib/api/home-blocks';
 import { fmtDate } from '@/lib/utils/cn';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
+import { ArrowLeft } from 'lucide-react';
 
 export const revalidate = 300;
 
@@ -85,55 +86,70 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     <>
       <Header />
       <main className="bg-white min-h-screen">
-        <div className="relative">
-          <CoverImage
-            src={post.featured_image_url}
-            alt={translation.title}
-            seed={post.slug}
-            category={post.category}
-            emoji={heroEmoji}
-            aspectRatio="21/9"
-            priority
-            className="max-h-[600px]"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white pointer-events-none" />
-        </div>
+        {/* Hero — contained in same column as article (no full-bleed mismatch) */}
+        <section className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10">
+          <Link
+            href={'/blog' as any}
+            className="group inline-flex items-center gap-2 mb-5 px-3 py-1.5 rounded-full bg-white hover:bg-slate-50 border border-slate-200 hover:border-brand-300 text-slate-700 hover:text-brand-700 text-sm font-medium transition-all"
+          >
+            <ArrowLeft className="h-4 w-4 -ml-0.5 transition-transform group-hover:-translate-x-0.5" strokeWidth={2.5} />
+            <span>{t('blog.back')}</span>
+          </Link>
 
-        <article className="max-w-3xl mx-auto px-4 sm:px-6 py-10 sm:py-14 -mt-16 sm:-mt-24 relative">
-          <div className="bg-white rounded-2xl shadow-xl border border-slate-100 p-6 sm:p-10">
-            <Link href={'/blog' as any} className="text-sm text-brand-600 hover:underline">{t('blog.back')}</Link>
-
-            {post.category && <span className="inline-block mt-4 text-xs font-semibold uppercase tracking-wider text-brand-700 bg-brand-50 px-2.5 py-1 rounded-full">{post.category}</span>}
-
-            <h1 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 tracking-tight leading-[1.15] text-balance">{translation.title}</h1>
-
-            <div className="mt-5 flex flex-wrap items-center gap-2 text-sm text-slate-500">
-              {post.author_name && <span className="font-medium text-slate-700">{post.author_name}</span>}
-              {post.published_at && <><span>·</span><span>{fmtDate(post.published_at)}</span></>}
-              {translation.reading_time_minutes && <><span>·</span><span>{translation.reading_time_minutes} {t('blog.read_time_unit')}</span></>}
-            </div>
-
-            {translation.excerpt && (
-              <p className="mt-8 text-xl text-slate-600 leading-relaxed font-light italic border-l-4 border-brand-500 pl-5 text-pretty">{translation.excerpt}</p>
-            )}
-
-            <div className="mt-10 prose prose-slate prose-lg max-w-none">
-              <Markdown source={translation.content_md || ''} />
-            </div>
-
-            {post.tags && post.tags.length > 0 && (
-              <div className="mt-10 pt-6 border-t border-slate-100 flex flex-wrap gap-2">
-                {post.tags.map((tag: string) => (
-                  <span key={tag} className="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full">#{tag}</span>
-                ))}
-              </div>
-            )}
+          <div className="rounded-2xl overflow-hidden border border-slate-200">
+            <CoverImage
+              src={post.featured_image_url}
+              alt={translation.title}
+              seed={post.slug}
+              category={post.category}
+              emoji={heroEmoji}
+              aspectRatio="21/9"
+              priority
+            />
           </div>
+        </section>
+
+        {/* Article body — SAME max-w-4xl as hero */}
+        <article className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+          {post.category && (
+            <span className="inline-block text-xs font-semibold uppercase tracking-wider text-brand-700 bg-brand-50 px-2.5 py-1 rounded-full">
+              {post.category}
+            </span>
+          )}
+
+          <h1 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 tracking-tight leading-[1.15] text-balance">
+            {translation.title}
+          </h1>
+
+          <div className="mt-5 flex flex-wrap items-center gap-2 text-sm text-slate-500">
+            {post.author_name && <span className="font-medium text-slate-700">{post.author_name}</span>}
+            {post.published_at && <><span>·</span><span>{fmtDate(post.published_at)}</span></>}
+            {translation.reading_time_minutes && <><span>·</span><span>{translation.reading_time_minutes} {t('blog.read_time_unit')}</span></>}
+          </div>
+
+          {translation.excerpt && (
+            <p className="mt-8 text-xl text-slate-600 leading-relaxed font-light italic border-l-4 border-brand-500 pl-5 text-pretty">
+              {translation.excerpt}
+            </p>
+          )}
+
+          <div className="mt-10 prose prose-slate prose-lg max-w-none">
+            <Markdown source={translation.content_md || ''} />
+          </div>
+
+          {post.tags && post.tags.length > 0 && (
+            <div className="mt-10 pt-6 border-t border-slate-100 flex flex-wrap gap-2">
+              {post.tags.map((tag: string) => (
+                <span key={tag} className="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full">#{tag}</span>
+              ))}
+            </div>
+          )}
         </article>
 
+        {/* Related — SAME max-w-4xl, soft background to separate */}
         {related.length > 0 && (
-          <section className="bg-slate-50 py-12 sm:py-16">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <section className="bg-slate-50 border-t border-slate-100 py-12 sm:py-16">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6">
               <h2 className="text-2xl font-bold text-slate-900 mb-8">{t('blog.related')}</h2>
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {related.map((r) => (
