@@ -1,8 +1,8 @@
 'use client';
 
-import { Link, useRouter, usePathname } from '@/i18n/routing';
-import { useState, useEffect, useRef, useTransition } from 'react';
-import { useTranslations, useLocale } from 'next-intl';
+import { Link } from '@/i18n/routing';
+import { useState, useEffect, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 
@@ -11,26 +11,8 @@ interface Props {
   area: 'student' | 'instructor' | 'admin';
 }
 
-const AREA_LINK = {
-  student: '/learn',
-  instructor: '/teach',
-  admin: '/admin',
-} as const;
-
-const LANGS = [
-  { code: 'pt', flag: '🇵🇹', label: 'Português' },
-  { code: 'en', flag: '🇬🇧', label: 'English' },
-  { code: 'es', flag: '🇪🇸', label: 'Español' },
-  { code: 'fr', flag: '🇫🇷', label: 'Français' },
-] as const;
-
 export function UserMenu({ email, area }: Props) {
   const t = useTranslations('user_menu');
-  const tNav = useTranslations('nav');
-  const locale = useLocale();
-  const router = useRouter();
-  const pathname = usePathname();
-  const [pending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -42,20 +24,6 @@ export function UserMenu({ email, area }: Props) {
     document.addEventListener('mousedown', close);
     return () => document.removeEventListener('mousedown', close);
   }, []);
-
-  async function switchLang(newLocale: string) {
-    if (newLocale === locale) return;
-    // 1. Persistir preferência no perfil (mother lang)
-    try {
-      const sb = createClient();
-      await sb.rpc('nl_set_preferred_lang', { p_lang: newLocale });
-    } catch (e) { console.error('preferred_lang save failed:', e); }
-    // 2. Navegar
-    startTransition(() => {
-      router.replace(pathname, { locale: newLocale });
-    });
-    setOpen(false);
-  }
 
   const areaLabel = t(`area.${area}` as any);
 
@@ -99,48 +67,33 @@ export function UserMenu({ email, area }: Props) {
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-64 max-h-[calc(100vh-5rem)] overflow-y-auto bg-white rounded-lg shadow-lg border border-slate-200 py-1 animate-fade-in z-50">
+        <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-slate-200 py-1 animate-fade-in z-50">
           <div className="px-4 py-2 border-b border-slate-100">
             <div className="text-xs text-slate-500">{areaLabel}</div>
             <div className="text-sm font-medium text-slate-900 truncate">{email}</div>
           </div>
 
-          <Link href={AREA_LINK[area] as any} className="block px-4 py-2 text-sm hover:bg-slate-50"
-            onClick={() => setOpen(false)}>
-            {t('dashboard')}
-          </Link>
-          <Link href={'/learn' as any} className="block px-4 py-2 text-sm hover:bg-slate-50"
-            onClick={() => setOpen(false)}>
-            {t('learning')}
-          </Link>
+          {/* Admin: link directo para o cockpit em vez do account page */}
+          {area === 'admin' && (
+            <Link href={'/admin' as any} className="block px-4 py-2 text-sm hover:bg-slate-50" onClick={() => setOpen(false)}>
+              🎛 {t('admin_dashboard')}
+            </Link>
+          )}
+          {area === 'instructor' && (
+            <Link href={'/teach' as any} className="block px-4 py-2 text-sm hover:bg-slate-50" onClick={() => setOpen(false)}>
+              📊 {t('instructor_dashboard')}
+            </Link>
+          )}
 
-          <div className="border-t border-slate-100 my-1" />
-
-          <div className="px-4 pt-2 pb-1 text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
-            {tNav('language')}
-          </div>
-          <div className="px-3 pb-2 grid grid-cols-4 gap-1">
-            {LANGS.map((l) => {
-              const active = l.code === locale;
-              return (
-                <button
-                  key={l.code}
-                  onClick={() => switchLang(l.code)}
-                  disabled={pending || active}
-                  title={l.label}
-                  className={
-                    'flex flex-col items-center gap-0.5 py-1.5 rounded-md text-[10px] font-medium transition-colors ' +
-                    (active
-                      ? 'bg-brand-50 text-brand-700 ring-1 ring-brand-200 cursor-default'
-                      : 'hover:bg-slate-100 text-slate-600 disabled:opacity-50')
-                  }
-                >
-                  <span className="text-base leading-none">{l.flag}</span>
-                  <span>{l.code.toUpperCase()}</span>
-                </button>
-              );
-            })}
-          </div>
+          {/* O meu painel — sempre acessível: conta, identificação, preferências, faturação */}
+          <Link href={'/conta' as any} className="block px-4 py-2 text-sm hover:bg-slate-50" onClick={() => setOpen(false)}>
+            📊 {t('account')}
+          </Link>
+          
+          {/* A minha aprendizagem — cursos, certificados, notas */}
+          <Link href={'/learn' as any} className="block px-4 py-2 text-sm hover:bg-slate-50" onClick={() => setOpen(false)}>
+            📚 {t('learning')}
+          </Link>
 
           <div className="border-t border-slate-100 my-1" />
 

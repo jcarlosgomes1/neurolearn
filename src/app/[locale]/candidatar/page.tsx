@@ -17,7 +17,6 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
     { titleKey: 'apply.how.step1.title', bodyKey: 'apply.how.step1.body' },
     { titleKey: 'apply.how.step2.title', bodyKey: 'apply.how.step2.body' },
     { titleKey: 'apply.how.step3.title', bodyKey: 'apply.how.step3.body' },
-    { titleKey: 'apply.how.step4.title', bodyKey: 'apply.how.step4.body' },
   ];
 
   return (

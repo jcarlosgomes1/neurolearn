@@ -48,7 +48,19 @@ export function HeaderClient({ session }: { session: Session | null }) {
               className="w-9 h-9 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-700 transition-colors">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
             </Link>
-            {/* Language switcher só visível quando NÃO logado. Quando logado, está dentro do UserMenu. */}
+
+            {/* CTA destacado "Ensina connosco" — só para não-instrutores e não-admins (não esconde demais o teach) */}
+            {(!session || session.area === 'student') && (
+              <Link
+                href={'/candidatar' as any}
+                className="hidden md:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-semibold bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 text-white transition-all shadow-sm hover:shadow"
+              >
+                <span>🎓</span>
+                <span>{t('nav.teach_cta')}</span>
+              </Link>
+            )}
+
+            {/* Language switcher só visível quando NÃO logado. Quando logado, está em /conta. */}
             {!session && (
               <div className="hidden sm:block"><LanguageSwitcher /></div>
             )}
@@ -96,11 +108,11 @@ export function HeaderClient({ session }: { session: Session | null }) {
                   </div>
                 </div>
                 <div className="mt-3 grid grid-cols-2 gap-2">
-                  <Link href={(session.area === 'admin' ? '/admin' : session.area === 'instructor' ? '/teach' : '/learn') as any} className="text-sm bg-white border border-slate-200 hover:border-slate-300 rounded-lg py-2 text-center font-medium text-slate-700">
-                    {t('nav.dashboard')}
+                  <Link href={'/conta' as any} className="text-sm bg-white border border-slate-200 hover:border-slate-300 rounded-lg py-2 text-center font-medium text-slate-700">
+                    {t('user_menu.account')}
                   </Link>
                   <Link href={'/learn' as any} className="text-sm bg-white border border-slate-200 hover:border-slate-300 rounded-lg py-2 text-center font-medium text-slate-700">
-                    {t('nav.my_learning')}
+                    {t('user_menu.learning')}
                   </Link>
                 </div>
               </div>
@@ -113,13 +125,19 @@ export function HeaderClient({ session }: { session: Session | null }) {
                   {item.label}
                 </Link>
               ))}
+
+              {/* Ensina connosco também no mobile drawer com destaque */}
+              {(!session || session.area === 'student') && (
+                <Link href={'/candidatar' as any} className="flex items-center gap-3 px-3 py-3.5 rounded-lg hover:opacity-90 text-white font-semibold transition-colors bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 mt-2 shadow-sm">
+                  <span>🎓</span>
+                  <span>{t('nav.teach_cta')}</span>
+                </Link>
+              )}
+
               <div className="my-3 border-t border-slate-100" />
               <Link href={'/search' as any} className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-slate-50 text-slate-700 text-sm">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
                 {t('nav.search')}
-              </Link>
-              <Link href={'/candidatar' as any} className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-slate-50 text-slate-700 text-sm">
-                <span>🎓</span> {t('nav.teach')}
               </Link>
               <Link href={'/legal/faq' as any} className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-slate-50 text-slate-700 text-sm">
                 <span>❓</span> {t('footer.faq')}
@@ -129,7 +147,6 @@ export function HeaderClient({ session }: { session: Session | null }) {
               </Link>
             </nav>
 
-            {/* Mobile footer: language switcher SÓ se não-autenticado (autenticado usa UserMenu) */}
             <div className="px-5 py-4 border-t border-slate-100 space-y-3">
               {!session && (
                 <>

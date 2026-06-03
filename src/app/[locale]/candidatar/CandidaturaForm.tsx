@@ -1,13 +1,14 @@
 'use client';
 
-import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useState, useMemo } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
 import { SUPABASE_URL } from '@/lib/supabase/config';
 import { toast } from 'sonner';
+import { COUNTRIES, countryName, defaultCountryByLocale } from '@/lib/utils/countries';
 
 interface FormState {
-  full_name: string; email: string; phone: string;
-  country: string; city: string;
+  full_name: string; email: string; phone: string; phone_country_code: string;
+  country_code: string; city: string;
   linkedin_url: string; website_url: string; github_url: string;
   preferred_lang: string;
   expertise: string[]; years_experience: number | '';
@@ -20,19 +21,6 @@ interface FormState {
   demo_video_url: string; sample_lesson_url: string;
   portfolio_links: string; references_text: string;
 }
-
-const INITIAL: FormState = {
-  full_name: '', email: '', phone: '', country: 'Portugal', city: '',
-  linkedin_url: '', website_url: '', github_url: '',
-  preferred_lang: 'pt', expertise: [], years_experience: '',
-  job_title: '', current_company: '', teaching_experience: '',
-  proposed_course_title: '', proposed_course_description: '',
-  proposed_course_format: 'reading', proposed_course_language: 'pt',
-  proposed_target_audience: '', proposed_course_outline: '',
-  proposed_course_duration: '4-6h', proposed_course_price_eur: 49,
-  demo_video_url: '', sample_lesson_url: '',
-  portfolio_links: '', references_text: '',
-};
 
 const EXPERTISE_OPTIONS: Array<{ value: string; key: string }> = [
   { value: 'genai', key: 'apply.expertise.genai' },
@@ -54,8 +42,31 @@ const EXPERTISE_OPTIONS: Array<{ value: string; key: string }> = [
 
 export function CandidaturaForm() {
   const t = useTranslations();
+  const locale = useLocale();
+
+  // Initial defaults baseado no locale do user
+  const initial: FormState = useMemo(() => {
+    const defaultCountry = defaultCountryByLocale(locale);
+    const cc = COUNTRIES.find((c) => c.code === defaultCountry);
+    return {
+      full_name: '', email: '', phone: '',
+      phone_country_code: cc?.dial || '+351',
+      country_code: defaultCountry, city: '',
+      linkedin_url: '', website_url: '', github_url: '',
+      preferred_lang: locale,
+      expertise: [], years_experience: '',
+      job_title: '', current_company: '', teaching_experience: '',
+      proposed_course_title: '', proposed_course_description: '',
+      proposed_course_format: 'reading', proposed_course_language: locale,
+      proposed_target_audience: '', proposed_course_outline: '',
+      proposed_course_duration: '4-6h', proposed_course_price_eur: 49,
+      demo_video_url: '', sample_lesson_url: '',
+      portfolio_links: '', references_text: '',
+    };
+  }, [locale]);
+
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
-  const [form, setForm] = useState<FormState>(INITIAL);
+  const [form, setForm] = useState<FormState>(initial);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
@@ -94,6 +105,9 @@ export function CandidaturaForm() {
           action: 'submit',
           application: {
             ...form,
+            // backwards-compat: backend still expects `country` as label
+            country: countryName(form.country_code, 'pt'),
+            phone: form.phone ? `${form.phone_country_code} ${form.phone}` : '',
             expertise: expertiseLabels,
             years_experience: form.years_experience || null,
             proposed_course_price_eur: form.proposed_course_price_eur || null,
@@ -158,14 +172,29 @@ export function CandidaturaForm() {
             <div className="grid sm:grid-cols-2 gap-4">
               <div><label className="label">{t('apply.form.full_name_label')}</label><input className="input" value={form.full_name} onChange={(e) => update('full_name', e.target.value)} placeholder={t('apply.form.full_name_ph')} /></div>
               <div><label className="label">{t('apply.form.email_label')}</label><input type="email" className="input" value={form.email} onChange={(e) => update('email', e.target.value)} placeholder="email@example.com" /></div>
-              <div><label className="label">{t('apply.form.phone_label')}</label><input className="input" value={form.phone} onChange={(e) => update('phone', e.target.value)} placeholder="+351 9..." /></div>
+              
+              <div className="sm:col-span-2">
+                <label className="label">{t('apply.form.phone_label')}</label>
+                <div className="flex gap-2">
+                  <select className="input w-32" value={form.phone_country_code} onChange={(e) => update('phone_country_code', e.target.value)}>
+                    {COUNTRIES.map((c) => <option key={c.code} value={c.dial}>{c.dial} ({c.code})</option>)}
+                  </select>
+                  <input type="tel" className="input flex-1" value={form.phone} onChange={(e) => update('phone', e.target.value)} placeholder="912 345 678" />
+                </div>
+              </div>
+
               <div><label className="label">{t('apply.form.lang_label')}</label>
                 <select className="input" value={form.preferred_lang} onChange={(e) => update('preferred_lang', e.target.value)}>
                   <option value="pt">{t('apply.lang.pt')}</option><option value="en">{t('apply.lang.en')}</option><option value="es">{t('apply.lang.es')}</option><option value="fr">{t('apply.lang.fr')}</option>
                 </select>
               </div>
-              <div><label className="label">{t('apply.form.country_label')}</label><input className="input" value={form.country} onChange={(e) => update('country', e.target.value)} /></div>
-              <div><label className="label">{t('apply.form.city_label')}</label><input className="input" value={form.city} onChange={(e) => update('city', e.target.value)} placeholder="Lisboa" /></div>
+              <div>
+                <label className="label">{t('apply.form.country_label')}</label>
+                <select className="input" value={form.country_code} onChange={(e) => update('country_code', e.target.value)}>
+                  {COUNTRIES.map((c) => <option key={c.code} value={c.code}>{countryName(c.code, locale)}</option>)}
+                </select>
+              </div>
+              <div className="sm:col-span-2"><label className="label">{t('apply.form.city_label')}</label><input className="input" value={form.city} onChange={(e) => update('city', e.target.value)} placeholder="Lisboa" /></div>
             </div>
             <div className="pt-2"><label className="label">{t('apply.form.linkedin_label')}</label><input className="input" value={form.linkedin_url} onChange={(e) => update('linkedin_url', e.target.value)} placeholder="https://linkedin.com/in/..." /></div>
             <div className="grid sm:grid-cols-2 gap-4">
