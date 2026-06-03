@@ -9,38 +9,6 @@ import { relTime } from '@/lib/utils/cn';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 
-interface NavItem { href: string; emoji: string; labelKey: string; subKey?: string; highlight?: boolean; pendingCount?: number }
-interface NavGroup { key: string; titleKey: string; emoji: string; items: NavItem[] }
-
-const NAV: NavGroup[] = [
-  { key: 'courses', titleKey: 'cockpit.nav.g_courses', emoji: '📚', items: [
-    { href: '/admin/curso-ia/novo', emoji: '✨', labelKey: 'cockpit.sc.gen_ai', subKey: 'cockpit.sc.gen_ai_sub', highlight: true },
-    { href: '/admin/cursos', emoji: '📚', labelKey: 'cockpit.nav.courses', subKey: 'cockpit.nav.courses_sub' },
-    { href: '/admin/preview', emoji: '👀', labelKey: 'cockpit.sc.preview', subKey: 'cockpit.sc.preview_sub' },
-    { href: '/admin/video', emoji: '🎥', labelKey: 'cockpit.sc.video', subKey: 'cockpit.sc.video_sub' },
-  ] },
-  { key: 'content', titleKey: 'cockpit.nav.g_content', emoji: '📝', items: [
-    { href: '/admin/cms', emoji: '📝', labelKey: 'cockpit.sc.cms', subKey: 'cockpit.sc.cms_sub' },
-    { href: '/admin/marketing', emoji: '📢', labelKey: 'cockpit.sc.mkt', subKey: 'cockpit.sc.mkt_sub' },
-    { href: '/admin/social', emoji: '📣', labelKey: 'cockpit.sc.social', subKey: 'cockpit.sc.social_sub' },
-  ] },
-  { key: 'people', titleKey: 'cockpit.nav.g_people', emoji: '👥', items: [
-    { href: '/admin/instrutores', emoji: '👨‍🏫', labelKey: 'cockpit.instructors', subKey: 'cockpit.nav.instructors_sub' },
-    { href: '/admin/candidaturas', emoji: '🎓', labelKey: 'cockpit.sc.candidatos', subKey: 'cockpit.sc.candidatos_sub' },
-    { href: '/admin/instrutores-ai', emoji: '🤖', labelKey: 'cockpit.sc.ai_feat', subKey: 'cockpit.sc.ai_feat_sub' },
-  ] },
-  { key: 'ai', titleKey: 'cockpit.nav.g_ai', emoji: '🧠', items: [
-    { href: '/admin/ai-routing', emoji: '🎛', labelKey: 'cockpit.nav.ai_routing', subKey: 'cockpit.nav.ai_routing_sub' },
-    { href: '/admin/tutor-config', emoji: '🧠', labelKey: 'cockpit.sc.tutor', subKey: 'cockpit.sc.tutor_sub' },
-    { href: '/admin/agentes', emoji: '🤝', labelKey: 'cockpit.sc.agents', subKey: 'cockpit.sc.agents_sub' },
-  ] },
-  { key: 'system', titleKey: 'cockpit.nav.g_system', emoji: '⚙', items: [
-    { href: '/admin/jobs', emoji: '⚙', labelKey: 'cockpit.sc.jobs', subKey: 'cockpit.sc.jobs_sub' },
-    { href: '/admin/eventos', emoji: '📡', labelKey: 'cockpit.sc.events', subKey: 'cockpit.sc.events_sub' },
-    { href: '/admin/payments', emoji: '💳', labelKey: 'cockpit.sc.pay', subKey: 'cockpit.sc.pay_sub' },
-  ] },
-];
-
 const APPROVAL_GROUPS = [
   { key: 'courses', labelKey: 'cockpit.ag.courses', emoji: '📚', match: (a: string) => a.includes('course') },
   { key: 'blog', labelKey: 'cockpit.ag.blog', emoji: '📝', match: (a: string) => a.includes('blog') },
@@ -73,8 +41,6 @@ export function AdminCockpit() {
   const [dash, setDash] = useState<DashboardData | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [deciding, setDeciding] = useState<string | null>(null);
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({ courses: true, content: true, people: false, ai: true, system: false });
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   function load() {
     callAgentOps<{ dashboard: DashboardData }>('dashboard').then((r) => setDash(r.dashboard)).catch((e: Error) => setErr(e.message));
@@ -105,145 +71,95 @@ export function AdminCockpit() {
   const grouped = groupApprovals(approvals);
   const compliance = dash.compliance_issues || [];
 
-  const Sidebar = (
-    <nav className="space-y-4">
-      {NAV.map((g) => (
-        <div key={g.key} className="rounded-xl bg-white border border-slate-200 overflow-hidden">
-          <button onClick={() => setOpenGroups((s) => ({ ...s, [g.key]: !s[g.key] }))}
-            className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-50 transition-colors">
-            <span className="flex items-center gap-2 text-sm font-bold text-slate-900">
-              <span>{g.emoji}</span>{t(g.titleKey)}
-            </span>
-            <span className={`text-slate-400 transition-transform ${openGroups[g.key] ? 'rotate-90' : ''}`}>▸</span>
-          </button>
-          {openGroups[g.key] && (
-            <ul className="border-t border-slate-100 divide-y divide-slate-50">
-              {g.items.map((it) => (
-                <li key={it.href}>
-                  <Link href={it.href as any} onClick={() => setMobileNavOpen(false)}
-                    className={`flex items-start gap-2.5 px-4 py-2.5 hover:bg-slate-50 transition-colors ${it.highlight ? 'bg-gradient-to-r from-brand-50 to-purple-50' : ''}`}>
-                    <span className="text-base flex-shrink-0">{it.emoji}</span>
-                    <div className="min-w-0 flex-1">
-                      <div className={`font-medium text-sm ${it.highlight ? 'text-brand-700' : 'text-slate-900'}`}>{t(it.labelKey)}</div>
-                      {it.subKey && <div className="text-[11px] text-slate-500 mt-0.5 line-clamp-1">{t(it.subKey)}</div>}
-                    </div>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      ))}
-    </nav>
-  );
-
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 animate-fade-in">
-      <div className="flex items-start justify-between gap-3 mb-6">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">{t('cockpit.title')}</h1>
-          <p className="text-slate-500 text-sm mt-1">{t('cockpit.subtitle')}</p>
-        </div>
-        <button onClick={() => setMobileNavOpen((v) => !v)}
-          className="lg:hidden text-sm bg-white border border-slate-200 rounded-lg px-3 py-2 font-medium">
-          {mobileNavOpen ? '✕' : '☰'} {t('cockpit.nav.menu')}
-        </button>
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 animate-fade-in">
+      <div>
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">{t('cockpit.title')}</h1>
+        <p className="text-slate-500 text-sm mt-1">{t('cockpit.subtitle')}</p>
       </div>
 
-      {/* Mobile sidebar (overlay) */}
-      {mobileNavOpen && (
-        <div className="lg:hidden mb-6">{Sidebar}</div>
+      {/* KPIs */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <Stat icon="🎓" label={t('cockpit.students')} value={dash.students} accent="brand" />
+        <Stat icon="📚" label={t('cockpit.published_courses')} value={dash.courses_published} accent="emerald" href="/admin/cursos" />
+        <Stat icon="⚙" label={t('cockpit.pending_jobs')} value={dash.pending_jobs} accent={dash.pending_jobs > 0 ? 'amber' : 'slate'} href="/admin/jobs" />
+        <Stat icon="✋" label={t('cockpit.pending_approvals')} value={dash.pending_approvals} accent={dash.pending_approvals > 0 ? 'amber' : 'slate'} href="#aprovacoes" />
+      </div>
+
+      {/* Pending approvals */}
+      <section id="aprovacoes" className="scroll-mt-20">
+        <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">{t('cockpit.approvals_pending')} {approvals.length > 0 && <span className="ml-1 text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full normal-case">{approvals.length}</span>}</h2>
+        {approvals.length === 0 ? (
+          <div className="bg-white rounded-xl border border-slate-200 p-6 text-sm text-slate-500">{t('cockpit.approvals_empty')}</div>
+        ) : (
+          <div className="space-y-4">
+            {APPROVAL_GROUPS.filter((g) => grouped[g.key].length > 0).map((g) => (
+              <div key={g.key} className="bg-white rounded-xl border border-slate-200 p-5">
+                <h3 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">{g.emoji} {t(g.labelKey)} <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">{grouped[g.key].length}</span></h3>
+                <ul className="space-y-3">
+                  {grouped[g.key].map((a) => (
+                    <li key={a.id} className="p-3 rounded-lg border border-slate-100 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="font-medium text-slate-900 text-sm">{(a.params?.course_title as string) || (a.params?.title as string) || a.action}</div>
+                        {a.reason && <div className="text-xs text-slate-500 line-clamp-2">{a.reason}</div>}
+                        <div className="text-xs text-slate-400 mt-0.5">{a.created_at && relTime(a.created_at)}</div>
+                      </div>
+                      <div className="flex flex-wrap gap-2 flex-shrink-0">
+                        <Link href={`/admin/aprovacao/${a.id}` as any} className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-md font-medium">👁 {t('cockpit.view')}</Link>
+                        <button onClick={() => decide(a.id, 'approved')} disabled={deciding === a.id} className="text-xs bg-emerald-600 text-white px-3 py-1.5 rounded-md hover:bg-emerald-700 disabled:opacity-50">✓ {t('cockpit.approve')}</button>
+                        <button onClick={() => decide(a.id, 'rejected')} disabled={deciding === a.id} className="text-xs bg-white border border-slate-300 text-slate-700 px-3 py-1.5 rounded-md hover:bg-slate-50 disabled:opacity-50">{t('cockpit.reject')}</button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Content + Jobs */}
+      <div className="grid md:grid-cols-2 gap-6">
+        <section className="bg-white rounded-xl border border-slate-200 p-5">
+          <h2 className="font-semibold text-slate-900 mb-4">{t('cockpit.content')}</h2>
+          <ul className="space-y-2 text-sm">
+            <li className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-slate-600">{t('cockpit.blog_published')}</span><span className="font-semibold tabular-nums">{dash.published_blog_posts}</span></li>
+            <li className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-slate-600">{t('cockpit.blog_pending')}</span><span className="font-semibold tabular-nums">{dash.pending_blog_posts}</span></li>
+            <li className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-slate-600">{t('cockpit.topics_queue')}</span><span className="font-semibold tabular-nums">{dash.queued_blog_topics}</span></li>
+            <li className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-slate-600">{t('cockpit.social_review')}</span><span className="font-semibold tabular-nums">{dash.social_pending_review}</span></li>
+            <li className="flex justify-between py-1.5"><span className="text-slate-600">{t('cockpit.legal_active')}</span><span className="font-semibold tabular-nums">{dash.legal_pages_active}</span></li>
+          </ul>
+        </section>
+
+        <section className="bg-white rounded-xl border border-slate-200 p-5">
+          <h2 className="font-semibold text-slate-900 mb-4">{t('cockpit.jobs_24h')}</h2>
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <div><div className="text-2xl font-bold text-emerald-600 tabular-nums">{dash.completed_jobs_24h}</div><div className="text-xs text-slate-500">{t('cockpit.completed')}</div></div>
+            <div><div className="text-2xl font-bold text-amber-600 tabular-nums">{dash.running_jobs}</div><div className="text-xs text-slate-500">{t('cockpit.running')}</div></div>
+            <div><div className="text-2xl font-bold text-rose-600 tabular-nums">{dash.failed_jobs_24h}</div><div className="text-xs text-slate-500">{t('cockpit.failed')}</div></div>
+          </div>
+          <div className="mt-4 pt-4 border-t border-slate-100 text-xs text-slate-500">{t('cockpit.crons_audit', { c: dash.active_crons, a: dash.audit_entries_24h })}</div>
+          <Link href={'/admin/agentes' as any} className="mt-3 inline-block text-xs text-brand-600 hover:underline">→ {t('cockpit.nav.see_full_observability')}</Link>
+        </section>
+      </div>
+
+      {/* Compliance */}
+      {compliance.length > 0 && (
+        <section className="bg-white rounded-xl border border-slate-200 p-5">
+          <h2 className="font-semibold text-slate-900 mb-4">⚠ {t('cockpit.compliance')}</h2>
+          <ul className="space-y-2">
+            {compliance.slice(0, 5).map((i) => (
+              <li key={i.id} className="flex items-start gap-3 py-2 border-b border-slate-100 last:border-0">
+                <span className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${i.severity === 'critical' ? 'bg-rose-500' : i.severity === 'high' ? 'bg-orange-500' : i.severity === 'warning' ? 'bg-amber-500' : 'bg-slate-400'}`} />
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-slate-900 text-sm">{i.title}</div>
+                  {i.recommendation && <div className="text-xs text-slate-500 mt-0.5">{i.recommendation}</div>}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
-
-      <div className="grid lg:grid-cols-[280px_1fr] gap-6">
-        {/* Desktop sidebar */}
-        <aside className="hidden lg:block">{Sidebar}</aside>
-
-        <div className="space-y-6 min-w-0">
-          {/* KPIs */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <Stat icon="🎓" label={t('cockpit.students')} value={dash.students} accent="brand" />
-            <Stat icon="📚" label={t('cockpit.published_courses')} value={dash.courses_published} accent="emerald" href="/admin/cursos" />
-            <Stat icon="⚙" label={t('cockpit.pending_jobs')} value={dash.pending_jobs} accent={dash.pending_jobs > 0 ? 'amber' : 'slate'} href="/admin/jobs" />
-            <Stat icon="✋" label={t('cockpit.pending_approvals')} value={dash.pending_approvals} accent={dash.pending_approvals > 0 ? 'amber' : 'slate'} href="#aprovacoes" />
-          </div>
-
-          {/* Pending approvals */}
-          <section id="aprovacoes" className="scroll-mt-20">
-            <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">{t('cockpit.approvals_pending')} {approvals.length > 0 && <span className="ml-1 text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full normal-case">{approvals.length}</span>}</h2>
-            {approvals.length === 0 ? (
-              <div className="bg-white rounded-xl border border-slate-200 p-6 text-sm text-slate-500">{t('cockpit.approvals_empty')}</div>
-            ) : (
-              <div className="space-y-4">
-                {APPROVAL_GROUPS.filter((g) => grouped[g.key].length > 0).map((g) => (
-                  <div key={g.key} className="bg-white rounded-xl border border-slate-200 p-5">
-                    <h3 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">{g.emoji} {t(g.labelKey)} <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">{grouped[g.key].length}</span></h3>
-                    <ul className="space-y-3">
-                      {grouped[g.key].map((a) => (
-                        <li key={a.id} className="p-3 rounded-lg border border-slate-100 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-                          <div className="min-w-0 flex-1">
-                            <div className="font-medium text-slate-900 text-sm">{(a.params?.course_title as string) || (a.params?.title as string) || a.action}</div>
-                            {a.reason && <div className="text-xs text-slate-500 line-clamp-2">{a.reason}</div>}
-                            <div className="text-xs text-slate-400 mt-0.5">{a.created_at && relTime(a.created_at)}</div>
-                          </div>
-                          <div className="flex flex-wrap gap-2 flex-shrink-0">
-                            <Link href={`/admin/aprovacao/${a.id}` as any} className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-md font-medium">👁 {t('cockpit.view')}</Link>
-                            <button onClick={() => decide(a.id, 'approved')} disabled={deciding === a.id} className="text-xs bg-emerald-600 text-white px-3 py-1.5 rounded-md hover:bg-emerald-700 disabled:opacity-50">✓ {t('cockpit.approve')}</button>
-                            <button onClick={() => decide(a.id, 'rejected')} disabled={deciding === a.id} className="text-xs bg-white border border-slate-300 text-slate-700 px-3 py-1.5 rounded-md hover:bg-slate-50 disabled:opacity-50">{t('cockpit.reject')}</button>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-
-          {/* Content + Jobs grids */}
-          <div className="grid md:grid-cols-2 gap-6">
-            <section className="bg-white rounded-xl border border-slate-200 p-5">
-              <h2 className="font-semibold text-slate-900 mb-4">{t('cockpit.content')}</h2>
-              <ul className="space-y-2 text-sm">
-                <li className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-slate-600">{t('cockpit.blog_published')}</span><span className="font-semibold tabular-nums">{dash.published_blog_posts}</span></li>
-                <li className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-slate-600">{t('cockpit.blog_pending')}</span><span className="font-semibold tabular-nums">{dash.pending_blog_posts}</span></li>
-                <li className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-slate-600">{t('cockpit.topics_queue')}</span><span className="font-semibold tabular-nums">{dash.queued_blog_topics}</span></li>
-                <li className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-slate-600">{t('cockpit.social_review')}</span><span className="font-semibold tabular-nums">{dash.social_pending_review}</span></li>
-                <li className="flex justify-between py-1.5"><span className="text-slate-600">{t('cockpit.legal_active')}</span><span className="font-semibold tabular-nums">{dash.legal_pages_active}</span></li>
-              </ul>
-            </section>
-
-            <section className="bg-white rounded-xl border border-slate-200 p-5">
-              <h2 className="font-semibold text-slate-900 mb-4">{t('cockpit.jobs_24h')}</h2>
-              <div className="grid grid-cols-3 gap-2 text-center">
-                <div><div className="text-2xl font-bold text-emerald-600 tabular-nums">{dash.completed_jobs_24h}</div><div className="text-xs text-slate-500">{t('cockpit.completed')}</div></div>
-                <div><div className="text-2xl font-bold text-amber-600 tabular-nums">{dash.running_jobs}</div><div className="text-xs text-slate-500">{t('cockpit.running')}</div></div>
-                <div><div className="text-2xl font-bold text-rose-600 tabular-nums">{dash.failed_jobs_24h}</div><div className="text-xs text-slate-500">{t('cockpit.failed')}</div></div>
-              </div>
-              <div className="mt-4 pt-4 border-t border-slate-100 text-xs text-slate-500">{t('cockpit.crons_audit', { c: dash.active_crons, a: dash.audit_entries_24h })}</div>
-              <Link href={'/admin/agentes' as any} className="mt-3 inline-block text-xs text-brand-600 hover:underline">→ {t('cockpit.nav.see_full_observability')}</Link>
-            </section>
-          </div>
-
-          {/* Compliance */}
-          {compliance.length > 0 && (
-            <section className="bg-white rounded-xl border border-slate-200 p-5">
-              <h2 className="font-semibold text-slate-900 mb-4">⚠ {t('cockpit.compliance')}</h2>
-              <ul className="space-y-2">
-                {compliance.slice(0, 5).map((i) => (
-                  <li key={i.id} className="flex items-start gap-3 py-2 border-b border-slate-100 last:border-0">
-                    <span className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${i.severity === 'critical' ? 'bg-rose-500' : i.severity === 'high' ? 'bg-orange-500' : i.severity === 'warning' ? 'bg-amber-500' : 'bg-slate-400'}`} />
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium text-slate-900 text-sm">{i.title}</div>
-                      {i.recommendation && <div className="text-xs text-slate-500 mt-0.5">{i.recommendation}</div>}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-        </div>
-      </div>
     </div>
   );
 }

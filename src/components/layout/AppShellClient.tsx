@@ -20,6 +20,7 @@ interface NavItem { href: string; labelKey: string; emoji: string; groupKey: str
 const ADMIN_NAV: NavItem[] = [
   { href: '/admin', labelKey: 'shell.admin.cockpit', emoji: '🎛', groupKey: 'shell.group.overview' },
   { href: '/admin/eventos', labelKey: 'shell.admin.events', emoji: '📡', groupKey: 'shell.group.overview' },
+  { href: '/admin/agentes', labelKey: 'shell.admin.agentes', emoji: '🤝', groupKey: 'shell.group.overview' },
   { href: '/admin/cursos', labelKey: 'shell.admin.courses', emoji: '📚', groupKey: 'shell.group.content' },
   { href: '/admin/preview', labelKey: 'shell.admin.preview', emoji: '👀', groupKey: 'shell.group.content' },
   { href: '/admin/cms', labelKey: 'shell.admin.cms', emoji: '📝', groupKey: 'shell.group.content' },
@@ -28,6 +29,7 @@ const ADMIN_NAV: NavItem[] = [
   { href: '/admin/candidaturas', labelKey: 'shell.admin.applications', emoji: '🎓', groupKey: 'shell.group.people' },
   { href: '/admin/instrutores', labelKey: 'shell.admin.instructors', emoji: '👨‍🏫', groupKey: 'shell.group.people' },
   { href: '/admin/instrutores-ai', labelKey: 'shell.admin.ai_features', emoji: '🧠', groupKey: 'shell.group.people' },
+  { href: '/admin/ai-routing', labelKey: 'shell.admin.ai_routing', emoji: '🎚', groupKey: 'shell.group.people' },
   { href: '/admin/payments', labelKey: 'shell.admin.payments', emoji: '💳', groupKey: 'shell.group.operations' },
   { href: '/admin/video', labelKey: 'shell.admin.video', emoji: '🎥', groupKey: 'shell.group.operations' },
   { href: '/admin/jobs', labelKey: 'shell.admin.jobs', emoji: '⚙️', groupKey: 'shell.group.operations' },

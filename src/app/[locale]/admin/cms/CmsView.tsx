@@ -7,12 +7,36 @@ import { SUPABASE_URL } from '@/lib/supabase/config';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 
-interface HomeBlock { slug: string; lang: string; data: any; updated_at: string }
-interface LegalPage { id: number; page_slug: string; lang_code: string; title: string; last_updated_label: string | null; is_active: boolean; updated_at: string }
+interface HomeBlock { slug: string; lang: string; data: Record<string, unknown>; updated_at: string }
+interface LegalPage { id: number; page_slug: string; lang_code: string; title: string; content_md: string; last_updated_label: string | null; is_active: boolean; updated_at: string }
 
-interface EditingState { source: string; slug: string; lang: string; data: any }
+interface EditingState { source: string; slug: string; lang: string; data: Record<string, unknown> }
 
 const LANG_LABEL: Record<string, string> = { pt: '🇵🇹 PT', en: '🇬🇧 EN', es: '🇪🇸 ES', fr: '🇫🇷 FR' };
+
+// Field label hints (per slug.key) — shown in UI as friendly labels
+const FIELD_LABELS: Record<string, string> = {
+  title: 'Título',
+  subtitle: 'Subtítulo',
+  sub: 'Subtítulo',
+  badge: 'Badge / Etiqueta',
+  trust: 'Linha de confiança',
+  note: 'Nota',
+  btn1: 'Botão primário',
+  btn2: 'Botão secundário',
+  btn_primary: 'Botão primário',
+  btn_secondary: 'Botão secundário',
+  cta: 'Call to action',
+  popular: 'Etiqueta "Popular"',
+  brand: 'Nome da marca',
+  items: 'Items',
+  content_md: 'Conteúdo (Markdown)',
+  last_updated_label: 'Etiqueta de última atualização',
+};
+
+function friendlyLabel(key: string): string {
+  return FIELD_LABELS[key] || key.replace(/_/g, ' ').replace(/^./, (c) => c.toUpperCase());
+}
 
 export function CmsView() {
   const t = useTranslations('cms_admin');
@@ -35,7 +59,7 @@ export function CmsView() {
     footer_brand: { label: t('slug.footer_brand'), emoji: '🦶', group: t('group_footer') },
   };
 
-  async function callApi(action: string, body: any = {}) {
+  async function callApi(action: string, body: Record<string, unknown> = {}) {
     const sb = createClient();
     const { data: { session } } = await sb.auth.getSession();
     if (!session) throw new Error(t('err_no_session'));
@@ -54,7 +78,7 @@ export function CmsView() {
       const data = await callApi('list');
       setHomeBlocks(data.home_blocks || []);
       setLegalPages(data.legal_pages || []);
-    } catch (e: any) { toast.error(e.message); }
+    } catch (e) { toast.error(e instanceof Error ? e.message : String(e)); }
     finally { setLoading(false); }
   }
   useEffect(() => { load(); }, []);
@@ -67,18 +91,18 @@ export function CmsView() {
         ? data.item.data 
         : { title: data.item.title, content_md: data.item.content_md, last_updated_label: data.item.last_updated_label };
       setEditing({ source, slug, lang, data: editData });
-    } catch (e: any) { toast.error(e.message); }
+    } catch (e) { toast.error(e instanceof Error ? e.message : String(e)); }
   }
 
   async function save() {
     if (!editing) return;
     setSaving(true);
     try {
-      await callApi('save', editing);
+      await callApi('save', { ...editing });
       toast.success(t('toast_saved'));
       setEditing(null);
       load();
-    } catch (e: any) { toast.error(e.message); }
+    } catch (e) { toast.error(e instanceof Error ? e.message : String(e)); }
     finally { setSaving(false); }
   }
 
@@ -86,14 +110,14 @@ export function CmsView() {
     setTranslating(`${source}:${slug}`);
     try {
       const data = await callApi('auto_translate', { source, slug });
-      const okLangs = Object.entries(data.translated).filter(([, v]) => v).map(([k]) => k.toUpperCase());
+      const okLangs = Object.entries(data.translated as Record<string, boolean>).filter(([, v]) => v).map(([k]) => k.toUpperCase());
       toast.success(t('toast_translated', { langs: okLangs.join(', ') }));
       load();
-    } catch (e: any) { toast.error(e.message); }
+    } catch (e) { toast.error(e instanceof Error ? e.message : String(e)); }
     finally { setTranslating(null); }
   }
 
-  function updateEditingData(newData: any) {
+  function updateEditingData(newData: Record<string, unknown>) {
     if (!editing) return;
     setEditing({ ...editing, data: newData });
   }
@@ -187,16 +211,6 @@ export function CmsView() {
               })}
             </div>
           </section>
-
-          <section className="mt-8 bg-blue-50 border border-blue-200 rounded-xl p-5">
-            <h3 className="font-bold text-slate-900 mb-2">{t('howto_title')}</h3>
-            <ol className="space-y-1.5 text-sm text-slate-700">
-              <li><strong>1.</strong> {t('howto_1')}</li>
-              <li><strong>2.</strong> {t('howto_2')}</li>
-              <li><strong>3.</strong> {t('howto_3')}</li>
-              <li><strong>4.</strong> {t('howto_4')}</li>
-            </ol>
-          </section>
         </>
       )}
 
@@ -205,60 +219,272 @@ export function CmsView() {
   );
 }
 
-interface EditModalProps { editing: EditingState; onClose: () => void; onSave: () => void; onChange: (data: any) => void; saving: boolean }
+interface EditModalProps { editing: EditingState; onClose: () => void; onSave: () => void; onChange: (data: Record<string, unknown>) => void; saving: boolean }
 
 function EditModal({ editing, onClose, onSave, onChange, saving }: EditModalProps) {
   const t = useTranslations('cms_admin');
+  const [mode, setMode] = useState<'form' | 'json'>('form');
   const [jsonText, setJsonText] = useState(JSON.stringify(editing.data, null, 2));
-  const [error, setError] = useState<string | null>(null);
+  const [jsonError, setJsonError] = useState<string | null>(null);
 
-  function tryParse(): boolean {
+  function setKey(key: string, value: unknown) {
+    onChange({ ...editing.data, [key]: value });
+  }
+  function setJsonAndSync(text: string) {
+    setJsonText(text);
+    try {
+      const parsed = JSON.parse(text);
+      onChange(parsed);
+      setJsonError(null);
+    } catch (e) { setJsonError(e instanceof Error ? e.message : String(e)); }
+  }
+  function switchToJson() {
+    setJsonText(JSON.stringify(editing.data, null, 2));
+    setJsonError(null);
+    setMode('json');
+  }
+  function switchToForm() {
     try {
       const parsed = JSON.parse(jsonText);
-      setError(null);
       onChange(parsed);
-      return true;
-    } catch (e: any) {
-      setError(e.message);
-      return false;
-    }
-  }
-
-  function handleSave() {
-    if (tryParse()) onSave();
+      setJsonError(null);
+      setMode('form');
+    } catch (e) { setJsonError(e instanceof Error ? e.message : String(e)); }
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
-        <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
-          <div>
-            <div className="font-bold text-slate-900">{t('modal_title', { slug: editing.slug })}</div>
-            <div className="text-xs text-slate-500 font-mono">{editing.source} · {editing.lang.toUpperCase()}</div>
+    <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[95vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+        <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <div className="font-bold text-slate-900 truncate">{t('modal_title', { slug: editing.slug })}</div>
+            <div className="text-xs text-slate-500 font-mono truncate">{editing.source} · {editing.lang.toUpperCase()}</div>
           </div>
-          <button onClick={onClose} className="w-9 h-9 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-600">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M6 6l12 12M6 18L18 6"/></svg>
-          </button>
+          <div className="flex items-center gap-2">
+            <div className="flex bg-slate-100 rounded-md p-0.5 text-[11px] font-medium">
+              <button onClick={mode === 'json' ? switchToForm : undefined}
+                className={`px-2 py-1 rounded ${mode === 'form' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}>
+                {t('mode_form')}
+              </button>
+              <button onClick={mode === 'form' ? switchToJson : undefined}
+                className={`px-2 py-1 rounded ${mode === 'json' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}>
+                {t('mode_json')}
+              </button>
+            </div>
+            <button onClick={onClose} className="w-9 h-9 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-600">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M6 6l12 12M6 18L18 6"/></svg>
+            </button>
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto p-5">
-          <p className="text-xs text-slate-500 mb-2">{t('modal_desc')}</p>
-          <textarea
-            value={jsonText}
-            onChange={(e) => { setJsonText(e.target.value); setError(null); }}
-            onBlur={tryParse}
-            className="w-full h-96 font-mono text-xs p-3 bg-slate-50 border border-slate-200 rounded-lg focus:border-brand-400 focus:outline-none"
-            spellCheck={false}
-          />
-          {error && <p className="mt-2 text-sm text-rose-600">{t('json_invalid', { err: error })}</p>}
+          {mode === 'form' ? (
+            <FieldRenderer data={editing.data} onChange={(d) => onChange(d)} />
+          ) : (
+            <>
+              <p className="text-xs text-slate-500 mb-2">{t('modal_desc_json')}</p>
+              <textarea
+                value={jsonText}
+                onChange={(e) => setJsonAndSync(e.target.value)}
+                className="w-full h-96 font-mono text-xs p-3 bg-slate-50 border border-slate-200 rounded-lg focus:border-brand-400 focus:outline-none"
+                spellCheck={false}
+              />
+              {jsonError && <p className="mt-2 text-sm text-rose-600">{t('json_invalid', { err: jsonError })}</p>}
+            </>
+          )}
         </div>
 
         <div className="px-5 py-4 border-t border-slate-200 flex justify-end gap-2">
           <button onClick={onClose} disabled={saving} className="text-sm font-medium px-4 py-2 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700">{t('cancel')}</button>
-          <button onClick={handleSave} disabled={saving || !!error} className="text-sm font-medium px-4 py-2 rounded-md bg-brand-600 hover:bg-brand-700 text-white disabled:opacity-50">
+          <button onClick={onSave} disabled={saving || !!jsonError} className="text-sm font-medium px-4 py-2 rounded-md bg-brand-600 hover:bg-brand-700 text-white disabled:opacity-50">
             {saving ? t('saving') : t('save')}
           </button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// === Recursive field renderer ===
+function FieldRenderer({ data, onChange }: { data: Record<string, unknown>; onChange: (d: Record<string, unknown>) => void }) {
+  return (
+    <div className="space-y-4">
+      {Object.entries(data).map(([key, value]) => (
+        <FieldEditor key={key} fieldKey={key} value={value} onChange={(v) => onChange({ ...data, [key]: v })} />
+      ))}
+    </div>
+  );
+}
+
+function FieldEditor({ fieldKey, value, onChange }: { fieldKey: string; value: unknown; onChange: (v: unknown) => void }) {
+  const label = friendlyLabel(fieldKey);
+
+  // String
+  if (typeof value === 'string') {
+    const isLong = value.length > 80 || value.includes('\n');
+    const isMarkdown = fieldKey === 'content_md';
+    if (isMarkdown) {
+      return (
+        <div>
+          <label className="block text-xs font-semibold text-slate-700 mb-1">{label}</label>
+          <textarea value={value} onChange={(e) => onChange(e.target.value)} rows={18}
+            className="w-full font-mono text-xs p-3 bg-slate-50 border border-slate-200 rounded-lg focus:border-brand-400 focus:outline-none"
+            spellCheck={false} />
+          <p className="text-[10px] text-slate-400 mt-1">Markdown · suporta # ## ### **negrito** *itálico* [link](url) - listas</p>
+        </div>
+      );
+    }
+    if (isLong) {
+      return (
+        <div>
+          <label className="block text-xs font-semibold text-slate-700 mb-1">{label}</label>
+          <textarea value={value} onChange={(e) => onChange(e.target.value)} rows={3}
+            className="w-full text-sm p-2 bg-white border border-slate-200 rounded-lg focus:border-brand-400 focus:outline-none" />
+        </div>
+      );
+    }
+    return (
+      <div>
+        <label className="block text-xs font-semibold text-slate-700 mb-1">{label}</label>
+        <input type="text" value={value} onChange={(e) => onChange(e.target.value)}
+          className="w-full text-sm p-2 bg-white border border-slate-200 rounded-lg focus:border-brand-400 focus:outline-none" />
+      </div>
+    );
+  }
+
+  // Number
+  if (typeof value === 'number') {
+    return (
+      <div>
+        <label className="block text-xs font-semibold text-slate-700 mb-1">{label}</label>
+        <input type="number" value={value} onChange={(e) => onChange(Number(e.target.value))}
+          className="w-full text-sm p-2 bg-white border border-slate-200 rounded-lg focus:border-brand-400 focus:outline-none" />
+      </div>
+    );
+  }
+
+  // Boolean
+  if (typeof value === 'boolean') {
+    return (
+      <div className="flex items-center gap-2">
+        <input type="checkbox" id={`f-${fieldKey}`} checked={value} onChange={(e) => onChange(e.target.checked)}
+          className="rounded border-slate-300" />
+        <label htmlFor={`f-${fieldKey}`} className="text-sm font-medium text-slate-700">{label}</label>
+      </div>
+    );
+  }
+
+  // Array
+  if (Array.isArray(value)) {
+    return <ArrayEditor fieldKey={fieldKey} label={label} value={value} onChange={onChange} />;
+  }
+
+  // Object
+  if (value && typeof value === 'object') {
+    return (
+      <div className="border border-slate-200 rounded-lg bg-slate-50 p-3">
+        <div className="text-xs font-semibold text-slate-700 mb-2">{label}</div>
+        <div className="space-y-3 pl-2 border-l-2 border-slate-200">
+          <FieldRenderer data={value as Record<string, unknown>} onChange={(d) => onChange(d)} />
+        </div>
+      </div>
+    );
+  }
+
+  // Null / undefined
+  return (
+    <div>
+      <label className="block text-xs font-semibold text-slate-700 mb-1">{label}</label>
+      <input type="text" value="" onChange={(e) => onChange(e.target.value)}
+        placeholder={String(value)}
+        className="w-full text-sm p-2 bg-white border border-slate-200 rounded-lg focus:border-brand-400 focus:outline-none" />
+    </div>
+  );
+}
+
+function ArrayEditor({ fieldKey, label, value, onChange }: { fieldKey: string; label: string; value: unknown[]; onChange: (v: unknown[]) => void }) {
+  // Determine element shape from first non-null item
+  const sample = value.find((v) => v !== null && v !== undefined);
+  const isStringArray = !sample || typeof sample === 'string';
+  const isObjectArray = sample && typeof sample === 'object' && !Array.isArray(sample);
+
+  function addItem() {
+    if (isStringArray) onChange([...value, '']);
+    else if (isObjectArray) {
+      const template: Record<string, unknown> = {};
+      for (const k of Object.keys(sample as Record<string, unknown>)) {
+        const v = (sample as Record<string, unknown>)[k];
+        if (typeof v === 'string') template[k] = '';
+        else if (typeof v === 'number') template[k] = 0;
+        else if (Array.isArray(v)) template[k] = [];
+        else template[k] = '';
+      }
+      onChange([...value, template]);
+    } else onChange([...value, '']);
+  }
+
+  function removeItem(i: number) {
+    onChange(value.filter((_, idx) => idx !== i));
+  }
+
+  function moveItem(i: number, dir: -1 | 1) {
+    const newArr = [...value];
+    const target = i + dir;
+    if (target < 0 || target >= newArr.length) return;
+    [newArr[i], newArr[target]] = [newArr[target], newArr[i]];
+    onChange(newArr);
+  }
+
+  function updateItem(i: number, v: unknown) {
+    const newArr = [...value];
+    newArr[i] = v;
+    onChange(newArr);
+  }
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-2">
+        <label className="block text-xs font-semibold text-slate-700">{label} <span className="text-slate-400 font-normal">({value.length})</span></label>
+        <button type="button" onClick={addItem}
+          className="text-[11px] font-medium px-2 py-1 rounded bg-brand-50 text-brand-700 hover:bg-brand-100">
+          + Adicionar
+        </button>
+      </div>
+      <div className="space-y-2">
+        {value.map((item, i) => (
+          <div key={i} className="border border-slate-200 rounded-lg bg-white p-2 sm:p-3 relative">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-[10px] text-slate-400 font-mono">#{i + 1}</span>
+              <div className="flex gap-1">
+                <button type="button" onClick={() => moveItem(i, -1)} disabled={i === 0}
+                  className="w-6 h-6 rounded text-slate-400 hover:bg-slate-100 disabled:opacity-30 text-xs">↑</button>
+                <button type="button" onClick={() => moveItem(i, 1)} disabled={i === value.length - 1}
+                  className="w-6 h-6 rounded text-slate-400 hover:bg-slate-100 disabled:opacity-30 text-xs">↓</button>
+                <button type="button" onClick={() => removeItem(i)}
+                  className="w-6 h-6 rounded text-rose-500 hover:bg-rose-50 text-xs">✕</button>
+              </div>
+            </div>
+            {typeof item === 'string' ? (
+              item.length > 80 || item.includes('\n') ? (
+                <textarea value={item} onChange={(e) => updateItem(i, e.target.value)} rows={2}
+                  className="w-full text-sm p-2 bg-slate-50 border border-slate-200 rounded focus:border-brand-400 focus:outline-none" />
+              ) : (
+                <input type="text" value={item} onChange={(e) => updateItem(i, e.target.value)}
+                  className="w-full text-sm p-2 bg-slate-50 border border-slate-200 rounded focus:border-brand-400 focus:outline-none" />
+              )
+            ) : item && typeof item === 'object' && !Array.isArray(item) ? (
+              <FieldRenderer data={item as Record<string, unknown>} onChange={(d) => updateItem(i, d)} />
+            ) : (
+              <input type="text" value={String(item ?? '')} onChange={(e) => updateItem(i, e.target.value)}
+                className="w-full text-sm p-2 bg-slate-50 border border-slate-200 rounded focus:border-brand-400 focus:outline-none" />
+            )}
+          </div>
+        ))}
+        {value.length === 0 && (
+          <div className="text-center py-4 text-xs text-slate-400 border border-dashed border-slate-200 rounded-lg">
+            Sem items. Carrega em &quot;+ Adicionar&quot; para criar.
+          </div>
+        )}
       </div>
     </div>
   );
