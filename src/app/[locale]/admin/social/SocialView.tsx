@@ -12,16 +12,15 @@ interface Connection {
   id: string; provider: string; external_username: string | null; external_display_name: string | null;
   scope: string | null; expires_at: string | null; is_active: boolean; connected_at: string; last_used_at: string | null;
 }
-
 interface PublishLog {
   id: number; provider: string; external_post_url: string | null; status: string;
   error_message: string | null; created_at: string;
 }
-
 interface SocialPost {
   id: string; platform: string; variant: string | null; lang: string;
   content: string; hashtags: string[] | null; cta: string | null;
   status: string; created_at: string; image_url: string | null;
+  scheduled_at: string | null;
 }
 
 const PROVIDER_META: Record<string, { label: string; emoji: string; color: string }> = {
@@ -32,11 +31,18 @@ const PROVIDER_META: Record<string, { label: string; emoji: string; color: strin
 
 const LOCALE_MAP: Record<string, string> = { pt: 'pt-PT', en: 'en-US', es: 'es-ES', fr: 'fr-FR' };
 
+function toLocalDatetimeValue(iso: string): string {
+  const d = new Date(iso);
+  const off = d.getTimezoneOffset();
+  return new Date(d.getTime() - off * 60_000).toISOString().slice(0, 16);
+}
+
 export function SocialView() {
   const t = useTranslations('social');
   const locale = useLocale();
   const intlLocale = LOCALE_MAP[locale] || 'pt-PT';
   const searchParams = useSearchParams();
+  const supabase = createClient();
   const [connections, setConnections] = useState<Connection[]>([]);
   const [logs, setLogs] = useState<PublishLog[]>([]);
   const [pendingPosts, setPendingPosts] = useState<SocialPost[]>([]);
@@ -45,6 +51,9 @@ export function SocialView() {
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState<string | null>(null);
   const [publishing, setPublishing] = useState<string | null>(null);
+  const [schedulingId, setSchedulingId] = useState<string | null>(null);
+  const [scheduleInputs, setScheduleInputs] = useState<Record<string, string>>({});
+  const [savingSchedule, setSavingSchedule] = useState<string | null>(null);
 
   useEffect(() => {
     const connected = searchParams.get('connected');
@@ -53,9 +62,8 @@ export function SocialView() {
     if (error) toast.error(t('toast_oauth_err', { err: error }));
   }, [searchParams, t]);
 
-  async function callApi(endpoint: string, body: any) {
-    const sb = createClient();
-    const { data: { session } } = await sb.auth.getSession();
+  async function callApi(endpoint: string, body: Record<string, unknown>) {
+    const { data: { session } } = await supabase.auth.getSession();
     if (!session) throw new Error(t('err_no_session'));
     const res = await fetch(`${SUPABASE_URL}/functions/v1/${endpoint}`, {
       method: 'POST',
@@ -73,19 +81,18 @@ export function SocialView() {
       setLinkedinConfigured(data.linkedin_configured);
       setTwitterConfigured(data.twitter_configured);
 
-      const sb = createClient();
       const [logsRes, postsRes] = await Promise.all([
-        sb.from('nl_social_publish_logs')
+        supabase.from('nl_social_publish_logs')
           .select('id, provider, external_post_url, status, error_message, created_at')
           .order('created_at', { ascending: false }).limit(20),
-        sb.from('nl_social_posts')
-          .select('id, platform, variant, lang, content, hashtags, cta, status, created_at, image_url')
-          .in('status', ['approved', 'draft', 'pending'])
+        supabase.from('nl_social_posts')
+          .select('id, platform, variant, lang, content, hashtags, cta, status, created_at, image_url, scheduled_at')
+          .in('status', ['approved', 'draft', 'pending', 'publishing'])
           .order('created_at', { ascending: false }).limit(30),
       ]);
       setLogs((logsRes.data as PublishLog[]) || []);
       setPendingPosts((postsRes.data as SocialPost[]) || []);
-    } catch (e: any) { toast.error(e.message); }
+    } catch (e) { toast.error(e instanceof Error ? e.message : String(e)); }
     finally { setLoading(false); }
   }
   useEffect(() => { load(); }, []);
@@ -101,7 +108,7 @@ export function SocialView() {
         setConnecting(null); return;
       }
       window.location.href = data.auth_url;
-    } catch (e: any) { toast.error(e.message); setConnecting(null); }
+    } catch (e) { toast.error(e instanceof Error ? e.message : String(e)); setConnecting(null); }
   }
 
   async function disconnect(id: string) {
@@ -110,13 +117,13 @@ export function SocialView() {
       await callApi('social-oauth', { action: 'disconnect', connection_id: id });
       toast.success(t('toast_disconnected'));
       load();
-    } catch (e: any) { toast.error(e.message); }
+    } catch (e) { toast.error(e instanceof Error ? e.message : String(e)); }
   }
 
-  async function publishPost(postId: string, override?: string) {
+  async function publishPost(postId: string) {
     setPublishing(postId);
     try {
-      const data = await callApi('social-publish', { social_post_id: postId, override_provider: override });
+      const data = await callApi('social-publish', { social_post_id: postId });
       if (!data.ok) {
         if (data.error === 'no_active_connection') { toast.error(t('err_no_connection', { p: data.provider })); }
         else if (data.error === 'already_published') { toast.error(t('err_already_published')); }
@@ -126,8 +133,35 @@ export function SocialView() {
       toast.success(t('toast_published'));
       window.open(data.external_url, '_blank');
       load();
-    } catch (e: any) { toast.error(e.message); }
+    } catch (e) { toast.error(e instanceof Error ? e.message : String(e)); }
     finally { setPublishing(null); }
+  }
+
+  async function schedulePost(postId: string) {
+    const localValue = scheduleInputs[postId];
+    if (!localValue) { toast.error(t('sched.err_no_date')); return; }
+    const iso = new Date(localValue).toISOString();
+    if (new Date(iso) <= new Date()) { toast.error(t('sched.err_past')); return; }
+    setSavingSchedule(postId);
+    const { error } = await supabase.from('nl_social_posts').update({ scheduled_at: iso, status: 'approved' }).eq('id', postId);
+    if (error) toast.error(error.message);
+    else {
+      toast.success(t('sched.toast_scheduled'));
+      setSchedulingId(null);
+      setPendingPosts((prev) => prev.map((p) => p.id === postId ? { ...p, scheduled_at: iso, status: 'approved' } : p));
+    }
+    setSavingSchedule(null);
+  }
+
+  async function unschedulePost(postId: string) {
+    setSavingSchedule(postId);
+    const { error } = await supabase.from('nl_social_posts').update({ scheduled_at: null }).eq('id', postId);
+    if (error) toast.error(error.message);
+    else {
+      toast.success(t('sched.toast_unscheduled'));
+      setPendingPosts((prev) => prev.map((p) => p.id === postId ? { ...p, scheduled_at: null } : p));
+    }
+    setSavingSchedule(null);
   }
 
   const activeConnections = connections.filter(c => c.is_active);
@@ -194,6 +228,9 @@ export function SocialView() {
                   const platMeta = PROVIDER_META[post.platform] || { label: post.platform, emoji: '📣', color: '' };
                   const hasConn = !!activeByProvider[post.platform];
                   const isPublishing = publishing === post.id;
+                  const isScheduling = schedulingId === post.id;
+                  const isSaving = savingSchedule === post.id;
+                  const isScheduled = !!post.scheduled_at;
                   return (
                     <div key={post.id} className="p-4">
                       <div className="flex items-start gap-3">
@@ -204,6 +241,11 @@ export function SocialView() {
                             <span className="text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded-full">{post.status}</span>
                             {post.variant && <span className="text-[10px] text-slate-400">{post.variant}</span>}
                             <span className="text-[10px] text-slate-400">{post.lang}</span>
+                            {isScheduled && (
+                              <span className="text-[10px] font-semibold bg-violet-100 text-violet-700 px-1.5 py-0.5 rounded-full">
+                                📅 {new Date(post.scheduled_at!).toLocaleString(intlLocale)}
+                              </span>
+                            )}
                           </div>
                           <p className="text-sm text-slate-700 whitespace-pre-wrap line-clamp-3">{post.content}</p>
                           {post.hashtags && post.hashtags.length > 0 && (
@@ -214,11 +256,42 @@ export function SocialView() {
                             </div>
                           )}
                           {post.cta && <div className="text-xs text-purple-700 mt-1.5 italic">{t('cta_label', { cta: post.cta })}</div>}
+                          {isScheduling && (
+                            <div className="mt-3 p-3 bg-slate-50 rounded-lg flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
+                              <input type="datetime-local"
+                                value={scheduleInputs[post.id] || (post.scheduled_at ? toLocalDatetimeValue(post.scheduled_at) : '')}
+                                onChange={(e) => setScheduleInputs((s) => ({ ...s, [post.id]: e.target.value }))}
+                                className="input text-sm flex-1" />
+                              <div className="flex gap-2">
+                                <button onClick={() => schedulePost(post.id)} disabled={isSaving}
+                                  className="text-xs bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white font-medium px-3 py-2 rounded-md">
+                                  {isSaving ? t('sched.saving') : t('sched.save')}
+                                </button>
+                                <button onClick={() => setSchedulingId(null)}
+                                  className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-3 py-2 rounded-md">
+                                  {t('sched.cancel')}
+                                </button>
+                              </div>
+                            </div>
+                          )}
                         </div>
-                        <button onClick={() => publishPost(post.id)} disabled={!hasConn || isPublishing || post.status === 'published'}
-                          className="text-xs bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-medium px-3 py-2 rounded-md whitespace-nowrap flex-shrink-0">
-                          {isPublishing ? t('publishing') : !hasConn ? t('no_link') : t('publish_now')}
-                        </button>
+                        <div className="flex flex-col gap-1.5 flex-shrink-0">
+                          <button onClick={() => publishPost(post.id)} disabled={!hasConn || isPublishing || post.status === 'published'}
+                            className="text-xs bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-medium px-3 py-2 rounded-md whitespace-nowrap">
+                            {isPublishing ? t('publishing') : !hasConn ? t('no_link') : t('publish_now')}
+                          </button>
+                          {!isScheduled ? (
+                            <button onClick={() => setSchedulingId(isScheduling ? null : post.id)} disabled={!hasConn}
+                              className="text-xs bg-violet-100 hover:bg-violet-200 text-violet-700 font-medium px-3 py-2 rounded-md whitespace-nowrap disabled:opacity-40">
+                              📅 {t('sched.schedule')}
+                            </button>
+                          ) : (
+                            <button onClick={() => unschedulePost(post.id)} disabled={isSaving}
+                              className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-3 py-2 rounded-md whitespace-nowrap disabled:opacity-50">
+                              {t('sched.unschedule')}
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   );
