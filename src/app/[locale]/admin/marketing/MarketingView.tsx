@@ -368,7 +368,7 @@ interface DetailModalProps {
   onSaveBlog: (postId: string, factcheckOK: boolean, translations: BlogTranslation[]) => Promise<boolean>;
   onSaveSocial: (sp: SocialPostInfo[]) => Promise<boolean>;
   busy: boolean;
-  t: (k: string, p?: Record<string, unknown>) => string;
+  t: ReturnType<typeof useTranslations>;
 }
 
 function DetailModal({ detail, onClose, onDecide, onSaveBlog, onSaveSocial, busy, t }: DetailModalProps) {
