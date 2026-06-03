@@ -1,8 +1,8 @@
 'use client';
 
-import { Link } from '@/i18n/routing';
-import { useState, useEffect, useRef } from 'react';
-import { useTranslations } from 'next-intl';
+import { Link, useRouter, usePathname } from '@/i18n/routing';
+import { useState, useEffect, useRef, useTransition } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 
@@ -17,8 +17,20 @@ const AREA_LINK = {
   admin: '/admin',
 } as const;
 
+const LANGS = [
+  { code: 'pt', flag: '🇵🇹', label: 'Português' },
+  { code: 'en', flag: '🇬🇧', label: 'English' },
+  { code: 'es', flag: '🇪🇸', label: 'Español' },
+  { code: 'fr', flag: '🇫🇷', label: 'Français' },
+] as const;
+
 export function UserMenu({ email, area }: Props) {
   const t = useTranslations('user_menu');
+  const tNav = useTranslations('nav');
+  const locale = useLocale();
+  const router = useRouter();
+  const pathname = usePathname();
+  const [pending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
   const [hovering, setHovering] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
@@ -39,6 +51,15 @@ export function UserMenu({ email, area }: Props) {
   }
   function handleLeave() {
     hoverTimeout.current = setTimeout(() => setHovering(false), 150);
+  }
+
+  function switchLang(newLocale: string) {
+    if (newLocale === locale) return;
+    startTransition(() => {
+      router.replace(pathname, { locale: newLocale });
+    });
+    setOpen(false);
+    setHovering(false);
   }
 
   const isOpen = open || hovering;
@@ -86,18 +107,51 @@ export function UserMenu({ email, area }: Props) {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-60 bg-white rounded-lg shadow-lg border border-slate-200 py-1 animate-fade-in z-50">
+        <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-slate-200 py-1 animate-fade-in z-50">
           <div className="px-4 py-2 border-b border-slate-100">
             <div className="text-xs text-slate-500">{areaLabel}</div>
             <div className="text-sm font-medium text-slate-900 truncate">{email}</div>
           </div>
-          <Link href={AREA_LINK[area] as any} className="block px-4 py-2 text-sm hover:bg-slate-50" onClick={() => { setOpen(false); setHovering(false); }}>
+
+          <Link href={AREA_LINK[area] as any} className="block px-4 py-2 text-sm hover:bg-slate-50"
+            onClick={() => { setOpen(false); setHovering(false); }}>
             {t('dashboard')}
           </Link>
-          <Link href={'/learn' as any} className="block px-4 py-2 text-sm hover:bg-slate-50" onClick={() => { setOpen(false); setHovering(false); }}>
+          <Link href={'/learn' as any} className="block px-4 py-2 text-sm hover:bg-slate-50"
+            onClick={() => { setOpen(false); setHovering(false); }}>
             {t('learning')}
           </Link>
+
           <div className="border-t border-slate-100 my-1" />
+
+          <div className="px-4 pt-2 pb-1 text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
+            {tNav('language')}
+          </div>
+          <div className="px-3 pb-2 grid grid-cols-4 gap-1">
+            {LANGS.map((l) => {
+              const active = l.code === locale;
+              return (
+                <button
+                  key={l.code}
+                  onClick={() => switchLang(l.code)}
+                  disabled={pending || active}
+                  title={l.label}
+                  className={
+                    'flex flex-col items-center gap-0.5 py-1.5 rounded-md text-[10px] font-medium transition-colors ' +
+                    (active
+                      ? 'bg-brand-50 text-brand-700 ring-1 ring-brand-200 cursor-default'
+                      : 'hover:bg-slate-100 text-slate-600 disabled:opacity-50')
+                  }
+                >
+                  <span className="text-base leading-none">{l.flag}</span>
+                  <span>{l.code.toUpperCase()}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="border-t border-slate-100 my-1" />
+
           <button
             onClick={signOut}
             disabled={signingOut}

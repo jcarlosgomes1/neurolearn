@@ -1,5 +1,6 @@
 import { ImageResponse } from 'next/og';
 import { createClient } from '@supabase/supabase-js';
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from '@/lib/supabase/config';
 
 export const runtime = 'edge';
 export const alt = 'NeuroLearn Certificate';
@@ -7,11 +8,17 @@ export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
 export default async function Image({ params }: { params: { code: string; locale: string } }) {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  );
-  const { data } = await supabase.rpc('nl_verify_certificate', { p_code: params.code });
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+
+  let data: any = null;
+  try {
+    const res = await supabase.rpc('nl_verify_certificate', { p_code: params.code });
+    data = res.data;
+  } catch (e) {
+    // ignore
+  }
 
   if (!data?.ok) {
     return new ImageResponse(

@@ -44,10 +44,15 @@ export function HeaderClient({ session }: { session: Session | null }) {
           </nav>
 
           <div className="flex items-center gap-1 sm:gap-2">
-            <Link href={'/search' as any} aria-label={t('nav.search')} className="w-9 h-9 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-700 transition-colors">
+            <Link href={'/search' as any} aria-label={t('nav.search')}
+              className="w-9 h-9 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-700 transition-colors">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
             </Link>
-            <div className="hidden sm:block"><LanguageSwitcher /></div>
+            {/* Language switcher só visível quando NÃO logado.
+                Quando logado, está dentro do UserMenu (mais limpo nas áreas internas). */}
+            {!session && (
+              <div className="hidden sm:block"><LanguageSwitcher /></div>
+            )}
             {session ? (
               <div className="hidden sm:block"><UserMenu email={session.email} area={session.area} /></div>
             ) : (

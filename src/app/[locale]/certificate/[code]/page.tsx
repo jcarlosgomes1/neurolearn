@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { getTranslations } from 'next-intl/server';
 import type { Metadata } from 'next';
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from '@/lib/supabase/config';
 import ShareButtons from './ShareButtons';
 
 export const dynamic = 'force-dynamic';
@@ -23,17 +24,25 @@ type VerifyResult = {
   revoked_at?: string;
 };
 
+function getSupabase() {
+  return createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+}
+
 async function verifyCert(code: string): Promise<VerifyResult | null> {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  );
-  const { data, error } = await supabase.rpc('nl_verify_certificate', { p_code: code });
-  if (error) {
-    console.error('verify_cert error', error);
+  try {
+    const supabase = getSupabase();
+    const { data, error } = await supabase.rpc('nl_verify_certificate', { p_code: code });
+    if (error) {
+      console.error('verify_cert error:', error.message);
+      return null;
+    }
+    return data as VerifyResult;
+  } catch (err) {
+    console.error('verify_cert exception:', err);
     return null;
   }
-  return data as VerifyResult;
 }
 
 export async function generateMetadata({ params }: { params: { code: string; locale: string } }): Promise<Metadata> {
@@ -47,17 +56,8 @@ export async function generateMetadata({ params }: { params: { code: string; loc
   return {
     title,
     description,
-    openGraph: {
-      title,
-      description,
-      type: 'website',
-      siteName: 'NeuroLearn',
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-    },
+    openGraph: { title, description, type: 'website', siteName: 'NeuroLearn' },
+    twitter: { card: 'summary_large_image', title, description },
     robots: { index: true, follow: true },
   };
 }
@@ -73,7 +73,7 @@ export default async function CertificatePage({ params }: { params: { code: stri
         <div className="text-center max-w-md">
           <div className="text-6xl mb-4">⚠️</div>
           <h1 className="text-2xl font-bold text-slate-900 mb-2">{t('cert.not_found')}</h1>
-          <p className="text-slate-600">{t(errKey)}</p>
+          <p className="text-slate-600">{t(errKey as any)}</p>
           <code className="block mt-4 text-xs text-slate-400 font-mono">{params.code}</code>
         </div>
       </div>
