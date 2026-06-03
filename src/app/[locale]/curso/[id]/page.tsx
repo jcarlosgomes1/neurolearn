@@ -6,7 +6,7 @@ import { getHomeBlocks } from '@/lib/api/home-blocks';
 import { fmtCents } from '@/lib/utils/cn';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
-import { Clock, Award, Users, Star, CheckCircle, BookOpen } from 'lucide-react';
+import { Clock, Award, Users, Star, CheckCircle, BookOpen, ArrowLeft } from 'lucide-react';
 import { EnrollButton } from '@/components/shared/EnrollButton';
 
 export const revalidate = 120;
@@ -33,7 +33,15 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
       <main className="bg-white min-h-screen">
         <section className="bg-gradient-to-br from-brand-50 via-white to-brand-50/30 border-b border-slate-200/60">
           <div className="max-w-6xl mx-auto px-4 py-12 sm:py-16">
-            <Link href={'/cursos' as any} className="text-sm text-brand-600 hover:underline mb-4 inline-block">{t('cdp.back')}</Link>
+            {/* Back button moderno: pill com ícone + hover state subtil */}
+            <Link
+              href={'/cursos' as any}
+              className="group inline-flex items-center gap-2 mb-6 px-3 py-1.5 rounded-full bg-white/70 hover:bg-white border border-slate-200 hover:border-brand-300 text-slate-700 hover:text-brand-700 text-sm font-medium transition-all shadow-sm hover:shadow"
+              aria-label={t('cdp.back')}
+            >
+              <ArrowLeft className="h-4 w-4 -ml-0.5 transition-transform group-hover:-translate-x-0.5" strokeWidth={2.5} />
+              <span>{t('cdp.back')}</span>
+            </Link>
             <div className="grid lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2">
                 <div className="flex items-center gap-3 mb-4">

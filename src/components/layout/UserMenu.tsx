@@ -32,10 +32,8 @@ export function UserMenu({ email, area }: Props) {
   const pathname = usePathname();
   const [pending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
-  const [hovering, setHovering] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const hoverTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const close = (e: MouseEvent) => {
@@ -45,24 +43,20 @@ export function UserMenu({ email, area }: Props) {
     return () => document.removeEventListener('mousedown', close);
   }, []);
 
-  function handleEnter() {
-    if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
-    setHovering(true);
-  }
-  function handleLeave() {
-    hoverTimeout.current = setTimeout(() => setHovering(false), 150);
-  }
-
-  function switchLang(newLocale: string) {
+  async function switchLang(newLocale: string) {
     if (newLocale === locale) return;
+    // 1. Persistir preferência no perfil (mother lang)
+    try {
+      const sb = createClient();
+      await sb.rpc('nl_set_preferred_lang', { p_lang: newLocale });
+    } catch (e) { console.error('preferred_lang save failed:', e); }
+    // 2. Navegar
     startTransition(() => {
       router.replace(pathname, { locale: newLocale });
     });
     setOpen(false);
-    setHovering(false);
   }
 
-  const isOpen = open || hovering;
   const areaLabel = t(`area.${area}` as any);
 
   async function signOut() {
@@ -71,9 +65,7 @@ export function UserMenu({ email, area }: Props) {
     try {
       const sb = createClient();
       await sb.auth.signOut({ scope: 'global' });
-    } catch (e) {
-      console.error('signOut error:', e);
-    }
+    } catch (e) { console.error('signOut error:', e); }
     try {
       document.cookie.split(';').forEach((c) => {
         const eq = c.indexOf('=');
@@ -94,7 +86,7 @@ export function UserMenu({ email, area }: Props) {
   }
 
   return (
-    <div ref={ref} className="relative" onMouseEnter={handleEnter} onMouseLeave={handleLeave}>
+    <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
         className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-slate-100 transition-colors"
@@ -106,19 +98,19 @@ export function UserMenu({ email, area }: Props) {
         <span className="hidden sm:inline text-sm text-slate-700">{areaLabel}</span>
       </button>
 
-      {isOpen && (
-        <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-slate-200 py-1 animate-fade-in z-50">
+      {open && (
+        <div className="absolute right-0 mt-2 w-64 max-h-[calc(100vh-5rem)] overflow-y-auto bg-white rounded-lg shadow-lg border border-slate-200 py-1 animate-fade-in z-50">
           <div className="px-4 py-2 border-b border-slate-100">
             <div className="text-xs text-slate-500">{areaLabel}</div>
             <div className="text-sm font-medium text-slate-900 truncate">{email}</div>
           </div>
 
           <Link href={AREA_LINK[area] as any} className="block px-4 py-2 text-sm hover:bg-slate-50"
-            onClick={() => { setOpen(false); setHovering(false); }}>
+            onClick={() => setOpen(false)}>
             {t('dashboard')}
           </Link>
           <Link href={'/learn' as any} className="block px-4 py-2 text-sm hover:bg-slate-50"
-            onClick={() => { setOpen(false); setHovering(false); }}>
+            onClick={() => setOpen(false)}>
             {t('learning')}
           </Link>
 
@@ -155,7 +147,7 @@ export function UserMenu({ email, area }: Props) {
           <button
             onClick={signOut}
             disabled={signingOut}
-            className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50"
+            className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50 font-medium"
           >
             {signingOut ? t('signing_out') : t('signout')}
           </button>

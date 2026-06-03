@@ -48,8 +48,7 @@ export function HeaderClient({ session }: { session: Session | null }) {
               className="w-9 h-9 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-700 transition-colors">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
             </Link>
-            {/* Language switcher só visível quando NÃO logado.
-                Quando logado, está dentro do UserMenu (mais limpo nas áreas internas). */}
+            {/* Language switcher só visível quando NÃO logado. Quando logado, está dentro do UserMenu. */}
             {!session && (
               <div className="hidden sm:block"><LanguageSwitcher /></div>
             )}
@@ -130,15 +129,18 @@ export function HeaderClient({ session }: { session: Session | null }) {
               </Link>
             </nav>
 
+            {/* Mobile footer: language switcher SÓ se não-autenticado (autenticado usa UserMenu) */}
             <div className="px-5 py-4 border-t border-slate-100 space-y-3">
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-xs text-slate-500">{t('nav.language')}</span>
-                <LanguageSwitcher />
-              </div>
               {!session && (
-                <Link href={'/login' as any} className="btn-primary w-full text-center text-sm py-3 block">
-                  {t('nav.signin')}
-                </Link>
+                <>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-xs text-slate-500">{t('nav.language')}</span>
+                    <LanguageSwitcher />
+                  </div>
+                  <Link href={'/login' as any} className="btn-primary w-full text-center text-sm py-3 block">
+                    {t('nav.signin')}
+                  </Link>
+                </>
               )}
             </div>
           </div>

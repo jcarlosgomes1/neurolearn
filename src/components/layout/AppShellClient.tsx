@@ -1,7 +1,6 @@
 'use client';
 
 import { Link } from '@/i18n/routing';
-import { LanguageSwitcher } from './LanguageSwitcher';
 import { UserMenu } from './UserMenu';
 import { useEffect, useMemo, useState } from 'react';
 import { usePathname } from 'next/navigation';
@@ -25,6 +24,7 @@ const ADMIN_NAV: NavItem[] = [
   { href: '/admin/preview', labelKey: 'shell.admin.preview', emoji: '👀', groupKey: 'shell.group.content' },
   { href: '/admin/cms', labelKey: 'shell.admin.cms', emoji: '📝', groupKey: 'shell.group.content' },
   { href: '/admin/marketing', labelKey: 'shell.admin.marketing', emoji: '📢', groupKey: 'shell.group.content' },
+  { href: '/admin/marketing/calendario', labelKey: 'shell.admin.marketing_calendar', emoji: '📅', groupKey: 'shell.group.content' },
   { href: '/admin/social', labelKey: 'shell.admin.social', emoji: '📣', groupKey: 'shell.group.content' },
   { href: '/admin/candidaturas', labelKey: 'shell.admin.applications', emoji: '🎓', groupKey: 'shell.group.people' },
   { href: '/admin/instrutores', labelKey: 'shell.admin.instructors', emoji: '👨‍🏫', groupKey: 'shell.group.people' },
@@ -111,7 +111,7 @@ export function AppShellClient({ role, pageTitle, session, children }: Props) {
         <Link href={'/search' as any} aria-label={t('nav.search')} className="w-9 h-9 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-600">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
         </Link>
-        <LanguageSwitcher />
+        {/* Language switcher removido daqui — está dentro do UserMenu (única fonte de troca em áreas internas) */}
         {session && <UserMenu email={session.email} area={session.area} />}
       </header>
 
