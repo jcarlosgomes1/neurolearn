@@ -8,6 +8,16 @@ import { DashboardSkeleton } from '@/components/shared/DashboardSkeleton';
 import { relTime } from '@/lib/utils/cn';
 import { useTranslations } from 'next-intl';
 
+interface Cert {
+  id: string;
+  course_title: string;
+  certificate_number: string;
+  verification_code: string;
+  issued_at: string;
+  course_level?: string;
+  skills?: string[];
+}
+
 interface Dash {
   stats: { enrollments_total: number; courses_completed: number; courses_in_progress: number; certificates_earned: number; unread_notifications: number };
   my_courses: any[];
@@ -18,11 +28,18 @@ interface Dash {
 export function LearnDashboard() {
   const t = useTranslations();
   const [dash, setDash] = useState<Dash | null>(null);
+  const [certs, setCerts] = useState<Cert[]>([]);
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
-    callAgentOps<{ dashboard: Dash }>('my_dashboard')
-      .then((r) => setDash(r.dashboard))
+    Promise.all([
+      callAgentOps<{ dashboard: Dash }>('my_dashboard'),
+      callAgentOps<{ certificates: Cert[] }>('my_certificates').catch(() => ({ certificates: [] })),
+    ])
+      .then(([dashRes, certsRes]) => {
+        setDash(dashRes.dashboard);
+        setCerts(certsRes.certificates || []);
+      })
       .catch((e) => setErr(e.message));
   }, []);
 
@@ -49,7 +66,7 @@ export function LearnDashboard() {
         <Stat icon="📖" label={t('learn.stat_courses')} value={s.enrollments_total} accent="brand" href="#meus-cursos" />
         <Stat icon="⏳" label={t('learn.stat_progress')} value={s.courses_in_progress} accent="amber" href="#meus-cursos" />
         <Stat icon="✅" label={t('learn.stat_done')} value={s.courses_completed} accent="emerald" href="#meus-cursos" />
-        <Stat icon="🏆" label={t('learn.stat_certs')} value={s.certificates_earned} accent="purple" href="#meus-cursos" />
+        <Stat icon="🏆" label={t('learn.stat_certs')} value={certs.length} accent="purple" href="#certificados" />
         <Stat icon="🔔" label={t('learn.stat_unread')} value={s.unread_notifications} accent="rose" href="#meus-cursos" />
       </div>
 
@@ -99,19 +116,28 @@ export function LearnDashboard() {
           )}
         </section>
 
-        <section className="bg-white rounded-xl border border-slate-200 p-5">
-          <h2 className="font-semibold text-slate-900 mb-4">{t('learn.certs_title')}</h2>
-          {dash.recent_certificates.length === 0 ? (
-            <p className="text-sm text-slate-500">{t('learn.no_certs')}</p>
+        <section id="certificados" className="scroll-mt-24 bg-white rounded-xl border border-slate-200 p-5">
+          <h2 className="font-semibold text-slate-900 mb-4">{t('cert.my_certs_title')}</h2>
+          {certs.length === 0 ? (
+            <p className="text-sm text-slate-500">{t('cert.my_certs_empty')}</p>
           ) : (
             <ul className="space-y-3">
-              {dash.recent_certificates.map((c) => (
-                <li key={c.id} className="flex items-center justify-between p-3 rounded-lg bg-purple-50 border border-purple-100">
-                  <div className="min-w-0">
+              {certs.slice(0, 8).map((c) => (
+                <li key={c.id} className="flex items-center justify-between gap-2 p-3 rounded-lg bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-100">
+                  <div className="min-w-0 flex-1">
                     <div className="font-medium text-slate-900 truncate">{c.course_title}</div>
-                    <div className="text-xs text-purple-700 font-mono mt-0.5">{c.certificate_number}</div>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-[10px] text-purple-700 font-mono">{c.certificate_number}</span>
+                      <span className="text-[10px] text-slate-400">·</span>
+                      <span className="text-[10px] text-slate-500">{relTime(c.issued_at)}</span>
+                    </div>
                   </div>
-                  <Link href={`/verify/${c.certificate_number}` as any} className="text-xs bg-purple-600 text-white px-3 py-1.5 rounded-md hover:bg-purple-700 flex-shrink-0 ml-2">{t('learn.btn_view')}</Link>
+                  <Link
+                    href={`/certificate/${c.verification_code}` as any}
+                    className="text-xs bg-purple-600 text-white px-3 py-1.5 rounded-md hover:bg-purple-700 flex-shrink-0 font-medium"
+                  >
+                    {t('cert.view')}
+                  </Link>
                 </li>
               ))}
             </ul>
