@@ -26,6 +26,7 @@ export function UserMenu({ email, area }: Props) {
   }, []);
 
   const areaLabel = t(`area.${area}` as any);
+  const isHost = area === 'instructor' || area === 'admin';
 
   async function signOut() {
     if (signingOut) return;
@@ -73,7 +74,6 @@ export function UserMenu({ email, area }: Props) {
             <div className="text-sm font-medium text-slate-900 truncate">{email}</div>
           </div>
 
-          {/* Admin: link directo para o cockpit em vez do account page */}
           {area === 'admin' && (
             <Link href={'/admin' as any} className="block px-4 py-2 text-sm hover:bg-slate-50" onClick={() => setOpen(false)}>
               🎛 {t('admin_dashboard')}
@@ -85,12 +85,16 @@ export function UserMenu({ email, area }: Props) {
             </Link>
           )}
 
-          {/* O meu painel — sempre acessível: conta, identificação, preferências, faturação */}
           <Link href={'/conta' as any} className="block px-4 py-2 text-sm hover:bg-slate-50" onClick={() => setOpen(false)}>
-            📊 {t('account')}
+            👤 {t('account')}
           </Link>
-          
-          {/* A minha aprendizagem — cursos, certificados, notas */}
+
+          {isHost && (
+            <Link href={'/conta/agendamento' as any} className="block px-4 py-2 text-sm hover:bg-slate-50" onClick={() => setOpen(false)}>
+              📅 {t('scheduling')}
+            </Link>
+          )}
+
           <Link href={'/learn' as any} className="block px-4 py-2 text-sm hover:bg-slate-50" onClick={() => setOpen(false)}>
             📚 {t('learning')}
           </Link>
