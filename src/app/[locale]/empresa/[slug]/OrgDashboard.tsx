@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 import { Link } from '@/i18n/routing';
 import { toast } from 'sonner';
-import { Users, UserPlus, Trash2, Building2, Crown, Shield, FileText, Sparkles } from 'lucide-react';
+import { Users, UserPlus, Trash2, Building2, Crown, Shield, FileText, Sparkles, Settings } from 'lucide-react';
 
 type Member = { user_id: string; role: string; joined_at: string; name?: string | null; avatar_url?: string | null };
 type Invite = { id: string; email: string; role: string; invited_at: string; expires_at: string };
@@ -13,12 +13,10 @@ type Org = {
   id: string; slug: string; name: string;
   logo_url?: string | null; primary_color?: string;
   plan: string; seats_purchased: number; seats_used: number;
-  trial_ends_at?: string | null;
-  country_code?: string | null; legal_name?: string | null;
+  trial_ends_at?: string | null; country_code?: string | null; legal_name?: string | null;
   is_admin: boolean;
 };
 type Data = { ok: boolean; org: Org; members: Member[]; pending_invitations: Invite[] | null };
-
 const ROLE_LABEL: Record<string, string> = { owner: 'emp.dashboard.role.owner', admin: 'emp.dashboard.role.admin', manager: 'emp.dashboard.role.manager', learner: 'emp.dashboard.role.learner' };
 
 export function OrgDashboard({ data }: { data: any }) {
@@ -51,7 +49,6 @@ export function OrgDashboard({ data }: { data: any }) {
     } catch (e: any) { toast.error(e?.message || 'Invite failed'); }
     finally { setSending(false); }
   }
-
   async function removeMember(userId: string) {
     if (!confirm('Remove member?')) return;
     try {
@@ -62,7 +59,6 @@ export function OrgDashboard({ data }: { data: any }) {
       toast.success('Removed');
     } catch (e: any) { toast.error(e?.message || 'Failed'); }
   }
-
   const trialDays = org.trial_ends_at ? Math.max(0, Math.ceil((new Date(org.trial_ends_at).getTime() - Date.now()) / (1000*60*60*24))) : null;
 
   return (
@@ -86,9 +82,14 @@ export function OrgDashboard({ data }: { data: any }) {
         </Link>
         <Link href={`/empresa/${org.slug}/cursos/propostas` as any}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-slate-200 hover:border-brand-300 hover:bg-brand-50 text-slate-700 hover:text-brand-700 text-sm font-medium transition-colors">
-          <Sparkles className="h-4 w-4" /> Propostas de curso
-          <span className="text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-semibold">Novo</span>
+          <Sparkles className="h-4 w-4" /> Propostas
         </Link>
+        {org.is_admin && (
+          <Link href={`/empresa/${org.slug}/admin` as any}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-slate-200 hover:border-rose-300 hover:bg-rose-50 text-slate-700 hover:text-rose-700 text-sm font-medium transition-colors">
+            <Settings className="h-4 w-4" /> Administração
+          </Link>
+        )}
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
@@ -107,20 +108,15 @@ export function OrgDashboard({ data }: { data: any }) {
           ) : (
             <div className="space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <input type="email" placeholder={t('emp.dashboard.invite_email')} value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)}
-                  className="sm:col-span-2 px-3 py-2 rounded-lg border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none" />
-                <select value={inviteRole} onChange={(e) => setInviteRole(e.target.value as any)}
-                  className="px-3 py-2 rounded-lg border border-slate-200 focus:border-brand-500 outline-none bg-white">
+                <input type="email" placeholder={t('emp.dashboard.invite_email')} value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} className="sm:col-span-2 px-3 py-2 rounded-lg border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none" />
+                <select value={inviteRole} onChange={(e) => setInviteRole(e.target.value as any)} className="px-3 py-2 rounded-lg border border-slate-200 focus:border-brand-500 outline-none bg-white">
                   <option value="learner">{t('emp.dashboard.role.learner')}</option>
                   <option value="manager">{t('emp.dashboard.role.manager')}</option>
                   <option value="admin">{t('emp.dashboard.role.admin')}</option>
                 </select>
               </div>
               <div className="flex gap-2">
-                <button onClick={sendInvite} disabled={sending || !inviteEmail.includes('@')}
-                  className="flex-1 sm:flex-initial px-5 py-2 rounded-lg bg-gradient-to-r from-brand-600 to-violet-600 hover:opacity-90 disabled:opacity-50 text-white text-sm font-semibold">
-                  {sending ? '…' : t('emp.dashboard.invite_send')}
-                </button>
+                <button onClick={sendInvite} disabled={sending || !inviteEmail.includes('@')} className="flex-1 sm:flex-initial px-5 py-2 rounded-lg bg-gradient-to-r from-brand-600 to-violet-600 hover:opacity-90 disabled:opacity-50 text-white text-sm font-semibold">{sending ? '…' : t('emp.dashboard.invite_send')}</button>
                 <button onClick={() => setShowInvite(false)} className="px-4 py-2 rounded-lg hover:bg-slate-100 text-slate-600 text-sm">×</button>
               </div>
             </div>
@@ -141,9 +137,7 @@ export function OrgDashboard({ data }: { data: any }) {
                 <div className="text-xs text-slate-500">{t(ROLE_LABEL[m.role] as any)}</div>
               </div>
               {org.is_admin && m.role !== 'owner' && (
-                <button onClick={() => removeMember(m.user_id)} className="p-2 text-slate-400 hover:text-rose-600">
-                  <Trash2 className="h-4 w-4" />
-                </button>
+                <button onClick={() => removeMember(m.user_id)} className="p-2 text-slate-400 hover:text-rose-600"><Trash2 className="h-4 w-4" /></button>
               )}
             </div>
           ))}
