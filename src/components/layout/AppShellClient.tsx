@@ -26,6 +26,7 @@ const ADMIN_NAV: NavItem[] = [
   { href: '/admin/marketing', labelKey: 'shell.admin.marketing', emoji: '📢', groupKey: 'shell.group.content' },
   { href: '/admin/marketing/calendario', labelKey: 'shell.admin.marketing_calendar', emoji: '📅', groupKey: 'shell.group.content' },
   { href: '/admin/social', labelKey: 'shell.admin.social', emoji: '📣', groupKey: 'shell.group.content' },
+  { href: '/admin/empresas', labelKey: 'shell.admin.companies', emoji: '🏢', groupKey: 'shell.group.people' },
   { href: '/admin/candidaturas', labelKey: 'shell.admin.applications', emoji: '🎓', groupKey: 'shell.group.people' },
   { href: '/admin/instrutores', labelKey: 'shell.admin.instructors', emoji: '👨‍🏫', groupKey: 'shell.group.people' },
   { href: '/admin/instrutores-ai', labelKey: 'shell.admin.ai_features', emoji: '🧠', groupKey: 'shell.group.people' },
