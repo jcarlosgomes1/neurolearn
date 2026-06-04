@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { Link } from '@/i18n/routing';
 import { 
-  Settings, Palette, FileText, Sparkles, Users, BookOpen, 
+  Settings, Palette, FileText, Sparkles, Users, BookOpen, Briefcase,
   TrendingUp, AlertCircle, Loader2, Save, ArrowLeft, Euro
 } from 'lucide-react';
 import { updateBrandingAction } from './actions';
@@ -19,10 +19,7 @@ interface Data {
     period: { start: string; end: string; counters: Record<string, number>; overage_cents: number };
   } | null;
   counts: { courses: number; contents: number; proposals: number };
-  branding: {
-    logo_url?: string; primary_color?: string; accent_color?: string; background_color?: string;
-    text_color?: string; font_family?: string; welcome_message?: string; footer_message?: string;
-  } | null;
+  branding: any;
 }
 
 const QUOTA_LABELS: Record<string, string> = {
@@ -47,7 +44,7 @@ export function OrgAdminClient({ slug, initial }: { slug: string; initial: Data 
         <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
           <Settings className="h-6 w-6 text-brand-600" /> Administração · {initial.org.name}
         </h1>
-        <p className="text-sm text-slate-500 mt-1">Gere a tua área, vê consumo e personaliza branding.</p>
+        <p className="text-sm text-slate-500 mt-1">Gere a tua área, vê consumo, publica vagas e personaliza branding.</p>
       </div>
       
       <div className="flex bg-slate-100 rounded-lg p-1 text-sm font-medium overflow-x-auto">
@@ -76,9 +73,7 @@ function OverviewTab({ data, slug }: { data: Data; slug: string }) {
             <AlertCircle className="h-5 w-5 text-amber-700 flex-shrink-0 mt-0.5" />
             <div>
               <h3 className="font-semibold text-amber-900 text-sm">Sem subscrição activa</h3>
-              <p className="text-xs text-amber-800 mt-1">
-                A tua empresa não tem plano associado. Algumas funcionalidades estão bloqueadas.
-              </p>
+              <p className="text-xs text-amber-800 mt-1">A tua empresa não tem plano associado. Algumas funcionalidades estão bloqueadas.</p>
             </div>
           </div>
         </div>
@@ -88,19 +83,21 @@ function OverviewTab({ data, slug }: { data: Data; slug: string }) {
         <StatCard icon={<Users className="h-4 w-4" />} label="Membros" value={data.org.seats_used} />
         <StatCard icon={<BookOpen className="h-4 w-4" />} label="Cursos" value={data.counts.courses} />
         <StatCard icon={<FileText className="h-4 w-4" />} label="Conteúdos" value={data.counts.contents} />
-        <StatCard icon={<Sparkles className="h-4 w-4" />} label="Propostas IA" value={data.counts.proposals} />
+        <StatCard icon={<Sparkles className="h-4 w-4" />} label="Propostas" value={data.counts.proposals} />
       </div>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Link href={`/empresa/${slug}/conteudos` as any}
-          className="bg-white rounded-xl border border-slate-200 hover:border-brand-300 hover:shadow-sm transition p-4">
+        <Link href={`/empresa/${slug}/conteudos` as any} className="bg-white rounded-xl border border-slate-200 hover:border-brand-300 hover:shadow-sm transition p-4">
           <div className="flex items-center gap-2 mb-1"><FileText className="h-5 w-5 text-brand-600" /><h3 className="font-semibold text-slate-900">Conteúdos</h3></div>
           <p className="text-sm text-slate-500">Sobe PDFs e manuais para a IA gerar cursos.</p>
         </Link>
-        <Link href={`/empresa/${slug}/cursos/propostas` as any}
-          className="bg-white rounded-xl border border-slate-200 hover:border-brand-300 hover:shadow-sm transition p-4">
+        <Link href={`/empresa/${slug}/cursos/propostas` as any} className="bg-white rounded-xl border border-slate-200 hover:border-brand-300 hover:shadow-sm transition p-4">
           <div className="flex items-center gap-2 mb-1"><Sparkles className="h-5 w-5 text-amber-600" /><h3 className="font-semibold text-slate-900">Propostas de curso</h3></div>
           <p className="text-sm text-slate-500">Revê e aprova cursos propostos pela IA.</p>
+        </Link>
+        <Link href={`/empresa/${slug}/admin/vagas` as any} className="bg-white rounded-xl border border-slate-200 hover:border-brand-300 hover:shadow-sm transition p-4">
+          <div className="flex items-center gap-2 mb-1"><Briefcase className="h-5 w-5 text-emerald-600" /><h3 className="font-semibold text-slate-900">Vagas</h3></div>
+          <p className="text-sm text-slate-500">Publica vagas. A IA propõe candidatos do talent pool certificado.</p>
         </Link>
       </div>
       
@@ -127,39 +124,29 @@ function OverviewTab({ data, slug }: { data: Data; slug: string }) {
 
 function UsageTab({ data }: { data: Data }) {
   if (!data.usage) return <div className="bg-white rounded-xl border border-slate-200 p-8 text-center text-sm text-slate-500">Sem dados de consumo (sem subscrição activa).</div>;
-  
   const period = data.usage.period;
   const quotas = data.usage.quotas;
   const counters = period.counters || {};
   const aiCostCents = Number(counters.ai_cost_cents || 0);
-  
   return (
     <div className="space-y-4">
       <div className="bg-white rounded-xl border border-slate-200 p-4">
         <h3 className="text-[10px] uppercase font-bold tracking-wider text-slate-500 mb-2">Período actual</h3>
-        <div className="text-sm text-slate-700">
-          {new Date(period.start).toLocaleDateString('pt-PT')} → {new Date(period.end).toLocaleDateString('pt-PT')}
-        </div>
+        <div className="text-sm text-slate-700">{new Date(period.start).toLocaleDateString('pt-PT')} → {new Date(period.end).toLocaleDateString('pt-PT')}</div>
         {aiCostCents > 0 && (
           <div className="mt-3 flex items-center gap-2 text-sm">
             <Euro className="h-4 w-4 text-amber-600" />
             <span>Custo IA acumulado: <strong>{(aiCostCents / 100).toFixed(2)} EUR</strong></span>
           </div>
         )}
-        {period.overage_cents > 0 && (
-          <div className="mt-1 text-sm text-amber-700">Overage: {(period.overage_cents / 100).toFixed(2)} EUR</div>
-        )}
+        {period.overage_cents > 0 && <div className="mt-1 text-sm text-amber-700">Overage: {(period.overage_cents / 100).toFixed(2)} EUR</div>}
       </div>
-      
       <div className="space-y-2">
         <h3 className="text-sm font-bold text-slate-700">Quotas vs Consumo</h3>
         {Object.entries(QUOTA_LABELS).map(([key, label]) => {
-          const quota = quotas[key];
-          const used = Number(counters[key] || 0);
-          const isUnlimited = quota == null;
+          const quota = quotas[key]; const used = Number(counters[key] || 0); const isUnlimited = quota == null;
           const pct = !isUnlimited && quota && quota > 0 ? Math.min(100, (used / quota) * 100) : 0;
           const overLimit = !isUnlimited && quota != null && used > quota;
-          
           return (
             <div key={key} className="bg-white rounded-xl border border-slate-200 p-3">
               <div className="flex items-center justify-between mb-1.5">
@@ -170,13 +157,10 @@ function UsageTab({ data }: { data: Data }) {
               </div>
               {!isUnlimited && quota != null && (
                 <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-                  <div className={`h-full rounded-full transition-all ${overLimit ? 'bg-red-500' : pct > 80 ? 'bg-amber-500' : 'bg-emerald-500'}`} 
-                    style={{ width: `${Math.min(100, pct)}%` }} />
+                  <div className={`h-full rounded-full transition-all ${overLimit ? 'bg-red-500' : pct > 80 ? 'bg-amber-500' : 'bg-emerald-500'}`} style={{ width: `${Math.min(100, pct)}%` }} />
                 </div>
               )}
-              {overLimit && (
-                <p className="text-xs text-red-700 mt-1">Excedido. Operações adicionais podem ser bloqueadas ou cobradas como overage.</p>
-              )}
+              {overLimit && <p className="text-xs text-red-700 mt-1">Excedido. Operações adicionais podem ser bloqueadas ou cobradas como overage.</p>}
             </div>
           );
         })}
@@ -194,7 +178,6 @@ function BrandingTab({ data, slug }: { data: Data; slug: string }) {
     footer_message: data.branding?.footer_message || '',
   });
   const [isPending, startTransition] = useTransition();
-  
   function handleSave() {
     startTransition(async () => {
       const r = await updateBrandingAction(slug, form);
@@ -202,54 +185,37 @@ function BrandingTab({ data, slug }: { data: Data; slug: string }) {
       else toast.error(r.error || 'Falhou');
     });
   }
-  
   return (
     <div className="space-y-4">
       <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 space-y-3">
-        <h3 className="font-semibold text-slate-900 flex items-center gap-2">
-          <Palette className="h-4 w-4 text-brand-600" /> Identidade visual
-        </h3>
-        
+        <h3 className="font-semibold text-slate-900 flex items-center gap-2"><Palette className="h-4 w-4 text-brand-600" /> Identidade visual</h3>
         <Field label="URL do logo">
-          <input type="url" value={form.logo_url} onChange={(e) => setForm({...form, logo_url: e.target.value})}
-            placeholder="https://..." className="w-full text-sm px-3 py-2 rounded-lg border border-slate-200 focus:border-brand-400 outline-none" />
+          <input type="url" value={form.logo_url} onChange={(e) => setForm({...form, logo_url: e.target.value})} placeholder="https://..." className="w-full text-sm px-3 py-2 rounded-lg border border-slate-200 focus:border-brand-400 outline-none" />
         </Field>
-        
         <div className="grid grid-cols-2 gap-3">
           <Field label="Cor primária">
             <div className="flex gap-2">
-              <input type="color" value={form.primary_color} onChange={(e) => setForm({...form, primary_color: e.target.value})}
-                className="h-9 w-12 rounded border border-slate-200 cursor-pointer" />
-              <input type="text" value={form.primary_color} onChange={(e) => setForm({...form, primary_color: e.target.value})}
-                className="flex-1 text-sm font-mono px-2 py-1.5 rounded border border-slate-200" />
+              <input type="color" value={form.primary_color} onChange={(e) => setForm({...form, primary_color: e.target.value})} className="h-9 w-12 rounded border border-slate-200 cursor-pointer" />
+              <input type="text" value={form.primary_color} onChange={(e) => setForm({...form, primary_color: e.target.value})} className="flex-1 text-sm font-mono px-2 py-1.5 rounded border border-slate-200" />
             </div>
           </Field>
           <Field label="Cor de acento">
             <div className="flex gap-2">
-              <input type="color" value={form.accent_color} onChange={(e) => setForm({...form, accent_color: e.target.value})}
-                className="h-9 w-12 rounded border border-slate-200 cursor-pointer" />
-              <input type="text" value={form.accent_color} onChange={(e) => setForm({...form, accent_color: e.target.value})}
-                className="flex-1 text-sm font-mono px-2 py-1.5 rounded border border-slate-200" />
+              <input type="color" value={form.accent_color} onChange={(e) => setForm({...form, accent_color: e.target.value})} className="h-9 w-12 rounded border border-slate-200 cursor-pointer" />
+              <input type="text" value={form.accent_color} onChange={(e) => setForm({...form, accent_color: e.target.value})} className="flex-1 text-sm font-mono px-2 py-1.5 rounded border border-slate-200" />
             </div>
           </Field>
         </div>
-        
         <Field label="Mensagem de boas-vindas">
-          <textarea rows={2} value={form.welcome_message} onChange={(e) => setForm({...form, welcome_message: e.target.value})}
-            placeholder="Bem-vindo à formação Acme..." className="w-full text-sm px-3 py-2 rounded-lg border border-slate-200 resize-none" />
+          <textarea rows={2} value={form.welcome_message} onChange={(e) => setForm({...form, welcome_message: e.target.value})} placeholder="Bem-vindo à formação Acme..." className="w-full text-sm px-3 py-2 rounded-lg border border-slate-200 resize-none" />
         </Field>
         <Field label="Mensagem de rodapé">
-          <input type="text" value={form.footer_message} onChange={(e) => setForm({...form, footer_message: e.target.value})}
-            className="w-full text-sm px-3 py-2 rounded-lg border border-slate-200" />
+          <input type="text" value={form.footer_message} onChange={(e) => setForm({...form, footer_message: e.target.value})} className="w-full text-sm px-3 py-2 rounded-lg border border-slate-200" />
         </Field>
       </div>
-      
-      <button onClick={handleSave} disabled={isPending}
-        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold disabled:opacity-50">
-        {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-        Guardar branding
+      <button onClick={handleSave} disabled={isPending} className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold disabled:opacity-50">
+        {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Guardar branding
       </button>
-      
       <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-3 text-xs text-indigo-900">
         💡 As cores serão aplicadas em todas as pages <code>/empresa/{slug}/*</code>. Sub-domínio e custom domain ficam disponíveis em planos superiores.
       </div>
