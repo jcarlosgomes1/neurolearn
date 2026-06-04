@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
+import { Link } from '@/i18n/routing';
 import { toast } from 'sonner';
-import { Users, UserPlus, Copy, Trash2, Building2, Crown, Shield } from 'lucide-react';
+import { Users, UserPlus, Trash2, Building2, Crown, Shield, FileText } from 'lucide-react';
 
 type Member = { user_id: string; role: string; joined_at: string; name?: string | null; avatar_url?: string | null };
 type Invite = { id: string; email: string; role: string; invited_at: string; expires_at: string };
@@ -65,17 +66,12 @@ export function OrgDashboard({ data }: { data: any }) {
     } catch (e: any) { toast.error(e?.message || 'Failed'); }
   }
 
-  function copyInviteLink(inviteId: string) {
-    // Token não está disponível aqui; mostrar mensagem
-    toast.info('Use the link returned when invitation was sent');
-  }
-
   const trialDays = org.trial_ends_at ? Math.max(0, Math.ceil((new Date(org.trial_ends_at).getTime() - Date.now()) / (1000*60*60*24))) : null;
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
       {/* Header */}
-      <div className="flex items-start gap-4 mb-8">
+      <div className="flex items-start gap-4 mb-6">
         <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-white text-xl font-bold flex-shrink-0"
           style={{ background: `linear-gradient(135deg, ${org.primary_color || '#6366f1'}, #8b5cf6)` }}>
           {org.logo_url ? <img src={org.logo_url} alt="" className="w-full h-full object-cover rounded-2xl" /> : <Building2 className="h-6 w-6" />}
@@ -84,6 +80,18 @@ export function OrgDashboard({ data }: { data: any }) {
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 truncate">{org.name}</h1>
           {org.legal_name && <p className="text-sm text-slate-500 mt-0.5">{org.legal_name}</p>}
         </div>
+      </div>
+
+      {/* Quick actions */}
+      <div className="flex flex-wrap gap-2 mb-8">
+        <Link 
+          href={`/empresa/${org.slug}/conteudos` as any}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-slate-200 hover:border-brand-300 hover:bg-brand-50 text-slate-700 hover:text-brand-700 text-sm font-medium transition-colors"
+        >
+          <FileText className="h-4 w-4" />
+          Conteúdos da empresa
+          <span className="text-xs bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-semibold">IA</span>
+        </Link>
       </div>
 
       {/* Stats grid */}
