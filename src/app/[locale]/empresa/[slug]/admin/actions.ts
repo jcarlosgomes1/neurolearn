@@ -19,23 +19,22 @@ export async function getOrgAdminOverviewAction(slug: string) {
     const ctx = await getOrgContext(slug);
     if (!ctx) return { ok: false, error: 'forbidden' };
     if (!['owner','admin'].includes(ctx.role)) return { ok: false, error: 'insufficient_role' };
-    
     const { sb, org } = ctx;
-    
     const [
       { data: usageSummary },
       { count: courseCount },
       { count: contentCount },
       { count: proposalCount },
       { data: branding },
+      { data: plans },
     ] = await Promise.all([
       sb.rpc('nl_org_usage_summary', { p_org_id: org.id }),
       sb.from('nl_courses').select('*', { count: 'exact', head: true }).eq('org_id', org.id).eq('archived', false),
       sb.from('nl_org_content').select('*', { count: 'exact', head: true }).eq('org_id', org.id).eq('archived', false),
       sb.from('nl_org_course_proposals').select('*', { count: 'exact', head: true }).eq('org_id', org.id),
       sb.from('nl_org_branding').select('*').eq('org_id', org.id).maybeSingle(),
+      sb.rpc('nl_billing_plans_public_list'),
     ]);
-    
     return {
       ok: true,
       data: {
@@ -43,34 +42,66 @@ export async function getOrgAdminOverviewAction(slug: string) {
         usage: usageSummary,
         counts: { courses: courseCount || 0, contents: contentCount || 0, proposals: proposalCount || 0 },
         branding: branding || null,
+        plans: (plans as any[]) || [],
       },
     };
   } catch (e) { return { ok: false, error: e instanceof Error ? e.message : String(e) }; }
 }
 
-export async function updateBrandingAction(slug: string, branding: {
-  logo_url?: string | null;
-  primary_color?: string | null;
-  accent_color?: string | null;
-  background_color?: string | null;
-  text_color?: string | null;
-  font_family?: string | null;
-  welcome_message?: string | null;
-  footer_message?: string | null;
-}) {
+export async function updateBrandingAction(slug: string, branding: Record<string, unknown>) {
   try {
     const ctx = await getOrgContext(slug);
     if (!ctx) return { ok: false, error: 'forbidden' };
     if (!['owner','admin'].includes(ctx.role)) return { ok: false, error: 'insufficient_role' };
     const { sb, org } = ctx;
     const { error } = await sb.from('nl_org_branding').upsert({
-      org_id: org.id,
-      ...branding,
-      updated_at: new Date().toISOString(),
+      org_id: org.id, ...branding, updated_at: new Date().toISOString(),
     }, { onConflict: 'org_id' });
     if (error) return { ok: false, error: error.message };
     revalidatePath(`/[locale]/empresa/${slug}/admin`, 'page');
     revalidatePath(`/[locale]/empresa/${slug}`, 'layout');
     return { ok: true };
+  } catch (e) { return { ok: false, error: e instanceof Error ? e.message : String(e) }; }
+}
+
+export async function stripeCheckoutAction(slug: string, planId: string, cycle: 'monthly'|'annual') {
+  try {
+    const ctx = await getOrgContext(slug);
+    if (!ctx) return { ok: false, error: 'forbidden' };
+    if (!['owner','admin'].includes(ctx.role)) return { ok: false, error: 'insufficient_role' };
+    
+    const sb = await createClient();
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return { ok: false, error: 'not_authenticated' };
+    
+    const res = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://obpezocujzdaznrdgwoo.supabase.co'}/functions/v1/stripe-checkout`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+      body: JSON.stringify({ org_id: ctx.org.id, plan_id: planId, cycle }),
+    });
+    const data = await res.json();
+    if (!data.ok) return { ok: false, error: data.error || data.hint || 'checkout_failed' };
+    return { ok: true, data: { checkout_url: data.checkout_url } };
+  } catch (e) { return { ok: false, error: e instanceof Error ? e.message : String(e) }; }
+}
+
+export async function stripePortalAction(slug: string) {
+  try {
+    const ctx = await getOrgContext(slug);
+    if (!ctx) return { ok: false, error: 'forbidden' };
+    if (!['owner','admin'].includes(ctx.role)) return { ok: false, error: 'insufficient_role' };
+    
+    const sb = await createClient();
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return { ok: false, error: 'not_authenticated' };
+    
+    const res = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://obpezocujzdaznrdgwoo.supabase.co'}/functions/v1/stripe-portal`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+      body: JSON.stringify({ org_id: ctx.org.id }),
+    });
+    const data = await res.json();
+    if (!data.ok) return { ok: false, error: data.error || data.hint || 'portal_failed' };
+    return { ok: true, data: { portal_url: data.portal_url } };
   } catch (e) { return { ok: false, error: e instanceof Error ? e.message : String(e) }; }
 }

@@ -5,9 +5,9 @@ import { toast } from 'sonner';
 import { Link } from '@/i18n/routing';
 import { 
   Settings, Palette, FileText, Sparkles, Users, BookOpen, Briefcase,
-  TrendingUp, AlertCircle, Loader2, Save, ArrowLeft, Euro
+  CreditCard, AlertCircle, Loader2, Save, ArrowLeft, Euro, ExternalLink
 } from 'lucide-react';
-import { updateBrandingAction } from './actions';
+import { updateBrandingAction, stripeCheckoutAction, stripePortalAction } from './actions';
 
 interface Data {
   org: { id: string; name: string; slug: string; plan: string; seats_used: number; seats_purchased: number; trial_ends_at?: string };
@@ -20,6 +20,7 @@ interface Data {
   } | null;
   counts: { courses: number; contents: number; proposals: number };
   branding: any;
+  plans: Array<{ id: string; name: string; trial_days: number; flat_fee_monthly_cents?: number; flat_fee_annual_cents?: number; price_per_seat_monthly_cents?: number; currency: string }>;
 }
 
 const QUOTA_LABELS: Record<string, string> = {
@@ -32,7 +33,7 @@ const QUOTA_LABELS: Record<string, string> = {
 };
 
 export function OrgAdminClient({ slug, initial }: { slug: string; initial: Data }) {
-  const [tab, setTab] = useState<'overview'|'usage'|'branding'>('overview');
+  const [tab, setTab] = useState<'overview'|'usage'|'billing'|'branding'>('overview');
   
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
@@ -48,16 +49,15 @@ export function OrgAdminClient({ slug, initial }: { slug: string; initial: Data 
       </div>
       
       <div className="flex bg-slate-100 rounded-lg p-1 text-sm font-medium overflow-x-auto">
-        <button onClick={() => setTab('overview')}
-          className={`flex-1 px-3 py-2 rounded ${tab === 'overview' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'}`}>Overview</button>
-        <button onClick={() => setTab('usage')}
-          className={`flex-1 px-3 py-2 rounded ${tab === 'usage' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'}`}>Consumo</button>
-        <button onClick={() => setTab('branding')}
-          className={`flex-1 px-3 py-2 rounded ${tab === 'branding' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'}`}>Branding</button>
+        <button onClick={() => setTab('overview')} className={`flex-1 px-3 py-2 rounded ${tab === 'overview' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'}`}>Overview</button>
+        <button onClick={() => setTab('usage')} className={`flex-1 px-3 py-2 rounded ${tab === 'usage' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'}`}>Consumo</button>
+        <button onClick={() => setTab('billing')} className={`flex-1 px-3 py-2 rounded ${tab === 'billing' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'}`}>Billing</button>
+        <button onClick={() => setTab('branding')} className={`flex-1 px-3 py-2 rounded ${tab === 'branding' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'}`}>Branding</button>
       </div>
       
       {tab === 'overview' && <OverviewTab data={initial} slug={slug} />}
       {tab === 'usage' && <UsageTab data={initial} />}
+      {tab === 'billing' && <BillingTab data={initial} slug={slug} />}
       {tab === 'branding' && <BrandingTab data={initial} slug={slug} />}
     </div>
   );
@@ -73,7 +73,7 @@ function OverviewTab({ data, slug }: { data: Data; slug: string }) {
             <AlertCircle className="h-5 w-5 text-amber-700 flex-shrink-0 mt-0.5" />
             <div>
               <h3 className="font-semibold text-amber-900 text-sm">Sem subscrição activa</h3>
-              <p className="text-xs text-amber-800 mt-1">A tua empresa não tem plano associado. Algumas funcionalidades estão bloqueadas.</p>
+              <p className="text-xs text-amber-800 mt-1">A tua empresa não tem plano. Vai à tab Billing para escolher um.</p>
             </div>
           </div>
         </div>
@@ -169,6 +169,106 @@ function UsageTab({ data }: { data: Data }) {
   );
 }
 
+function formatMoney(cents: number, currency: string) {
+  return new Intl.NumberFormat('pt-PT', { style: 'currency', currency, maximumFractionDigits: 0 }).format(cents / 100);
+}
+
+function BillingTab({ data, slug }: { data: Data; slug: string }) {
+  const [planId, setPlanId] = useState(data.plans[0]?.id || '');
+  const [cycle, setCycle] = useState<'monthly'|'annual'>('monthly');
+  const [isPending, startTransition] = useTransition();
+  const hasSub = !!data.usage?.subscription;
+  const hasStripeCustomer = data.usage?.subscription?.plan_id !== undefined; // simplifica; em real lê stripe_customer_id
+  
+  function handleCheckout() {
+    if (!planId) { toast.error('Escolhe um plano'); return; }
+    startTransition(async () => {
+      const r = await stripeCheckoutAction(slug, planId, cycle);
+      if (r.ok && r.data) {
+        window.location.href = (r.data as { checkout_url: string }).checkout_url;
+      } else {
+        toast.error(r.error || 'Falhou');
+      }
+    });
+  }
+  
+  function handlePortal() {
+    startTransition(async () => {
+      const r = await stripePortalAction(slug);
+      if (r.ok && r.data) {
+        window.location.href = (r.data as { portal_url: string }).portal_url;
+      } else {
+        toast.error(r.error || 'Falhou abrir portal');
+      }
+    });
+  }
+  
+  return (
+    <div className="space-y-4">
+      {hasSub && (
+        <div className="bg-white rounded-xl border border-slate-200 p-4">
+          <h3 className="font-semibold text-slate-900 text-sm mb-2 flex items-center gap-2"><CreditCard className="h-4 w-4 text-brand-600" /> Gerir billing</h3>
+          <p className="text-xs text-slate-500 mb-3">Actualiza método de pagamento, vê facturas, cancela ou faz downgrade no Stripe.</p>
+          <button onClick={handlePortal} disabled={isPending}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold disabled:opacity-50">
+            {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <ExternalLink className="h-4 w-4" />}
+            Abrir Stripe Customer Portal
+          </button>
+        </div>
+      )}
+      
+      <div className="bg-white rounded-xl border border-slate-200 p-4">
+        <h3 className="font-semibold text-slate-900 text-sm mb-3">{hasSub ? 'Mudar de plano' : 'Activar subscrição'}</h3>
+        
+        {data.plans.length === 0 ? (
+          <p className="text-sm text-slate-500">Sem planos disponíveis. Pede ao admin da plataforma para criar planos em /admin/billing/planos.</p>
+        ) : (
+          <>
+            <div className="flex bg-slate-100 rounded-lg p-1 max-w-xs text-sm font-medium mb-3">
+              <button onClick={() => setCycle('monthly')} className={`flex-1 px-3 py-1.5 rounded ${cycle === 'monthly' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'}`}>Mensal</button>
+              <button onClick={() => setCycle('annual')} className={`flex-1 px-3 py-1.5 rounded ${cycle === 'annual' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'}`}>Anual</button>
+            </div>
+            
+            <div className="space-y-2 mb-3">
+              {data.plans.map((p) => {
+                const flat = cycle === 'annual' ? p.flat_fee_annual_cents : p.flat_fee_monthly_cents;
+                const seat = cycle === 'annual' ? null : p.price_per_seat_monthly_cents;
+                const selected = planId === p.id;
+                return (
+                  <label key={p.id} className={`block p-3 rounded-lg border cursor-pointer transition ${selected ? 'border-brand-500 bg-brand-50' : 'border-slate-200 hover:border-slate-300'}`}>
+                    <input type="radio" name="plan" value={p.id} checked={selected} onChange={() => setPlanId(p.id)} className="sr-only" />
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="min-w-0">
+                        <div className="font-semibold text-slate-900">{p.name}</div>
+                        <div className="text-xs text-slate-600 mt-0.5">
+                          {flat != null && flat > 0 && <>{formatMoney(flat / (cycle === 'annual' ? 12 : 1), p.currency)}/mês</>}
+                          {seat != null && seat > 0 && <> + {formatMoney(seat, p.currency)}/seat</>}
+                          {p.trial_days > 0 && <span className="ml-2 text-emerald-700 font-medium">{p.trial_days}d trial</span>}
+                        </div>
+                      </div>
+                      <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${selected ? 'border-brand-600 bg-brand-600' : 'border-slate-300'}`} />
+                    </div>
+                  </label>
+                );
+              })}
+            </div>
+            
+            <button onClick={handleCheckout} disabled={isPending || !planId}
+              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-r from-brand-600 to-violet-600 hover:opacity-90 text-white text-sm font-semibold disabled:opacity-50">
+              {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
+              {hasSub ? 'Mudar para este plano' : 'Activar via Stripe Checkout'}
+            </button>
+            
+            <p className="text-[10px] text-slate-400 mt-3">
+              Pagamento processado de forma segura pela Stripe. Cancela a qualquer momento no portal.
+            </p>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function BrandingTab({ data, slug }: { data: Data; slug: string }) {
   const [form, setForm] = useState({
     logo_url: data.branding?.logo_url || '',
@@ -217,7 +317,7 @@ function BrandingTab({ data, slug }: { data: Data; slug: string }) {
         {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Guardar branding
       </button>
       <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-3 text-xs text-indigo-900">
-        💡 As cores serão aplicadas em todas as pages <code>/empresa/{slug}/*</code>. Sub-domínio e custom domain ficam disponíveis em planos superiores.
+        💡 As cores serão aplicadas em todas as pages <code>/empresa/{slug}/*</code> via CSS variables. Sub-domínio e custom domain ficam disponíveis em planos superiores.
       </div>
     </div>
   );
@@ -231,7 +331,6 @@ function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string
     </div>
   );
 }
-
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return <div><label className="text-xs text-slate-600 block mb-1">{label}</label>{children}</div>;
 }
