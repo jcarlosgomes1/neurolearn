@@ -7,13 +7,7 @@ import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
 interface Session { email: string; area: 'student' | 'instructor' | 'admin' }
-interface Props {
-  role: 'admin' | 'instructor' | 'student';
-  pageTitle?: string;
-  session: Session | null;
-  children: React.ReactNode;
-}
-
+interface Props { role: 'admin' | 'instructor' | 'student'; pageTitle?: string; session: Session | null; children: React.ReactNode; }
 interface NavItem { href: string; labelKey: string; emoji: string; groupKey: string }
 
 const ADMIN_NAV: NavItem[] = [
@@ -31,6 +25,7 @@ const ADMIN_NAV: NavItem[] = [
   { href: '/admin/instrutores', labelKey: 'shell.admin.instructors', emoji: '👨‍🏫', groupKey: 'shell.group.people' },
   { href: '/admin/instrutores-ai', labelKey: 'shell.admin.ai_features', emoji: '🧠', groupKey: 'shell.group.people' },
   { href: '/admin/ai-routing', labelKey: 'shell.admin.ai_routing', emoji: '🎚', groupKey: 'shell.group.people' },
+  { href: '/admin/billing', labelKey: 'shell.admin.billing', emoji: '💰', groupKey: 'shell.group.operations' },
   { href: '/admin/payments', labelKey: 'shell.admin.payments', emoji: '💳', groupKey: 'shell.group.operations' },
   { href: '/admin/video', labelKey: 'shell.admin.video', emoji: '🎥', groupKey: 'shell.group.operations' },
   { href: '/admin/autopilots', labelKey: 'shell.admin.autopilots', emoji: '🤖', groupKey: 'shell.group.operations' },
@@ -98,31 +93,22 @@ export function AppShellClient({ role, pageTitle, session, children }: Props) {
           className="lg:hidden w-10 h-10 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-700 transition-colors active:scale-95">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
         </button>
-
         <Link href="/" className="flex items-center gap-2 font-bold text-slate-900 group">
           <span className="text-2xl group-hover:scale-110 transition-transform">🧠</span>
           <span className="hidden sm:inline text-base tracking-tight">NeuroLearn</span>
         </Link>
-
-        <span className={`hidden sm:inline-flex items-center text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${roleBadge}`}>
-          {roleLabel}
-        </span>
-
+        <span className={`hidden sm:inline-flex items-center text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${roleBadge}`}>{roleLabel}</span>
         {pageTitle && <span className="hidden md:inline text-sm text-slate-400 ml-2">/ {pageTitle}</span>}
-
         <div className="flex-1" />
-
         <Link href={'/search' as any} aria-label={t('nav.search')} className="w-9 h-9 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-600">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
         </Link>
         {session && <UserMenu email={session.email} area={session.area} />}
       </header>
-
       <div className="flex">
         <aside className="hidden lg:flex w-60 flex-shrink-0 sticky top-14 h-[calc(100vh-3.5rem)] border-r border-slate-200 bg-white flex-col overflow-y-auto">
           <SidebarContent groups={groups} isActive={isActive} t={t} />
         </aside>
-
         {sidebarOpen && (
           <div className="lg:hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm" onClick={() => setSidebarOpen(false)}>
             <aside className="absolute top-0 left-0 bottom-0 w-72 max-w-[85%] bg-white shadow-2xl overflow-y-auto" onClick={(e) => e.stopPropagation()}>
@@ -140,7 +126,6 @@ export function AppShellClient({ role, pageTitle, session, children }: Props) {
             </aside>
           </div>
         )}
-
         <main className="flex-1 min-w-0">{children}</main>
       </div>
     </div>
