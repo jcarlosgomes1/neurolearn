@@ -36,6 +36,7 @@ const ADMIN_NAV: NavItem[] = [
   { href: '/admin/jobs', labelKey: 'shell.admin.jobs', emoji: '⚙️', groupKey: 'shell.group.operations' },
   { href: '/admin/tutor-config', labelKey: 'shell.admin.tutor_config', emoji: '🤖', groupKey: 'shell.group.operations' },
   { href: '/admin/prompts', labelKey: 'shell.admin.prompts', emoji: '💬', groupKey: 'shell.group.operations' },
+  { href: '/admin/autenticacao', labelKey: 'shell.admin.auth', emoji: '🔐', groupKey: 'shell.group.operations' },
   { href: '/admin/integracoes', labelKey: 'shell.admin.integrations', emoji: '🔌', groupKey: 'shell.group.operations' },
 ];
 
