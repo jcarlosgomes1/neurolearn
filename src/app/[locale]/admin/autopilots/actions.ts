@@ -3,27 +3,16 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 
-interface ActionResult<T = unknown> {
-  ok: boolean;
-  error?: string;
-  data?: T;
-}
+interface ActionResult<T = unknown> { ok: boolean; error?: string; data?: T; }
 
 interface AutopilotRow {
-  key: string;
-  enabled: boolean;
-  description: string;
-  category: string;
+  key: string; enabled: boolean; description: string; category: string;
   job_type: string;
-  cron_schedule: string | null;
-  cron_jobname: string | null;
-  last_run: string | null;
-  last_run_status: string | null;
-  total_runs_30d: number;
-  failed_runs_7d: number;
+  cron_jobid: number | null; cron_schedule: string | null; cron_jobname: string | null; cron_active: boolean | null;
+  last_run: string | null; last_run_status: string | null;
+  total_runs_30d: number; failed_runs_7d: number;
   estimated_cost_eur_month: number;
-  updated_at: string | null;
-  updated_by: string | null;
+  updated_at: string | null; updated_by: string | null;
 }
 
 export async function listAutopilotsAction(): Promise<ActionResult<AutopilotRow[]>> {
@@ -46,6 +35,20 @@ export async function toggleAutopilotAction(key: string, enabled: boolean): Prom
     if (!result?.ok) return { ok: false, error: result?.error || 'toggle_failed' };
     revalidatePath('/[locale]/admin/autopilots', 'page');
     return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : String(e) };
+  }
+}
+
+export async function updateScheduleAction(jobid: number, cron: string): Promise<ActionResult<{ schedule: string }>> {
+  try {
+    const sb = await createClient();
+    const { data, error } = await sb.rpc('nl_admin_autopilot_update_schedule', { p_jobid: jobid, p_schedule: cron });
+    if (error) return { ok: false, error: `RPC: ${error.message}` };
+    const result = data as { ok?: boolean; error?: string; detail?: string; schedule?: string };
+    if (!result?.ok) return { ok: false, error: result?.detail || result?.error || 'update_failed' };
+    revalidatePath('/[locale]/admin/autopilots', 'page');
+    return { ok: true, data: { schedule: result.schedule! } };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : String(e) };
   }

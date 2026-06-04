@@ -1,10 +1,7 @@
-import { AppShell } from '@/components/layout/AppShell';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from '@/i18n/routing';
-import { getTranslations } from 'next-intl/server';
 import { IntegrationsClient } from './IntegrationsClient';
 
-// Sem cache: as integrações são state crítico do admin
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
@@ -20,12 +17,6 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
     return null;
   }
 
-  const t = await getTranslations();
   const { data: integrations } = await sb.rpc('nl_admin_integrations_list');
-
-  return (
-    <AppShell role="admin" pageTitle={t('integrations.title')}>
-      <IntegrationsClient initial={integrations || []} />
-    </AppShell>
-  );
+  return <IntegrationsClient initial={integrations || []} />;
 }

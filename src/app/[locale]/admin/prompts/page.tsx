@@ -1,4 +1,3 @@
-import { AppShell } from '@/components/layout/AppShell';
 import { PromptsView } from './PromptsView';
 import { getTranslations } from 'next-intl/server';
 
@@ -8,9 +7,5 @@ export async function generateMetadata() {
 }
 
 export default function Page() {
-  return (
-    <AppShell role="admin">
-      <PromptsView />
-    </AppShell>
-  );
+  return <PromptsView />;
 }
