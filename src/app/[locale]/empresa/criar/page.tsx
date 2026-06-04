@@ -14,6 +14,12 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   if (!user) redirect({ href: '/login?next=/empresa/criar' as any, locale });
   const t = await getTranslations();
 
+  // Map Country (with name_pt/name_en) into the shape CreateOrgForm expects ({ code, name })
+  const countries = COUNTRIES.map((c) => ({
+    code: c.code,
+    name: locale === 'pt' ? c.name_pt : c.name_en,
+  }));
+
   return (
     <>
       <Header />
@@ -22,7 +28,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
           <h1 className="text-3xl sm:text-4xl font-bold text-slate-900">{t('emp.create.title')}</h1>
           <p className="mt-2 text-slate-600">{t('emp.create.subtitle')}</p>
           <div className="mt-8">
-            <CreateOrgForm countries={COUNTRIES} locale={locale} />
+            <CreateOrgForm countries={countries} locale={locale} />
           </div>
         </div>
       </main>
