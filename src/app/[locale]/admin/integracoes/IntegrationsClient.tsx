@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import { 
   CheckCircle2, XCircle, AlertCircle, ExternalLink, Eye, EyeOff, 
-  Save, Trash2, PlayCircle, Loader2, ChevronDown, ChevronUp, Clock
+  Save, Trash2, PlayCircle, Loader2, ChevronDown, ChevronUp, Clock, Shield
 } from 'lucide-react';
 
 interface Integration {
@@ -18,6 +18,8 @@ interface Integration {
   instructions: string | null;
   is_required: boolean;
   has_test: boolean;
+  apply_strategy: string | null;  // 'store_only' | 'supabase_auth_id' | 'supabase_auth_secret'
+  auth_provider_key: string | null;  // 'google' | 'github' | 'azure'
   affects_features: string[] | null;
   configured: boolean;
   value_masked: string | null;
@@ -38,7 +40,29 @@ const CATEGORY_ICONS: Record<string, string> = {
   'Interno': '🔧',
 };
 
-const CATEGORY_ORDER = ['IA', 'Email', 'Vídeo', 'Pagamentos', 'Imagens', 'OAuth', 'Config', 'Interno'];
+// Ordem fixa para categorias conhecidas; categorias novas/desconhecidas aparecem no fim
+const KNOWN_ORDER = ['IA', 'Email', 'Vídeo', 'Pagamentos', 'Imagens', 'OAuth', 'Config', 'Interno'];
+
+const SUPABASE_URL_DEFAULT = 'https://obpezocujzdaznrdgwoo.supabase.co';
+
+async function pushOAuthToSupabase(item: Integration, value: string, accessToken: string) {
+  // Mapear key → campo Supabase Management API
+  if (!item.auth_provider_key) return null;
+  const provider = item.auth_provider_key; // google | github | azure
+  const isSecret = item.apply_strategy === 'supabase_auth_secret';
+  const body: Record<string, unknown> = {
+    [`external_${provider}_enabled`]: true,
+    [`external_${provider}_${isSecret ? 'secret' : 'client_id'}`]: value,
+  };
+  const url = (process.env.NEXT_PUBLIC_SUPABASE_URL || SUPABASE_URL_DEFAULT) + '/functions/v1/admin-auth-config';
+  const resp = await fetch(url, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${accessToken}` },
+    body: JSON.stringify(body),
+  });
+  const data = await resp.json();
+  return { ok: resp.ok && data?.ok, data };
+}
 
 export function IntegrationsClient({ initial }: { initial: Integration[] }) {
   const t = useTranslations();
@@ -50,7 +74,11 @@ export function IntegrationsClient({ initial }: { initial: Integration[] }) {
       if (!groups[i.category]) groups[i.category] = [];
       groups[i.category].push(i);
     }
-    return CATEGORY_ORDER.map((cat) => ({ category: cat, items: groups[cat] || [] })).filter((g) => g.items.length > 0);
+    // Ordem: categorias conhecidas primeiro, depois desconhecidas alfabéticas
+    const seen = new Set(KNOWN_ORDER);
+    const extras = Object.keys(groups).filter((c) => !seen.has(c)).sort();
+    const order = [...KNOWN_ORDER, ...extras];
+    return order.map((cat) => ({ category: cat, items: groups[cat] || [] })).filter((g) => g.items.length > 0);
   }, [data]);
 
   const requiredMissing = data.filter((i) => i.is_required && !i.configured).length;
@@ -68,6 +96,9 @@ export function IntegrationsClient({ initial }: { initial: Integration[] }) {
       <div>
         <h1 className="text-2xl font-bold text-slate-900">{t('integrations.title')}</h1>
         <p className="text-sm text-slate-500 mt-1">{t('integrations.subtitle')}</p>
+        <p className="text-xs text-slate-400 mt-2">
+          🔐 Chaves OAuth (Google/GitHub/Microsoft) são automaticamente activadas no Supabase Auth quando guardadas — desde que <code className="bg-slate-100 px-1 rounded">SUPABASE_MANAGEMENT_TOKEN</code> esteja configurado.
+        </p>
       </div>
 
       {/* Status summary */}
@@ -116,23 +147,41 @@ function IntegrationCard({ item, onUpdate }: { item: Integration; onUpdate: () =
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
 
+  const isOAuthKey = item.apply_strategy?.startsWith('supabase_auth_');
   const status = !item.configured ? 'missing' : item.last_test_status || 'untested';
-  const statusColor = status === 'ok' ? 'emerald' : status === 'failed' ? 'red' : status === 'missing' ? (item.is_required ? 'amber' : 'slate') : 'slate';
 
   async function save() {
     if (saving) return;
     setSaving(true);
     try {
       const sb = createClient();
-      const { data, error } = await sb.rpc('nl_admin_integrations_set', { p_key: item.key, p_value: value });
-      if (error || !(data as any)?.ok) {
-        toast.error(error?.message || (data as any)?.error || 'Falhou');
+      const { data: saveData, error } = await sb.rpc('nl_admin_integrations_set', { p_key: item.key, p_value: value });
+      if (error || !(saveData as any)?.ok) {
+        toast.error(error?.message || (saveData as any)?.error || 'Falhou guardar');
         return;
       }
-      toast.success((data as any).action === 'deleted' ? 'Removido' : 'Guardado');
+
+      // Push automático ao Supabase Auth se for chave OAuth
+      if (isOAuthKey && value.trim()) {
+        const { data: { session } } = await sb.auth.getSession();
+        if (session) {
+          const pushResult = await pushOAuthToSupabase(item, value.trim(), session.access_token);
+          if (pushResult?.ok) {
+            toast.success('Guardado e activado no Supabase Auth');
+          } else {
+            const msg = pushResult?.data?.error || pushResult?.data?.message || 'sem detalhe';
+            toast.warning(`Guardado, mas push ao Supabase falhou: ${msg}. Configura SUPABASE_MANAGEMENT_TOKEN para activar.`);
+          }
+        }
+      } else {
+        toast.success((saveData as any).action === 'deleted' ? 'Removido' : 'Guardado');
+      }
+
       setValue('');
       setEditing(false);
       await onUpdate();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Erro inesperado');
     } finally { setSaving(false); }
   }
 
@@ -155,7 +204,7 @@ function IntegrationCard({ item, onUpdate }: { item: Integration; onUpdate: () =
       const { data: { session } } = await sb.auth.getSession();
       if (!session) { toast.error('Sessão expirada'); return; }
       const resp = await fetch(
-        `${process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://obpezocujzdaznrdgwoo.supabase.co'}/functions/v1/admin-integrations-test`,
+        `${process.env.NEXT_PUBLIC_SUPABASE_URL || SUPABASE_URL_DEFAULT}/functions/v1/admin-integrations-test`,
         {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
@@ -181,6 +230,11 @@ function IntegrationCard({ item, onUpdate }: { item: Integration; onUpdate: () =
               {item.is_required && (
                 <span className="text-[10px] uppercase font-bold tracking-wider bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">
                   Essencial
+                </span>
+              )}
+              {isOAuthKey && (
+                <span className="text-[10px] uppercase font-bold tracking-wider bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded inline-flex items-center gap-1">
+                  <Shield className="h-2.5 w-2.5" /> Supabase Auth
                 </span>
               )}
               <StatusBadge status={status} message={item.last_test_message} />

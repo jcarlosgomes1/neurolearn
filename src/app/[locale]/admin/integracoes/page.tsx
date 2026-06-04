@@ -4,6 +4,10 @@ import { redirect } from '@/i18n/routing';
 import { getTranslations } from 'next-intl/server';
 import { IntegrationsClient } from './IntegrationsClient';
 
+// Sem cache: as integrações são state crítico do admin
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const sb = await createClient();
