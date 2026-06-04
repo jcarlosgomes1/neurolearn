@@ -12,7 +12,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   const sb = await createClient();
   const { data: { user } } = await sb.auth.getUser();
   if (!user) redirect(`/${locale}/login?next=/${locale}/admin/empresas`);
-  const { data: profile } = await sb.from('nl_profiles').select('role, name').eq('id', user.id).single();
+  const { data: profile } = await sb.from('nl_profiles').select('role').eq('id', user.id).single();
   if (!profile || !['admin','super_admin'].includes(profile.role)) redirect(`/${locale}`);
 
   const { data: orgs } = await sb.from('nl_organizations')
@@ -21,7 +21,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
     .order('created_at', { ascending: false });
 
   return (
-    <AppShell role="admin" pageTitle={t('admin.companies.title')} session={{ email: user.email || '', area: 'admin' }}>
+    <AppShell role="admin" pageTitle={t('admin.companies.title')}>
       <div className="px-4 sm:px-6 py-6 max-w-6xl mx-auto">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-slate-900">{t('admin.companies.title')}</h1>
