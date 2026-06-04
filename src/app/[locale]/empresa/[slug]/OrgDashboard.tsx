@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 import { Link } from '@/i18n/routing';
 import { toast } from 'sonner';
-import { Users, UserPlus, Trash2, Building2, Crown, Shield, FileText } from 'lucide-react';
+import { Users, UserPlus, Trash2, Building2, Crown, Shield, FileText, Sparkles } from 'lucide-react';
 
 type Member = { user_id: string; role: string; joined_at: string; name?: string | null; avatar_url?: string | null };
 type Invite = { id: string; email: string; role: string; invited_at: string; expires_at: string };
@@ -37,9 +37,7 @@ export function OrgDashboard({ data }: { data: any }) {
     setSending(true);
     try {
       const sb = createClient();
-      const { data, error } = await sb.rpc('nl_org_invite_member', {
-        p_org_id: org.id, p_email: inviteEmail.trim(), p_role: inviteRole,
-      });
+      const { data, error } = await sb.rpc('nl_org_invite_member', { p_org_id: org.id, p_email: inviteEmail.trim(), p_role: inviteRole });
       if (error) throw error;
       const r = data as any;
       if (r?.ok) {
@@ -50,9 +48,8 @@ export function OrgDashboard({ data }: { data: any }) {
         toast.info(t('emp.dashboard.link_copied'));
         setInviteEmail(''); setShowInvite(false);
       }
-    } catch (e: any) {
-      toast.error(e?.message || 'Invite failed');
-    } finally { setSending(false); }
+    } catch (e: any) { toast.error(e?.message || 'Invite failed'); }
+    finally { setSending(false); }
   }
 
   async function removeMember(userId: string) {
@@ -70,7 +67,6 @@ export function OrgDashboard({ data }: { data: any }) {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-      {/* Header */}
       <div className="flex items-start gap-4 mb-6">
         <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-white text-xl font-bold flex-shrink-0"
           style={{ background: `linear-gradient(135deg, ${org.primary_color || '#6366f1'}, #8b5cf6)` }}>
@@ -82,19 +78,19 @@ export function OrgDashboard({ data }: { data: any }) {
         </div>
       </div>
 
-      {/* Quick actions */}
       <div className="flex flex-wrap gap-2 mb-8">
-        <Link 
-          href={`/empresa/${org.slug}/conteudos` as any}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-slate-200 hover:border-brand-300 hover:bg-brand-50 text-slate-700 hover:text-brand-700 text-sm font-medium transition-colors"
-        >
-          <FileText className="h-4 w-4" />
-          Conteúdos da empresa
+        <Link href={`/empresa/${org.slug}/conteudos` as any}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-slate-200 hover:border-brand-300 hover:bg-brand-50 text-slate-700 hover:text-brand-700 text-sm font-medium transition-colors">
+          <FileText className="h-4 w-4" /> Conteúdos
           <span className="text-xs bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-semibold">IA</span>
+        </Link>
+        <Link href={`/empresa/${org.slug}/cursos/propostas` as any}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-slate-200 hover:border-brand-300 hover:bg-brand-50 text-slate-700 hover:text-brand-700 text-sm font-medium transition-colors">
+          <Sparkles className="h-4 w-4" /> Propostas de curso
+          <span className="text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-semibold">Novo</span>
         </Link>
       </div>
 
-      {/* Stats grid */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
         <Stat icon={<Users className="h-4 w-4" />} label={t('emp.dashboard.members')} value={String(org.seats_used)} />
         <Stat icon={<Users className="h-4 w-4 opacity-60" />} label={t('emp.dashboard.seats')} value={org.plan === 'trial' || org.plan === 'enterprise' ? '∞' : `${org.seats_used}/${org.seats_purchased}`} />
@@ -102,19 +98,16 @@ export function OrgDashboard({ data }: { data: any }) {
         {trialDays !== null && <Stat icon={<Shield className="h-4 w-4" />} label={t('emp.dashboard.trial_until')} value={`${trialDays}d`} />}
       </div>
 
-      {/* Invite section */}
       {org.is_admin && (
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 mb-6">
           {!showInvite ? (
-            <button onClick={() => setShowInvite(true)}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-brand-600 to-violet-600 hover:opacity-90 text-white font-medium">
+            <button onClick={() => setShowInvite(true)} className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-brand-600 to-violet-600 hover:opacity-90 text-white font-medium">
               <UserPlus className="h-4 w-4" /> {t('emp.dashboard.invite_btn')}
             </button>
           ) : (
             <div className="space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <input type="email" placeholder={t('emp.dashboard.invite_email')} value={inviteEmail}
-                  onChange={(e) => setInviteEmail(e.target.value)}
+                <input type="email" placeholder={t('emp.dashboard.invite_email')} value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)}
                   className="sm:col-span-2 px-3 py-2 rounded-lg border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none" />
                 <select value={inviteRole} onChange={(e) => setInviteRole(e.target.value as any)}
                   className="px-3 py-2 rounded-lg border border-slate-200 focus:border-brand-500 outline-none bg-white">
@@ -135,7 +128,6 @@ export function OrgDashboard({ data }: { data: any }) {
         </div>
       )}
 
-      {/* Members */}
       <section className="mb-6">
         <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">{t('emp.dashboard.members')}</h2>
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 divide-y divide-slate-100">
@@ -158,7 +150,6 @@ export function OrgDashboard({ data }: { data: any }) {
         </div>
       </section>
 
-      {/* Pending invitations */}
       {invites.length > 0 && (
         <section>
           <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">{t('emp.dashboard.pending_invites')}</h2>
