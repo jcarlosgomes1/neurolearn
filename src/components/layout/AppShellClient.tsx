@@ -35,6 +35,7 @@ const ADMIN_NAV: NavItem[] = [
   { href: '/admin/video', labelKey: 'shell.admin.video', emoji: '🎥', groupKey: 'shell.group.operations' },
   { href: '/admin/autopilots', labelKey: 'shell.admin.autopilots', emoji: '🤖', groupKey: 'shell.group.operations' },
   { href: '/admin/jobs', labelKey: 'shell.admin.jobs', emoji: '⚙️', groupKey: 'shell.group.operations' },
+  { href: '/admin/erros', labelKey: 'shell.admin.errors', emoji: '🐞', groupKey: 'shell.group.operations' },
   { href: '/admin/tutor-config', labelKey: 'shell.admin.tutor_config', emoji: '💡', groupKey: 'shell.group.operations' },
   { href: '/admin/prompts', labelKey: 'shell.admin.prompts', emoji: '💬', groupKey: 'shell.group.operations' },
   { href: '/admin/integracoes', labelKey: 'shell.admin.integrations', emoji: '🔌', groupKey: 'shell.group.operations' },
