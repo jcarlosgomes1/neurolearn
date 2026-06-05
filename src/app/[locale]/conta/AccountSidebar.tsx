@@ -1,7 +1,7 @@
 'use client';
 
 import { Link, usePathname } from '@/i18n/routing';
-import { User, Bell, Heart, Award, Sparkles, Shield, CreditCard, LogOut } from 'lucide-react';
+import { User, Bell, Heart, Award, Sparkles, Shield, LogOut } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 
@@ -21,7 +21,7 @@ export function AccountSidebar() {
   async function logout() {
     const sb = createClient();
     await sb.auth.signOut();
-    router.push('/');
+    router.push('/' as any);
   }
 
   return (
