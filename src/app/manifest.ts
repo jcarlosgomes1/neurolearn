@@ -4,17 +4,17 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'NeuroLearn',
     short_name: 'NeuroLearn',
-    description: 'Global AI-powered learning platform',
+    description: 'Plataforma global de cursos com IA. Forma a tua equipa, sem fricção.',
     start_url: '/',
     display: 'standalone',
-    background_color: '#ffffff',
+    background_color: '#0f172a',
     theme_color: '#6366f1',
     orientation: 'portrait',
     icons: [
-      { src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
-      { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
-      { src: '/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+      { src: '/icon', sizes: '32x32', type: 'image/png', purpose: 'any' },
+      { src: '/apple-icon', sizes: '180x180', type: 'image/png', purpose: 'any' },
     ],
-    categories: ['education', 'productivity'],
+    categories: ['education', 'productivity', 'business'],
+    lang: 'pt',
   };
 }
