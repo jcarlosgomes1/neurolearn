@@ -1,0 +1,141 @@
+'use client';
+
+import { useState, useTransition } from 'react';
+import { Link } from '@/i18n/routing';
+import { acceptInquiryAction, listInquiriesForOrgAction } from '../corporate-actions';
+import { Inbox, Clock, CheckCircle, XCircle, Send, Loader2, Calendar, Briefcase, AlertCircle } from 'lucide-react';
+
+const STATUS_BADGES: Record<string, { label: string; className: string; icon: any }> = {
+  pending: { label: 'A aguardar instrutor', className: 'bg-amber-100 text-amber-800', icon: Clock },
+  quoted: { label: 'Orçamento recebido', className: 'bg-blue-100 text-blue-800', icon: AlertCircle },
+  accepted: { label: 'Aceite', className: 'bg-emerald-100 text-emerald-800', icon: CheckCircle },
+  scheduled: { label: 'Agendado', className: 'bg-violet-100 text-violet-800', icon: Calendar },
+  in_delivery: { label: 'Em entrega', className: 'bg-violet-100 text-violet-800', icon: Calendar },
+  completed: { label: 'Concluído', className: 'bg-slate-100 text-slate-700', icon: CheckCircle },
+  cancelled: { label: 'Cancelado', className: 'bg-slate-100 text-slate-500', icon: XCircle },
+  rejected: { label: 'Recusado', className: 'bg-red-100 text-red-700', icon: XCircle },
+};
+
+function fmt(cents?: number | null, currency = 'EUR') {
+  if (cents == null) return '—';
+  return new Intl.NumberFormat('pt-PT', { style: 'currency', currency }).format(cents / 100);
+}
+
+export function PedidosOrgClient({ orgId, orgName, orgSlug, memberRole, locale, inquiries: initial }: {
+  orgId: string; orgName: string; orgSlug: string; memberRole: string; locale: string; inquiries: any[];
+}) {
+  const [inquiries, setInquiries] = useState(initial);
+  const [filter, setFilter] = useState('');
+  const [pending, startTransition] = useTransition();
+
+  const filtered = filter ? inquiries.filter(i => i.status === filter) : inquiries;
+  const canAct = ['owner', 'admin', 'manager'].includes(memberRole);
+
+  async function reload() {
+    const r = await listInquiriesForOrgAction(orgId, filter || undefined);
+    if (r.ok) setInquiries(r.inquiries);
+  }
+
+  async function handleAccept(id: string, priceCents: number, currency: string) {
+    if (!confirm(`Aceitar orçamento de ${fmt(priceCents, currency)}? Isto compromete a empresa ao pagamento.`)) return;
+    startTransition(async () => {
+      const r = await acceptInquiryAction(id);
+      if (r.ok) reload();
+      else alert('Erro: ' + (r.error || 'unknown'));
+    });
+  }
+
+  return (
+    <main className="bg-slate-50 min-h-screen">
+      <section className="bg-white border-b border-slate-200">
+        <div className="max-w-5xl mx-auto px-4 py-6 flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <Inbox className="h-6 w-6 text-brand-600" />
+              <h1 className="text-2xl font-bold text-slate-900">Pedidos a instrutores</h1>
+            </div>
+            <p className="text-sm text-slate-500">Orçamentos enviados a instrutores corporate.</p>
+          </div>
+          <Link href={`/empresa/${orgSlug}/marketplace/instrutores` as any}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-lg">
+            <Briefcase className="h-4 w-4" /> Browse instrutores
+          </Link>
+        </div>
+      </section>
+
+      <div className="max-w-5xl mx-auto px-4 py-6">
+        <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
+          {[['', 'Todos'], ['pending', 'Pendentes'], ['quoted', 'Com orçamento'], ['accepted', 'Aceites'], ['completed', 'Concluídos']].map(([k, label]) => (
+            <button key={k} onClick={() => { setFilter(k as string); }}
+              className={`px-3 py-1.5 text-sm font-medium rounded-lg whitespace-nowrap ${filter === k ? 'bg-slate-900 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {filtered.length === 0 ? (
+          <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
+            <Inbox className="h-12 w-12 text-slate-300 mx-auto mb-3" />
+            <h3 className="font-semibold text-slate-900 mb-1">Sem pedidos</h3>
+            <p className="text-sm text-slate-500 mb-4">Procura instrutores e pede o teu primeiro orçamento corporate.</p>
+            <Link href={`/empresa/${orgSlug}/marketplace/instrutores` as any}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-lg">
+              <Briefcase className="h-4 w-4" /> Browse instrutores
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {filtered.map((i) => {
+              const badge = STATUS_BADGES[i.status] || STATUS_BADGES.pending;
+              const Icon = badge.icon;
+              return (
+                <div key={i.id} className="bg-white border border-slate-200 rounded-xl p-5">
+                  <div className="flex items-start justify-between gap-3 flex-wrap mb-3">
+                    <div className="flex items-center gap-3">
+                      {i.instructor_avatar ? (
+                        <img src={i.instructor_avatar} alt={i.instructor_name} className="h-10 w-10 rounded-full object-cover" />
+                      ) : (
+                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-brand-500 to-violet-600 text-white flex items-center justify-center font-bold text-sm">
+                          {i.instructor_name?.charAt(0)?.toUpperCase() || '?'}
+                        </div>
+                      )}
+                      <div>
+                        <div className="font-semibold text-slate-900">{i.instructor_name}</div>
+                        {i.service_title && <div className="text-xs text-slate-500">{i.service_title}</div>}
+                      </div>
+                    </div>
+                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${badge.className}`}>
+                      <Icon className="h-3 w-3" /> {badge.label}
+                    </span>
+                  </div>
+                  
+                  <p className="text-sm text-slate-700 mb-3 whitespace-pre-wrap line-clamp-3">{i.message}</p>
+                  
+                  {i.quoted_price_cents && (
+                    <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 mb-3">
+                      <div className="font-bold text-blue-900 text-lg">{fmt(i.quoted_price_cents, i.quoted_currency)}</div>
+                      {i.quoted_notes && <div className="text-sm text-blue-700 mt-1">{i.quoted_notes}</div>}
+                      {i.quoted_valid_until && (
+                        <div className="text-xs text-blue-600 mt-2">Válido até {new Date(i.quoted_valid_until).toLocaleDateString(locale)}</div>
+                      )}
+                    </div>
+                  )}
+                  
+                  <div className="flex items-center justify-between text-xs text-slate-500 pt-3 border-t border-slate-100">
+                    <span>Criado {new Date(i.created_at).toLocaleDateString(locale)}</span>
+                    {i.status === 'quoted' && canAct && (
+                      <button onClick={() => handleAccept(i.id, i.quoted_price_cents, i.quoted_currency)} disabled={pending}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg disabled:opacity-50">
+                        <CheckCircle className="h-4 w-4" /> Aceitar orçamento
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </main>
+  );
+}
