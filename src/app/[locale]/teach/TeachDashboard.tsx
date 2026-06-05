@@ -7,6 +7,7 @@ import { Stat } from '@/components/shared/Stat';
 import { DashboardSkeleton } from '@/components/shared/DashboardSkeleton';
 import { fmtCents, relTime } from '@/lib/utils/cn';
 import { useTranslations } from 'next-intl';
+import { Plus, Briefcase, Inbox } from 'lucide-react';
 
 export function TeachDashboard() {
   const t = useTranslations();
@@ -42,7 +43,22 @@ export function TeachDashboard() {
           <h1 className="text-2xl font-bold text-slate-900">{t('teach.title')}</h1>
           <p className="text-slate-500 text-sm mt-1">{t('teach.subtitle')}</p>
         </div>
-        <Link href={'/teach/novo' as any} className="btn-primary">{t('teach.btn_new_course')}</Link>
+        <Link href={'/teach/novo' as any} className="btn-primary inline-flex items-center gap-1.5">
+          <Plus className="h-4 w-4" /> {t('teach.btn_new_course')}
+        </Link>
+      </div>
+
+      {/* Corporate Marketplace shortcuts */}
+      <div className="flex flex-wrap gap-2">
+        <Link href={'/teach/servicos' as any}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-slate-200 hover:border-violet-300 hover:bg-violet-50 text-slate-700 hover:text-violet-700 text-sm font-medium transition-colors">
+          <Briefcase className="h-4 w-4" /> Serviços Corporate
+          <span className="text-xs bg-violet-100 text-violet-700 px-1.5 py-0.5 rounded font-semibold">NEW</span>
+        </Link>
+        <Link href={'/teach/pedidos' as any}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-slate-200 hover:border-violet-300 hover:bg-violet-50 text-slate-700 hover:text-violet-700 text-sm font-medium transition-colors">
+          <Inbox className="h-4 w-4" /> Pedidos recebidos
+        </Link>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">

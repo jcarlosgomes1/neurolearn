@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 import { Link } from '@/i18n/routing';
 import { toast } from 'sonner';
-import { Users, UserPlus, Trash2, Building2, Crown, Shield, FileText, Sparkles, Settings } from 'lucide-react';
+import { Users, UserPlus, Trash2, Building2, Crown, Shield, FileText, Sparkles, Settings, Briefcase, Inbox } from 'lucide-react';
 
 type Member = { user_id: string; role: string; joined_at: string; name?: string | null; avatar_url?: string | null };
 type Invite = { id: string; email: string; role: string; invited_at: string; expires_at: string };
@@ -83,6 +83,15 @@ export function OrgDashboard({ data }: { data: any }) {
         <Link href={`/empresa/${org.slug}/cursos/propostas` as any}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-slate-200 hover:border-brand-300 hover:bg-brand-50 text-slate-700 hover:text-brand-700 text-sm font-medium transition-colors">
           <Sparkles className="h-4 w-4" /> Propostas
+        </Link>
+        <Link href={`/empresa/${org.slug}/marketplace/instrutores` as any}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-slate-200 hover:border-violet-300 hover:bg-violet-50 text-slate-700 hover:text-violet-700 text-sm font-medium transition-colors">
+          <Briefcase className="h-4 w-4" /> Marketplace Instrutores
+          <span className="text-xs bg-violet-100 text-violet-700 px-1.5 py-0.5 rounded font-semibold">NEW</span>
+        </Link>
+        <Link href={`/empresa/${org.slug}/pedidos` as any}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-slate-200 hover:border-violet-300 hover:bg-violet-50 text-slate-700 hover:text-violet-700 text-sm font-medium transition-colors">
+          <Inbox className="h-4 w-4" /> Pedidos
         </Link>
         {org.is_admin && (
           <Link href={`/empresa/${org.slug}/admin` as any}
