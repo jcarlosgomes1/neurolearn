@@ -23,24 +23,14 @@ export function CourseStructuredData({ course, baseUrl }: {
     '@type': 'Course',
     name: course.title,
     description: course.description || course.title,
-    provider: {
-      '@type': 'Organization',
-      name: 'NeuroLearn',
-      sameAs: base,
-    },
+    provider: { '@type': 'Organization', name: 'NeuroLearn', sameAs: base },
     url,
     inLanguage: course.language || 'pt',
     educationalLevel: course.level || 'Beginner',
   };
   
   if (course.cover_url) data.image = course.cover_url;
-  
-  if (course.instructor_name) {
-    data.instructor = {
-      '@type': 'Person',
-      name: course.instructor_name,
-    };
-  }
+  if (course.instructor_name) data.instructor = { '@type': 'Person', name: course.instructor_name };
   
   if (course.duration_hours) {
     const hours = Math.max(1, Math.round(course.duration_hours));
@@ -64,28 +54,20 @@ export function CourseStructuredData({ course, baseUrl }: {
       '@type': 'AggregateRating',
       ratingValue: course.rating_avg.toFixed(2),
       reviewCount: course.rating_count,
-      bestRating: 5,
-      worstRating: 1,
+      bestRating: 5, worstRating: 1,
     };
   }
   
-  if (course.skills && course.skills.length > 0) {
-    data.teaches = course.skills;
-  }
-  
+  if (course.skills && course.skills.length > 0) data.teaches = course.skills;
   if (course.created_at) data.datePublished = course.created_at;
   
-  // Required field for Course schema as of 2024: hasCourseInstance
   data.hasCourseInstance = {
     '@type': 'CourseInstance',
     courseMode: 'Online',
     courseWorkload: course.duration_hours ? `PT${Math.max(1, Math.round(course.duration_hours))}H` : undefined,
   };
   
-  return (
-    <script type="application/ld+json" 
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />
-  );
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
 }
 
 export function OrganizationStructuredData({ baseUrl }: { baseUrl?: string }) {
@@ -95,14 +77,31 @@ export function OrganizationStructuredData({ baseUrl }: { baseUrl?: string }) {
     '@type': 'Organization',
     name: 'NeuroLearn',
     url: base,
-    logo: `${base}/logo.png`,
+    logo: `${base}/apple-icon`,
     description: 'Plataforma de cursos com IA. Forma a tua equipa, sem fricção.',
-    sameAs: [], // adicionar redes sociais quando existirem
+    sameAs: [],
   };
-  return (
-    <script type="application/ld+json" 
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />
-  );
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
+}
+
+export function WebsiteStructuredData({ baseUrl }: { baseUrl?: string }) {
+  const base = baseUrl || 'https://neurolearn-rosy.vercel.app';
+  const data = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'NeuroLearn',
+    url: base,
+    description: 'Plataforma de cursos com IA',
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: {
+        '@type': 'EntryPoint',
+        urlTemplate: `${base}/search?q={search_term_string}`,
+      },
+      'query-input': 'required name=search_term_string',
+    },
+  };
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
 }
 
 export function BreadcrumbStructuredData({ items, baseUrl }: {
@@ -120,10 +119,7 @@ export function BreadcrumbStructuredData({ items, baseUrl }: {
       item: item.href.startsWith('http') ? item.href : `${base}${item.href}`,
     })),
   };
-  return (
-    <script type="application/ld+json" 
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />
-  );
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
 }
 
 export function FAQStructuredData({ items }: { items: Array<{ q: string; a: string }> }) {
@@ -136,10 +132,7 @@ export function FAQStructuredData({ items }: { items: Array<{ q: string; a: stri
       acceptedAnswer: { '@type': 'Answer', text: item.a },
     })),
   };
-  return (
-    <script type="application/ld+json" 
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />
-  );
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
 }
 
 export function ArticleStructuredData({ post, baseUrl }: {
@@ -163,12 +156,9 @@ export function ArticleStructuredData({ post, baseUrl }: {
     publisher: { 
       '@type': 'Organization', 
       name: 'NeuroLearn',
-      logo: { '@type': 'ImageObject', url: `${base}/logo.png` }
+      logo: { '@type': 'ImageObject', url: `${base}/apple-icon` }
     },
     mainEntityOfPage: { '@type': 'WebPage', '@id': `${base}/blog/${post.slug}` },
   };
-  return (
-    <script type="application/ld+json" 
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />
-  );
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
 }
