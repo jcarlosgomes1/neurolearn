@@ -7,21 +7,26 @@ import { Link } from '@/i18n/routing';
 
 export function GlobalErrorBoundary({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
-    // Logar para servidor
-    const sb = createClient();
-    sb.rpc('nl_log_app_error', {
-      p_data: {
-        message: error.message,
-        stack: error.stack,
-        url: typeof window !== 'undefined' ? window.location.href : '',
-        user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
-        source: 'client',
-        level: 'error',
-        metadata: { digest: error.digest },
-      },
-    }).then(() => {}).catch(() => {});
-    
-    // Console também
+    // Logar para servidor (Supabase rpc returns PromiseLike, use IIFE try/catch)
+    (async () => {
+      try {
+        const sb = createClient();
+        await sb.rpc('nl_log_app_error', {
+          p_data: {
+            message: error.message,
+            stack: error.stack,
+            url: typeof window !== 'undefined' ? window.location.href : '',
+            user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
+            source: 'client',
+            level: 'error',
+            metadata: { digest: error.digest },
+          },
+        });
+      } catch {
+        // silent — não queremos que o error reporter ele próprio quebre a UI
+      }
+    })();
+
     console.error('App error:', error);
   }, [error]);
 
