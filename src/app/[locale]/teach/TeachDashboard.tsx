@@ -7,7 +7,7 @@ import { Stat } from '@/components/shared/Stat';
 import { DashboardSkeleton } from '@/components/shared/DashboardSkeleton';
 import { fmtCents, relTime } from '@/lib/utils/cn';
 import { useTranslations } from 'next-intl';
-import { Plus, Briefcase, Inbox } from 'lucide-react';
+import { Plus, Briefcase, Inbox, TrendingUp } from 'lucide-react';
 
 export function TeachDashboard() {
   const t = useTranslations();
@@ -48,16 +48,19 @@ export function TeachDashboard() {
         </Link>
       </div>
 
-      {/* Corporate Marketplace shortcuts */}
       <div className="flex flex-wrap gap-2">
         <Link href={'/teach/servicos' as any}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-slate-200 hover:border-violet-300 hover:bg-violet-50 text-slate-700 hover:text-violet-700 text-sm font-medium transition-colors">
           <Briefcase className="h-4 w-4" /> Serviços Corporate
-          <span className="text-xs bg-violet-100 text-violet-700 px-1.5 py-0.5 rounded font-semibold">NEW</span>
         </Link>
         <Link href={'/teach/pedidos' as any}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-slate-200 hover:border-violet-300 hover:bg-violet-50 text-slate-700 hover:text-violet-700 text-sm font-medium transition-colors">
           <Inbox className="h-4 w-4" /> Pedidos recebidos
+        </Link>
+        <Link href={'/teach/b2b' as any}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 text-sm font-medium transition-colors">
+          <TrendingUp className="h-4 w-4" /> Earnings B2B
+          <span className="text-xs bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-semibold">NEW</span>
         </Link>
       </div>
 
