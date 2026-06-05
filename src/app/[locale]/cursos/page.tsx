@@ -5,12 +5,51 @@ import { CatalogClient } from './CatalogClient';
 import { createClient } from '@/lib/supabase/server';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
 import { getTranslations } from 'next-intl/server';
+import { BreadcrumbStructuredData } from '@/components/seo/StructuredData';
+import type { Metadata } from 'next';
 
 export const revalidate = 60;
 
-export async function generateMetadata() {
+const SITE_URL = 'https://neurolearn-rosy.vercel.app';
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
   const t = await getTranslations();
-  return { title: t('catalog.meta_title'), description: t('catalog.meta_desc') };
+  const title = t('catalog.meta_title');
+  const desc = t('catalog.meta_desc');
+  return {
+    title, description: desc,
+    alternates: {
+      canonical: `${SITE_URL}/${locale}/cursos`,
+      languages: {
+        'pt': `${SITE_URL}/pt/cursos`,
+        'en': `${SITE_URL}/en/cursos`,
+        'es': `${SITE_URL}/es/cursos`,
+        'fr': `${SITE_URL}/fr/cursos`,
+      },
+    },
+    openGraph: {
+      type: 'website', title, description: desc,
+      url: `${SITE_URL}/${locale}/cursos`, siteName: 'NeuroLearn',
+      images: [`${SITE_URL}/${locale}/opengraph-image`],
+    },
+    twitter: { card: 'summary_large_image', title, description: desc },
+  };
+}
+
+// ItemList JSON-LD (catalog)
+function CatalogItemList({ courses, locale }: { courses: any[]; locale: string }) {
+  const data = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    itemListElement: courses.slice(0, 20).map((c, idx) => ({
+      '@type': 'ListItem',
+      position: idx + 1,
+      url: `${SITE_URL}/${locale}/curso/${c.id}`,
+      name: c.title,
+    })),
+  };
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
 }
 
 export default async function CoursesPage({ params }: { params: Promise<{ locale: string }> }) {
@@ -26,14 +65,20 @@ export default async function CoursesPage({ params }: { params: Promise<{ locale
     .order('rating_avg', { ascending: false, nullsFirst: false })
     .limit(96);
   const blocks = await getHomeBlocks(locale);
+  const courseList = courses || [];
 
   return (
     <>
+      <BreadcrumbStructuredData items={[
+        { name: 'Início', href: `/${locale}` },
+        { name: t('nav.courses'), href: `/${locale}/cursos` },
+      ]} baseUrl={SITE_URL} />
+      {courseList.length > 0 && <CatalogItemList courses={courseList} locale={locale} />}
       <Header />
       <main className="bg-white min-h-screen">
         <PageHeader badge={t('catalog.badge')} title={t('catalog.title')} subtitle={t('catalog.subtitle')} />
         <section className="max-w-6xl mx-auto px-4 py-8 sm:py-12">
-          <CatalogClient courses={courses || []} />
+          <CatalogClient courses={courseList} />
         </section>
         <Footer data={blocks.footer_brand || {}} />
       </main>
