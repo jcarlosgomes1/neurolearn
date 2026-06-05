@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { ChevronDown, DollarSign } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 
 const SYMBOLS: Record<string, string> = { EUR: '€', USD: '$', GBP: '£', BRL: 'R$' };
 
@@ -16,10 +16,15 @@ export function CurrencySwitcher() {
     const saved = localStorage.getItem('nl_currency') || 'EUR';
     setCurrent(saved);
     
-    const sb = createClient();
-    sb.rpc('nl_monetization_get', { p_key: 'supported_currencies' }).then(({ data }: any) => {
-      if (Array.isArray(data)) setSupported(data);
-    }).catch(() => {});
+    (async () => {
+      try {
+        const sb = createClient();
+        const { data } = await sb.rpc('nl_monetization_get', { p_key: 'supported_currencies' });
+        if (Array.isArray(data)) setSupported(data as string[]);
+      } catch {
+        // silent fallback to default EUR
+      }
+    })();
   }, []);
 
   function pick(c: string) {
