@@ -4,6 +4,7 @@ import { Link } from '@/i18n/routing';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { UserMenu } from './UserMenu';
 import { NotificationsDropdown } from '@/components/notifications/NotificationsDropdown';
+import { CurrencySwitcher } from '@/components/currency/CurrencySwitcher';
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
@@ -25,6 +26,7 @@ export function HeaderClient({ session }: { session: Session | null }) {
 
   const NAV: Array<{ href: string; label: string }> = [
     { href: '/cursos', label: t('nav.courses') },
+    { href: '/aprender/percursos', label: 'Percursos' },
     { href: '/essentials', label: t('nav.essentials') },
     { href: '/empresas', label: t('nav.business') },
     { href: '/blog', label: t('nav.blog') },
@@ -50,6 +52,9 @@ export function HeaderClient({ session }: { session: Session | null }) {
               className="w-9 h-9 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-700 transition-colors">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
             </Link>
+
+            {/* Currency switcher: visível sempre, ajuda checkout/cursos */}
+            <div className="hidden sm:block"><CurrencySwitcher /></div>
 
             {/* Notifications: só visível quando logged in */}
             {session && <NotificationsDropdown locale={locale} />}
@@ -157,6 +162,11 @@ export function HeaderClient({ session }: { session: Session | null }) {
             </nav>
 
             <div className="px-5 py-4 border-t border-slate-100 space-y-3">
+              {/* Currency + Language no mobile menu */}
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-xs text-slate-500">Moeda</span>
+                <CurrencySwitcher />
+              </div>
               {!session && (
                 <>
                   <div className="flex items-center justify-between gap-3">
