@@ -1,20 +1,16 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { listOrgsAction } from './actions';
-import { EmpresasClient } from './EmpresasClient';
+import { NovaEmpresaWizard } from './NovaEmpresaWizard';
 
-export const metadata = { title: 'Empresas · Admin' };
-export const dynamic = 'force-dynamic';
+export const metadata = { title: 'Criar Empresa · Admin' };
 
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const sb = await createClient();
   const { data: { user } } = await sb.auth.getUser();
-  if (!user) redirect(`/${locale}/login?next=/${locale}/admin/empresas`);
+  if (!user) redirect(`/${locale}/login`);
   const { data: profile } = await sb.from('nl_profiles').select('role').eq('id', user.id).single();
   if (!profile || !['admin','super_admin'].includes(profile.role)) redirect(`/${locale}`);
   
-  const initial = await listOrgsAction({});
-  
-  return <EmpresasClient locale={locale} initial={initial.ok ? initial.data : { total: 0, orgs: [] }} />;
+  return <NovaEmpresaWizard locale={locale} />;
 }
