@@ -12,6 +12,7 @@ interface NavItem { href: string; labelKey: string; emoji: string; groupKey: str
 
 const ADMIN_NAV: NavItem[] = [
   { href: '/admin', labelKey: 'shell.admin.cockpit', emoji: '🎛', groupKey: 'shell.group.overview' },
+  { href: '/admin/sistema', labelKey: 'shell.admin.system', emoji: '💚', groupKey: 'shell.group.overview' },
   { href: '/admin/eventos', labelKey: 'shell.admin.events', emoji: '📡', groupKey: 'shell.group.overview' },
   { href: '/admin/agentes', labelKey: 'shell.admin.agentes', emoji: '🤝', groupKey: 'shell.group.overview' },
   { href: '/admin/cursos', labelKey: 'shell.admin.courses', emoji: '📚', groupKey: 'shell.group.content' },
