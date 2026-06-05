@@ -13,6 +13,6 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   if (!user) redirect(`/${locale}/login`);
   const { data: profile } = await sb.from('nl_profiles').select('role').eq('id', user.id).maybeSingle();
   if (!profile || !['admin','super_admin'].includes(profile.role)) redirect(`/${locale}`);
-  const r = await listAddonsAdminAction();
-  return <AddonsClient initial={r.ok ? r.addons : []} />;
+  const r: any = await listAddonsAdminAction();
+  return <AddonsClient initial={(r?.ok && Array.isArray(r.addons)) ? r.addons : []} />;
 }

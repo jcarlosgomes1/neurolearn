@@ -13,6 +13,6 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   if (!user) redirect(`/${locale}/login`);
   const { data: profile } = await sb.from('nl_profiles').select('role').eq('id', user.id).maybeSingle();
   if (!profile || !['admin','super_admin'].includes(profile.role)) redirect(`/${locale}`);
-  const r = await listCouponsAction();
-  return <CupoesClient initial={r.ok ? r.coupons : []} />;
+  const r: any = await listCouponsAction();
+  return <CupoesClient initial={(r?.ok && Array.isArray(r.coupons)) ? r.coupons : []} />;
 }
