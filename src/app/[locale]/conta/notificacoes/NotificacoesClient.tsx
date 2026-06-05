@@ -1,0 +1,112 @@
+'use client';
+
+import { useState, useTransition } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { Link } from '@/i18n/routing';
+import { Bell, Check, Trash2, Filter } from 'lucide-react';
+
+function relTime(date: string) {
+  const seconds = (Date.now() - new Date(date).getTime()) / 1000;
+  if (seconds < 60) return 'agora';
+  if (seconds < 3600) return Math.floor(seconds / 60) + 'm';
+  if (seconds < 86400) return Math.floor(seconds / 3600) + 'h';
+  return new Date(date).toLocaleDateString('pt-PT');
+}
+
+function link(kind?: string, id?: string): string | null {
+  if (!kind || !id) return null;
+  if (kind === 'course') return `/curso/${id}`;
+  if (kind === 'org') return `/empresa/${id}`;
+  if (kind === 'inquiry') return `/teach/pedidos`;
+  if (kind === 'placement') return `/talento/meus-pedidos`;
+  return null;
+}
+
+export function NotificacoesClient({ initial }: { initial: any[] }) {
+  const [items, setItems] = useState(initial);
+  const [filter, setFilter] = useState<'all'|'unread'>('all');
+  const [pending, startTransition] = useTransition();
+
+  const visible = filter === 'unread' ? items.filter(n => !n.read_at) : items;
+
+  async function markRead(id: string) {
+    const sb = createClient();
+    await sb.rpc('nl_notifications_mark_read', { p_ids: [id] });
+    setItems((p) => p.map((n) => n.id === id ? { ...n, read_at: new Date().toISOString() } : n));
+  }
+
+  async function markAll() {
+    const sb = createClient();
+    const ids = items.filter(n => !n.read_at).map(n => n.id);
+    if (ids.length === 0) return;
+    await sb.rpc('nl_notifications_mark_read', { p_ids: ids });
+    setItems((p) => p.map((n) => ({ ...n, read_at: n.read_at || new Date().toISOString() })));
+  }
+
+  async function remove(id: string) {
+    const sb = createClient();
+    await sb.rpc('nl_notifications_delete', { p_ids: [id] });
+    setItems((p) => p.filter(n => n.id !== id));
+  }
+
+  return (
+    <main className="bg-slate-50 min-h-screen">
+      <section className="bg-white border-b border-slate-200">
+        <div className="max-w-3xl mx-auto px-4 py-6 flex items-start justify-between gap-3 flex-wrap">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2"><Bell className="h-6 w-6" /> Notificações</h1>
+            <p className="text-sm text-slate-500 mt-1">{items.length} no total · {items.filter(n => !n.read_at).length} por ler</p>
+          </div>
+          <div className="flex gap-2">
+            <div className="inline-flex rounded-lg border border-slate-200 bg-white overflow-hidden">
+              <button onClick={() => setFilter('all')} className={`px-3 py-1.5 text-xs font-medium ${filter === 'all' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>Todas</button>
+              <button onClick={() => setFilter('unread')} className={`px-3 py-1.5 text-xs font-medium ${filter === 'unread' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>Por ler</button>
+            </div>
+            <button onClick={markAll} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-lg">
+              <Check className="h-3 w-3" /> Marcar todas
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <div className="max-w-3xl mx-auto px-4 py-6">
+        {visible.length === 0 ? (
+          <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
+            <Bell className="h-12 w-12 text-slate-300 mx-auto mb-3" />
+            <h3 className="font-semibold text-slate-900 mb-1">Sem notificações</h3>
+          </div>
+        ) : (
+          <div className="bg-white border border-slate-200 rounded-xl divide-y divide-slate-100">
+            {visible.map((n) => {
+              const href = link(n.link_kind, n.link_id);
+              const isUnread = !n.read_at;
+              return (
+                <div key={n.id} className={`p-4 flex gap-3 ${isUnread ? 'bg-brand-50/30' : ''}`}>
+                  {isUnread && <div className="h-2.5 w-2.5 rounded-full bg-brand-500 mt-1.5 flex-shrink-0" />}
+                  <div className="flex-1 min-w-0">
+                    {href ? (
+                      <Link href={href as any} className="block hover:opacity-80" onClick={() => isUnread && markRead(n.id)}>
+                        <h4 className="font-semibold text-slate-900">{n.title}</h4>
+                        <p className="text-sm text-slate-600 mt-0.5">{n.message}</p>
+                      </Link>
+                    ) : (
+                      <>
+                        <h4 className="font-semibold text-slate-900">{n.title}</h4>
+                        <p className="text-sm text-slate-600 mt-0.5">{n.message}</p>
+                      </>
+                    )}
+                    <span className="text-xs text-slate-400 mt-1 inline-block">{relTime(n.created_at)}</span>
+                  </div>
+                  <div className="flex gap-1">
+                    {isUnread && <button onClick={() => markRead(n.id)} className="p-1.5 text-slate-400 hover:text-emerald-600" aria-label="Lida"><Check className="h-4 w-4" /></button>}
+                    <button onClick={() => remove(n.id)} className="p-1.5 text-slate-400 hover:text-rose-600" aria-label="Eliminar"><Trash2 className="h-4 w-4" /></button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </main>
+  );
+}
