@@ -1,27 +1,25 @@
 import { Link } from '@/i18n/routing';
-import { Home, Search, ArrowLeft } from 'lucide-react';
+import { Compass, Home, Search } from 'lucide-react';
 
 export default function NotFound() {
   return (
-    <div className="min-h-[60vh] flex items-center justify-center px-4">
-      <div className="max-w-md text-center">
-        <div className="text-7xl sm:text-9xl font-black bg-gradient-to-br from-brand-600 to-violet-600 bg-clip-text text-transparent">
-          404
+    <div className="min-h-[70vh] flex items-center justify-center px-4">
+      <div className="max-w-md w-full text-center">
+        <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-gradient-to-br from-brand-500 to-violet-600 text-white mb-4 shadow-lg">
+          <Compass className="h-8 w-8" />
         </div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mt-4">Página não encontrada</h1>
-        <p className="text-sm text-slate-500 mt-2">
-          A página que procuras não existe ou foi movida.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-2 mt-6 justify-center">
-          <Link href={`/` as any}
-            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm">
-            <Home className="h-4 w-4" /> Página inicial
+        <div className="text-6xl font-bold text-slate-200 mb-1">404</div>
+        <h1 className="text-2xl font-bold text-slate-900 mb-2">Página não encontrada</h1>
+        <p className="text-sm text-slate-600 mb-6">Esta página foi movida ou nunca existiu. Tenta procurar abaixo ou volta à home.</p>
+        <div className="flex flex-wrap gap-2 justify-center">
+          <Link href={'/' as any} className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium rounded-lg">
+            <Home className="h-4 w-4" /> Home
           </Link>
-          <Link href={`/catalogo` as any}
-            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-sm">
-            <Search className="h-4 w-4" /> Catálogo
+          <Link href={'/cursos' as any} className="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-medium rounded-lg">
+            <Search className="h-4 w-4" /> Ver cursos
           </Link>
         </div>
+        <p className="text-[11px] text-slate-400 mt-6">Sugestão: pressiona <kbd className="bg-slate-100 px-1 py-0.5 rounded font-mono text-[10px]">⌘K</kbd> para procurar.</p>
       </div>
     </div>
   );
