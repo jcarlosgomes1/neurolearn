@@ -1,36 +1,48 @@
 'use client';
 
 import { useEffect } from 'react';
-import { logClientErrorAction } from './admin/erros/actions';
+import { Link } from '@/i18n/routing';
+import { Home, RefreshCw, AlertTriangle } from 'lucide-react';
 
-export default function LocaleError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
+export default function Error({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
+    // Tentar reportar erro ao backend (silencioso)
     try {
-      logClientErrorAction({
-        message: error.message || 'unknown',
-        stack: error.stack || null,
-        digest: error.digest || null,
-        url: typeof window !== 'undefined' ? window.location.href : '',
-        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
-        kind: 'react_error_boundary_locale',
+      fetch('/api/telemetry/error', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          message: error.message, 
+          stack: error.stack, 
+          digest: error.digest,
+          url: window.location.pathname,
+        }),
       }).catch(() => {});
     } catch {}
   }, [error]);
-
+  
   return (
-    <div className="min-h-[60vh] flex items-center justify-center p-6">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-slate-200 p-8 text-center">
-        <div className="text-5xl mb-3">⚠️</div>
-        <h1 className="text-xl font-bold text-slate-900">Algo correu mal</h1>
-        <p className="text-sm text-slate-500 mt-2">O erro foi registado automaticamente. Tenta de novo ou volta ao início.</p>
-        {error.digest && <code className="block text-xs text-slate-400 mt-3">ref: {error.digest}</code>}
-        <div className="mt-6 flex gap-2 justify-center flex-wrap">
-          <button onClick={() => reset()} className="px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold">
-            Tentar novamente
+    <div className="min-h-[60vh] flex items-center justify-center px-4">
+      <div className="max-w-md text-center">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-rose-100 mb-4">
+          <AlertTriangle className="h-8 w-8 text-rose-600" />
+        </div>
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Algo correu mal</h1>
+        <p className="text-sm text-slate-500 mt-2">
+          Pedimos desculpa. Tenta novamente ou volta à página inicial.
+        </p>
+        {error.digest && (
+          <p className="text-[10px] font-mono text-slate-400 mt-3">ID: {error.digest}</p>
+        )}
+        <div className="flex flex-col sm:flex-row gap-2 mt-6 justify-center">
+          <button onClick={() => reset()}
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm">
+            <RefreshCw className="h-4 w-4" /> Tentar de novo
           </button>
-          <a href="/" className="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium">
-            Início
-          </a>
+          <Link href={`/` as any}
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-sm">
+            <Home className="h-4 w-4" /> Início
+          </Link>
         </div>
       </div>
     </div>
