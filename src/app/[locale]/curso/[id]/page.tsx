@@ -8,8 +8,54 @@ import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { Clock, Award, Users, Star, CheckCircle, BookOpen, ArrowLeft } from 'lucide-react';
 import { EnrollButton } from '@/components/shared/EnrollButton';
+import { CourseStructuredData, BreadcrumbStructuredData } from '@/components/seo/StructuredData';
+import type { Metadata } from 'next';
 
 export const revalidate = 120;
+
+const SITE_URL = 'https://neurolearn-rosy.vercel.app';
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string; locale: string }> }): Promise<Metadata> {
+  const { id, locale } = await params;
+  const sb = await createClient();
+  const { data: course } = await sb.from('nl_courses')
+    .select('title, subtitle, description, emoji, cover_url, slug')
+    .eq('id', id).eq('published', true).maybeSingle();
+  
+  if (!course) return { title: 'Curso não encontrado' };
+  
+  const title = course.title as string;
+  const desc = (course.subtitle || course.description || `${title} no NeuroLearn`).toString().slice(0, 160);
+  const ogImage = course.cover_url || `${SITE_URL}/${locale}/opengraph-image`;
+  
+  return {
+    title,
+    description: desc,
+    alternates: {
+      canonical: `${SITE_URL}/${locale}/curso/${id}`,
+      languages: {
+        'pt': `${SITE_URL}/pt/curso/${id}`,
+        'en': `${SITE_URL}/en/curso/${id}`,
+        'es': `${SITE_URL}/es/curso/${id}`,
+        'fr': `${SITE_URL}/fr/curso/${id}`,
+      },
+    },
+    openGraph: {
+      type: 'website',
+      title,
+      description: desc,
+      url: `${SITE_URL}/${locale}/curso/${id}`,
+      images: [ogImage],
+      siteName: 'NeuroLearn',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description: desc,
+      images: [ogImage],
+    },
+  };
+}
 
 export default async function CoursePage({ params }: { params: Promise<{ id: string; locale: string }> }) {
   const { id, locale } = await params;
@@ -29,11 +75,32 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
 
   return (
     <>
+      <CourseStructuredData course={{
+        title: course.title,
+        description: course.description || course.subtitle,
+        slug: course.slug || course.id,
+        duration_hours: course.duration_hours,
+        level: course.level,
+        language: course.language || locale,
+        instructor_name: instructor?.display_name,
+        instructor_id: instructor?.id,
+        price_cents: course.price_cents,
+        currency: course.currency,
+        rating_avg: course.rating_avg,
+        rating_count: course.rating_count,
+        skills: course.skills,
+        created_at: course.created_at,
+        cover_url: course.cover_url,
+      }} baseUrl={SITE_URL} />
+      <BreadcrumbStructuredData items={[
+        { name: 'Início', href: `/${locale}` },
+        { name: t('nav.courses'), href: `/${locale}/cursos` },
+        { name: course.title, href: `/${locale}/curso/${id}` },
+      ]} baseUrl={SITE_URL} />
       <Header />
       <main className="bg-white min-h-screen">
         <section className="bg-gradient-to-br from-brand-50 via-white to-brand-50/30 border-b border-slate-200/60">
           <div className="max-w-6xl mx-auto px-4 py-12 sm:py-16">
-            {/* Back button moderno: pill com ícone + hover state subtil */}
             <Link
               href={'/cursos' as any}
               className="group inline-flex items-center gap-2 mb-6 px-3 py-1.5 rounded-full bg-white/70 hover:bg-white border border-slate-200 hover:border-brand-300 text-slate-700 hover:text-brand-700 text-sm font-medium transition-all shadow-sm hover:shadow"
@@ -65,7 +132,6 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
                     <p className="text-xs text-slate-500 mt-1">{t('cdp.price_note')}</p>
                   </div>
                   <EnrollButton courseId={course.id} priceLabel={fmtCents(course.price_cents, course.currency || 'EUR')} courseTitle={course.title} />
-                  
                   <ul className="mt-6 space-y-2 text-sm text-slate-700">
                     <li className="flex items-start gap-2"><CheckCircle className="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0" /><span>{t('cdp.benefit_lifetime')}</span></li>
                     <li className="flex items-start gap-2"><Award className="h-4 w-4 text-purple-500 mt-0.5 flex-shrink-0" /><span>{t('cdp.benefit_certificate')}</span></li>
