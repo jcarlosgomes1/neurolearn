@@ -3,14 +3,16 @@
 import { Link } from '@/i18n/routing';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { UserMenu } from './UserMenu';
+import { NotificationsDropdown } from '@/components/notifications/NotificationsDropdown';
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 
 interface Session { email: string; area: 'student' | 'instructor' | 'admin' }
 
 export function HeaderClient({ session }: { session: Session | null }) {
   const t = useTranslations();
+  const locale = useLocale();
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
@@ -49,7 +51,10 @@ export function HeaderClient({ session }: { session: Session | null }) {
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
             </Link>
 
-            {/* CTA destacado "Ensina connosco" — só para não-instrutores e não-admins (não esconde demais o teach) */}
+            {/* Notifications: só visível quando logged in */}
+            {session && <NotificationsDropdown locale={locale} />}
+
+            {/* CTA "Ensina connosco" */}
             {(!session || session.area === 'student') && (
               <Link
                 href={'/candidatar' as any}
@@ -60,7 +65,6 @@ export function HeaderClient({ session }: { session: Session | null }) {
               </Link>
             )}
 
-            {/* Language switcher só visível quando NÃO logado. Quando logado, está em /conta. */}
             {!session && (
               <div className="hidden sm:block"><LanguageSwitcher /></div>
             )}
@@ -126,7 +130,6 @@ export function HeaderClient({ session }: { session: Session | null }) {
                 </Link>
               ))}
 
-              {/* Ensina connosco também no mobile drawer com destaque */}
               {(!session || session.area === 'student') && (
                 <Link href={'/candidatar' as any} className="flex items-center gap-3 px-3 py-3.5 rounded-lg hover:opacity-90 text-white font-semibold transition-colors bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 mt-2 shadow-sm">
                   <span>🎓</span>
@@ -139,6 +142,12 @@ export function HeaderClient({ session }: { session: Session | null }) {
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
                 {t('nav.search')}
               </Link>
+              {session && (
+                <Link href={'/conta/notificacoes' as any} className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-slate-50 text-slate-700 text-sm">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                  Notificações
+                </Link>
+              )}
               <Link href={'/legal/faq' as any} className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-slate-50 text-slate-700 text-sm">
                 <span>❓</span> {t('footer.faq')}
               </Link>
