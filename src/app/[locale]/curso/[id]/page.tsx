@@ -6,12 +6,15 @@ import { getHomeBlocks } from '@/lib/api/home-blocks';
 import { fmtCents } from '@/lib/utils/cn';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
-import { Clock, Award, Users, Star, CheckCircle, BookOpen, ArrowLeft } from 'lucide-react';
+import { Clock, Award, Users, Star, CheckCircle, BookOpen, ArrowLeft, MessageCircle, ShieldCheck } from 'lucide-react';
 import { EnrollButton } from '@/components/shared/EnrollButton';
 import { CourseStructuredData, BreadcrumbStructuredData } from '@/components/seo/StructuredData';
+import { CourseReviews } from '@/components/course/CourseReviews';
+import { CourseQA } from '@/components/course/CourseQA';
+import { WishlistButton } from '@/components/course/WishlistButton';
 import type { Metadata } from 'next';
 
-export const revalidate = 120;
+export const revalidate = 300; // ISR 5 min — refresca rating/reviews
 
 const SITE_URL = 'https://neurolearn-rosy.vercel.app';
 
@@ -21,13 +24,13 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { data: course } = await sb.from('nl_courses')
     .select('title, subtitle, description, emoji, cover_url, slug')
     .eq('id', id).eq('published', true).maybeSingle();
-  
+
   if (!course) return { title: 'Curso não encontrado' };
-  
+
   const title = course.title as string;
   const desc = (course.subtitle || course.description || `${title} no NeuroLearn`).toString().slice(0, 160);
   const ogImage = course.cover_url || `${SITE_URL}/${locale}/opengraph-image`;
-  
+
   return {
     title,
     description: desc,
@@ -42,18 +45,12 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     },
     openGraph: {
       type: 'website',
-      title,
-      description: desc,
+      title, description: desc,
       url: `${SITE_URL}/${locale}/curso/${id}`,
       images: [ogImage],
       siteName: 'NeuroLearn',
     },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description: desc,
-      images: [ogImage],
-    },
+    twitter: { card: 'summary_large_image', title, description: desc, images: [ogImage] },
   };
 }
 
@@ -63,6 +60,14 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
   const sb = await createClient();
   const { data: course } = await sb.from('nl_courses').select('*').eq('id', id).eq('published', true).maybeSingle();
   if (!course) notFound();
+
+  // Verificar se user está logged + se é instrutor deste curso
+  const { data: { user } } = await sb.auth.getUser();
+  let isInstructor = false;
+  if (user && course.instructor_id) {
+    const { data: prof } = await sb.from('nl_profiles').select('instructor_id').eq('id', user.id).maybeSingle();
+    isInstructor = prof?.instructor_id === course.instructor_id;
+  }
 
   let instructor = null;
   if (course.instructor_id) {
@@ -76,21 +81,13 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
   return (
     <>
       <CourseStructuredData course={{
-        title: course.title,
-        description: course.description || course.subtitle,
-        slug: course.slug || course.id,
-        duration_hours: course.duration_hours,
-        level: course.level,
-        language: course.language || locale,
-        instructor_name: instructor?.display_name,
-        instructor_id: instructor?.id,
-        price_cents: course.price_cents,
-        currency: course.currency,
-        rating_avg: course.rating_avg,
-        rating_count: course.rating_count,
-        skills: course.skills,
-        created_at: course.created_at,
-        cover_url: course.cover_url,
+        title: course.title, description: course.description || course.subtitle,
+        slug: course.slug || course.id, duration_hours: course.duration_hours,
+        level: course.level, language: course.language || locale,
+        instructor_name: instructor?.display_name, instructor_id: instructor?.id,
+        price_cents: course.price_cents, currency: course.currency,
+        rating_avg: course.rating_avg, rating_count: course.rating_count,
+        skills: course.skills, created_at: course.created_at, cover_url: course.cover_url,
       }} baseUrl={SITE_URL} />
       <BreadcrumbStructuredData items={[
         { name: 'Início', href: `/${locale}` },
@@ -104,17 +101,17 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
             <Link
               href={'/cursos' as any}
               className="group inline-flex items-center gap-2 mb-6 px-3 py-1.5 rounded-full bg-white/70 hover:bg-white border border-slate-200 hover:border-brand-300 text-slate-700 hover:text-brand-700 text-sm font-medium transition-all shadow-sm hover:shadow"
-              aria-label={t('cdp.back')}
-            >
+              aria-label={t('cdp.back')}>
               <ArrowLeft className="h-4 w-4 -ml-0.5 transition-transform group-hover:-translate-x-0.5" strokeWidth={2.5} />
               <span>{t('cdp.back')}</span>
             </Link>
             <div className="grid lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2">
-                <div className="flex items-center gap-3 mb-4">
+                <div className="flex items-center gap-3 mb-4 flex-wrap">
                   <span className="text-5xl">{course.emoji || '📚'}</span>
                   {course.level && <span className="px-3 py-1 rounded-full bg-white border border-slate-200 text-xs font-medium text-slate-600">{course.level}</span>}
                   {course.featured && <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-semibold">{t('cdp.featured')}</span>}
+                  <div className="ml-auto"><WishlistButton courseId={course.id} size="md" /></div>
                 </div>
                 <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight text-balance">{course.title}</h1>
                 {course.subtitle && <p className="mt-4 text-lg text-slate-600 text-pretty">{course.subtitle}</p>}
@@ -142,6 +139,7 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
             </div>
           </div>
         </section>
+
         <section className="max-w-6xl mx-auto px-4 py-12 grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-10">
             {course.description && (
@@ -181,7 +179,35 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
                 </div>
               </div>
             )}
+
+            {/* Reviews */}
+            <div className="border-t border-slate-100 pt-10">
+              <h2 className="text-2xl font-bold text-slate-900 mb-1 flex items-center gap-2">
+                <Star className="h-6 w-6 text-amber-500 fill-amber-500" />
+                Avaliações de alunos
+              </h2>
+              <p className="text-sm text-slate-500 mb-6">Veja o que outros estudantes disseram</p>
+              <CourseReviews
+                courseId={course.id}
+                currentUserId={user?.id}
+                isInstructor={isInstructor}
+              />
+            </div>
+
+            {/* Q&A */}
+            <div className="border-t border-slate-100 pt-10">
+              <h2 className="text-2xl font-bold text-slate-900 mb-1 flex items-center gap-2">
+                <MessageCircle className="h-6 w-6 text-blue-500" />
+                Perguntas & Respostas
+              </h2>
+              <p className="text-sm text-slate-500 mb-6">Tira dúvidas com a comunidade e instrutor</p>
+              <CourseQA
+                courseId={course.id}
+                currentUserId={user?.id}
+              />
+            </div>
           </div>
+
           {instructor && (
             <aside>
               <div className="bg-slate-50 rounded-xl p-6 sticky top-20">
@@ -192,9 +218,21 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
                 </div>
                 {instructor.bio && <p className="mt-4 text-sm text-slate-600 leading-relaxed">{instructor.bio}</p>}
               </div>
+              <div className="mt-4 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl p-5">
+                <div className="flex items-start gap-2">
+                  <ShieldCheck className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="font-semibold text-sm text-emerald-900">Garantia de satisfação</h4>
+                    <p className="text-xs text-emerald-800 mt-1 leading-relaxed">
+                      Devolvemos o teu dinheiro se não estiveres satisfeito nos primeiros 14 dias.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </aside>
           )}
         </section>
+
         <Footer data={blocks.footer_brand || {}} />
       </main>
     </>

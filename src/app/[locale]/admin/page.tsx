@@ -1,11 +1,8 @@
-import { AdminCockpit } from './AdminCockpit';
-import { getTranslations } from 'next-intl/server';
+import { redirect } from '@/i18n/routing';
 
-export async function generateMetadata() {
-  const t = await getTranslations();
-  return { title: t('admin_meta.cockpit') };
-}
+export const metadata = { title: 'Admin · Visão geral' };
 
-export default function AdminPage() {
-  return <AdminCockpit />;
+export default async function AdminPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  redirect({ href: '/admin/overview', locale });
 }
