@@ -7,20 +7,33 @@ import { toast } from 'sonner';
 import { Plus, ShieldCheck, ShieldOff, Trash2, Edit3, X, Building2, AlertCircle } from 'lucide-react';
 
 type SsoConfig = {
-  id: string; org_id: string | null; org_name: string | null;
-  protocol: string; idp_name: string | null; entity_id: string | null;
-  sso_url: string | null; active: boolean | null;
-  saml_entity_id?: string | null; saml_sso_url?: string | null;
-  oidc_issuer_url?: string | null; enabled?: boolean | null;
-  enforce_for_all_users?: boolean | null; domain_hint?: string | null;
+  id: string;
+  org_id: string | null;
+  org_name?: string | null;
+  protocol: string;
+  idp_name: string | null;
+  saml_metadata_url?: string | null;
+  saml_entity_id?: string | null;
+  saml_sso_url?: string | null;
+  saml_x509_cert?: string | null;
+  oidc_issuer_url?: string | null;
+  oidc_client_id?: string | null;
+  oidc_client_secret?: string | null;
+  email_attribute?: string | null;
+  name_attribute?: string | null;
+  enabled?: boolean | null;
+  enforce_for_all_users?: boolean | null;
+  domain_hint?: string | null;
 };
 
-export function SsoClient({ configs, orgs }: { configs: SsoConfig[]; orgs: any[] }) {
+type Org = { id: string; name: string; slug?: string };
+
+export function SsoClient({ configs, orgs }: { configs: SsoConfig[]; orgs: Org[] }) {
   const [editing, setEditing] = useState<Partial<SsoConfig> | null>(null);
   const [busy, setBusy] = useState(false);
   const router = useRouter();
 
-  async function save(form: any) {
+  async function save(form: Partial<SsoConfig>) {
     setBusy(true);
     try {
       const sb = createClient();
@@ -140,24 +153,24 @@ export function SsoClient({ configs, orgs }: { configs: SsoConfig[]; orgs: any[]
       </div>
 
       {editing !== null && (
-        <SsoModal
-          initial={editing}
-          orgs={orgs}
-          busy={busy}
-          onSave={save}
-          onClose={() => setEditing(null)}
-        />
+        <SsoModal initial={editing} orgs={orgs} busy={busy} onSave={save} onClose={() => setEditing(null)} />
       )}
     </>
   );
 }
 
-function SsoModal({ initial, orgs, busy, onSave, onClose }: any) {
-  const [form, setForm] = useState({ ...initial });
+function SsoModal({ initial, orgs, busy, onSave, onClose }: {
+  initial: Partial<SsoConfig>;
+  orgs: Org[];
+  busy: boolean;
+  onSave: (form: Partial<SsoConfig>) => void;
+  onClose: () => void;
+}) {
+  const [form, setForm] = useState<Partial<SsoConfig>>({ ...initial });
   const isSaml = (form.protocol || 'saml') === 'saml';
 
-  function handleChange(field: string, value: any) {
-    setForm((prev: any) => ({ ...prev, [field]: value }));
+  function handleChange<K extends keyof SsoConfig>(field: K, value: SsoConfig[K]) {
+    setForm((prev) => ({ ...prev, [field]: value }));
   }
 
   return (
@@ -175,37 +188,32 @@ function SsoModal({ initial, orgs, busy, onSave, onClose }: any) {
           <Field label="Organização" hint="Deixa em branco para SSO global">
             <select
               value={form.org_id || ''}
-              onChange={(e) => handleChange('org_id', e.target.value || null)}
+              onChange={(e) => handleChange('org_id', (e.target.value || null) as any)}
               className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none">
               <option value="">— Global (todas as orgs) —</option>
-              {orgs.map((o: any) => <option key={o.id} value={o.id}>{o.name}</option>)}
+              {orgs.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
             </select>
           </Field>
 
           <Field label="Nome do IdP" required>
-            <input
-              type="text"
-              value={form.idp_name || ''}
-              onChange={(e) => handleChange('idp_name', e.target.value)}
+            <input type="text" value={form.idp_name || ''}
+              onChange={(e) => handleChange('idp_name', e.target.value as any)}
               placeholder="Okta · Azure AD · Google Workspace"
               className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none" />
           </Field>
 
           <div className="grid grid-cols-2 gap-3">
             <Field label="Protocolo">
-              <select
-                value={form.protocol || 'saml'}
-                onChange={(e) => handleChange('protocol', e.target.value)}
+              <select value={form.protocol || 'saml'}
+                onChange={(e) => handleChange('protocol', e.target.value as any)}
                 className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none">
                 <option value="saml">SAML 2.0</option>
                 <option value="oidc">OIDC</option>
               </select>
             </Field>
             <Field label="Domínio (hint)" hint="ex: acme.com">
-              <input
-                type="text"
-                value={form.domain_hint || ''}
-                onChange={(e) => handleChange('domain_hint', e.target.value)}
+              <input type="text" value={form.domain_hint || ''}
+                onChange={(e) => handleChange('domain_hint', e.target.value as any)}
                 placeholder="acme.com"
                 className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none" />
             </Field>
@@ -214,59 +222,45 @@ function SsoModal({ initial, orgs, busy, onSave, onClose }: any) {
           {isSaml ? (
             <>
               <Field label="SAML Metadata URL" hint="Se fornecido, sobrepõe os outros campos SAML">
-                <input
-                  type="url"
-                  value={form.saml_metadata_url || ''}
-                  onChange={(e) => handleChange('saml_metadata_url', e.target.value)}
+                <input type="url" value={form.saml_metadata_url || ''}
+                  onChange={(e) => handleChange('saml_metadata_url', e.target.value as any)}
                   placeholder="https://example.okta.com/app/.../metadata"
                   className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-mono focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none" />
               </Field>
               <Field label="SAML Entity ID">
-                <input
-                  type="text"
-                  value={form.saml_entity_id || ''}
-                  onChange={(e) => handleChange('saml_entity_id', e.target.value)}
+                <input type="text" value={form.saml_entity_id || ''}
+                  onChange={(e) => handleChange('saml_entity_id', e.target.value as any)}
                   className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-mono focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none" />
               </Field>
               <Field label="SAML SSO URL">
-                <input
-                  type="url"
-                  value={form.saml_sso_url || ''}
-                  onChange={(e) => handleChange('saml_sso_url', e.target.value)}
+                <input type="url" value={form.saml_sso_url || ''}
+                  onChange={(e) => handleChange('saml_sso_url', e.target.value as any)}
                   className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-mono focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none" />
               </Field>
               <Field label="SAML X.509 Certificate">
-                <textarea
-                  value={form.saml_x509_cert || ''}
-                  onChange={(e) => handleChange('saml_x509_cert', e.target.value)}
-                  rows={4}
-                  placeholder="-----BEGIN CERTIFICATE-----..."
+                <textarea value={form.saml_x509_cert || ''}
+                  onChange={(e) => handleChange('saml_x509_cert', e.target.value as any)}
+                  rows={4} placeholder="-----BEGIN CERTIFICATE-----..."
                   className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs font-mono focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none resize-y" />
               </Field>
             </>
           ) : (
             <>
               <Field label="OIDC Issuer URL" required>
-                <input
-                  type="url"
-                  value={form.oidc_issuer_url || ''}
-                  onChange={(e) => handleChange('oidc_issuer_url', e.target.value)}
+                <input type="url" value={form.oidc_issuer_url || ''}
+                  onChange={(e) => handleChange('oidc_issuer_url', e.target.value as any)}
                   placeholder="https://accounts.google.com"
                   className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-mono focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none" />
               </Field>
               <div className="grid grid-cols-2 gap-3">
                 <Field label="OIDC Client ID">
-                  <input
-                    type="text"
-                    value={form.oidc_client_id || ''}
-                    onChange={(e) => handleChange('oidc_client_id', e.target.value)}
+                  <input type="text" value={form.oidc_client_id || ''}
+                    onChange={(e) => handleChange('oidc_client_id', e.target.value as any)}
                     className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-mono focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none" />
                 </Field>
                 <Field label="OIDC Client Secret">
-                  <input
-                    type="password"
-                    value={form.oidc_client_secret || ''}
-                    onChange={(e) => handleChange('oidc_client_secret', e.target.value)}
+                  <input type="password" value={form.oidc_client_secret || ''}
+                    onChange={(e) => handleChange('oidc_client_secret', e.target.value as any)}
                     className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-mono focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none" />
                 </Field>
               </div>
@@ -275,18 +269,14 @@ function SsoModal({ initial, orgs, busy, onSave, onClose }: any) {
 
           <div className="grid grid-cols-2 gap-3">
             <Field label="Email attribute" hint="Mapping (opcional)">
-              <input
-                type="text"
-                value={form.email_attribute || ''}
-                onChange={(e) => handleChange('email_attribute', e.target.value)}
+              <input type="text" value={form.email_attribute || ''}
+                onChange={(e) => handleChange('email_attribute', e.target.value as any)}
                 placeholder="email · NameID"
                 className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-mono focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none" />
             </Field>
             <Field label="Name attribute">
-              <input
-                type="text"
-                value={form.name_attribute || ''}
-                onChange={(e) => handleChange('name_attribute', e.target.value)}
+              <input type="text" value={form.name_attribute || ''}
+                onChange={(e) => handleChange('name_attribute', e.target.value as any)}
                 placeholder="name · displayName"
                 className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-mono focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none" />
             </Field>
@@ -295,13 +285,13 @@ function SsoModal({ initial, orgs, busy, onSave, onClose }: any) {
           <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2.5">
             <CheckboxRow
               checked={form.enabled !== false}
-              onChange={(v) => handleChange('enabled', v)}
+              onChange={(v: boolean) => handleChange('enabled', v as any)}
               label="Configuração ativa"
               hint="Quando inativa, os utilizadores não vêem este provider"
             />
             <CheckboxRow
               checked={form.enforce_for_all_users === true}
-              onChange={(v) => handleChange('enforce_for_all_users', v)}
+              onChange={(v: boolean) => handleChange('enforce_for_all_users', v as any)}
               label="Enforce para todos os utilizadores da org"
               hint="Bloqueia login por password — só SSO aceite"
               warning
@@ -311,9 +301,7 @@ function SsoModal({ initial, orgs, busy, onSave, onClose }: any) {
 
         <div className="border-t border-slate-100 p-4 flex items-center justify-end gap-2 flex-shrink-0 bg-slate-50">
           <button onClick={onClose} className="px-4 py-2 text-sm text-slate-600 hover:bg-white rounded-lg font-medium">Cancelar</button>
-          <button
-            onClick={() => onSave(form)}
-            disabled={busy || !form.idp_name}
+          <button onClick={() => onSave(form)} disabled={busy || !form.idp_name}
             className="px-5 py-2 bg-gradient-to-br from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white text-sm font-semibold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed">
             {busy ? 'A guardar…' : 'Guardar configuração'}
           </button>
@@ -335,15 +323,18 @@ function Field({ label, hint, required, children }: { label: string; hint?: stri
   );
 }
 
-function CheckboxRow({ checked, onChange, label, hint, warning }: any) {
+function CheckboxRow({ checked, onChange, label, hint, warning }: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  label: string;
+  hint?: string;
+  warning?: boolean;
+}) {
   return (
     <label className="flex items-start gap-2.5 cursor-pointer group">
-      <input
-        type="checkbox"
-        checked={checked}
+      <input type="checkbox" checked={checked}
         onChange={(e) => onChange(e.target.checked)}
-        className="mt-0.5 h-4 w-4 text-violet-600 rounded border-slate-300 focus:ring-violet-500"
-      />
+        className="mt-0.5 h-4 w-4 text-violet-600 rounded border-slate-300 focus:ring-violet-500" />
       <div className="flex-1">
         <div className="text-sm text-slate-900 font-medium">{label}</div>
         {hint && (
