@@ -23,16 +23,20 @@ export default getRequestConfig(async ({ requestLocale }) => {
   }
 
   const fileFlat = FLAT_MESSAGES[locale] || FLAT_MESSAGES.pt;
-  // DB messages têm prioridade máxima (admin pode editar via /admin/i18n)
   const dbFlat = await getDbMessages(locale).catch(() => ({} as Record<string, string>));
-  // Merge flat antes de transformar para nested (assim conflitos string→object são resolvidos uma vez)
-  const mergedFlat: Record<string, string> = { ...fileFlat, ...dbFlat };
-  const nested = flattenToNamespaced(mergedFlat);
 
-  // Final merge order: fallback (defaults estáticos) → file+db (flat nested) → admin (hardcoded nested fallback)
+  // Ordem de precedência (do menor ao maior):
+  // 1. FALLBACK_MESSAGES (defaults estáticos)
+  // 2. fileFlat (pt.json estático)
+  // 3. ADMIN_MESSAGES[locale] (nested defaults para keys que adicionei recentemente)
+  // 4. dbFlat (DB nl_i18n — fonte de verdade editável, vence tudo)
+  const mergedFlat: Record<string, string> = { ...fileFlat, ...dbFlat };
+  const nestedFromFlat = flattenToNamespaced(mergedFlat);
+
+  // FALLBACK como base, ADMIN como nested defaults, depois file+db sobrepõem
   const messages = deepMerge(
     deepMerge(FALLBACK_MESSAGES, ADMIN_MESSAGES[locale] || ADMIN_MESSAGES.pt),
-    nested
+    nestedFromFlat
   );
 
   return { locale, messages };
@@ -40,7 +44,6 @@ export default getRequestConfig(async ({ requestLocale }) => {
 
 function flattenToNamespaced(flat: Record<string, string>): AbstractIntlMessages {
   const result: any = {};
-  // Sort por profundidade DESC: paths mais profundos estabelecem a estrutura primeiro.
   const sortedKeys = Object.keys(flat).sort((a, b) => b.split('.').length - a.split('.').length);
 
   for (const key of sortedKeys) {
