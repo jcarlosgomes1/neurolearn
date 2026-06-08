@@ -3,8 +3,8 @@
 import { useState, useEffect, useRef, useTransition } from 'react';
 import { Bell, X, Check, CheckCheck, ExternalLink, Loader2 } from 'lucide-react';
 import { Link } from '@/i18n/routing';
-import { 
-  listNotificationsAction, getUnreadCountAction, markNotificationReadAction, deleteNotificationAction 
+import {
+  listNotificationsAction, getUnreadCountAction, markNotificationReadAction, deleteNotificationAction
 } from '@/app/[locale]/conta/actions';
 
 interface Notification {
@@ -25,15 +25,17 @@ function notificationHref(n: Notification, locale: string): string {
     case 'proposal':
       return `/${locale}/empresa/${(n.metadata as any).org_slug || ''}/cursos/propostas/${n.link_id}` as string;
     case 'org_content':
-      return `/${locale}/conteudos`;
+      return `/${locale}/empresa/conteudo`;
     case 'certificate':
       return `/${locale}/conta/certificados`;
     case 'billing':
-      return `/${locale}/conta/billing`;
+      return `/${locale}/conta/subscription`;
     case 'gdpr':
       return `/${locale}/conta/privacidade`;
     case 'course':
-      return `/${locale}/cursos/${n.link_id}`;
+      return `/${locale}/curso/${n.link_id}`;
+    case 'evaluation':
+      return `/${locale}/teach/avaliacoes-pendentes`;
     default:
       return '#';
   }
@@ -58,13 +60,13 @@ export function NotificationsDropdown({ locale }: { locale: string }) {
   const [loading, setLoading] = useState(false);
   const [isPending, startTransition] = useTransition();
   const ref = useRef<HTMLDivElement>(null);
-  
+
   useEffect(() => {
     refreshCount();
     const interval = setInterval(refreshCount, 60000);
     return () => clearInterval(interval);
   }, []);
-  
+
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
@@ -72,25 +74,33 @@ export function NotificationsDropdown({ locale }: { locale: string }) {
     if (open) document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [open]);
-  
+
+  // Bloquear scroll do body quando dropdown aberto em mobile
+  useEffect(() => {
+    if (open && typeof window !== 'undefined' && window.innerWidth < 640) {
+      document.body.style.overflow = 'hidden';
+      return () => { document.body.style.overflow = ''; };
+    }
+  }, [open]);
+
   async function refreshCount() {
     const r = await getUnreadCountAction();
     if (r.ok) setUnread(r.count);
   }
-  
+
   async function loadItems() {
     setLoading(true);
     const r = await listNotificationsAction(false, 20);
     if (r.ok) setItems((r.data as Notification[]) || []);
     setLoading(false);
   }
-  
+
   function toggleOpen() {
     const next = !open;
     setOpen(next);
     if (next) loadItems();
   }
-  
+
   function handleMarkAll() {
     startTransition(async () => {
       await markNotificationReadAction();
@@ -98,7 +108,6 @@ export function NotificationsDropdown({ locale }: { locale: string }) {
       setUnread(0);
     });
   }
-  
   function handleMarkOne(id: string) {
     startTransition(async () => {
       await markNotificationReadAction(id);
@@ -106,7 +115,6 @@ export function NotificationsDropdown({ locale }: { locale: string }) {
       refreshCount();
     });
   }
-  
   function handleDelete(id: string) {
     startTransition(async () => {
       await deleteNotificationAction(id);
@@ -114,7 +122,7 @@ export function NotificationsDropdown({ locale }: { locale: string }) {
       refreshCount();
     });
   }
-  
+
   return (
     <div ref={ref} className="relative">
       <button onClick={toggleOpen} aria-label="Notificações"
@@ -126,77 +134,91 @@ export function NotificationsDropdown({ locale }: { locale: string }) {
           </span>
         )}
       </button>
-      
+
       {open && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-xl border border-slate-200 shadow-xl z-50 max-h-[70vh] flex flex-col">
-          <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-100">
-            <h3 className="font-bold text-slate-900 text-sm">Notificações</h3>
-            <div className="flex items-center gap-1">
-              {unread > 0 && (
-                <button onClick={handleMarkAll} disabled={isPending}
-                  className="text-xs text-brand-600 hover:bg-brand-50 px-2 py-1 rounded font-medium flex items-center gap-1">
-                  <CheckCheck className="h-3 w-3" /> Marcar todas
+        <>
+          {/* Backdrop mobile only */}
+          <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 sm:hidden" onClick={() => setOpen(false)} />
+          <div
+            className="
+              fixed inset-x-3 top-16 z-50
+              sm:absolute sm:right-0 sm:top-auto sm:inset-x-auto sm:mt-2
+              w-auto sm:w-96 max-w-md sm:max-w-none
+              bg-white rounded-2xl border border-slate-200 shadow-2xl
+              max-h-[80vh] sm:max-h-[70vh] flex flex-col
+              animate-in fade-in slide-in-from-top-2 duration-150
+            ">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+              <h3 className="font-bold text-slate-900 text-sm">Notificações</h3>
+              <div className="flex items-center gap-1">
+                {unread > 0 && (
+                  <button onClick={handleMarkAll} disabled={isPending}
+                    className="text-xs text-brand-600 hover:bg-brand-50 px-2 py-1 rounded font-medium flex items-center gap-1">
+                    <CheckCheck className="h-3 w-3" /> Marcar todas
+                  </button>
+                )}
+                <button onClick={() => setOpen(false)} className="p-1.5 hover:bg-slate-100 rounded-lg" aria-label="Fechar">
+                  <X className="h-4 w-4" />
                 </button>
-              )}
-              <button onClick={() => setOpen(false)} className="p-1 hover:bg-slate-100 rounded"><X className="h-3.5 w-3.5" /></button>
+              </div>
             </div>
-          </div>
-          
-          <div className="overflow-y-auto flex-1">
-            {loading ? (
-              <div className="p-8 text-center text-sm text-slate-400">
-                <Loader2 className="h-5 w-5 animate-spin mx-auto mb-1" />
-              </div>
-            ) : items.length === 0 ? (
-              <div className="p-8 text-center text-sm text-slate-400">
-                <Bell className="h-8 w-8 mx-auto text-slate-300 mb-2" />
-                Sem notificações
-              </div>
-            ) : (
-              <div className="divide-y divide-slate-100">
-                {items.map((n) => (
-                  <div key={n.id} className={`px-4 py-3 hover:bg-slate-50 group ${!n.read_at ? 'bg-brand-50/30' : ''}`}>
-                    <div className="flex items-start gap-2">
-                      {!n.read_at && <div className="w-1.5 h-1.5 rounded-full bg-brand-500 mt-1.5 flex-shrink-0" />}
-                      <div className="flex-1 min-w-0">
-                        {n.link_kind ? (
-                          <Link href={notificationHref(n, locale) as any} onClick={() => { handleMarkOne(n.id); setOpen(false); }}
-                            className="block">
-                            <div className="font-medium text-slate-900 text-sm">{n.title}</div>
-                            <p className="text-xs text-slate-600 mt-0.5 line-clamp-2">{n.message}</p>
-                          </Link>
-                        ) : (
-                          <div>
-                            <div className="font-medium text-slate-900 text-sm">{n.title}</div>
-                            <p className="text-xs text-slate-600 mt-0.5 line-clamp-2">{n.message}</p>
-                          </div>
-                        )}
-                        <div className="text-[10px] text-slate-400 mt-1">{timeAgo(n.created_at)}</div>
-                      </div>
-                      <div className="opacity-0 group-hover:opacity-100 flex flex-col gap-1">
-                        {!n.read_at && (
-                          <button onClick={() => handleMarkOne(n.id)} title="Marcar como lida"
-                            className="p-1 hover:bg-slate-200 rounded"><Check className="h-3 w-3 text-slate-500" /></button>
-                        )}
-                        <button onClick={() => handleDelete(n.id)} title="Eliminar"
-                          className="p-1 hover:bg-red-100 rounded"><X className="h-3 w-3 text-slate-500" /></button>
+
+            <div className="overflow-y-auto flex-1">
+              {loading ? (
+                <div className="p-8 text-center text-sm text-slate-400">
+                  <Loader2 className="h-5 w-5 animate-spin mx-auto mb-1" />
+                </div>
+              ) : items.length === 0 ? (
+                <div className="p-10 text-center text-sm text-slate-400">
+                  <Bell className="h-10 w-10 mx-auto text-slate-300 mb-3" />
+                  Sem notificações
+                </div>
+              ) : (
+                <div className="divide-y divide-slate-100">
+                  {items.map((n) => (
+                    <div key={n.id} className={`px-4 py-3 hover:bg-slate-50 group ${!n.read_at ? 'bg-brand-50/40' : ''}`}>
+                      <div className="flex items-start gap-2">
+                        {!n.read_at && <div className="w-1.5 h-1.5 rounded-full bg-brand-500 mt-1.5 flex-shrink-0" />}
+                        <div className="flex-1 min-w-0">
+                          {n.link_kind ? (
+                            <Link href={notificationHref(n, locale) as any} onClick={() => { handleMarkOne(n.id); setOpen(false); }}
+                              className="block">
+                              <div className="font-medium text-slate-900 text-sm leading-snug">{n.title}</div>
+                              <p className="text-xs text-slate-600 mt-0.5 line-clamp-2 leading-relaxed">{n.message}</p>
+                            </Link>
+                          ) : (
+                            <div>
+                              <div className="font-medium text-slate-900 text-sm leading-snug">{n.title}</div>
+                              <p className="text-xs text-slate-600 mt-0.5 line-clamp-2 leading-relaxed">{n.message}</p>
+                            </div>
+                          )}
+                          <div className="text-[10px] text-slate-400 mt-1">{timeAgo(n.created_at)}</div>
+                        </div>
+                        <div className="opacity-100 sm:opacity-0 group-hover:opacity-100 flex flex-col gap-0.5 transition-opacity">
+                          {!n.read_at && (
+                            <button onClick={() => handleMarkOne(n.id)} title="Marcar como lida"
+                              className="p-1 hover:bg-slate-200 rounded"><Check className="h-3.5 w-3.5 text-slate-500" /></button>
+                          )}
+                          <button onClick={() => handleDelete(n.id)} title="Eliminar"
+                            className="p-1 hover:bg-rose-100 rounded"><X className="h-3.5 w-3.5 text-slate-500" /></button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {items.length > 0 && (
+              <div className="border-t border-slate-100 p-2">
+                <Link href={`/conta/notificacoes` as any} onClick={() => setOpen(false)}
+                  className="block text-center text-xs text-brand-600 hover:bg-brand-50 py-2 rounded font-medium">
+                  Ver todas
+                </Link>
               </div>
             )}
           </div>
-          
-          {items.length > 0 && (
-            <div className="border-t border-slate-100 p-2">
-              <Link href={`/conta/notificacoes` as any} onClick={() => setOpen(false)}
-                className="block text-center text-xs text-brand-600 hover:bg-brand-50 py-2 rounded font-medium">
-                Ver todas
-              </Link>
-            </div>
-          )}
-        </div>
+        </>
       )}
     </div>
   );
