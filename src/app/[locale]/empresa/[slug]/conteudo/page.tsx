@@ -1,0 +1,58 @@
+import { createClient } from '@/lib/supabase/server';
+import { getTranslations } from 'next-intl/server';
+import { Link } from '@/i18n/routing';
+import { notFound, redirect } from 'next/navigation';
+import { ArrowLeft, FileStack } from 'lucide-react';
+import { ContentClient } from './ContentClient';
+
+export const dynamic = 'force-dynamic';
+
+export default async function Page({ params }: { params: Promise<{ slug: string; locale: string }> }) {
+  const { slug } = await params;
+  const sb = await createClient();
+  const t = await getTranslations();
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) redirect(`/auth/login?next=/empresa/${slug}/conteudo`);
+
+  const { data: org } = await sb.from('nl_organizations').select('id, slug, name').eq('slug', slug).maybeSingle();
+  if (!org) notFound();
+
+  const { data: isMember } = await sb.rpc('nl_is_org_member', { p_org_id: org.id });
+  const { data: isPlatformAdmin } = await sb.rpc('nl_is_platform_admin');
+  if (!isMember && !isPlatformAdmin) redirect(`/empresa/${slug}`);
+
+  const { data: content } = await sb.rpc('nl_org_content_list', { p_org_id: org.id });
+
+  function safeT(key: string, fb: string): string {
+    try { const v = t(key as any); if (v && typeof v === 'string' && v !== key) return v; } catch {}
+    return fb;
+  }
+
+  return (
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <Link href={{ pathname: '/empresa/[slug]', params: { slug } } as any}
+        className="group inline-flex items-center gap-1.5 mb-5 text-sm text-slate-500 hover:text-slate-900 font-medium">
+        <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" /> {org.name}
+      </Link>
+      <header className="mb-8">
+        <div className="flex items-center gap-2 text-emerald-600 text-xs font-semibold uppercase tracking-wider mb-1">
+          <FileStack className="h-3.5 w-3.5" /> {safeT('empresa.conteudo.eyebrow', 'Empresa · Conteúdo')}
+        </div>
+        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{safeT('empresa.conteudo.title', 'Documentos e materiais')}</h1>
+        <p className="text-sm text-slate-600 mt-1.5 max-w-2xl leading-relaxed">
+          {safeT('empresa.conteudo.description', 'Carrega PDFs, vídeos ou manuais. Processamos e ficam disponíveis para gerar cursos personalizados.')}
+        </p>
+        <Link href={{ pathname: '/empresa/[slug]/propostas', params: { slug: org.slug } } as any}
+          className="inline-flex items-center gap-1.5 mt-3 text-xs text-violet-700 hover:text-violet-900 font-semibold">
+          → Ver propostas de cursos geradas a partir destes documentos
+        </Link>
+      </header>
+      <ContentClient
+        orgId={org.id}
+        orgSlug={org.slug}
+        userId={user.id}
+        items={Array.isArray(content) ? content : []}
+      />
+    </div>
+  );
+}
