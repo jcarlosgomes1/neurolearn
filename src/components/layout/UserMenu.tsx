@@ -3,8 +3,6 @@
 import { Link } from '@/i18n/routing';
 import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
-import { createClient } from '@/lib/supabase/client';
-import { toast } from 'sonner';
 
 interface Props {
   email: string;
@@ -22,7 +20,6 @@ function safeT(t: any, key: string, fb: string): string {
 export function UserMenu({ email, area }: Props) {
   const t = useTranslations();
   const [open, setOpen] = useState(false);
-  const [signingOut, setSigningOut] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -35,39 +32,6 @@ export function UserMenu({ email, area }: Props) {
 
   const areaLabel = safeT(t, `user_menu.area.${area}`, area === 'admin' ? 'Admin' : area === 'instructor' ? 'Instrutor' : 'Aluno');
   const isHost = area === 'instructor' || area === 'admin';
-
-  async function signOut() {
-    if (signingOut) return;
-    setSigningOut(true);
-    // Independentemente de tudo, no fim redireciona — robusto
-    try {
-      const sb = createClient();
-      await sb.auth.signOut({ scope: 'global' });
-    } catch (e) {
-      // silently ignore
-    }
-    try {
-      document.cookie.split(';').forEach((c) => {
-        const eq = c.indexOf('=');
-        const name = (eq > -1 ? c.substr(0, eq) : c).trim();
-        if (name.startsWith('sb-') || name.includes('supabase')) {
-          document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
-          document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=${location.hostname}`;
-        }
-      });
-    } catch {}
-    try {
-      Object.keys(localStorage).forEach((k) => {
-        if (k.startsWith('sb-') || k.includes('supabase')) localStorage.removeItem(k);
-      });
-      Object.keys(sessionStorage).forEach((k) => {
-        if (k.startsWith('sb-') || k.includes('supabase')) sessionStorage.removeItem(k);
-      });
-    } catch {}
-    try { toast.success(safeT(t, 'user_menu.signed_out', 'Sessão terminada')); } catch {}
-    // Hard reload garante limpeza total de estado
-    window.location.replace('/');
-  }
 
   return (
     <div ref={ref} className="relative">
@@ -116,14 +80,13 @@ export function UserMenu({ email, area }: Props) {
 
           <div className="border-t border-slate-100 my-1" />
 
-          <button
-            onClick={signOut}
-            disabled={signingOut}
-            type="button"
-            className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50 font-medium cursor-pointer"
+          {/* Logout via server endpoint — robusto, funciona mesmo se JS falhar */}
+          <a
+            href="/api/auth/logout"
+            className="block px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 font-medium cursor-pointer"
           >
-            {signingOut ? safeT(t, 'user_menu.signing_out', 'A terminar sessão...') : `🚪 ${safeT(t, 'user_menu.signout', 'Sair')}`}
-          </button>
+            🚪 {safeT(t, 'user_menu.signout', 'Sair')}
+          </a>
         </div>
       )}
     </div>

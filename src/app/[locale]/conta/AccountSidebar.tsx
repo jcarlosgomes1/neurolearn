@@ -2,10 +2,7 @@
 
 import { Link, usePathname } from '@/i18n/routing';
 import { User, Bell, Heart, Award, Sparkles, Shield, LogOut, BookOpen, Calendar, FileText, KeyRound, BellRing, Briefcase } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
-import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { toast } from 'sonner';
 
 function safeT(t: any, key: string, fb: string): string {
   try {
@@ -18,7 +15,6 @@ function safeT(t: any, key: string, fb: string): string {
 export function AccountSidebar() {
   const t = useTranslations();
   const pathname = usePathname();
-  const [busy, setBusy] = useState(false);
 
   const GROUPS = [
     {
@@ -54,32 +50,6 @@ export function AccountSidebar() {
     },
   ];
 
-  async function logout() {
-    if (busy) return;
-    setBusy(true);
-    try {
-      const sb = createClient();
-      await sb.auth.signOut({ scope: 'global' });
-    } catch {}
-    try {
-      document.cookie.split(';').forEach((c) => {
-        const eq = c.indexOf('=');
-        const name = (eq > -1 ? c.substr(0, eq) : c).trim();
-        if (name.startsWith('sb-') || name.includes('supabase')) {
-          document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
-          document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=${location.hostname}`;
-        }
-      });
-    } catch {}
-    try {
-      Object.keys(localStorage).forEach((k) => {
-        if (k.startsWith('sb-') || k.includes('supabase')) localStorage.removeItem(k);
-      });
-    } catch {}
-    try { toast.success(safeT(t, 'user_menu.signed_out', 'Sessão terminada')); } catch {}
-    window.location.replace('/');
-  }
-
   return (
     <aside className="w-full sm:w-60 flex-shrink-0">
       <nav className="bg-white border border-slate-200 rounded-xl p-2 space-y-0.5">
@@ -101,12 +71,11 @@ export function AccountSidebar() {
             })}
           </div>
         ))}
-        <button onClick={logout}
-          disabled={busy}
-          type="button"
-          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:bg-rose-50 hover:text-rose-700 mt-2 border-t border-slate-100 pt-3 disabled:opacity-50 cursor-pointer">
-          <LogOut className="h-4 w-4" /> {busy ? safeT(t, 'user_menu.signing_out', 'A terminar...') : safeT(t, 'account.signout', 'Terminar sessão')}
-        </button>
+        {/* Logout via server-side endpoint — garantido funciona, sem JS necessário */}
+        <a href="/api/auth/logout"
+          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:bg-rose-50 hover:text-rose-700 mt-2 border-t border-slate-100 pt-3 cursor-pointer">
+          <LogOut className="h-4 w-4" /> {safeT(t, 'account.signout', 'Terminar sessão')}
+        </a>
       </nav>
     </aside>
   );
