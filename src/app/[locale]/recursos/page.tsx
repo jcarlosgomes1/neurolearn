@@ -1,95 +1,84 @@
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/sections/Footer';
 import { Link } from '@/i18n/routing';
-import { Book, Video, FileText, Mic, Wrench, Sparkles, Download, ArrowRight, Calendar, Users } from 'lucide-react';
+import { BookOpen, FileText, Mic, Video, Download, ArrowRight, Sparkles, Mail } from 'lucide-react';
 
-export const revalidate = 3600;
-export const metadata = { title: 'Recursos grátis · NeuroLearn', description: 'Ebooks, templates, webinars e ferramentas grátis para aprender IA.' };
+export const metadata = { title: 'Recursos gratuitos · NeuroLearn', description: 'Ebooks, templates, webinars e podcast. Tudo grátis, sem subscrições.' };
 
 const CATEGORIES = [
-  { icon: Book, title: 'Ebooks', count: 8, cls: 'from-violet-500 to-indigo-600', items: [
-    { title: 'Guia prático de Prompt Engineering', pages: 32, format: 'PDF' },
-    { title: 'IA generativa para gestores: o essencial', pages: 24, format: 'PDF' },
-    { title: 'Glossário de IA em português', pages: 18, format: 'PDF' },
-  ]},
-  { icon: Wrench, title: 'Templates & Tools', count: 12, cls: 'from-emerald-500 to-teal-600', items: [
-    { title: 'Excel: 50 fórmulas para combinar com GPT', pages: '.xlsx', format: 'Excel' },
-    { title: 'Prompt library: 100 prompts testados', pages: '.json', format: 'JSON' },
-    { title: 'Calculadora de ROI de automação IA', pages: '.xlsx', format: 'Excel' },
-  ]},
-  { icon: Video, title: 'Webinars on-demand', count: 6, cls: 'from-rose-500 to-pink-600', items: [
-    { title: 'Como construir o teu primeiro agente em 1h', pages: '60min', format: 'Vídeo' },
-    { title: 'Fine-tuning sem código com OpenAI', pages: '45min', format: 'Vídeo' },
-    { title: 'Casos reais de empresas portuguesas', pages: '90min', format: 'Vídeo' },
-  ]},
-  { icon: Mic, title: 'Podcast NeuroLab', count: 24, cls: 'from-amber-500 to-orange-600', items: [
-    { title: 'Ep24: O futuro do trabalho com IA', pages: '52min', format: 'Áudio' },
-    { title: 'Ep23: Como o ChatGPT mudou a saúde', pages: '47min', format: 'Áudio' },
-    { title: 'Ep22: Construir uma startup de IA em PT', pages: '61min', format: 'Áudio' },
-  ]},
+  { icon: BookOpen, name: 'Ebooks', count: 24, color: 'violet', grad: 'from-violet-500 to-fuchsia-600',
+    items: ['Guia carreira em Tech 2026', 'Português para tech: glossário', 'Como passar uma entrevista técnica'] },
+  { icon: FileText, name: 'Templates', count: 47, color: 'emerald', grad: 'from-emerald-500 to-teal-600',
+    items: ['CV profissional Tech', 'Carta de motivação', 'Plano de estudo 90 dias'] },
+  { icon: Video, name: 'Webinars', count: 18, color: 'amber', grad: 'from-amber-500 to-orange-600',
+    items: ['Reskilling em 2026', 'IA generativa para profissionais', 'Negociar salário em tech'] },
+  { icon: Mic, name: 'Podcast NeuroLab', count: 62, color: 'rose', grad: 'from-rose-500 to-pink-600',
+    items: ['Ep.62: Mudar de carreira aos 40', 'Ep.61: Backend é dead?', 'Ep.60: Remote first'] },
 ];
 
-export default async function RecursosPage() {
+export default async function Page() {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-white">
-        <section className="relative overflow-hidden bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 py-20 sm:py-28">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(16,185,129,0.15),transparent_55%)]" />
-          <div className="relative max-w-5xl mx-auto px-4 sm:px-6 text-center">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/80 backdrop-blur border border-emerald-200 rounded-full text-xs font-semibold text-emerald-700 mb-5">
-              <Download className="h-3 w-3" /> 100% gratuitos
-            </span>
-            <h1 className="text-4xl sm:text-6xl font-bold text-slate-900 tracking-tight">
-              Recursos para <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">aprender e aplicar</span>
-            </h1>
-            <p className="mt-6 text-lg text-slate-600 max-w-2xl mx-auto">Ebooks, templates, webinars e ferramentas. Sem cartão. Sem newsletter obrigatória.</p>
-          </div>
-        </section>
-
-        <section className="py-16 px-4 sm:px-6">
-          <div className="max-w-6xl mx-auto space-y-10">
-            {CATEGORIES.map((cat, ci) => (
-              <div key={ci}>
-                <div className="flex items-center gap-3 mb-5">
-                  <div className={`h-11 w-11 rounded-xl bg-gradient-to-br ${cat.cls} text-white flex items-center justify-center shadow-lg`}>
-                    <cat.icon className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-slate-900">{cat.title}</h2>
-                    <div className="text-xs text-slate-500">{cat.count} recursos disponíveis</div>
-                  </div>
-                </div>
-                <div className="grid sm:grid-cols-3 gap-4">
-                  {cat.items.map((it, ii) => (
-                    <div key={ii} className="group bg-white border border-slate-200 rounded-xl p-5 hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer">
-                      <div className="flex items-start justify-between mb-3">
-                        <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400">{it.format}</span>
-                        <Download className="h-4 w-4 text-slate-300 group-hover:text-emerald-600 transition-colors" />
-                      </div>
-                      <h3 className="font-bold text-sm text-slate-900 mb-2 leading-snug">{it.title}</h3>
-                      <div className="text-xs text-slate-500">{it.pages}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Newsletter signup */}
-        <section className="py-20 px-4 sm:px-6 bg-slate-50">
-          <div className="max-w-3xl mx-auto bg-white rounded-3xl border border-slate-200 p-10 sm:p-14 text-center shadow-sm">
-            <div className="inline-flex h-14 w-14 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 text-white items-center justify-center shadow-lg mb-5">
-              <Sparkles className="h-7 w-7" />
+      <main className="bg-white">
+        <section className="relative overflow-hidden bg-gradient-to-br from-violet-950 via-purple-950 to-slate-950 text-white">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(139,92,246,0.25),transparent_60%)]" />
+          <div className="absolute top-20 right-1/3 w-72 h-72 bg-fuchsia-500/20 rounded-full blur-3xl animate-pulse" />
+          <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-24 sm:py-32 text-center">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-fuchsia-500/20 backdrop-blur border border-fuchsia-400/30 text-xs font-semibold mb-6">
+              <Sparkles className="h-3 w-3 text-fuchsia-300" /> Tudo grátis · Sem subscrições
             </div>
-            <h2 className="text-3xl font-bold text-slate-900 mb-3">Recebe novos recursos primeiro</h2>
-            <p className="text-slate-600 mb-6 max-w-xl mx-auto">Newsletter semanal: 1 recurso novo + 1 caso real + 1 tutorial prático. Sem spam.</p>
-            <form className="flex flex-wrap gap-2 max-w-md mx-auto">
-              <input type="email" placeholder="O teu email" className="flex-1 min-w-[200px] px-4 py-3 border border-slate-200 rounded-lg text-sm focus:border-violet-500 outline-none" />
-              <button type="button" className="px-6 py-3 bg-gradient-to-br from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white text-sm font-bold rounded-lg shadow-sm">Subscrever</button>
-            </form>
-            <p className="text-[10px] text-slate-400 mt-3">Podes cancelar a qualquer momento. Não partilhamos o teu email.</p>
+            <h1 className="text-4xl sm:text-6xl font-bold tracking-tight mb-6">
+              Recursos para quem quer <span className="bg-gradient-to-r from-fuchsia-300 via-violet-300 to-purple-300 bg-clip-text text-transparent">crescer profissionalmente</span>
+            </h1>
+            <p className="text-lg text-slate-300 max-w-xl mx-auto">Ebooks, templates, webinars e o nosso podcast NeuroLab. Sem custo, sem letra pequena.</p>
+          </div>
+        </section>
+
+        <section className="py-20 sm:py-24 bg-gradient-to-b from-slate-50 to-white">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6">
+            <div className="grid sm:grid-cols-2 gap-6">
+              {CATEGORIES.map((c) => (
+                <div key={c.name} className="group bg-white rounded-2xl border border-slate-200 overflow-hidden hover:-translate-y-1 hover:shadow-2xl transition-all">
+                  <div className={`bg-gradient-to-br ${c.grad} p-5 text-white`}>
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <c.icon className="h-9 w-9 mb-3 opacity-90" />
+                        <h3 className="text-2xl font-bold">{c.name}</h3>
+                        <div className="text-xs opacity-80 mt-1">{c.count} recursos</div>
+                      </div>
+                      <ArrowRight className="h-5 w-5 opacity-70 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </div>
+                  <div className="p-5 space-y-2">
+                    {c.items.map((item) => (
+                      <div key={item} className="flex items-center gap-2 text-sm text-slate-700 py-1.5 hover:text-violet-700 cursor-pointer">
+                        <Download className="h-3.5 w-3.5 text-slate-400 flex-shrink-0" /> {item}
+                      </div>
+                    ))}
+                    <div className="pt-3 border-t border-slate-100 mt-3">
+                      <span className="text-xs font-semibold text-slate-500 group-hover:text-violet-700">Ver todos os {c.count} →</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="py-20 bg-gradient-to-br from-violet-600 via-purple-600 to-fuchsia-600 text-white">
+          <div className="max-w-2xl mx-auto px-4 sm:px-6 text-center">
+            <Mail className="h-12 w-12 mx-auto mb-5 text-fuchsia-200" />
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">Newsletter semanal</h2>
+            <p className="text-violet-100 mb-7">Um email por semana. 5 min de leitura. Tendências, ferramentas e oportunidades.</p>
+            <div className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto">
+              <input type="email" placeholder="o-teu-email@exemplo.com"
+                className="flex-1 px-4 py-3 bg-white/10 backdrop-blur border border-white/30 placeholder-violet-200 text-white rounded-xl outline-none focus:bg-white/20" />
+              <button className="px-6 py-3 bg-white text-violet-700 font-semibold rounded-xl shadow-lg hover:scale-105 transition-transform">
+                Subscrever
+              </button>
+            </div>
+            <p className="text-xs text-violet-200 mt-3">Sem spam. Cancela a qualquer momento.</p>
           </div>
         </section>
       </main>

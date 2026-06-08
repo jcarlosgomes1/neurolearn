@@ -1,120 +1,85 @@
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/sections/Footer';
 import { Link } from '@/i18n/routing';
-import { LifeBuoy, Search, BookOpen, CreditCard, User, Award, ShieldCheck, Building2, MessageSquare, ArrowRight } from 'lucide-react';
+import { Search, HelpCircle, User, BookOpen, CreditCard, Award, Building2, Lock, MessageCircle, Mail, ArrowRight } from 'lucide-react';
 
-export const revalidate = 3600;
-export const metadata = { title: 'Centro de ajuda · NeuroLearn', description: 'Respostas para as perguntas mais frequentes.' };
+export const metadata = { title: 'Centro de ajuda · NeuroLearn', description: 'Respostas rápidas para qualquer dúvida sobre conta, cursos, pagamentos, certificados, empresas e privacidade.' };
 
-const CATEGORIES = [
-  { icon: User, title: 'Conta & login', count: 12, cls: 'from-violet-500 to-indigo-600',
-    questions: [
-      { q: 'Como recupero a minha password?', a: 'Vai a /login → "Esqueceste-te?" → insere o teu email. Recebes link em segundos.' },
-      { q: 'Posso mudar o meu email?', a: 'Sim, em Conta → Segurança → Alterar email. Confirmamos via email antigo e novo.' },
-      { q: 'Como ativo o 2FA?', a: 'Conta → Segurança → Adicionar factor. Funciona com Google Authenticator, 1Password, Authy.' },
-    ]
-  },
-  { icon: BookOpen, title: 'Cursos & aprendizagem', count: 18, cls: 'from-emerald-500 to-teal-600',
-    questions: [
-      { q: 'Posso descarregar as aulas?', a: 'Vídeo não, mas materiais (PDFs, code samples) sim. Disponível em cada lição.' },
-      { q: 'Em quantas línguas estão os cursos?', a: 'Todos os cursos em PT, EN, ES, FR. Tradução adaptada, não literal.' },
-      { q: 'Os cursos atualizam?', a: 'Sim, revisão trimestral. Notificamos os alunos quando há grandes updates.' },
-    ]
-  },
-  { icon: CreditCard, title: 'Pagamentos & subscrição', count: 14, cls: 'from-amber-500 to-orange-600',
-    questions: [
-      { q: 'Que métodos aceitam?', a: 'Visa, Mastercard, Amex, MB WAY, SEPA via Stripe. Empresas: factura com NIF.' },
-      { q: 'Posso pedir reembolso?', a: 'Sim, dentro de 14 dias após compra, desde que não tenhas começado mais de 1 lição.' },
-      { q: 'Como cancelo a subscrição?', a: 'Conta → Subscrição → Cancelar. Mantens acesso até ao fim do período pago.' },
-    ]
-  },
-  { icon: Award, title: 'Certificados', count: 8, cls: 'from-rose-500 to-pink-600',
-    questions: [
-      { q: 'Como obtenho o certificado?', a: 'Conclui 100% das lições e passa o exame final (≥70%). Emissão automática em PDF.' },
-      { q: 'Como verifico um certificado?', a: 'Vai a /verify/[código] ou faz scan do QR code. Validação em segundos.' },
-      { q: 'Posso adicionar ao LinkedIn?', a: 'Sim, botão directo "Adicionar ao LinkedIn" na página do certificado.' },
-    ]
-  },
-  { icon: Building2, title: 'Empresas & equipas', count: 16, cls: 'from-blue-500 to-cyan-600',
-    questions: [
-      { q: 'Como funciona o LMS B2B?', a: 'Cria empresa em /business/onboarding. Trial 14 dias. Bulk invite. Dashboards equipa.' },
-      { q: 'Posso usar SSO?', a: 'Sim, plano Enterprise inclui SAML para Microsoft Entra, Okta, Google Workspace.' },
-      { q: 'O white-label inclui domínio próprio?', a: 'Sim, plano Pro+. Subdomínio incluído. Domínio custom no Enterprise.' },
-    ]
-  },
-  { icon: ShieldCheck, title: 'Privacidade & GDPR', count: 9, cls: 'from-slate-700 to-slate-900',
-    questions: [
-      { q: 'Onde estão os meus dados?', a: 'Servidores em UE (Irlanda). Conformes RGPD/GDPR. Encriptados em repouso e trânsito.' },
-      { q: 'Como peço os meus dados (acesso)?', a: 'Conta → Privacidade → Exportar dados. Recebes ficheiro completo em 24h por email.' },
-      { q: 'Como apago a minha conta?', a: 'Conta → Privacidade → Apagar conta. Eliminação total em até 30 dias.' },
-    ]
-  },
+const CATS = [
+  { icon: User, name: 'Conta', count: 18, grad: 'from-blue-500 to-cyan-600', items: ['Recuperar password', 'Mudar email', 'Eliminar conta', 'Login com Google'] },
+  { icon: BookOpen, name: 'Cursos', count: 24, grad: 'from-violet-500 to-fuchsia-600', items: ['Como me inscrevo num curso?', 'Posso ver offline?', 'Velocidade de vídeo', 'Notas e progresso'] },
+  { icon: CreditCard, name: 'Pagamentos', count: 15, grad: 'from-emerald-500 to-teal-600', items: ['Reembolsos', 'Métodos aceites', 'Renovações automáticas', 'Facturas'] },
+  { icon: Award, name: 'Certificados', count: 9, grad: 'from-amber-500 to-orange-600', items: ['Quando recebo?', 'Validar certificado', 'Partilhar no LinkedIn', 'Verificar de outros'] },
+  { icon: Building2, name: 'Empresas', count: 21, grad: 'from-fuchsia-500 to-pink-600', items: ['Como funciona o B2B?', 'Gerir colaboradores', 'Faturação anual', 'Single Sign-On'] },
+  { icon: Lock, name: 'Privacidade & GDPR', count: 12, grad: 'from-slate-700 to-slate-900', items: ['Exportar os meus dados', 'Direito a esquecimento', 'Cookies', 'Notificações'] },
 ];
 
-export default async function AjudaPage() {
+export default async function Page() {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-white">
-        <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 to-violet-50 py-20 sm:py-28">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(139,92,246,0.1),transparent_55%)]" />
-          <div className="relative max-w-4xl mx-auto px-4 sm:px-6 text-center">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white border border-slate-200 rounded-full text-xs font-semibold text-slate-700 mb-5">
-              <LifeBuoy className="h-3 w-3 text-violet-600" /> Centro de ajuda
-            </span>
-            <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 tracking-tight mb-6">
-              Como podemos ajudar?
-            </h1>
-            <div className="relative max-w-2xl mx-auto">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-              <input type="text" placeholder="Procurar respostas..." className="w-full pl-12 pr-4 py-4 border border-slate-200 rounded-xl text-base focus:border-violet-500 outline-none shadow-sm" />
+      <main className="bg-white">
+        <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 to-slate-950 text-white">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(99,102,241,0.25),transparent_60%)]" />
+          <div className="relative max-w-3xl mx-auto px-4 sm:px-6 py-24 sm:py-32 text-center">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur border border-white/20 text-xs font-semibold mb-6">
+              <HelpCircle className="h-3 w-3 text-violet-300" /> Centro de ajuda
             </div>
+            <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-6">Como te podemos ajudar?</h1>
+            <div className="relative max-w-xl mx-auto">
+              <Search className="h-5 w-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input type="text" placeholder="Procurar... (ex: como recupero a password)"
+                className="w-full pl-12 pr-4 py-4 bg-white text-slate-900 rounded-2xl shadow-xl outline-none focus:ring-4 focus:ring-violet-500/30" />
+            </div>
+            <p className="text-xs text-slate-400 mt-3">Mais de 99 artigos. Resposta humana em &lt;24h.</p>
           </div>
         </section>
 
-        <section className="py-16 px-4 sm:px-6">
-          <div className="max-w-6xl mx-auto grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {CATEGORIES.map((cat, ci) => (
-              <details key={ci} className="bg-white rounded-2xl border border-slate-200 overflow-hidden group">
-                <summary className="p-6 cursor-pointer hover:bg-slate-50/40 list-none">
-                  <div className="flex items-center gap-3">
-                    <div className={`h-11 w-11 rounded-xl bg-gradient-to-br ${cat.cls} text-white flex items-center justify-center shadow-lg flex-shrink-0`}>
-                      <cat.icon className="h-5 w-5" />
+        <section className="py-20 bg-gradient-to-b from-slate-50 to-white">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6">
+            <div className="text-center mb-10">
+              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Navegar por categoria</h2>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {CATS.map((c) => (
+                <div key={c.name} className="group bg-white rounded-2xl border border-slate-200 overflow-hidden hover:-translate-y-1 hover:shadow-xl transition-all">
+                  <div className={`bg-gradient-to-br ${c.grad} p-5 text-white`}>
+                    <div className="flex items-start justify-between">
+                      <c.icon className="h-7 w-7 opacity-90" />
+                      <span className="text-xs bg-white/20 backdrop-blur px-2 py-0.5 rounded-full">{c.count}</span>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-bold text-slate-900">{cat.title}</div>
-                      <div className="text-xs text-slate-500">{cat.count} perguntas</div>
-                    </div>
-                    <ArrowRight className="h-4 w-4 text-slate-400 group-open:rotate-90 transition-transform" />
+                    <h3 className="font-bold text-lg mt-3">{c.name}</h3>
                   </div>
-                </summary>
-                <div className="px-6 pb-6 space-y-3 border-t border-slate-100 pt-4">
-                  {cat.questions.map((q, qi) => (
-                    <details key={qi} className="text-sm">
-                      <summary className="font-semibold text-slate-800 cursor-pointer hover:text-violet-700">{q.q}</summary>
-                      <p className="mt-2 text-slate-600 leading-relaxed text-xs pl-3 border-l-2 border-violet-200">{q.a}</p>
-                    </details>
-                  ))}
+                  <div className="p-5 space-y-1.5">
+                    {c.items.map((q) => (
+                      <div key={q} className="text-sm text-slate-700 py-1.5 hover:text-violet-700 cursor-pointer flex items-center gap-1.5">
+                        <ArrowRight className="h-3 w-3 text-slate-300 group-hover:text-violet-500" /> {q}
+                      </div>
+                    ))}
+                    <div className="pt-2 border-t border-slate-100 mt-3">
+                      <span className="text-xs font-semibold text-slate-500 group-hover:text-violet-700">Ver todas ({c.count}) →</span>
+                    </div>
+                  </div>
                 </div>
-              </details>
-            ))}
+              ))}
+            </div>
           </div>
         </section>
 
-        <section className="py-20 px-4 sm:px-6 bg-slate-50">
-          <div className="max-w-4xl mx-auto bg-white rounded-3xl border border-slate-200 p-10 text-center shadow-sm">
-            <div className="inline-flex h-14 w-14 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 text-white items-center justify-center shadow-lg mb-5">
-              <MessageSquare className="h-7 w-7" />
-            </div>
-            <h2 className="text-2xl font-bold text-slate-900 mb-3">Não encontraste resposta?</h2>
-            <p className="text-slate-600 mb-6">Resposta em até 24h em dias úteis. Mais rápido na comunidade.</p>
-            <div className="flex flex-wrap justify-center gap-3">
-              <a href="mailto:suporte@neurolearn.app" className="inline-flex items-center gap-2 px-6 py-3 bg-violet-600 hover:bg-violet-700 text-white text-sm font-bold rounded-lg">
-                Contactar suporte
-              </a>
-              <Link href={'/comunidade' as any} className="inline-flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 hover:bg-slate-50 text-slate-900 text-sm font-bold rounded-lg">
-                Perguntar à comunidade
-              </Link>
+        <section className="py-20">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6">
+            <div className="bg-gradient-to-br from-violet-50 to-blue-50 border border-violet-200 rounded-3xl p-8 sm:p-10 text-center">
+              <MessageCircle className="h-12 w-12 mx-auto mb-4 text-violet-600" />
+              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-3">Não encontras o que procuras?</h2>
+              <p className="text-slate-600 mb-7 max-w-lg mx-auto">A nossa equipa humana responde em menos de 24h. Sem chatbots, sem tickets perdidos.</p>
+              <div className="flex flex-wrap justify-center gap-3">
+                <a href="mailto:ajuda@neurolearn.com" className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-violet-600 hover:bg-violet-700 text-white font-semibold rounded-xl shadow-md hover:scale-105 transition-all">
+                  <Mail className="h-4 w-4" /> ajuda@neurolearn.com
+                </a>
+                <Link href={'/comunidade' as any} className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold rounded-xl transition-all">
+                  <MessageCircle className="h-4 w-4" /> Perguntar à comunidade
+                </Link>
+              </div>
             </div>
           </div>
         </section>

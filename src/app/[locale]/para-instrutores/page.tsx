@@ -1,73 +1,77 @@
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/sections/Footer';
 import { Link } from '@/i18n/routing';
-import { GraduationCap, Euro, Users, Mic, PenTool, BarChart3, ArrowRight, CheckCircle2, Sparkles, Zap, Award } from 'lucide-react';
+import { Sparkles, DollarSign, Users2, Zap, BarChart3, Globe2, Headphones, ArrowRight, Check, X, GraduationCap, Award } from 'lucide-react';
 
-export const revalidate = 3600;
-export const metadata = { title: 'Para instrutores · NeuroLearn', description: 'Cria, vende e escala os teus cursos. 70% revshare, ferramentas premium, audiência global.' };
+export const metadata = { title: 'Para Instrutores · NeuroLearn', description: 'Ensina o que sabes. Fica com 70% do que ganhas. Construído por instrutores, para instrutores.' };
 
-export default async function ParaInstrutoresPage() {
+const FEATURES = [
+  { icon: DollarSign, title: '70% da receita para ti', text: 'A maior taxa do mercado. Sem fees escondidas, sem letra pequena.', grad: 'from-emerald-500 to-teal-600' },
+  { icon: Sparkles, title: 'Ferramentas que poupam horas', text: 'Editor de cursos com módulos, lições e quizzes. Vídeo hosting incluído.', grad: 'from-violet-500 to-fuchsia-600' },
+  { icon: BarChart3, title: 'Analytics em tempo real', text: 'Sabes exactamente o que funciona — taxas de conclusão, dúvidas frequentes, pontos de abandono.', grad: 'from-blue-500 to-cyan-600' },
+  { icon: Globe2, title: 'Audiência internacional', text: 'Mais de 30 países. Suporte multilíngua nativo.', grad: 'from-amber-500 to-orange-600' },
+  { icon: Users2, title: 'Comunidade activa', text: 'Q&A integrada, reviews verificadas, alunos engajados.', grad: 'from-fuchsia-500 to-pink-600' },
+  { icon: Headphones, title: 'Suporte humano', text: 'Equipa dedicada. Não nos escondemos atrás de chatbots.', grad: 'from-rose-500 to-red-600' },
+];
+
+const COMPARE = [
+  { name: 'NeuroLearn', revshare: '70%', features: ['Vídeo Mux incluído', 'Tutor para alunos', 'Talent marketplace', 'Sem taxa marketing'], highlight: true },
+  { name: 'Udemy', revshare: '37-97%', features: ['Vídeo limitado', 'Sem tutor', 'Sem talent', 'Cobra 50% em marketing'] },
+  { name: 'Coursera', revshare: '50%', features: ['Vídeo incluído', 'Sem tutor', 'Sem talent', 'Mercado fechado'] },
+  { name: 'Teachable', revshare: '90%', features: ['Vídeo extra', 'Sem tutor', 'Sem talent', 'Tu trazes audiência'] },
+];
+
+export default async function Page() {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-white">
-        <section className="relative overflow-hidden bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50 py-24 sm:py-32">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(251,146,60,0.2),transparent_55%)]" />
-          <div className="absolute top-20 right-10 h-96 w-96 rounded-full bg-amber-300/20 blur-3xl animate-pulse" />
-          <div className="relative max-w-6xl mx-auto px-4 sm:px-6 grid lg:grid-cols-2 gap-12 items-center">
+      <main className="bg-white">
+        <section className="relative overflow-hidden bg-gradient-to-br from-amber-950 via-orange-950 to-slate-950 text-white">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(245,158,11,0.3),transparent_50%)]" />
+          <div className="absolute top-20 right-1/4 w-80 h-80 bg-amber-500/20 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute bottom-10 left-1/4 w-72 h-72 bg-orange-500/20 rounded-full blur-3xl animate-pulse" style={{animationDelay:'1s'}} />
+          <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-24 sm:py-32 grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/80 backdrop-blur border border-amber-200 rounded-full text-xs font-semibold text-amber-700 mb-5">
-                <GraduationCap className="h-3 w-3" /> Programa de instrutores
-              </span>
-              <h1 className="text-4xl sm:text-6xl font-bold text-slate-900 tracking-tight">
-                Cria. Vende. <span className="bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">Escala.</span>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 backdrop-blur border border-amber-400/30 text-xs font-semibold mb-6">
+                <GraduationCap className="h-3 w-3 text-amber-300" /> Programa de instrutores
+              </div>
+              <h1 className="text-4xl sm:text-6xl font-bold tracking-tight mb-6">
+                Ensina o que sabes.<br /><span className="bg-gradient-to-r from-amber-300 to-orange-300 bg-clip-text text-transparent">Fica com 70%.</span>
               </h1>
-              <p className="mt-6 text-lg text-slate-700 leading-relaxed">
-                Ferramentas profissionais para criar cursos. Audiência global. 70% revshare. Tudo o que precisas para viver do que sabes.
-              </p>
-              <div className="mt-8 flex flex-wrap gap-3">
-                <Link href={'/candidatar' as any} className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-br from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white text-base font-bold rounded-xl shadow-lg hover:scale-105 transition-transform">
-                  Candidatar agora <ArrowRight className="h-5 w-5" />
+              <p className="text-lg text-slate-300 mb-8 max-w-lg">Construído por instrutores, para instrutores. A plataforma que não te trata como mercadoria.</p>
+              <div className="flex flex-wrap gap-3">
+                <Link href={'/candidatar' as any} className="inline-flex items-center gap-1.5 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold rounded-xl shadow-xl hover:scale-105 transition-transform">
+                  Candidatar agora <ArrowRight className="h-4 w-4" />
                 </Link>
-                <Link href={'/casos-de-sucesso' as any} className="inline-flex items-center gap-2 px-8 py-4 bg-white border border-slate-200 hover:bg-slate-50 text-slate-900 text-base font-bold rounded-xl">
-                  Ver histórias
-                </Link>
+                <a href="#compare" className="inline-flex items-center gap-1.5 px-6 py-3 bg-white/10 backdrop-blur border border-white/30 text-white font-semibold rounded-xl hover:bg-white/20 transition-all">
+                  Comparar plataformas
+                </a>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                { value: '70%', label: 'Revshare', cls: 'from-emerald-500 to-teal-600' },
-                { value: '12k+', label: 'Audiência', cls: 'from-violet-500 to-indigo-600' },
-                { value: '4 línguas', label: 'Auto-translate', cls: 'from-blue-500 to-cyan-600' },
-                { value: '<48h', label: 'Pagamento', cls: 'from-rose-500 to-pink-600' },
-              ].map((s, i) => (
-                <div key={i} className={`bg-gradient-to-br ${s.cls} rounded-2xl p-6 text-white shadow-lg`}>
-                  <div className="text-4xl font-black">{s.value}</div>
-                  <div className="text-sm font-semibold mt-1 opacity-90">{s.label}</div>
+            <div className="grid grid-cols-2 gap-4">
+              {[{v:'70%',l:'Comissão'},{v:'<30d',l:'Approval médio'},{v:'15k',l:'Alunos activos'},{v:'4.8★',l:'Rating instrutores'}].map((s) => (
+                <div key={s.l} className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-5 hover:bg-white/10 transition-all">
+                  <div className="text-3xl font-bold bg-gradient-to-r from-amber-300 to-orange-300 bg-clip-text text-transparent">{s.v}</div>
+                  <div className="text-xs text-slate-300 uppercase tracking-wider mt-1">{s.l}</div>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        <section className="py-20 px-4 sm:px-6">
-          <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl sm:text-4xl font-bold text-center text-slate-900 mb-3">Tudo o que precisas para criar</h2>
-            <p className="text-center text-slate-600 mb-12 max-w-2xl mx-auto">Ferramentas premium, hospedagem incluída, marketing distribuído.</p>
+        <section className="py-20 sm:py-24 bg-gradient-to-b from-white to-slate-50">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6">
+            <div className="text-center mb-12">
+              <div className="text-xs font-semibold text-amber-600 uppercase tracking-wider mb-2">Tudo o que precisas</div>
+              <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">Ferramentas para construir, vender e escalar</h2>
+            </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {[
-                { icon: PenTool, title: 'Editor profissional', text: 'Estrutura módulos, lições, quizzes, projectos. Markdown, vídeo, ficheiros — tudo num só sítio.', cls: 'from-violet-500 to-indigo-600' },
-                { icon: Mic, title: 'Vídeo Mux nativo', text: 'Upload directo, encoding automático, streaming adaptativo. Sem custos extra.', cls: 'from-rose-500 to-pink-600' },
-                { icon: Sparkles, title: 'Tutor inteligente integrado', text: 'Cada aula tem um tutor que responde dúvidas dos alunos no contexto. Tu mantens o controlo.', cls: 'from-fuchsia-500 to-purple-600' },
-                { icon: BarChart3, title: 'Analytics em tempo real', text: 'Engagement, taxa de conclusão, dropoff por lição. Optimiza sem adivinhar.', cls: 'from-amber-500 to-orange-600' },
-                { icon: Users, title: 'B2B + B2C', text: 'Empresas compram acesso à tua biblioteca por seats. Ganhos extra sem esforço.', cls: 'from-blue-500 to-cyan-600' },
-                { icon: Award, title: 'Certificados verificáveis', text: 'QR code único por aluno. Branding partilhado. Valoriza o teu curso no mercado.', cls: 'from-emerald-500 to-teal-600' },
-              ].map((f, i) => (
-                <div key={i} className="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-xl hover:-translate-y-1 transition-all">
-                  <div className={`inline-flex h-12 w-12 rounded-xl bg-gradient-to-br ${f.cls} text-white items-center justify-center shadow-lg mb-4`}>
-                    <f.icon className="h-6 w-6" />
+              {FEATURES.map((f) => (
+                <div key={f.title} className="group bg-white rounded-2xl border border-slate-200 p-6 hover:-translate-y-1 hover:shadow-xl hover:border-slate-300 transition-all">
+                  <div className={`inline-flex h-11 w-11 rounded-xl bg-gradient-to-br ${f.grad} text-white items-center justify-center mb-4 shadow-md group-hover:scale-110 transition-transform`}>
+                    <f.icon className="h-5 w-5" />
                   </div>
-                  <h3 className="font-bold text-lg text-slate-900 mb-1.5">{f.title}</h3>
+                  <h3 className="font-bold text-slate-900 mb-1.5">{f.title}</h3>
                   <p className="text-sm text-slate-600 leading-relaxed">{f.text}</p>
                 </div>
               ))}
@@ -75,39 +79,41 @@ export default async function ParaInstrutoresPage() {
           </div>
         </section>
 
-        {/* Revshare comparison */}
-        <section className="py-20 px-4 sm:px-6 bg-slate-50">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl sm:text-4xl font-bold text-center text-slate-900 mb-12">Ganha mais do que noutras plataformas</h2>
-            <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
-              <div className="grid grid-cols-3 text-sm">
-                <div className="p-4 sm:p-6 border-b border-r border-slate-100 font-bold text-slate-500 uppercase text-xs tracking-wider">Plataforma</div>
-                <div className="p-4 sm:p-6 border-b border-r border-slate-100 font-bold text-slate-500 uppercase text-xs tracking-wider text-center">Revshare instrutor</div>
-                <div className="p-4 sm:p-6 border-b border-slate-100 font-bold text-slate-500 uppercase text-xs tracking-wider text-center">Pagamento</div>
-                {[
-                  { name: 'Udemy', rev: '37–97%*', pay: '60 dias' },
-                  { name: 'Coursera', rev: '~50%', pay: '90 dias' },
-                  { name: 'Teachable', rev: '~90%', pay: '30 dias' },
-                  { name: 'NeuroLearn', rev: '70%', pay: '<48h', highlight: true },
-                ].map((r, i) => (
-                  <div key={i} className={`contents ${r.highlight ? 'bg-emerald-50' : ''}`}>
-                    <div className={`p-4 border-r border-slate-100 ${r.highlight ? 'bg-emerald-50 font-bold text-emerald-700' : 'text-slate-700'}`}>{r.name}{r.highlight && ' ★'}</div>
-                    <div className={`p-4 border-r border-slate-100 text-center ${r.highlight ? 'bg-emerald-50 font-bold text-emerald-700' : 'text-slate-700'}`}>{r.rev}</div>
-                    <div className={`p-4 text-center ${r.highlight ? 'bg-emerald-50 font-bold text-emerald-700' : 'text-slate-700'}`}>{r.pay}</div>
+        <section id="compare" className="py-20 sm:py-24">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6">
+            <div className="text-center mb-10">
+              <div className="text-xs font-semibold text-amber-600 uppercase tracking-wider mb-2">Comparação</div>
+              <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">Como ganham os instrutores noutras plataformas</h2>
+              <p className="text-sm text-slate-500 mt-2">A taxa real depois de fees, marketing e descontos.</p>
+            </div>
+            <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-lg">
+              {COMPARE.map((p, i) => (
+                <div key={p.name} className={`flex flex-col sm:flex-row items-start sm:items-center gap-4 p-5 sm:p-6 ${p.highlight ? 'bg-gradient-to-r from-amber-50 to-orange-50 border-l-4 border-amber-500' : 'border-b border-slate-100 last:border-0'}`}>
+                  <div className="sm:w-32 flex-shrink-0">
+                    <div className={`font-bold ${p.highlight ? 'text-amber-700' : 'text-slate-800'}`}>{p.name}</div>
+                    {p.highlight && <Award className="h-4 w-4 text-amber-500 mt-0.5" />}
                   </div>
-                ))}
-              </div>
-              <p className="text-[11px] text-slate-400 p-4 border-t border-slate-100">* Udemy: 37% organic / 97% próprios cupões. Outras plataformas variam por nicho/plano.</p>
+                  <div className={`sm:w-24 text-2xl font-bold flex-shrink-0 ${p.highlight ? 'text-amber-600' : 'text-slate-500'}`}>{p.revshare}</div>
+                  <div className="flex-1 flex flex-wrap gap-2">
+                    {p.features.map((feat, idx) => (
+                      <span key={idx} className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full ${p.highlight ? 'bg-emerald-100 text-emerald-700' : idx > 0 ? 'bg-slate-100 text-slate-500' : 'bg-slate-100 text-slate-600'}`}>
+                        {p.highlight || idx === 0 ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />} {feat}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </section>
 
-        <section className="py-20 px-4 sm:px-6 bg-gradient-to-br from-amber-600 to-orange-600 text-white">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl sm:text-5xl font-bold mb-4">Vamos avaliar a tua candidatura</h2>
-            <p className="text-xl text-white/90 mb-8">Resposta em 48h. Sem custos. Sem exclusividade.</p>
-            <Link href={'/candidatar' as any} className="inline-flex items-center gap-2 px-10 py-4 bg-white text-orange-700 hover:bg-slate-100 text-base font-bold rounded-xl shadow-lg hover:scale-105 transition-transform">
-              Candidatar agora <ArrowRight className="h-5 w-5" />
+        <section className="py-20 bg-gradient-to-br from-amber-500 via-orange-500 to-rose-500 text-white">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
+            <Zap className="h-12 w-12 mx-auto mb-5" />
+            <h2 className="text-3xl sm:text-5xl font-bold tracking-tight mb-5">A tua candidatura demora 5 minutos</h2>
+            <p className="text-lg text-amber-50 mb-8 max-w-xl mx-auto">Apresenta uma proposta de curso. Resposta em menos de 30 dias.</p>
+            <Link href={'/candidatar' as any} className="inline-flex items-center gap-1.5 px-7 py-3 bg-white text-orange-600 font-semibold rounded-xl shadow-xl hover:scale-105 transition-transform">
+              Candidatar agora <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
         </section>
