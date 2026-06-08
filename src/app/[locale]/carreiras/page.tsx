@@ -1,93 +1,94 @@
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/sections/Footer';
-import { Briefcase, Heart, Zap, Globe2, Coffee, TrendingUp, ArrowRight, Sparkles } from 'lucide-react';
+import { Link } from '@/i18n/routing';
+import { getHomeBlocks } from '@/lib/api/home-blocks';
+import { Briefcase, Sparkles, Heart, Zap, Globe2, Coffee, ArrowRight, Code, Palette, BarChart3, Users } from 'lucide-react';
 
-export const metadata = { title: 'Carreiras · NeuroLearn', description: 'Junta-te à equipa que está a redesenhar a aprendizagem profissional.' };
+export const revalidate = 600;
+export async function generateMetadata() { return { title: 'Carreiras · NeuroLearn' }; }
 
 const VALUES = [
-  { icon: Zap, title: 'Velocidade > perfeição', text: 'Enviamos cedo, aprendemos rápido, melhoramos constantemente.' },
-  { icon: Heart, title: 'Honestidade radical', text: 'Discordamos abertamente. Decidimos depois. Comprometemo-nos sempre.' },
-  { icon: Globe2, title: 'Remote-first', text: 'Trabalhamos de onde funcionar melhor para nós. Encontramos 2x por ano.' },
-  { icon: Coffee, title: 'Foco profundo', text: 'Sem reuniões inúteis. Quartas-feiras sem meetings. Horas de make tempo sagrado.' },
+  { icon: Zap, title: 'Velocidade > perfeição', desc: 'Lançamos, medimos, iteramos. Nada está terminado — está sempre a evoluir.', cls: 'from-amber-500 to-orange-600' },
+  { icon: Heart, title: 'Cuidamos do produto', desc: 'Pensamos em quem usa. Cada decisão começa numa pergunta: e o utilizador?', cls: 'from-rose-500 to-pink-600' },
+  { icon: Globe2, title: 'Remoto por design', desc: 'Trabalha onde te focas melhor. Equipa global, processos assíncronos.', cls: 'from-emerald-500 to-teal-600' },
+  { icon: Coffee, title: 'Calma e ambição', desc: 'Sem cultura de presença. Resultados, não horas. Férias generosas. Sustentável.', cls: 'from-violet-500 to-indigo-600' },
 ];
 
-const PERKS = [
-  'Salário acima do mercado · revisão semestral',
-  'Equity para todos os colaboradores',
-  '40 dias de férias por ano',
-  'Orçamento anual €3000 para formação',
-  'Material de trabalho topo de gama',
-  'Encontros físicos 2x/ano em cidade europeia',
+const ROLES = [
+  { icon: Code, title: 'Engineering', area: 'Backend, Frontend, ML', level: 'Mid · Senior', cls: 'from-violet-500 to-indigo-600' },
+  { icon: Palette, title: 'Design', area: 'Product Design, UX Research', level: 'Mid', cls: 'from-fuchsia-500 to-pink-600' },
+  { icon: BarChart3, title: 'Growth', area: 'Performance, Content, SEO', level: 'Mid · Senior', cls: 'from-amber-500 to-orange-600' },
+  { icon: Users, title: 'Customer Success', area: 'B2B Enterprise, B2C', level: 'Junior · Mid', cls: 'from-emerald-500 to-teal-600' },
 ];
 
-export default async function Page() {
+export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const blocks = await getHomeBlocks(locale);
   return (
     <>
       <Header />
-      <main className="bg-white">
-        <section className="relative overflow-hidden bg-gradient-to-br from-rose-950 via-pink-950 to-slate-950 text-white">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(244,63,94,0.25),transparent_60%)]" />
-          <div className="absolute top-20 left-1/3 w-72 h-72 bg-rose-500/20 rounded-full blur-3xl animate-pulse" />
-          <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-24 sm:py-32">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/20 backdrop-blur border border-rose-400/30 text-xs font-semibold mb-6">
-              <Briefcase className="h-3 w-3 text-rose-300" /> Estamos a contratar
+      <main className="bg-white min-h-screen">
+        <section className="relative overflow-hidden bg-gradient-to-br from-rose-50 via-white to-pink-50 border-b border-slate-200/60">
+          <div className="absolute inset-0 -z-10">
+            <div className="absolute top-0 left-1/4 h-96 w-96 rounded-full bg-rose-400/20 blur-3xl animate-pulse" />
+          </div>
+          <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-24 text-center">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-rose-200 text-xs font-semibold text-rose-700 mb-6 shadow-sm">
+              <Briefcase className="h-3.5 w-3.5" /> Estamos a contratar
             </div>
-            <h1 className="text-4xl sm:text-6xl font-bold tracking-tight mb-6 max-w-3xl">
-              Constrói o futuro <span className="bg-gradient-to-r from-rose-300 to-pink-300 bg-clip-text text-transparent">da aprendizagem profissional</span> connosco
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 leading-tight">
+              Constrói o futuro da <span className="bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">aprendizagem</span>
             </h1>
-            <p className="text-lg text-slate-300 max-w-xl">Equipa pequena, missão grande. Sem hierarquias absurdas, sem reuniões a mais.</p>
+            <p className="mt-6 text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
+              Equipa pequena, impacto grande. Construímos a plataforma que queríamos ter tido quando começámos as nossas próprias carreiras.
+            </p>
           </div>
         </section>
 
-        <section className="py-20 sm:py-24 bg-gradient-to-b from-white to-slate-50">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6">
-            <div className="text-center mb-12">
-              <div className="text-xs font-semibold text-rose-600 uppercase tracking-wider mb-2">Como trabalhamos</div>
-              <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">Quatro princípios que guiam todas as decisões</h2>
-            </div>
-            <div className="grid sm:grid-cols-2 gap-5">
-              {VALUES.map(v => (
-                <div key={v.title} className="group bg-white rounded-2xl border border-slate-200 p-6 hover:-translate-y-1 hover:shadow-xl transition-all">
-                  <v.icon className="h-8 w-8 text-rose-600 mb-3" />
-                  <h3 className="font-bold text-lg text-slate-900 mb-2">{v.title}</h3>
-                  <p className="text-sm text-slate-600 leading-relaxed">{v.text}</p>
+        <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 text-center mb-12">Como trabalhamos</h2>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {VALUES.map((v, i) => (
+              <div key={i} className="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-xl hover:-translate-y-1 transition-all">
+                <div className={`inline-flex h-12 w-12 rounded-xl bg-gradient-to-br ${v.cls} text-white items-center justify-center mb-3 shadow-md`}>
+                  <v.icon className="h-5 w-5" />
                 </div>
+                <h3 className="font-bold text-slate-900 mb-1">{v.title}</h3>
+                <p className="text-sm text-slate-600 leading-relaxed">{v.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="bg-slate-50 py-20 border-y border-slate-200/60">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 text-center mb-3">Vagas abertas</h2>
+            <p className="text-center text-slate-600 mb-12">Mesmo que não vejas a tua área, envia candidatura espontânea — adoramos surpresas.</p>
+            <div className="grid sm:grid-cols-2 gap-4">
+              {ROLES.map((r, i) => (
+                <a key={i} href="mailto:hiring@neurolearn.pt?subject=Candidatura" className="group bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-xl hover:-translate-y-1 transition-all flex items-center gap-4">
+                  <div className={`flex-shrink-0 inline-flex h-14 w-14 rounded-2xl bg-gradient-to-br ${r.cls} text-white items-center justify-center shadow-md group-hover:scale-110 transition-transform`}>
+                    <r.icon className="h-7 w-7" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-bold text-slate-900">{r.title}</div>
+                    <div className="text-sm text-slate-600">{r.area}</div>
+                    <div className="text-xs text-slate-500 mt-0.5">{r.level} · Remoto</div>
+                  </div>
+                  <ArrowRight className="h-5 w-5 text-slate-300 group-hover:text-slate-700 group-hover:translate-x-1 transition-all" />
+                </a>
               ))}
             </div>
-          </div>
-        </section>
-
-        <section className="py-20">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6">
-            <div className="bg-gradient-to-br from-rose-50 to-pink-50 border border-rose-200 rounded-3xl p-8 sm:p-10">
-              <div className="text-center mb-8">
-                <Sparkles className="h-8 w-8 text-rose-600 mx-auto mb-3" />
-                <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">O que oferecemos</h2>
-              </div>
-              <div className="grid sm:grid-cols-2 gap-3">
-                {PERKS.map(p => (
-                  <div key={p} className="flex items-center gap-3 bg-white/60 backdrop-blur rounded-xl p-3">
-                    <div className="h-7 w-7 rounded-full bg-gradient-to-br from-rose-500 to-pink-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">✓</div>
-                    <span className="text-sm text-slate-700">{p}</span>
-                  </div>
-                ))}
-              </div>
+            <div className="text-center mt-8">
+              <a href="mailto:hiring@neurolearn.pt?subject=Candidatura espontânea" className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-br from-rose-600 to-pink-600 text-white hover:scale-105 transition-all font-bold rounded-xl shadow-lg">
+                Enviar candidatura espontânea <ArrowRight className="h-4 w-4" />
+              </a>
             </div>
           </div>
         </section>
 
-        <section className="py-20 bg-slate-950 text-white">
-          <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
-            <TrendingUp className="h-12 w-12 mx-auto mb-5 text-rose-400" />
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-5">Vagas abertas</h2>
-            <p className="text-slate-300 mb-8">Não temos vagas abertas neste momento — mas adoramos receber candidaturas espontâneas de pessoas excepcionais.</p>
-            <a href="mailto:carreiras@neurolearn.com" className="inline-flex items-center gap-1.5 px-7 py-3 bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white font-semibold rounded-xl shadow-xl hover:scale-105 transition-transform">
-              Candidatura espontânea <ArrowRight className="h-4 w-4" />
-            </a>
-          </div>
-        </section>
+        <Footer data={(blocks as any).footer_brand || { brand: 'NeuroLearn' }} />
       </main>
-      <Footer data={{ brand: 'NeuroLearn' }} />
     </>
   );
 }

@@ -1,83 +1,117 @@
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/sections/Footer';
 import { Link } from '@/i18n/routing';
-import { Quote, TrendingUp, Briefcase, GraduationCap, Building2, ArrowRight, Star, Award } from 'lucide-react';
+import { getHomeBlocks } from '@/lib/api/home-blocks';
+import { Trophy, Quote, TrendingUp, Briefcase, GraduationCap, Building2, ArrowRight, Sparkles } from 'lucide-react';
 
-export const metadata = { title: 'Casos de sucesso · NeuroLearn', description: 'Histórias reais de quem transformou a carreira com a NeuroLearn.' };
+export const revalidate = 600;
+export async function generateMetadata() { return { title: 'Casos de sucesso · NeuroLearn' }; }
 
-const CASES = [
-  { name: 'Ricardo M.', role: 'Data Engineer · Banco BPI', from: 'Recepcionista de hotel', quote: 'Em 8 meses passei de zero conhecimento técnico a engenheiro contratado pelo banco. O que mudou foi a estrutura.', metric: '€38k/ano', metricLabel: 'Salário actual', course: 'Engenharia de Dados', grad: 'from-violet-500 to-fuchsia-600', icon: Briefcase },
-  { name: 'Ana S.', role: 'Product Designer · freelance', from: 'Designer interna mal paga', quote: 'O percurso UX deu-me não só competências mas certificação que clientes internacionais valorizam. Triplicei a tarifa.', metric: '€85/h', metricLabel: 'Tarifa actual', course: 'UX Design Profissional', grad: 'from-emerald-500 to-teal-600', icon: GraduationCap },
-  { name: 'Marta L.', role: 'Head of L&D · Sonae', from: 'Gestora de RH a precisar de upskill', quote: 'Pusemos 240 colaboradores em formação contínua. O ROI veio em 6 meses via retenção e produtividade.', metric: '240', metricLabel: 'Funcionários activos', course: 'B2B Corporate LMS', grad: 'from-amber-500 to-orange-600', icon: Building2 },
-  { name: 'João P.', role: 'Backend Developer · Feedzai', from: 'Estudante de matemática', quote: 'Os exercícios são reais, não brinquedos. Cheguei ao primeiro emprego com portfólio que outros candidatos não tinham.', metric: '3 ofertas', metricLabel: 'Em 2 semanas', course: 'Backend Profissional', grad: 'from-blue-500 to-cyan-600', icon: Award },
+interface Case { name: string; role: string; company: string; quote: string; outcome: string; outcomeLabel: string; icon: any; cls: string; }
+
+const CASES: Case[] = [
+  {
+    name: 'Ricardo F.', role: 'Software Engineer', company: 'Anteriormente: vendas · Lisboa',
+    quote: 'Em seis meses passei de comercial sem código a desenvolvedor júnior numa scale-up. A diferença foi o foco em projectos reais — tinha portfolio para mostrar em entrevista.',
+    outcome: '+€18k/ano', outcomeLabel: 'Aumento salarial',
+    icon: Briefcase, cls: 'from-violet-500 to-indigo-600',
+  },
+  {
+    name: 'Ana M.', role: 'UX Designer Senior', company: 'Promovida de Junior em 9 meses',
+    quote: 'Já trabalhava em design mas estava estagnada. Os percursos guiados deram-me a estrutura que faltava — design systems, research, accessibility. Promoção saiu naturalmente.',
+    outcome: 'Senior', outcomeLabel: 'Promoção em 9 meses',
+    icon: TrendingUp, cls: 'from-emerald-500 to-teal-600',
+  },
+  {
+    name: 'Marta C.', role: 'Talent Manager', company: 'Sistema Hospitalar · Porto',
+    quote: 'Subimos os nossos manuais de procedimentos e a plataforma gerou cursos personalizados para 340 enfermeiros. Compliance e formação contínua resolvidos sem contratar formadores externos.',
+    outcome: '340 colaboradores', outcomeLabel: 'Formados em 3 meses',
+    icon: Building2, cls: 'from-amber-500 to-orange-600',
+  },
+  {
+    name: 'João T.', role: 'Data Analyst', company: 'Recém-licenciado · Coimbra',
+    quote: 'Acabei o curso de gestão sem saber Python ou SQL. Em 4 meses completei o percurso completo de análise de dados e fui contratado via marketplace de talento da própria NeuroLearn.',
+    outcome: '1º emprego', outcomeLabel: 'Contratado via marketplace',
+    icon: GraduationCap, cls: 'from-rose-500 to-pink-600',
+  },
 ];
 
-export default async function Page() {
+export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const blocks = await getHomeBlocks(locale);
   return (
     <>
       <Header />
-      <main className="bg-white">
-        <section className="relative overflow-hidden bg-gradient-to-br from-emerald-950 via-teal-950 to-slate-950 text-white">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(16,185,129,0.25),transparent_50%)]" />
-          <div className="absolute top-32 right-1/4 w-72 h-72 bg-emerald-500/20 rounded-full blur-3xl animate-pulse" />
-          <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-24 sm:py-32">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur border border-white/20 text-xs font-semibold mb-6">
-              <Star className="h-3 w-3 text-amber-300" /> Histórias reais
+      <main className="bg-white min-h-screen">
+        {/* Hero */}
+        <section className="relative overflow-hidden bg-gradient-to-br from-emerald-50 via-white to-teal-50 border-b border-slate-200/60">
+          <div className="absolute inset-0 -z-10">
+            <div className="absolute top-0 left-1/3 h-96 w-96 rounded-full bg-emerald-400/20 blur-3xl animate-pulse" />
+            <div className="absolute bottom-0 right-1/3 h-96 w-96 rounded-full bg-teal-400/20 blur-3xl animate-pulse" style={{ animationDelay: '1.5s' }} />
+          </div>
+          <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-24 text-center">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-emerald-200 text-xs font-semibold text-emerald-700 mb-6 shadow-sm">
+              <Trophy className="h-3.5 w-3.5" /> Casos de sucesso
             </div>
-            <h1 className="text-4xl sm:text-6xl font-bold tracking-tight mb-6 max-w-3xl">
-              Quatro pessoas. Quatro <span className="bg-gradient-to-r from-emerald-300 to-teal-300 bg-clip-text text-transparent">trajectórias diferentes</span>. Um mesmo ponto de viragem.
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 leading-tight">
+              Histórias reais de <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">transformação</span>
             </h1>
-            <p className="text-lg text-slate-300 max-w-2xl">A próxima podes ser tu.</p>
+            <p className="mt-6 text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
+              Não vendemos cursos — vendemos resultados. Conhece pessoas e empresas que mudaram a vida com a plataforma.
+            </p>
           </div>
         </section>
 
-        <section className="py-20 bg-gradient-to-b from-slate-50 to-white">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-8">
-            {CASES.map((c, i) => (
-              <article key={c.name} className={`bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-2xl transition-all ${i % 2 === 1 ? 'lg:flex-row-reverse' : ''} lg:flex`}>
-                <div className={`bg-gradient-to-br ${c.grad} p-8 sm:p-10 text-white lg:w-2/5 flex flex-col justify-between`}>
-                  <div>
-                    <c.icon className="h-10 w-10 mb-4 opacity-90" />
-                    <div className="text-xs uppercase tracking-wider opacity-80 mb-1">Caso #{i + 1}</div>
-                    <div className="text-2xl font-bold mb-1">{c.name}</div>
-                    <div className="text-sm opacity-90">{c.role}</div>
-                    <div className="text-xs opacity-70 mt-2 italic">Antes: {c.from}</div>
-                  </div>
-                  <div className="mt-8 pt-6 border-t border-white/20">
-                    <div className="text-4xl font-bold">{c.metric}</div>
-                    <div className="text-xs uppercase tracking-wider opacity-80 mt-1">{c.metricLabel}</div>
-                  </div>
-                </div>
-                <div className="p-8 sm:p-10 lg:w-3/5">
-                  <Quote className="h-8 w-8 text-slate-300 mb-3" />
-                  <p className="text-lg sm:text-xl text-slate-800 leading-relaxed mb-6 italic">{c.quote}</p>
-                  <div className="flex items-center justify-between pt-5 border-t border-slate-100">
-                    <div>
-                      <div className="text-[10px] uppercase tracking-wider text-slate-400">Percurso</div>
-                      <div className="text-sm font-semibold text-slate-700">{c.course}</div>
-                    </div>
-                    <Link href={'/cursos' as any} className="inline-flex items-center gap-1 text-sm font-semibold text-violet-700 hover:text-violet-900">
-                      Ver percursos similares <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
+        {/* Cases */}
+        <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 space-y-6">
+          {CASES.map((c, i) => (
+            <article key={i} className="group bg-white rounded-3xl border border-slate-200 p-6 sm:p-10 hover:shadow-2xl hover:-translate-y-1 transition-all overflow-hidden relative">
+              <div className={`absolute top-0 right-0 h-64 w-64 rounded-full bg-gradient-to-br ${c.cls} opacity-5 blur-3xl group-hover:opacity-10 transition-opacity`} />
+              <div className="relative grid sm:grid-cols-3 gap-6">
+                <div className="sm:col-span-2 space-y-4">
+                  <Quote className={`h-8 w-8 bg-gradient-to-br ${c.cls} text-white p-1.5 rounded-lg`} />
+                  <blockquote className="text-lg sm:text-xl text-slate-800 leading-relaxed italic">
+                    "{c.quote}"
+                  </blockquote>
+                  <div className="pt-2 border-t border-slate-100">
+                    <div className="font-bold text-slate-900">{c.name}</div>
+                    <div className="text-sm text-slate-600">{c.role}</div>
+                    <div className="text-xs text-slate-500 mt-0.5">{c.company}</div>
                   </div>
                 </div>
-              </article>
-            ))}
+                <div className="sm:border-l sm:border-slate-100 sm:pl-6 flex flex-col justify-center items-center sm:items-start">
+                  <div className={`inline-flex h-14 w-14 rounded-2xl bg-gradient-to-br ${c.cls} text-white items-center justify-center mb-3 shadow-lg`}>
+                    <c.icon className="h-7 w-7" />
+                  </div>
+                  <div className={`text-3xl sm:text-4xl font-bold bg-gradient-to-br ${c.cls} bg-clip-text text-transparent`}>
+                    {c.outcome}
+                  </div>
+                  <div className="text-xs text-slate-500 mt-1 font-medium">{c.outcomeLabel}</div>
+                </div>
+              </div>
+            </article>
+          ))}
+        </section>
+
+        {/* CTA */}
+        <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600 p-10 sm:p-14 shadow-2xl text-center text-white">
+            <Sparkles className="h-8 w-8 mx-auto mb-4 opacity-70" />
+            <h2 className="text-3xl sm:text-4xl font-bold">A tua história pode ser a próxima</h2>
+            <p className="mt-4 text-lg text-white/90 max-w-2xl mx-auto">Começa hoje. Sem cartão de crédito. Acesso imediato a quatro idiomas e centenas de cursos.</p>
+            <div className="mt-8 flex flex-wrap justify-center gap-3">
+              <Link href={'/cursos' as any} className="inline-flex items-center gap-2 px-6 py-3 bg-white text-emerald-700 hover:bg-emerald-50 hover:scale-105 transition-all font-bold rounded-xl shadow-lg">
+                Explorar cursos <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link href={'/register' as any} className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold rounded-xl backdrop-blur-sm">
+                Criar conta grátis
+              </Link>
+            </div>
           </div>
         </section>
 
-        <section className="py-20 bg-gradient-to-br from-slate-900 to-slate-950 text-white">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
-            <TrendingUp className="h-12 w-12 mx-auto mb-5 text-emerald-400" />
-            <h2 className="text-3xl sm:text-5xl font-bold tracking-tight mb-5">A tua história começa hoje</h2>
-            <p className="text-lg text-slate-300 mb-8 max-w-xl mx-auto">Não são milagres — é método, prática e oportunidades certas. Vê os cursos e escolhe o teu próximo passo.</p>
-            <Link href={'/cursos' as any} className="inline-flex items-center gap-1.5 px-7 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold rounded-xl shadow-xl hover:scale-105 transition-transform">
-              Explorar catálogo <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-        </section>
+        <Footer data={(blocks as any).footer_brand || { brand: 'NeuroLearn' }} />
       </main>
-      <Footer data={{ brand: 'NeuroLearn' }} />
     </>
   );
 }

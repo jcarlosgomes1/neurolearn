@@ -1,124 +1,141 @@
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/sections/Footer';
 import { Link } from '@/i18n/routing';
-import { Sparkles, DollarSign, Users2, Zap, BarChart3, Globe2, Headphones, ArrowRight, Check, X, GraduationCap, Award } from 'lucide-react';
+import { getHomeBlocks } from '@/lib/api/home-blocks';
+import { GraduationCap, DollarSign, Globe2, Sparkles, Users, BarChart3, ArrowRight, Check, X, Briefcase } from 'lucide-react';
 
-export const metadata = { title: 'Para Instrutores · NeuroLearn', description: 'Ensina o que sabes. Fica com 70% do que ganhas. Construído por instrutores, para instrutores.' };
+export const revalidate = 600;
+export async function generateMetadata() { return { title: 'Para instrutores · NeuroLearn' }; }
+
+const STATS = [
+  { value: '70%', label: 'da receita para ti' },
+  { value: '4', label: 'idiomas de tradução automática' },
+  { value: '€0', label: 'sem fees de upload' },
+  { value: '24h', label: 'pagamentos imediatos' },
+];
 
 const FEATURES = [
-  { icon: DollarSign, title: '70% da receita para ti', text: 'A maior taxa do mercado. Sem fees escondidas, sem letra pequena.', grad: 'from-emerald-500 to-teal-600' },
-  { icon: Sparkles, title: 'Ferramentas que poupam horas', text: 'Editor de cursos com módulos, lições e quizzes. Vídeo hosting incluído.', grad: 'from-violet-500 to-fuchsia-600' },
-  { icon: BarChart3, title: 'Analytics em tempo real', text: 'Sabes exactamente o que funciona — taxas de conclusão, dúvidas frequentes, pontos de abandono.', grad: 'from-blue-500 to-cyan-600' },
-  { icon: Globe2, title: 'Audiência internacional', text: 'Mais de 30 países. Suporte multilíngua nativo.', grad: 'from-amber-500 to-orange-600' },
-  { icon: Users2, title: 'Comunidade activa', text: 'Q&A integrada, reviews verificadas, alunos engajados.', grad: 'from-fuchsia-500 to-pink-600' },
-  { icon: Headphones, title: 'Suporte humano', text: 'Equipa dedicada. Não nos escondemos atrás de chatbots.', grad: 'from-rose-500 to-red-600' },
+  { icon: DollarSign, title: 'Revshare 70%', desc: 'Ganha mais que em qualquer outra plataforma. Pagamentos diários via Stripe.', cls: 'from-emerald-500 to-teal-600' },
+  { icon: Globe2, title: 'Tradução automática', desc: 'Carrega em português. A plataforma traduz para EN/ES/FR mantendo o teu tom de voz.', cls: 'from-violet-500 to-indigo-600' },
+  { icon: Sparkles, title: 'Geração assistida', desc: 'Sobe o teu material e a plataforma estrutura módulos, exercícios e quizzes — tu refinas.', cls: 'from-fuchsia-500 to-pink-600' },
+  { icon: BarChart3, title: 'Analytics em tempo real', desc: 'Vê quem está a estudar, onde desistem, que perguntas fazem. Itera com dados.', cls: 'from-amber-500 to-orange-600' },
+  { icon: Briefcase, title: 'Talent marketplace', desc: 'Os teus alunos certificados aparecem em vagas — recebes royalties cada vez que um é contratado.', cls: 'from-rose-500 to-red-600' },
+  { icon: Users, title: 'Marketing partilhado', desc: 'A plataforma promove o teu curso. Tu focas em ensinar, não em vender.', cls: 'from-blue-500 to-cyan-600' },
 ];
 
 const COMPARE = [
-  { name: 'NeuroLearn', revshare: '70%', features: ['Vídeo Mux incluído', 'Tutor para alunos', 'Talent marketplace', 'Sem taxa marketing'], highlight: true },
-  { name: 'Udemy', revshare: '37-97%', features: ['Vídeo limitado', 'Sem tutor', 'Sem talent', 'Cobra 50% em marketing'] },
-  { name: 'Coursera', revshare: '50%', features: ['Vídeo incluído', 'Sem tutor', 'Sem talent', 'Mercado fechado'] },
-  { name: 'Teachable', revshare: '90%', features: ['Vídeo extra', 'Sem tutor', 'Sem talent', 'Tu trazes audiência'] },
+  { feature: 'Revshare', neuro: '70%', udemy: '37–97%', coursera: '50%', teachable: '90% (paga taxa fixa)' },
+  { feature: 'Tradução incluída', neuro: 'Sim · 4 idiomas', udemy: 'Não', coursera: 'Limitada', teachable: 'Não' },
+  { feature: 'Geração assistida cursos', neuro: 'Sim', udemy: 'Não', coursera: 'Não', teachable: 'Não' },
+  { feature: 'Talent marketplace', neuro: 'Sim · royalties', udemy: 'Não', coursera: 'Não', teachable: 'Não' },
+  { feature: 'Sem fees fixos', neuro: 'Sim', udemy: 'Sim', coursera: 'Sim', teachable: 'Não (mensal)' },
+  { feature: 'Pagamentos', neuro: '24h', udemy: '30 dias', coursera: '60 dias', teachable: '30 dias' },
 ];
 
-export default async function Page() {
+export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const blocks = await getHomeBlocks(locale);
   return (
     <>
       <Header />
-      <main className="bg-white">
-        <section className="relative overflow-hidden bg-gradient-to-br from-amber-950 via-orange-950 to-slate-950 text-white">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(245,158,11,0.3),transparent_50%)]" />
-          <div className="absolute top-20 right-1/4 w-80 h-80 bg-amber-500/20 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute bottom-10 left-1/4 w-72 h-72 bg-orange-500/20 rounded-full blur-3xl animate-pulse" style={{animationDelay:'1s'}} />
-          <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-24 sm:py-32 grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 backdrop-blur border border-amber-400/30 text-xs font-semibold mb-6">
-                <GraduationCap className="h-3 w-3 text-amber-300" /> Programa de instrutores
-              </div>
-              <h1 className="text-4xl sm:text-6xl font-bold tracking-tight mb-6">
-                Ensina o que sabes.<br /><span className="bg-gradient-to-r from-amber-300 to-orange-300 bg-clip-text text-transparent">Fica com 70%.</span>
-              </h1>
-              <p className="text-lg text-slate-300 mb-8 max-w-lg">Construído por instrutores, para instrutores. A plataforma que não te trata como mercadoria.</p>
-              <div className="flex flex-wrap gap-3">
-                <Link href={'/candidatar' as any} className="inline-flex items-center gap-1.5 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold rounded-xl shadow-xl hover:scale-105 transition-transform">
-                  Candidatar agora <ArrowRight className="h-4 w-4" />
-                </Link>
-                <a href="#compare" className="inline-flex items-center gap-1.5 px-6 py-3 bg-white/10 backdrop-blur border border-white/30 text-white font-semibold rounded-xl hover:bg-white/20 transition-all">
-                  Comparar plataformas
-                </a>
-              </div>
+      <main className="bg-white min-h-screen">
+        {/* Hero */}
+        <section className="relative overflow-hidden bg-gradient-to-br from-amber-50 via-white to-orange-50 border-b border-slate-200/60">
+          <div className="absolute inset-0 -z-10">
+            <div className="absolute top-0 left-1/4 h-96 w-96 rounded-full bg-amber-400/20 blur-3xl animate-pulse" />
+            <div className="absolute bottom-0 right-1/4 h-96 w-96 rounded-full bg-orange-400/20 blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+          </div>
+          <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-24 text-center">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-amber-200 text-xs font-semibold text-amber-700 mb-6 shadow-sm">
+              <GraduationCap className="h-3.5 w-3.5" /> Para instrutores
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              {[{v:'70%',l:'Comissão'},{v:'<30d',l:'Approval médio'},{v:'15k',l:'Alunos activos'},{v:'4.8★',l:'Rating instrutores'}].map((s) => (
-                <div key={s.l} className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-5 hover:bg-white/10 transition-all">
-                  <div className="text-3xl font-bold bg-gradient-to-r from-amber-300 to-orange-300 bg-clip-text text-transparent">{s.v}</div>
-                  <div className="text-xs text-slate-300 uppercase tracking-wider mt-1">{s.l}</div>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 leading-tight">
+              Ensina o que sabes. <span className="bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">Multiplica o teu impacto.</span>
+            </h1>
+            <p className="mt-6 text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
+              Plataforma feita para instrutores que querem viver disto. Revshare a sério, tradução incluída, e zero esforço com marketing ou infraestrutura.
+            </p>
+            <div className="mt-8 flex flex-wrap justify-center gap-3">
+              <Link href={'/candidatar' as any} className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-br from-amber-600 to-orange-600 text-white hover:scale-105 transition-all font-bold rounded-xl shadow-lg">
+                Candidatar-me <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+            <div className="mt-16 grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {STATS.map((s, i) => (
+                <div key={i} className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+                  <div className="text-3xl sm:text-4xl font-bold bg-gradient-to-br from-amber-600 to-orange-600 bg-clip-text text-transparent">{s.value}</div>
+                  <div className="text-xs text-slate-600 mt-1">{s.label}</div>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        <section className="py-20 sm:py-24 bg-gradient-to-b from-white to-slate-50">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6">
-            <div className="text-center mb-12">
-              <div className="text-xs font-semibold text-amber-600 uppercase tracking-wider mb-2">Tudo o que precisas</div>
-              <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">Ferramentas para construir, vender e escalar</h2>
-            </div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {FEATURES.map((f) => (
-                <div key={f.title} className="group bg-white rounded-2xl border border-slate-200 p-6 hover:-translate-y-1 hover:shadow-xl hover:border-slate-300 transition-all">
-                  <div className={`inline-flex h-11 w-11 rounded-xl bg-gradient-to-br ${f.grad} text-white items-center justify-center mb-4 shadow-md group-hover:scale-110 transition-transform`}>
-                    <f.icon className="h-5 w-5" />
-                  </div>
-                  <h3 className="font-bold text-slate-900 mb-1.5">{f.title}</h3>
-                  <p className="text-sm text-slate-600 leading-relaxed">{f.text}</p>
+        {/* Features */}
+        <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">Tudo o que precisas para ganhar a vida ensinando</h2>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {FEATURES.map((f, i) => (
+              <div key={i} className="group bg-white rounded-2xl border border-slate-200 p-6 hover:-translate-y-1 hover:shadow-xl transition-all">
+                <div className={`inline-flex h-12 w-12 rounded-xl bg-gradient-to-br ${f.cls} text-white items-center justify-center mb-4 shadow-md group-hover:scale-110 transition-transform`}>
+                  <f.icon className="h-6 w-6" />
                 </div>
-              ))}
-            </div>
+                <h3 className="font-bold text-slate-900 mb-1.5">{f.title}</h3>
+                <p className="text-sm text-slate-600 leading-relaxed">{f.desc}</p>
+              </div>
+            ))}
           </div>
         </section>
 
-        <section id="compare" className="py-20 sm:py-24">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6">
+        {/* Compare */}
+        <section className="bg-slate-50 py-20 border-y border-slate-200/60">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-10">
-              <div className="text-xs font-semibold text-amber-600 uppercase tracking-wider mb-2">Comparação</div>
-              <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">Como ganham os instrutores noutras plataformas</h2>
-              <p className="text-sm text-slate-500 mt-2">A taxa real depois de fees, marketing e descontos.</p>
+              <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">Comparação directa</h2>
+              <p className="mt-3 text-slate-600">Sem letra pequena. Compara as principais plataformas de cursos online.</p>
             </div>
-            <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-lg">
-              {COMPARE.map((p, i) => (
-                <div key={p.name} className={`flex flex-col sm:flex-row items-start sm:items-center gap-4 p-5 sm:p-6 ${p.highlight ? 'bg-gradient-to-r from-amber-50 to-orange-50 border-l-4 border-amber-500' : 'border-b border-slate-100 last:border-0'}`}>
-                  <div className="sm:w-32 flex-shrink-0">
-                    <div className={`font-bold ${p.highlight ? 'text-amber-700' : 'text-slate-800'}`}>{p.name}</div>
-                    {p.highlight && <Award className="h-4 w-4 text-amber-500 mt-0.5" />}
-                  </div>
-                  <div className={`sm:w-24 text-2xl font-bold flex-shrink-0 ${p.highlight ? 'text-amber-600' : 'text-slate-500'}`}>{p.revshare}</div>
-                  <div className="flex-1 flex flex-wrap gap-2">
-                    {p.features.map((feat, idx) => (
-                      <span key={idx} className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full ${p.highlight ? 'bg-emerald-100 text-emerald-700' : idx > 0 ? 'bg-slate-100 text-slate-500' : 'bg-slate-100 text-slate-600'}`}>
-                        {p.highlight || idx === 0 ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />} {feat}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
+            <div className="overflow-x-auto bg-white rounded-3xl border border-slate-200 shadow-sm">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-gradient-to-r from-amber-50 to-orange-50 border-b border-slate-200">
+                    <th className="text-left p-4 font-bold text-slate-700">Característica</th>
+                    <th className="p-4 font-bold bg-gradient-to-br from-amber-600 to-orange-600 bg-clip-text text-transparent">NeuroLearn</th>
+                    <th className="p-4 font-bold text-slate-500">Udemy</th>
+                    <th className="p-4 font-bold text-slate-500">Coursera</th>
+                    <th className="p-4 font-bold text-slate-500">Teachable</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {COMPARE.map((r, i) => (
+                    <tr key={i} className="border-b border-slate-100">
+                      <td className="p-4 font-semibold text-slate-900">{r.feature}</td>
+                      <td className="p-4 text-center font-bold text-amber-700 bg-amber-50/30">{r.neuro}</td>
+                      <td className="p-4 text-center text-slate-600">{r.udemy}</td>
+                      <td className="p-4 text-center text-slate-600">{r.coursera}</td>
+                      <td className="p-4 text-center text-slate-600">{r.teachable}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         </section>
 
-        <section className="py-20 bg-gradient-to-br from-amber-500 via-orange-500 to-rose-500 text-white">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
-            <Zap className="h-12 w-12 mx-auto mb-5" />
-            <h2 className="text-3xl sm:text-5xl font-bold tracking-tight mb-5">A tua candidatura demora 5 minutos</h2>
-            <p className="text-lg text-amber-50 mb-8 max-w-xl mx-auto">Apresenta uma proposta de curso. Resposta em menos de 30 dias.</p>
-            <Link href={'/candidatar' as any} className="inline-flex items-center gap-1.5 px-7 py-3 bg-white text-orange-600 font-semibold rounded-xl shadow-xl hover:scale-105 transition-transform">
-              Candidatar agora <ArrowRight className="h-4 w-4" />
+        {/* CTA */}
+        <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-600 via-orange-600 to-red-600 p-10 sm:p-14 shadow-2xl text-center text-white">
+            <h2 className="text-3xl sm:text-4xl font-bold">Pronto a candidatar-te?</h2>
+            <p className="mt-4 text-lg text-white/90 max-w-2xl mx-auto">Revisamos cada candidatura em 48h. Sem fee de aplicação. Sem compromisso até publicares o primeiro curso.</p>
+            <Link href={'/candidatar' as any} className="inline-flex items-center gap-2 px-8 py-3.5 mt-8 bg-white text-orange-700 hover:bg-orange-50 hover:scale-105 transition-all font-bold rounded-xl shadow-lg text-base">
+              Candidatar como instrutor <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
         </section>
+
+        <Footer data={(blocks as any).footer_brand || { brand: 'NeuroLearn' }} />
       </main>
-      <Footer data={{ brand: 'NeuroLearn' }} />
     </>
   );
 }

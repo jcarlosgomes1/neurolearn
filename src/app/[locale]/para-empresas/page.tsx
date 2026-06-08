@@ -1,146 +1,150 @@
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/sections/Footer';
 import { Link } from '@/i18n/routing';
-import { Building2, Users, ShieldCheck, BarChart3, BookOpen, Sparkles, ArrowRight, CheckCircle2, Palette, Globe, Settings2, Zap } from 'lucide-react';
+import { getHomeBlocks } from '@/lib/api/home-blocks';
+import { Building2, Users, Shield, Sparkles, BarChart3, Headphones, Upload, Briefcase, Crown, Check, ArrowRight, Zap } from 'lucide-react';
 
-export const revalidate = 3600;
-export const metadata = { title: 'Para empresas · NeuroLearn', description: 'LMS corporativo white-label com geração inteligente de cursos a partir dos documentos da tua empresa.' };
+export const revalidate = 600;
+export async function generateMetadata() { return { title: 'Para empresas · NeuroLearn' }; }
 
-export default async function ParaEmpresasPage() {
+const FEATURES = [
+  { icon: Upload, title: 'Ingestão de documentos', desc: 'Sobe PDFs, manuais e vídeos. A plataforma gera cursos personalizados em horas — não meses.', cls: 'from-violet-500 to-indigo-600' },
+  { icon: Shield, title: 'White-label completo', desc: 'O teu logo, paleta, domínio. Os colaboradores vêem a tua marca, não a NeuroLearn.', cls: 'from-fuchsia-500 to-pink-600' },
+  { icon: Users, title: 'Multi-tenant seguro', desc: 'Isolamento total entre organizações. SSO, SCIM, audit logs, RBAC granular.', cls: 'from-emerald-500 to-teal-600' },
+  { icon: BarChart3, title: 'Analytics em tempo real', desc: 'Progresso por colaborador, conclusão por equipa, ROI por curso. Export para PowerBI/Tableau.', cls: 'from-amber-500 to-orange-600' },
+  { icon: Briefcase, title: 'Marketplace de talento', desc: 'Acede directamente a candidatos certificados na tua stack. Reduz time-to-hire em 60%.', cls: 'from-rose-500 to-red-600' },
+  { icon: Headphones, title: 'Account manager dedicado', desc: 'Onboarding guiado, formação aos teus admins, suporte premium em 4 idiomas.', cls: 'from-blue-500 to-cyan-600' },
+];
+
+const STEPS = [
+  { num: '1', title: 'Onboarding em 24h', desc: 'Sessão de descoberta, configuração de SSO e branding, primeiros utilizadores adicionados.' },
+  { num: '2', title: 'Carrega o teu conhecimento', desc: 'Sobe documentos, vídeos, certificações. A plataforma gera percursos personalizados.' },
+  { num: '3', title: 'Escala e mede', desc: 'Convida toda a empresa. Mede engajamento, completion, transferência para o trabalho real.' },
+];
+
+const TIERS = [
+  { name: 'Starter', price: '€8', period: '/colaborador/mês', features: ['Até 50 seats','Marketplace standard','Suporte email','SSO Google + Microsoft'], cls: 'from-slate-500 to-slate-700' },
+  { name: 'Pro', price: '€15', period: '/colaborador/mês', features: ['Até 500 seats','White-label completo','SCIM provisioning','Cursos gerados a partir docs','Analytics avançadas'], cls: 'from-violet-500 to-indigo-600', popular: true },
+  { name: 'Enterprise', price: 'Custom', period: 'Falar com vendas', features: ['Seats ilimitados','Account manager dedicado','SLA 99.9%','Compliance GDPR auditado','API dedicada','Integração HRIS'], cls: 'from-amber-500 to-orange-600' },
+];
+
+export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const blocks = await getHomeBlocks(locale);
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-white">
+      <main className="bg-white min-h-screen">
         {/* Hero */}
-        <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-violet-900 to-indigo-900 py-24 sm:py-32 text-white">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(139,92,246,0.4),transparent_55%)]" />
-          <div className="absolute top-20 left-10 h-96 w-96 rounded-full bg-violet-500/20 blur-3xl" />
-          <div className="absolute bottom-10 right-10 h-96 w-96 rounded-full bg-blue-500/20 blur-3xl" />
-          <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
+        <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-violet-900 to-indigo-900 text-white">
+          <div className="absolute inset-0 -z-10">
+            <div className="absolute top-0 left-1/4 h-96 w-96 rounded-full bg-violet-500/30 blur-3xl animate-pulse" />
+            <div className="absolute bottom-0 right-1/4 h-96 w-96 rounded-full bg-indigo-500/30 blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.4)_100%)]" />
+          </div>
+          <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-28">
             <div className="max-w-3xl">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/10 backdrop-blur border border-white/20 rounded-full text-xs font-semibold mb-5">
-                <Building2 className="h-3 w-3" /> Plataforma corporativa
-              </span>
-              <h1 className="text-4xl sm:text-6xl font-bold tracking-tight">
-                LMS que cria <span className="bg-gradient-to-r from-violet-300 to-cyan-300 bg-clip-text text-transparent">cursos a partir dos teus PDFs</span>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-xs font-semibold text-violet-200 mb-6 backdrop-blur-sm">
+                <Building2 className="h-3.5 w-3.5" /> Solução B2B
+              </div>
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-tight">
+                LMS corporativo <span className="bg-gradient-to-r from-violet-300 to-indigo-300 bg-clip-text text-transparent">com superpoderes</span>
               </h1>
               <p className="mt-6 text-lg sm:text-xl text-white/80 leading-relaxed">
-                Upload manuais, procedimentos, vídeos. Em minutos transformamos em cursos interactivos para a tua equipa. White-label, SSO, ESCO skills.
+                Multi-tenant, white-label, SSO, SCIM, e geração automática de cursos a partir dos teus próprios documentos. Pronto a usar em 24h.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
-                <Link href={'/demo' as any} className="inline-flex items-center gap-2 px-8 py-4 bg-white text-violet-900 hover:bg-slate-100 text-base font-bold rounded-xl shadow-lg hover:scale-105 transition-transform">
-                  Agendar demo <ArrowRight className="h-5 w-5" />
-                </Link>
-                <Link href={'/business/onboarding' as any} className="inline-flex items-center gap-2 px-8 py-4 bg-white/10 hover:bg-white/20 backdrop-blur border border-white/30 text-base font-bold rounded-xl">
-                  Trial 14 dias grátis
+                <a href="mailto:enterprise@neurolearn.pt?subject=Demo" className="inline-flex items-center gap-2 px-6 py-3 bg-white text-violet-700 hover:bg-violet-50 hover:scale-105 transition-all font-bold rounded-xl shadow-lg">
+                  Marcar demo <ArrowRight className="h-4 w-4" />
+                </a>
+                <Link href={'/precos' as any} className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold rounded-xl backdrop-blur-sm">
+                  Ver preços
                 </Link>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Trusted by */}
-        <section className="py-12 border-y border-slate-100 bg-slate-50">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6">
-            <div className="text-center text-xs uppercase tracking-widest font-bold text-slate-500 mb-6">Confiam em nós</div>
-            <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-4 text-slate-400 font-bold text-lg">
-              <div>LogiPort</div><div>•</div><div>GreenMobility PT</div><div>•</div><div>Banco Fintech</div><div>•</div><div>SaúdeMais</div><div>•</div><div>EnergiaPlus</div><div>•</div><div>RetailHub</div>
+        {/* Trusted by strip */}
+        <section className="bg-slate-50 py-8 border-b border-slate-200/60">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p className="text-xs uppercase tracking-wider font-semibold text-slate-500 mb-3">Empresas que confiam na NeuroLearn</p>
+            <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-12 opacity-60 text-slate-700 font-bold text-lg">
+              <span>● Healthcare Group</span><span>● TechCorp</span><span>● FinanceHub</span><span>● RetailChain</span><span>● ConsultingFirm</span>
             </div>
           </div>
         </section>
 
-        {/* 6 features */}
-        <section className="py-20 px-4 sm:px-6">
-          <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl sm:text-4xl font-bold text-center text-slate-900 mb-3">Tudo o que o teu L&D precisa</h2>
-            <p className="text-center text-slate-600 max-w-2xl mx-auto mb-12">Multi-tenant nativo. Configurável por organização.</p>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {[
-                { icon: Sparkles, title: 'Geração inteligente', text: 'Carrega PDFs, manuais, vídeos. Geramos cursos com módulos, lições e quizzes. Aprovas e ficam disponíveis.', cls: 'from-violet-500 to-indigo-600' },
-                { icon: Palette, title: 'White-label completo', text: 'Logo, cores, domínio próprio. Os teus colaboradores nem sabem que é NeuroLearn.', cls: 'from-purple-500 to-fuchsia-600' },
-                { icon: ShieldCheck, title: 'SSO + SAML + SCIM', text: 'Microsoft Entra, Okta, Google Workspace. Provisioning automático de utilizadores.', cls: 'from-slate-700 to-slate-900' },
-                { icon: BarChart3, title: 'Analytics por equipa', text: 'Dashboards de progresso, taxa de conclusão, skill gaps. Export CSV/API.', cls: 'from-amber-500 to-orange-600' },
-                { icon: Globe, title: 'ESCO Skills', text: 'Mapeamento automático para taxonomia oficial europeia (15.000 skills). Compatível com CV.', cls: 'from-blue-500 to-cyan-600' },
-                { icon: Users, title: 'Marketplace cursos', text: 'Compra acesso aos cursos do catálogo público para a tua equipa. Pricing por seat.', cls: 'from-emerald-500 to-teal-600' },
-              ].map((f, i) => (
-                <div key={i} className="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-xl hover:-translate-y-1 transition-all">
-                  <div className={`inline-flex h-12 w-12 rounded-xl bg-gradient-to-br ${f.cls} text-white items-center justify-center shadow-lg mb-4`}>
-                    <f.icon className="h-6 w-6" />
-                  </div>
-                  <h3 className="font-bold text-lg text-slate-900 mb-1.5">{f.title}</h3>
-                  <p className="text-sm text-slate-600 leading-relaxed">{f.text}</p>
+        {/* Features */}
+        <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">Tudo o que precisas, num só sítio</h2>
+            <p className="mt-3 text-slate-600 max-w-2xl mx-auto">Construído para escalar de 10 a 10.000 colaboradores sem mudanças de plataforma.</p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {FEATURES.map((f, i) => (
+              <div key={i} className="group bg-white rounded-2xl border border-slate-200 p-6 hover:-translate-y-1 hover:shadow-xl transition-all">
+                <div className={`inline-flex h-12 w-12 rounded-xl bg-gradient-to-br ${f.cls} text-white items-center justify-center mb-4 shadow-md group-hover:scale-110 transition-transform`}>
+                  <f.icon className="h-6 w-6" />
                 </div>
-              ))}
-            </div>
+                <h3 className="font-bold text-slate-900 mb-1.5">{f.title}</h3>
+                <p className="text-sm text-slate-600 leading-relaxed">{f.desc}</p>
+              </div>
+            ))}
           </div>
         </section>
 
-        {/* How it works */}
-        <section className="py-20 px-4 sm:px-6 bg-slate-50">
-          <div className="max-w-5xl mx-auto">
-            <h2 className="text-3xl sm:text-4xl font-bold text-center text-slate-900 mb-12">3 passos para começar</h2>
+        {/* Steps */}
+        <section className="bg-slate-50 py-20 border-y border-slate-200/60">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 text-center mb-12">Como começamos</h2>
             <div className="grid sm:grid-cols-3 gap-6">
-              {[
-                { step: '1', title: 'Cria a tua empresa', text: 'Onboarding em 5 minutos. Trial 14 dias sem cartão.', cls: 'from-violet-500 to-indigo-600' },
-                { step: '2', title: 'Upload conteúdos', text: 'Carrega PDFs, manuais, vídeos. Processamos automaticamente.', cls: 'from-emerald-500 to-teal-600' },
-                { step: '3', title: 'Convida a equipa', text: 'Bulk invite via email/SCIM. Acompanha progresso em tempo real.', cls: 'from-amber-500 to-orange-600' },
-              ].map((s, i) => (
-                <div key={i} className="relative bg-white rounded-2xl border border-slate-200 p-6 text-center">
-                  <div className={`absolute -top-5 left-1/2 -translate-x-1/2 h-10 w-10 rounded-full bg-gradient-to-br ${s.cls} text-white font-bold flex items-center justify-center shadow-lg`}>{s.step}</div>
-                  <h3 className="font-bold text-lg text-slate-900 mt-4 mb-2">{s.title}</h3>
-                  <p className="text-sm text-slate-600 leading-relaxed">{s.text}</p>
+              {STEPS.map((s) => (
+                <div key={s.num} className="relative bg-white rounded-2xl border border-slate-200 p-6">
+                  <div className="absolute -top-4 -left-4 h-12 w-12 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 text-white text-xl font-bold flex items-center justify-center shadow-lg">{s.num}</div>
+                  <h3 className="font-bold text-slate-900 mt-3 mb-2">{s.title}</h3>
+                  <p className="text-sm text-slate-600 leading-relaxed">{s.desc}</p>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* Pricing tiers */}
-        <section className="py-20 px-4 sm:px-6">
-          <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl sm:text-4xl font-bold text-center text-slate-900 mb-3">Planos para qualquer dimensão</h2>
-            <p className="text-center text-slate-600 mb-12">Do trial gratuito ao Enterprise ilimitado.</p>
-            <div className="grid sm:grid-cols-3 gap-5">
-              {[
-                { tier: 'Starter', price: '€49', per: '/mês', desc: 'Até 50 colaboradores', features: ['LMS interno', 'Geração inteligente', '50 seats marketplace', 'Email support'], cls: 'border-slate-200', cta: 'Começar trial' },
-                { tier: 'Pro', price: '€199', per: '/mês', desc: 'Até 250 colaboradores', features: ['Tudo do Starter', 'White-label', 'Live sync (aulas)', '250 seats marketplace', '10 contratações/mês'], cls: 'border-violet-300 ring-2 ring-violet-200', cta: 'Trial 14 dias', popular: true },
-                { tier: 'Enterprise', price: 'Custom', per: '', desc: 'Ilimitado · SSO/SAML', features: ['Tudo do Pro', 'SSO + SAML + SCIM', 'API access', 'Account manager', 'SLA 99.9%'], cls: 'border-slate-900 bg-slate-900 text-white', cta: 'Contactar vendas' },
-              ].map((p, i) => (
-                <div key={i} className={`relative rounded-2xl border-2 p-6 ${p.cls}`}>
-                  {p.popular && <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-gradient-to-br from-violet-600 to-indigo-600 text-white text-xs font-bold rounded-full">POPULAR</span>}
-                  <div className="font-bold text-sm uppercase tracking-wider mb-2 opacity-80">{p.tier}</div>
-                  <div className="flex items-baseline gap-1 mb-1">
-                    <span className="text-4xl font-black">{p.price}</span>
-                    {p.per && <span className="opacity-70">{p.per}</span>}
-                  </div>
-                  <div className="text-sm opacity-70 mb-6">{p.desc}</div>
-                  <ul className="space-y-2 mb-6 text-sm">
-                    {p.features.map((f, fi) => (
-                      <li key={fi} className="flex items-start gap-2">
-                        <CheckCircle2 className="h-4 w-4 flex-shrink-0 mt-0.5 text-emerald-500" />
-                        <span>{f}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <Link href={'/demo' as any} className={`block text-center py-3 rounded-lg font-bold text-sm ${i === 2 ? 'bg-white text-slate-900' : 'bg-slate-900 text-white hover:bg-slate-800'}`}>{p.cta}</Link>
+        {/* Pricing */}
+        <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">Preços transparentes</h2>
+            <p className="mt-3 text-slate-600">Sem fees escondidas. Sem lock-in. Cancela quando quiseres.</p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-4">
+            {TIERS.map((t, i) => (
+              <div key={i} className={`relative bg-white rounded-3xl border-2 ${t.popular ? 'border-violet-500 shadow-2xl scale-105' : 'border-slate-200'} p-6 sm:p-8`}>
+                {t.popular && <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-xs font-bold rounded-full shadow">MAIS POPULAR</div>}
+                <div className={`inline-flex h-10 w-10 rounded-xl bg-gradient-to-br ${t.cls} text-white items-center justify-center mb-4`}>
+                  {t.popular ? <Crown className="h-5 w-5" /> : <Zap className="h-5 w-5" />}
                 </div>
-              ))}
-            </div>
+                <h3 className="font-bold text-xl text-slate-900">{t.name}</h3>
+                <div className="mt-3 flex items-baseline gap-1">
+                  <span className="text-4xl font-bold text-slate-900">{t.price}</span>
+                  <span className="text-sm text-slate-500">{t.period}</span>
+                </div>
+                <ul className="mt-6 space-y-2.5">
+                  {t.features.map((f, fi) => (
+                    <li key={fi} className="flex items-start gap-2 text-sm text-slate-700">
+                      <Check className="h-4 w-4 text-emerald-600 flex-shrink-0 mt-0.5" /> {f}
+                    </li>
+                  ))}
+                </ul>
+                <a href="mailto:enterprise@neurolearn.pt?subject=Plano" className={`mt-6 inline-flex w-full items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold ${t.popular ? 'bg-gradient-to-br from-violet-600 to-indigo-600 text-white hover:shadow-lg' : 'bg-slate-100 text-slate-900 hover:bg-slate-200'} transition-all`}>
+                  {t.name === 'Enterprise' ? 'Falar com vendas' : 'Começar'} <ArrowRight className="h-3.5 w-3.5" />
+                </a>
+              </div>
+            ))}
           </div>
         </section>
 
-        {/* CTA */}
-        <section className="py-20 px-4 sm:px-6 bg-gradient-to-br from-violet-600 to-indigo-700 text-white">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl sm:text-5xl font-bold mb-4">Trial grátis · sem cartão</h2>
-            <p className="text-xl text-white/90 mb-8">14 dias completos para testar com a tua equipa.</p>
-            <Link href={'/business/onboarding' as any} className="inline-flex items-center gap-2 px-10 py-4 bg-white text-violet-700 hover:bg-slate-100 text-base font-bold rounded-xl shadow-lg hover:scale-105 transition-transform">
-              Criar empresa <ArrowRight className="h-5 w-5" />
-            </Link>
-          </div>
-        </section>
+        <Footer data={(blocks as any).footer_brand || { brand: 'NeuroLearn' }} />
       </main>
-      <Footer data={{ brand: 'NeuroLearn' }} />
     </>
   );
 }
