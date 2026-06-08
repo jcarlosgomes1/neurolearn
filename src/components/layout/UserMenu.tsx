@@ -2,7 +2,7 @@
 
 import { Link } from '@/i18n/routing';
 import { useState, useEffect, useRef } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 
 interface Props {
   email: string;
@@ -19,6 +19,7 @@ function safeT(t: any, key: string, fb: string): string {
 
 export function UserMenu({ email, area }: Props) {
   const t = useTranslations();
+  const locale = useLocale();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -54,14 +55,14 @@ export function UserMenu({ email, area }: Props) {
           </div>
 
           {area === 'admin' && (
-            <Link href={'/admin' as any} className="block px-4 py-2 text-sm hover:bg-slate-50" onClick={() => setOpen(false)}>
+            <a href={`/${locale}/admin`} className="block px-4 py-2 text-sm hover:bg-slate-50">
               🎛 {safeT(t, 'user_menu.admin_dashboard', 'Cockpit admin')}
-            </Link>
+            </a>
           )}
           {area === 'instructor' && (
-            <Link href={'/teach' as any} className="block px-4 py-2 text-sm hover:bg-slate-50" onClick={() => setOpen(false)}>
+            <a href={`/${locale}/teach`} className="block px-4 py-2 text-sm hover:bg-slate-50">
               📊 {safeT(t, 'user_menu.instructor_dashboard', 'Dashboard instrutor')}
-            </Link>
+            </a>
           )}
 
           <Link href={'/conta' as any} className="block px-4 py-2 text-sm hover:bg-slate-50" onClick={() => setOpen(false)}>
@@ -80,7 +81,6 @@ export function UserMenu({ email, area }: Props) {
 
           <div className="border-t border-slate-100 my-1" />
 
-          {/* Logout via server endpoint — robusto, funciona mesmo se JS falhar */}
           <a
             href="/api/auth/logout"
             className="block px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 font-medium cursor-pointer"

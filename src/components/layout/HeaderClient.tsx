@@ -116,16 +116,16 @@ export function HeaderClient({ session }: { session: Session | null }) {
                   </Link>
                 </div>
                 {session.area === 'admin' && (
-                  <Link href={'/admin' as any}
+                  <a href={`/${locale}/admin`}
                     className="mt-2 inline-flex w-full items-center justify-center gap-2 px-3 py-2.5 bg-gradient-to-br from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white text-sm font-semibold rounded-lg shadow">
                     <LayoutDashboard className="h-4 w-4" /> Cockpit admin
-                  </Link>
+                  </a>
                 )}
                 {session.area === 'instructor' && (
-                  <Link href={'/teach' as any}
+                  <a href={`/${locale}/teach`}
                     className="mt-2 inline-flex w-full items-center justify-center gap-2 px-3 py-2.5 bg-gradient-to-br from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-sm font-semibold rounded-lg shadow">
                     <LayoutDashboard className="h-4 w-4" /> Dashboard instrutor
-                  </Link>
+                  </a>
                 )}
               </div>
             ) : null}
