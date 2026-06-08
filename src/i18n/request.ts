@@ -3,6 +3,7 @@ import type { AbstractIntlMessages } from 'next-intl';
 import { routing } from './routing';
 import { FALLBACK_MESSAGES } from './fallback';
 import { ADMIN_MESSAGES } from './admin-messages';
+import { getDbMessages } from './db-messages';
 import pt from './messages/pt.json';
 import en from './messages/en.json';
 import es from './messages/es.json';
@@ -21,42 +22,44 @@ export default getRequestConfig(async ({ requestLocale }) => {
     locale = routing.defaultLocale;
   }
 
-  const flat = FLAT_MESSAGES[locale] || FLAT_MESSAGES.pt;
-  const nested = flattenToNamespaced(flat);
-  // Ordem: fallback → file messages → admin messages (admin tem prioridade máxima)
-  const merged = deepMerge(deepMerge(FALLBACK_MESSAGES, nested), ADMIN_MESSAGES[locale] || ADMIN_MESSAGES.pt);
+  const fileFlat = FLAT_MESSAGES[locale] || FLAT_MESSAGES.pt;
+  // DB messages têm prioridade máxima (admin pode editar via /admin/i18n)
+  const dbFlat = await getDbMessages(locale).catch(() => ({} as Record<string, string>));
+  // Merge flat antes de transformar para nested (assim conflitos string→object são resolvidos uma vez)
+  const mergedFlat: Record<string, string> = { ...fileFlat, ...dbFlat };
+  const nested = flattenToNamespaced(mergedFlat);
 
-  return { locale, messages: merged };
+  // Final merge order: fallback (defaults estáticos) → file+db (flat nested) → admin (hardcoded nested fallback)
+  const messages = deepMerge(
+    deepMerge(FALLBACK_MESSAGES, ADMIN_MESSAGES[locale] || ADMIN_MESSAGES.pt),
+    nested
+  );
+
+  return { locale, messages };
 });
 
 function flattenToNamespaced(flat: Record<string, string>): AbstractIntlMessages {
   const result: any = {};
-  // Sort by depth DESC so deeper paths establish nested structure FIRST.
-  const sortedKeys = Object.keys(flat).sort(
-    (a, b) => b.split('.').length - a.split('.').length
-  );
+  // Sort por profundidade DESC: paths mais profundos estabelecem a estrutura primeiro.
+  const sortedKeys = Object.keys(flat).sort((a, b) => b.split('.').length - a.split('.').length);
 
   for (const key of sortedKeys) {
     const value = flat[key];
+    if (value == null || value === '') continue;
     const parts = key.split('.');
     let cur = result;
     let blocked = false;
 
     for (let i = 0; i < parts.length - 1; i++) {
       const seg = parts[i];
-      if (typeof cur[seg] === 'string') {
-        blocked = true;
-        break;
-      }
+      if (typeof cur[seg] === 'string') { blocked = true; break; }
       if (!cur[seg]) cur[seg] = {};
       cur = cur[seg];
     }
     if (blocked) continue;
 
     const lastPart = parts[parts.length - 1];
-    if (typeof cur[lastPart] === 'object' && cur[lastPart] !== null) {
-      continue;
-    }
+    if (typeof cur[lastPart] === 'object' && cur[lastPart] !== null) continue;
     cur[lastPart] = value;
   }
   return result as AbstractIntlMessages;
