@@ -1,12 +1,12 @@
 /**
- * Carrega traduções da DB (nl_i18n).
- * Usa SUPABASE_URL hardcoded + anon key (ambos são públicos por design — expostos no client).
- * Necessário hardcoded porque env vars NEXT_PUBLIC_* não estão acessíveis em SSR run-time
- * neste contexto do request.ts (validado em produção via runtime logs).
+ * Carrega traduções da DB (nl_i18n) via PostgREST RPC.
+ * SUPABASE_URL + SUPABASE_ANON_KEY hardcoded (ambos são públicos por design — expostos no client).
+ * Hardcoded porque env vars NEXT_PUBLIC_* não estão acessíveis no contexto SSR onde este ficheiro corre.
+ * Cache 60s via Next fetch nativo. Tag i18n-{lang} permite revalidação on-demand.
  */
 
 const SUPABASE_URL = 'https://obpezocujzdaznrdgwoo.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9icGV6b2N1anpkYXpucmRnd29vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1Nzc3MjAsImV4cCI6MjA3NTE1MzcyMH0.LWp3xUuJjMpQOFTYRiBALOXMnXm-1ITWLqXVlIY7yIA';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9icGV6b2N1anpkYXpucmRnd29vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NTU4MzAsImV4cCI6MjA5MDAzMTgzMH0.SZx4ilUcyaA732zB6qInKVLuFHntzU9C_K0x7Y_dbuc';
 
 async function fetchLocaleFlat(lang: string): Promise<Record<string, string>> {
   try {
@@ -18,7 +18,6 @@ async function fetchLocaleFlat(lang: string): Promise<Record<string, string>> {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ p_lang: lang }),
-      // Cache 60s nativo do Next; tag para invalidar via revalidateTag
       next: { revalidate: 60, tags: [`i18n-${lang}`, 'i18n-all'] },
     });
     if (!r.ok) {
@@ -29,7 +28,6 @@ async function fetchLocaleFlat(lang: string): Promise<Record<string, string>> {
     if (flat && typeof flat === 'object' && !Array.isArray(flat)) {
       return flat as Record<string, string>;
     }
-    console.warn(`[i18n] DB returned non-object for lang=${lang}: ${JSON.stringify(flat).slice(0, 100)}`);
     return {};
   } catch (e: any) {
     console.warn(`[i18n] DB fetch threw for lang=${lang}: ${e?.message || e}`);
