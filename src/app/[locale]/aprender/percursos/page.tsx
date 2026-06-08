@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { Link } from '@/i18n/routing';
 import { GraduationCap, Clock, Users, BookOpen, ChevronRight } from 'lucide-react';
+import { PathsEmptyState } from '@/components/paths/PathsEmptyState';
 
 export const revalidate = 300;
 
@@ -20,14 +21,12 @@ export default async function LearningPathsPublicPage() {
         <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-gradient-to-br from-violet-500 to-brand-600 text-white mb-3 shadow-lg">
           <GraduationCap className="h-7 w-7" />
         </div>
-        <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-2">Percursos de aprendizagem</h1>
+        <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-2 tracking-tight">Percursos de aprendizagem</h1>
         <p className="text-slate-600 text-base sm:text-lg">Sequências curadas de cursos para evoluíres com método.</p>
       </header>
 
       {paths.length === 0 ? (
-        <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center">
-          <p className="text-slate-500">Brevemente. Os primeiros percursos estão a ser preparados.</p>
-        </div>
+        <PathsEmptyState />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {paths.map((p: any) => (
