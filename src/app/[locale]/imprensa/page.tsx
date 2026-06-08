@@ -2,7 +2,7 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/sections/Footer';
 import { Link } from '@/i18n/routing';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
-import { Newspaper, Download, ExternalLink, Mail, Calendar, ArrowRight, Image as ImageIcon, FileText } from 'lucide-react';
+import { Newspaper, Download, ExternalLink, Mail, Calendar, FileText, Image as ImageIcon } from 'lucide-react';
 
 export const revalidate = 600;
 export async function generateMetadata() { return { title: 'Imprensa · NeuroLearn' }; }
@@ -76,9 +76,10 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
           <Mail className="h-10 w-10 text-slate-700 mx-auto mb-4" />
           <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">Contacto imprensa</h2>
           <p className="mt-3 text-slate-600">Para entrevistas, comentário a notícias do sector, ou parcerias de conteúdo.</p>
-          <a href="mailto:press@neurolearn.pt" className="inline-flex items-center gap-2 px-6 py-3 mt-6 bg-gradient-to-br from-slate-800 to-slate-900 hover:scale-105 transition-all text-white font-bold rounded-xl shadow-lg">
-            press@neurolearn.pt <ExternalLink className="h-4 w-4" />
-          </a>
+          <Link href={{ pathname: '/contacto', query: { topic: 'press', from: '/imprensa' } } as any}
+            className="inline-flex items-center gap-2 px-6 py-3 mt-6 bg-gradient-to-br from-slate-800 to-slate-900 hover:scale-105 transition-all text-white font-bold rounded-xl shadow-lg">
+            Enviar mensagem <ExternalLink className="h-4 w-4" />
+          </Link>
         </section>
 
         <Footer data={(blocks as any).footer_brand || { brand: 'NeuroLearn' }} />

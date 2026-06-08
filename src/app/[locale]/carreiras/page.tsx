@@ -2,7 +2,7 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/sections/Footer';
 import { Link } from '@/i18n/routing';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
-import { Briefcase, Sparkles, Heart, Zap, Globe2, Coffee, ArrowRight, Code, Palette, BarChart3, Users } from 'lucide-react';
+import { Briefcase, Heart, Zap, Globe2, Coffee, ArrowRight, Code, Palette, BarChart3, Users } from 'lucide-react';
 
 export const revalidate = 600;
 export async function generateMetadata() { return { title: 'Carreiras · NeuroLearn' }; }
@@ -66,7 +66,9 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
             <p className="text-center text-slate-600 mb-12">Mesmo que não vejas a tua área, envia candidatura espontânea — adoramos surpresas.</p>
             <div className="grid sm:grid-cols-2 gap-4">
               {ROLES.map((r, i) => (
-                <a key={i} href="mailto:hiring@neurolearn.pt?subject=Candidatura" className="group bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-xl hover:-translate-y-1 transition-all flex items-center gap-4">
+                <Link key={i}
+                  href={{ pathname: '/contacto', query: { topic: 'careers', subject: `Candidatura · ${r.title}`, from: '/carreiras' } } as any}
+                  className="group bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-xl hover:-translate-y-1 transition-all flex items-center gap-4">
                   <div className={`flex-shrink-0 inline-flex h-14 w-14 rounded-2xl bg-gradient-to-br ${r.cls} text-white items-center justify-center shadow-md group-hover:scale-110 transition-transform`}>
                     <r.icon className="h-7 w-7" />
                   </div>
@@ -76,13 +78,14 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
                     <div className="text-xs text-slate-500 mt-0.5">{r.level} · Remoto</div>
                   </div>
                   <ArrowRight className="h-5 w-5 text-slate-300 group-hover:text-slate-700 group-hover:translate-x-1 transition-all" />
-                </a>
+                </Link>
               ))}
             </div>
             <div className="text-center mt-8">
-              <a href="mailto:hiring@neurolearn.pt?subject=Candidatura espontânea" className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-br from-rose-600 to-pink-600 text-white hover:scale-105 transition-all font-bold rounded-xl shadow-lg">
+              <Link href={{ pathname: '/contacto', query: { topic: 'careers', subject: 'Candidatura espontânea', from: '/carreiras' } } as any}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-br from-rose-600 to-pink-600 text-white hover:scale-105 transition-all font-bold rounded-xl shadow-lg">
                 Enviar candidatura espontânea <ArrowRight className="h-4 w-4" />
-              </a>
+              </Link>
             </div>
           </div>
         </section>

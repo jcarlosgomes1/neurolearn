@@ -2,7 +2,7 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/sections/Footer';
 import { Link } from '@/i18n/routing';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
-import { Search, HelpCircle, User, BookOpen, CreditCard, Award, Building2, ShieldCheck, ArrowRight, Mail, MessageCircle } from 'lucide-react';
+import { Search, HelpCircle, User, BookOpen, CreditCard, Award, Building2, ShieldCheck, ArrowRight, MessageCircle, Mail } from 'lucide-react';
 
 export const revalidate = 600;
 export async function generateMetadata() { return { title: 'Centro de ajuda · NeuroLearn' }; }
@@ -67,17 +67,13 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
           <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-3xl font-bold text-slate-900">Não encontraste o que precisas?</h2>
             <p className="mt-3 text-slate-600">A nossa equipa responde em média em menos de 24h.</p>
-            <div className="mt-6 grid sm:grid-cols-2 gap-3">
-              <a href="mailto:suporte@neurolearn.pt" className="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-lg transition-all group">
+            <div className="mt-6 grid sm:grid-cols-1 max-w-md mx-auto">
+              <Link href={{ pathname: '/contacto', query: { topic: 'support', from: '/ajuda' } } as any}
+                className="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-lg transition-all group">
                 <Mail className="h-6 w-6 text-blue-600 mx-auto mb-2 group-hover:scale-110 transition-transform" />
-                <div className="font-bold text-slate-900">Email</div>
-                <div className="text-xs text-slate-500 mt-1">suporte@neurolearn.pt</div>
-              </a>
-              <a href="#" className="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-lg transition-all group">
-                <MessageCircle className="h-6 w-6 text-emerald-600 mx-auto mb-2 group-hover:scale-110 transition-transform" />
-                <div className="font-bold text-slate-900">Chat em directo</div>
-                <div className="text-xs text-slate-500 mt-1">Seg–Sex · 9h–18h CET</div>
-              </a>
+                <div className="font-bold text-slate-900">Enviar mensagem</div>
+                <div className="text-xs text-slate-500 mt-1">Formulário de contacto · resposta &lt; 24h</div>
+              </Link>
             </div>
           </div>
         </section>

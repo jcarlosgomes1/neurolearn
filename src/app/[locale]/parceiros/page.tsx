@@ -68,9 +68,10 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
             <Sparkles className="h-8 w-8 mx-auto mb-3 opacity-70" />
             <h2 className="text-2xl sm:text-3xl font-bold">Pronto a falar?</h2>
             <p className="mt-3 text-white/90">Marca uma chamada de 30min. Sem compromisso, sem pitch comercial.</p>
-            <a href="mailto:partners@neurolearn.pt?subject=Parceria" className="inline-flex items-center gap-2 px-6 py-3 mt-6 bg-white text-teal-700 hover:bg-teal-50 hover:scale-105 transition-all font-bold rounded-xl shadow-lg">
-              partners@neurolearn.pt <ArrowRight className="h-4 w-4" />
-            </a>
+            <Link href={{ pathname: '/contacto', query: { topic: 'partners', from: '/parceiros' } } as any}
+              className="inline-flex items-center gap-2 px-6 py-3 mt-6 bg-white text-teal-700 hover:bg-teal-50 hover:scale-105 transition-all font-bold rounded-xl shadow-lg">
+              Enviar mensagem <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
         </section>
 

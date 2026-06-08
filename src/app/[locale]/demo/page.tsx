@@ -2,7 +2,7 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/sections/Footer';
 import { Link } from '@/i18n/routing';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
-import { Play, Sparkles, Check, ArrowRight, Calendar, Video, Building2 } from 'lucide-react';
+import { Play, Sparkles, Check, ArrowRight, Calendar, Building2 } from 'lucide-react';
 
 export const revalidate = 600;
 export async function generateMetadata() { return { title: 'Demo · NeuroLearn' }; }
@@ -41,9 +41,10 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
                   30 minutos com a nossa equipa. Foco no teu caso de uso real. Sem demo pré-gravada, sem slides intermináveis.
                 </p>
                 <div className="mt-8 flex flex-wrap gap-3">
-                  <a href="mailto:demo@neurolearn.pt?subject=Demo" className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-br from-violet-600 to-indigo-600 text-white hover:scale-105 transition-all font-bold rounded-xl shadow-lg">
+                  <Link href={{ pathname: '/contacto', query: { topic: 'sales', subject: 'Marcar demo', from: '/demo' } } as any}
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-br from-violet-600 to-indigo-600 text-white hover:scale-105 transition-all font-bold rounded-xl shadow-lg">
                     <Calendar className="h-4 w-4" /> Marcar demo
-                  </a>
+                  </Link>
                   <Link href={'/cursos' as any} className="inline-flex items-center gap-2 px-6 py-3 bg-white text-slate-900 hover:bg-slate-50 border border-slate-200 transition-all font-bold rounded-xl shadow-sm">
                     <Play className="h-4 w-4" /> Tour por mim mesmo
                   </Link>
