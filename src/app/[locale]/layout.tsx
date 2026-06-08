@@ -7,6 +7,7 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import { routing } from '@/i18n/routing';
 import { OnboardingGate } from '@/components/auth/OnboardingGate';
 import { CookieBanner } from '@/components/legal/CookieBanner';
+import { TopBar } from '@/components/layout/TopBar';
 import '@/app/globals.css';
 
 export async function generateMetadata() {
@@ -48,6 +49,7 @@ export default async function LocaleLayout({
     <html lang={locale}>
       <body className="min-h-screen bg-slate-50 font-sans antialiased">
         <NextIntlClientProvider locale={locale} messages={messages}>
+          <TopBar locale={locale} />
           <OnboardingGate />
           {children}
           <Toaster richColors position="top-right" />
