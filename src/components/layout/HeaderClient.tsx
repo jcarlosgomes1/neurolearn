@@ -8,6 +8,7 @@ import { CurrencySwitcher } from '@/components/currency/CurrencySwitcher';
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
+import { LogOut, LayoutDashboard } from 'lucide-react';
 
 interface Session { email: string; area: 'student' | 'instructor' | 'admin' }
 
@@ -28,7 +29,7 @@ export function HeaderClient({ session }: { session: Session | null }) {
     { href: '/cursos', label: t('nav.courses') },
     { href: '/aprender/percursos', label: 'Percursos' },
     { href: '/essentials', label: t('nav.essentials') },
-    { href: '/empresas', label: t('nav.business') },
+    { href: '/para-empresas', label: t('nav.business') },
     { href: '/blog', label: t('nav.blog') },
   ];
 
@@ -53,38 +54,28 @@ export function HeaderClient({ session }: { session: Session | null }) {
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
             </Link>
 
-            {/* Currency switcher: visível sempre, ajuda checkout/cursos */}
             <div className="hidden sm:block"><CurrencySwitcher /></div>
 
-            {/* Notifications: só visível quando logged in */}
             {session && <NotificationsDropdown locale={locale} />}
 
-            {/* CTA "Ensina connosco" */}
             {(!session || session.area === 'student') && (
-              <Link
-                href={'/candidatar' as any}
-                className="hidden md:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-semibold bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 text-white transition-all shadow-sm hover:shadow"
-              >
-                <span>🎓</span>
-                <span>{t('nav.teach_cta')}</span>
+              <Link href={'/candidatar' as any}
+                className="hidden md:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-semibold bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 text-white transition-all shadow-sm hover:shadow">
+                <span>🎓</span><span>{t('nav.teach_cta')}</span>
               </Link>
             )}
 
-            {!session && (
-              <div className="hidden sm:block"><LanguageSwitcher /></div>
-            )}
+            {!session && <div className="hidden sm:block"><LanguageSwitcher /></div>}
             {session ? (
               <div className="hidden sm:block"><UserMenu email={session.email} area={session.area} /></div>
             ) : (
               <Link href={'/login' as any} className="hidden sm:inline-flex btn-primary text-sm py-2 px-4">{t('nav.signin')}</Link>
             )}
 
-            <button
-              onClick={() => setOpen(!open)}
+            <button onClick={() => setOpen(!open)}
               aria-label={open ? t('nav.close_menu') : t('nav.open_menu')}
               aria-expanded={open}
-              className="md:hidden w-10 h-10 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-700 transition-colors active:scale-95"
-            >
+              className="md:hidden w-10 h-10 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-700 transition-colors active:scale-95">
               {open ? (
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M6 6l12 12M6 18L18 6"/></svg>
               ) : (
@@ -124,6 +115,18 @@ export function HeaderClient({ session }: { session: Session | null }) {
                     {t('user_menu.learning')}
                   </Link>
                 </div>
+                {session.area === 'admin' && (
+                  <Link href={'/admin' as any}
+                    className="mt-2 inline-flex w-full items-center justify-center gap-2 px-3 py-2.5 bg-gradient-to-br from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white text-sm font-semibold rounded-lg shadow">
+                    <LayoutDashboard className="h-4 w-4" /> Cockpit admin
+                  </Link>
+                )}
+                {session.area === 'instructor' && (
+                  <Link href={'/teach' as any}
+                    className="mt-2 inline-flex w-full items-center justify-center gap-2 px-3 py-2.5 bg-gradient-to-br from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-sm font-semibold rounded-lg shadow">
+                    <LayoutDashboard className="h-4 w-4" /> Dashboard instrutor
+                  </Link>
+                )}
               </div>
             ) : null}
 
@@ -137,8 +140,7 @@ export function HeaderClient({ session }: { session: Session | null }) {
 
               {(!session || session.area === 'student') && (
                 <Link href={'/candidatar' as any} className="flex items-center gap-3 px-3 py-3.5 rounded-lg hover:opacity-90 text-white font-semibold transition-colors bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 mt-2 shadow-sm">
-                  <span>🎓</span>
-                  <span>{t('nav.teach_cta')}</span>
+                  <span>🎓</span><span>{t('nav.teach_cta')}</span>
                 </Link>
               )}
 
@@ -150,9 +152,12 @@ export function HeaderClient({ session }: { session: Session | null }) {
               {session && (
                 <Link href={'/conta/notificacoes' as any} className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-slate-50 text-slate-700 text-sm">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
-                  Notificações
+                Notificações
                 </Link>
               )}
+              <Link href={'/contacto' as any} className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-slate-50 text-slate-700 text-sm">
+                <span>📨</span> Contacto
+              </Link>
               <Link href={'/legal/faq' as any} className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-slate-50 text-slate-700 text-sm">
                 <span>❓</span> {t('footer.faq')}
               </Link>
@@ -162,21 +167,23 @@ export function HeaderClient({ session }: { session: Session | null }) {
             </nav>
 
             <div className="px-5 py-4 border-t border-slate-100 space-y-3">
-              {/* Currency + Language no mobile menu */}
               <div className="flex items-center justify-between gap-3">
                 <span className="text-xs text-slate-500">Moeda</span>
                 <CurrencySwitcher />
               </div>
-              {!session && (
-                <>
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="text-xs text-slate-500">{t('nav.language')}</span>
-                    <LanguageSwitcher />
-                  </div>
-                  <Link href={'/login' as any} className="btn-primary w-full text-center text-sm py-3 block">
-                    {t('nav.signin')}
-                  </Link>
-                </>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-xs text-slate-500">{t('nav.language')}</span>
+                <LanguageSwitcher />
+              </div>
+              {!session ? (
+                <Link href={'/login' as any} className="btn-primary w-full text-center text-sm py-3 block">
+                  {t('nav.signin')}
+                </Link>
+              ) : (
+                <a href="/api/auth/logout"
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-lg shadow transition-colors">
+                  <LogOut className="h-4 w-4" /> Terminar sessão
+                </a>
               )}
             </div>
           </div>
