@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from '@/i18n/routing';
 import { toast } from 'sonner';
-import { CheckCircle, XCircle, Sparkles, User2, Clock, Edit3, Save } from 'lucide-react';
+import { CheckCircle, XCircle, Sparkles, User2, Clock } from 'lucide-react';
 
 export function EvaluationsClient({ items }: { items: any[] }) {
   const router = useRouter();
@@ -36,7 +36,7 @@ export function EvaluationsClient({ items }: { items: any[] }) {
           <CheckCircle className="h-7 w-7" />
         </div>
         <h2 className="font-bold text-slate-900 text-lg">Nada pendente</h2>
-        <p className="text-sm text-slate-500 mt-1.5 max-w-md mx-auto">Todas as avaliações estão validadas. Os alunos receberão as suas notas automaticamente.</p>
+        <p className="text-sm text-slate-500 mt-1.5 max-w-md mx-auto">Todas as avaliações estão validadas. Os alunos recebem as suas notas automaticamente.</p>
       </div>
     );
   }
@@ -71,7 +71,7 @@ export function EvaluationsClient({ items }: { items: any[] }) {
             </div>
             <div className="bg-gradient-to-br from-violet-50 to-indigo-50 border border-violet-200 rounded-xl p-4">
               <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-bold text-violet-700 mb-2">
-                <Sparkles className="h-3 w-3" /> Análise da IA · {it.ai_score != null ? `${Math.round(Number(it.ai_score))}/100` : '—'}
+                <Sparkles className="h-3 w-3" /> Análise automática · {it.ai_score != null ? `${Math.round(Number(it.ai_score))}/100` : '—'}
               </div>
               {it.ai_feedback_md && (
                 <div className="text-sm text-slate-800 whitespace-pre-wrap leading-relaxed">{it.ai_feedback_md}</div>
@@ -88,7 +88,7 @@ export function EvaluationsClient({ items }: { items: any[] }) {
                   className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:border-violet-500 outline-none" />
               </div>
               <div className="text-[11px] text-slate-500 self-end pb-2">
-                Se deixares em branco, mantém a nota proposta pela IA.
+                Se deixares em branco, mantém a nota sugerida.
               </div>
             </div>
             <div>
@@ -97,7 +97,7 @@ export function EvaluationsClient({ items }: { items: any[] }) {
                 value={edits[it.id]?.feedback ?? ''}
                 onChange={(e) => setEdits((p) => ({ ...p, [it.id]: { ...p[it.id], feedback: e.target.value } }))}
                 rows={3}
-                placeholder="Substitui o feedback da IA se preenchido."
+                placeholder="Substitui o feedback sugerido se preenchido."
                 className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:border-violet-500 outline-none resize-y" />
             </div>
           </div>

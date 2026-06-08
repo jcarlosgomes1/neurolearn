@@ -4,12 +4,12 @@ import { useState, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from '@/i18n/routing';
 import { toast } from 'sonner';
-import { Upload, FileText, Trash2, Sparkles, Loader2, CheckCircle, Clock, AlertCircle, ChevronDown, Building2 } from 'lucide-react';
+import { Upload, FileText, Trash2, Sparkles, Loader2, CheckCircle, Clock, AlertCircle, Building2 } from 'lucide-react';
 import { SUPABASE_URL } from '@/lib/supabase/config';
 
 const STATUS: Record<string, { label: string; cls: string; icon: any }> = {
   pending: { label: 'A processar', cls: 'bg-amber-50 text-amber-700 border-amber-200', icon: Clock },
-  processing: { label: 'A extrair', cls: 'bg-blue-50 text-blue-700 border-blue-200', icon: Loader2 },
+  processing: { label: 'A analisar', cls: 'bg-blue-50 text-blue-700 border-blue-200', icon: Loader2 },
   completed: { label: 'Pronto', cls: 'bg-emerald-50 text-emerald-700 border-emerald-200', icon: CheckCircle },
   failed: { label: 'Erro', cls: 'bg-rose-50 text-rose-700 border-rose-200', icon: AlertCircle },
 };
@@ -62,7 +62,6 @@ export function ConteudoClient({ orgs, activeOrgId, content, proposals }: {
           p_mime_type: file.type, p_file_size_bytes: file.size, p_source_type: 'upload',
         });
         if (regErr) throw regErr;
-        // Trigger extraction (fire-and-forget via edge function)
         try {
           const { data: { session } } = await sb.auth.getSession();
           fetch(`${SUPABASE_URL}/functions/v1/org-content-ingest`, {
@@ -102,7 +101,7 @@ export function ConteudoClient({ orgs, activeOrgId, content, proposals }: {
           body: JSON.stringify({ proposal_id: propId, org_id: activeOrgId }),
         }).catch(() => {});
       } catch {}
-      toast.success('Proposta criada · IA a planear');
+      toast.success('Proposta criada · a planear curso');
       setSelected(new Set());
       router.refresh();
     } catch (e: any) {
@@ -141,7 +140,6 @@ export function ConteudoClient({ orgs, activeOrgId, content, proposals }: {
         </div>
       )}
 
-      {/* Upload area */}
       <div
         onClick={() => fileRef.current?.click()}
         className="relative bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 border-2 border-dashed border-emerald-200 rounded-2xl p-8 sm:p-10 text-center cursor-pointer hover:border-emerald-400 hover:from-emerald-100 transition-all group">
@@ -158,7 +156,6 @@ export function ConteudoClient({ orgs, activeOrgId, content, proposals }: {
         />
       </div>
 
-      {/* Bulk action: criar proposta */}
       {selected.size > 0 && (
         <div className="bg-white border border-violet-200 rounded-xl p-3 flex items-center justify-between shadow-sm sticky top-4 z-10">
           <div className="text-sm">
@@ -171,13 +168,12 @@ export function ConteudoClient({ orgs, activeOrgId, content, proposals }: {
               disabled={busy}
               className="inline-flex items-center gap-1.5 px-4 py-2 bg-gradient-to-br from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm disabled:opacity-50">
               <Sparkles className="h-3.5 w-3.5" />
-              {busy ? 'A criar…' : 'Propor curso via IA'}
+              {busy ? 'A criar…' : 'Propor curso a partir destes documentos'}
             </button>
           </div>
         </div>
       )}
 
-      {/* Documentos */}
       <section>
         <h2 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
           <FileText className="h-4 w-4" /> Documentos ({content.length})
@@ -210,8 +206,8 @@ export function ConteudoClient({ orgs, activeOrgId, content, proposals }: {
                     {c.summary && <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">{c.summary}</p>}
                     {c.detected_topics?.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-1.5">
-                        {c.detected_topics.slice(0, 5).map((t: string) => (
-                          <span key={t} className="text-[9px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">{t}</span>
+                        {c.detected_topics.slice(0, 5).map((tt: string) => (
+                          <span key={tt} className="text-[9px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">{tt}</span>
                         ))}
                       </div>
                     )}
@@ -226,11 +222,10 @@ export function ConteudoClient({ orgs, activeOrgId, content, proposals }: {
         )}
       </section>
 
-      {/* Propostas IA */}
       {proposals.length > 0 && (
         <section>
           <h2 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-violet-500" /> Propostas IA ({proposals.length})
+            <Sparkles className="h-4 w-4 text-violet-500" /> Propostas ({proposals.length})
           </h2>
           <div className="grid sm:grid-cols-2 gap-3">
             {proposals.map((p) => {

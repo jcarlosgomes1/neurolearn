@@ -24,11 +24,11 @@ export default async function PathGapsPage({ params }: { params: Promise<{ id: s
       </Link>
       <div className="mb-8">
         <div className="flex items-center gap-2 text-violet-600 text-xs font-semibold uppercase tracking-wider mb-1">
-          <Sparkles className="h-3.5 w-3.5" /> Arquiteta IA · Cursos em falta
+          <Sparkles className="h-3.5 w-3.5" /> Cursos em falta
         </div>
         <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{(path as any).title}</h1>
         <p className="text-sm text-slate-600 mt-1.5 max-w-2xl">
-          Quando o percurso precisa de cursos que ainda não existem, propõe-os aqui. Aprovas e a IA cria o curso completo.
+          Regista cursos que ainda não existem e que este percurso precisa. Aprovas e a plataforma gera o curso completo automaticamente.
         </p>
       </div>
       <GapsClient

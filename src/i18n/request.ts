@@ -2,6 +2,7 @@ import { getRequestConfig } from 'next-intl/server';
 import type { AbstractIntlMessages } from 'next-intl';
 import { routing } from './routing';
 import { FALLBACK_MESSAGES } from './fallback';
+import { ADMIN_MESSAGES } from './admin-messages';
 import pt from './messages/pt.json';
 import en from './messages/en.json';
 import es from './messages/es.json';
@@ -22,17 +23,15 @@ export default getRequestConfig(async ({ requestLocale }) => {
 
   const flat = FLAT_MESSAGES[locale] || FLAT_MESSAGES.pt;
   const nested = flattenToNamespaced(flat);
-  const messages: AbstractIntlMessages = deepMerge(FALLBACK_MESSAGES, nested);
+  // Ordem: fallback → file messages → admin messages (admin tem prioridade máxima)
+  const merged = deepMerge(deepMerge(FALLBACK_MESSAGES, nested), ADMIN_MESSAGES[locale] || ADMIN_MESSAGES.pt);
 
-  return { locale, messages };
+  return { locale, messages: merged };
 });
 
 function flattenToNamespaced(flat: Record<string, string>): AbstractIntlMessages {
   const result: any = {};
-  // Sort by depth DESC so deeper paths (e.g. "course.level.advanced") establish
-  // nested structure FIRST. Shallower siblings (e.g. "course.level") are then
-  // skipped if they would collide with an existing object — preventing the
-  // "Cannot create property X on string Y" runtime error from next-intl.
+  // Sort by depth DESC so deeper paths establish nested structure FIRST.
   const sortedKeys = Object.keys(flat).sort(
     (a, b) => b.split('.').length - a.split('.').length
   );
@@ -46,7 +45,6 @@ function flattenToNamespaced(flat: Record<string, string>): AbstractIntlMessages
     for (let i = 0; i < parts.length - 1; i++) {
       const seg = parts[i];
       if (typeof cur[seg] === 'string') {
-        // A shallower string is occupying the slot we need to nest under. Skip.
         blocked = true;
         break;
       }
@@ -57,7 +55,6 @@ function flattenToNamespaced(flat: Record<string, string>): AbstractIntlMessages
 
     const lastPart = parts[parts.length - 1];
     if (typeof cur[lastPart] === 'object' && cur[lastPart] !== null) {
-      // A deeper nested object already lives here; do not overwrite with string.
       continue;
     }
     cur[lastPart] = value;

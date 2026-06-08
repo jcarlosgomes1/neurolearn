@@ -18,7 +18,7 @@ export function GapsClient({ pathId, gaps, existingCount }: { pathId: string; ga
     setBusy(true);
     try {
       const sb = createClient();
-      const topics = form.topics.split(',').map((t) => t.trim()).filter(Boolean);
+      const topics = form.topics.split(',').map((tt) => tt.trim()).filter(Boolean);
       const { error } = await sb.rpc('nl_admin_path_gap_create', {
         p_path_id: pathId, p_title: form.title, p_description: form.description || null,
         p_topics: topics.length ? topics : null, p_level: form.level, p_lang: form.lang,
@@ -47,7 +47,7 @@ export function GapsClient({ pathId, gaps, existingCount }: { pathId: string; ga
   }
 
   async function generateCourse(gap: any) {
-    if (!confirm(`Gerar curso "${gap.suggested_title}" via IA? Vai criar estrutura completa de módulos e lições.`)) return;
+    if (!confirm(`Gerar curso "${gap.suggested_title}"? Vai criar estrutura completa de módulos e lições.`)) return;
     setBusy(true);
     try {
       const sb = createClient();
@@ -84,7 +84,7 @@ export function GapsClient({ pathId, gaps, existingCount }: { pathId: string; ga
         <div className="flex-1 text-sm">
           <div className="font-semibold text-violet-900">Como funciona</div>
           <p className="text-violet-700/80 text-xs leading-relaxed mt-1">
-            Adiciona o título e descrição do curso que falta. A IA gera estrutura, lições, exercícios e quiz quando aprovares.
+            Adiciona o título e descrição do curso que falta. Quando aprovares, a plataforma gera estrutura, lições, exercícios e quiz automaticamente.
           </p>
         </div>
         {!creating && (
@@ -139,7 +139,7 @@ export function GapsClient({ pathId, gaps, existingCount }: { pathId: string; ga
           <Sparkles className="h-10 w-10 text-slate-300 mx-auto mb-3" />
           <h3 className="font-semibold text-slate-900 text-sm">Nenhuma lacuna identificada</h3>
           <p className="text-xs text-slate-500 mt-1.5 max-w-md mx-auto leading-relaxed">
-            Quando o percurso precisar de cursos que não existem, regista-os aqui e a IA cria-os por ti.
+            Quando o percurso precisar de cursos que não existem, regista-os aqui e a plataforma cria-os por ti.
           </p>
         </div>
       ) : (
@@ -153,8 +153,8 @@ export function GapsClient({ pathId, gaps, existingCount }: { pathId: string; ga
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     <span className="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-semibold uppercase tracking-wider">{g.suggested_level}</span>
                     <span className="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-semibold uppercase tracking-wider">{g.suggested_lang}</span>
-                    {(g.suggested_topics || []).slice(0, 6).map((t: string) => (
-                      <span key={t} className="text-[10px] bg-violet-50 text-violet-700 px-1.5 py-0.5 rounded">{t}</span>
+                    {(g.suggested_topics || []).slice(0, 6).map((tt: string) => (
+                      <span key={tt} className="text-[10px] bg-violet-50 text-violet-700 px-1.5 py-0.5 rounded">{tt}</span>
                     ))}
                   </div>
                 </div>
@@ -167,7 +167,7 @@ export function GapsClient({ pathId, gaps, existingCount }: { pathId: string; ga
                   <Check className="h-3.5 w-3.5" /> Aceitar
                 </button>
                 <button onClick={() => generateCourse(g)} disabled={busy} className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-br from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white text-xs font-semibold rounded-lg shadow-sm disabled:opacity-50">
-                  {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />} Gerar com IA
+                  {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />} Gerar curso
                 </button>
               </div>
             </div>
