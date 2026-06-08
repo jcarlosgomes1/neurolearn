@@ -1,26 +1,24 @@
 /**
  * Carrega traduções da DB (nl_i18n).
- * Cache 60s via Next fetch revalidate.
- * Falha SILENCIOSAMENTE retornando {} para não bloquear renders.
+ * Usa SUPABASE_URL hardcoded + anon key (ambos são públicos por design — expostos no client).
+ * Necessário hardcoded porque env vars NEXT_PUBLIC_* não estão acessíveis em SSR run-time
+ * neste contexto do request.ts (validado em produção via runtime logs).
  */
 
+const SUPABASE_URL = 'https://obpezocujzdaznrdgwoo.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9icGV6b2N1anpkYXpucmRnd29vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1Nzc3MjAsImV4cCI6MjA3NTE1MzcyMH0.LWp3xUuJjMpQOFTYRiBALOXMnXm-1ITWLqXVlIY7yIA';
+
 async function fetchLocaleFlat(lang: string): Promise<Record<string, string>> {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !key) {
-    console.warn('[i18n] missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY');
-    return {};
-  }
   try {
-    const r = await fetch(`${url}/rest/v1/rpc/nl_i18n_messages_for_lang`, {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/nl_i18n_messages_for_lang`, {
       method: 'POST',
       headers: {
-        apikey: key,
-        Authorization: `Bearer ${key}`,
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ p_lang: lang }),
-      // Next.js cache: revalidate a cada 60s, tag para invalidar manualmente
+      // Cache 60s nativo do Next; tag para invalidar via revalidateTag
       next: { revalidate: 60, tags: [`i18n-${lang}`, 'i18n-all'] },
     });
     if (!r.ok) {
@@ -29,13 +27,12 @@ async function fetchLocaleFlat(lang: string): Promise<Record<string, string>> {
     }
     const flat = await r.json();
     if (flat && typeof flat === 'object' && !Array.isArray(flat)) {
-      const keys = Object.keys(flat).length;
-      if (keys < 100) console.warn(`[i18n] DB returned only ${keys} keys for lang=${lang}`);
       return flat as Record<string, string>;
     }
+    console.warn(`[i18n] DB returned non-object for lang=${lang}: ${JSON.stringify(flat).slice(0, 100)}`);
     return {};
   } catch (e: any) {
-    console.warn(`[i18n] DB fetch threw: ${e?.message || e}`);
+    console.warn(`[i18n] DB fetch threw for lang=${lang}: ${e?.message || e}`);
     return {};
   }
 }
