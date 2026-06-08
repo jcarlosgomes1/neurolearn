@@ -1,7 +1,7 @@
 'use client';
 
 import { Link, usePathname } from '@/i18n/routing';
-import { User, Bell, Heart, Award, Sparkles, Shield, LogOut, BookOpen, Calendar, FileText, KeyRound, BellRing } from 'lucide-react';
+import { User, Bell, Heart, Award, Sparkles, Shield, LogOut, BookOpen, Calendar, FileText, KeyRound, BellRing, Briefcase } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
@@ -39,6 +39,7 @@ export function AccountSidebar() {
       titleKey: 'account.group.personal', titleFb: 'Pessoal',
       items: [
         { href: '/conta/wishlist', labelKey: 'account.item.wishlist', fb: 'Lista de desejos', icon: Heart },
+        { href: '/conta/talento', labelKey: 'account.item.talent', fb: 'Perfil talento', icon: Briefcase },
         { href: '/conta/afiliado', labelKey: 'account.item.affiliate', fb: 'Programa afiliado', icon: Award },
         { href: '/conta/candidato', labelKey: 'account.item.application', fb: 'Candidatura instrutor', icon: FileText },
       ],
