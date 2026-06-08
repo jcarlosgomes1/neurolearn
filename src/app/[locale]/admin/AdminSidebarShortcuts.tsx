@@ -3,7 +3,8 @@
 import { Link } from '@/i18n/routing';
 import {
   Package, Tag, DollarSign, GraduationCap, Shield, Key, BarChart3, Receipt,
-  RotateCcw, Mail, Users, Lock, Sparkles, CalendarClock, AlertTriangle, Settings
+  RotateCcw, Mail, Users, Lock, Sparkles, CalendarClock, AlertTriangle, Settings,
+  Activity, ShieldAlert, Languages
 } from 'lucide-react';
 
 type ShortcutItem = {
@@ -39,7 +40,8 @@ const SECTIONS: ShortcutSection[] = [
       { href: '/admin/learning-paths', label: 'Percursos', icon: GraduationCap },
       { href: '/admin/addons', label: 'Add-ons', icon: Package },
       { href: '/admin/cupoes', label: 'Cupões', icon: Tag },
-      { href: '/admin/drip-schedules', label: 'Calendário drip', icon: CalendarClock, badge: 'Novo' },
+      { href: '/admin/drip-schedules', label: 'Calendário drip', icon: CalendarClock },
+      { href: '/admin/i18n', label: 'Traduções', icon: Languages },
     ],
   },
   {
@@ -49,6 +51,15 @@ const SECTIONS: ShortcutSection[] = [
       { href: '/admin/sso', label: 'SSO', icon: Lock },
       { href: '/admin/scim', label: 'SCIM tokens', icon: Users },
       { href: '/admin/email-templates', label: 'Email templates', icon: Mail },
+    ],
+  },
+  {
+    title: 'Saúde & Compliance',
+    accent: 'text-rose-600',
+    items: [
+      { href: '/admin/observabilidade', label: 'Observabilidade', icon: Activity, badge: 'Novo' },
+      { href: '/admin/compliance', label: 'Compliance', icon: ShieldAlert, badge: 'Novo' },
+      { href: '/admin/agentes', label: 'Agentes', icon: Sparkles },
     ],
   },
   {
