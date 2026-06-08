@@ -7,6 +7,7 @@ import { Testimonials } from '@/components/sections/Testimonials';
 import { Faq } from '@/components/sections/Faq';
 import { FinalCta } from '@/components/sections/FinalCta';
 import { Footer } from '@/components/sections/Footer';
+import { TrustedByStrip, HowItWorksSection, CategoriesGrid, LiveMomentumSection } from '@/components/sections/HomeExtras';
 import { OrganizationStructuredData, WebsiteStructuredData, FAQStructuredData } from '@/components/seo/StructuredData';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
 
@@ -17,7 +18,7 @@ const SITE_URL = 'https://neurolearn-rosy.vercel.app';
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const blocks = await getHomeBlocks(locale);
-  
+
   // Extrair FAQ items para Schema.org (defensive)
   const faqItems: Array<{ q: string; a: string }> = [];
   const faqData = blocks.faq as { items?: Array<{ question?: string; answer?: string; q?: string; a?: string }> } | undefined;
@@ -37,12 +38,16 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       <Header />
       <main className="bg-white">
         {blocks.hero && <Hero data={blocks.hero} />}
+        <TrustedByStrip />
         {blocks.stats && <Stats data={blocks.stats} />}
+        <HowItWorksSection />
         {blocks.features && <Features data={blocks.features} />}
+        <CategoriesGrid />
         {blocks.plans && blocks.pricing_header && (
           <Pricing header={blocks.pricing_header} plans={blocks.plans} />
         )}
         {blocks.testimonials && <Testimonials data={blocks.testimonials} />}
+        <LiveMomentumSection />
         {blocks.faq && <Faq data={blocks.faq} />}
         {blocks.cta_section && <FinalCta data={blocks.cta_section} />}
         <Footer data={blocks.footer_brand || {}} />
