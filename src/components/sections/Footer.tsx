@@ -47,7 +47,7 @@ export function Footer({ data }: { data: FooterData }) {
           </div>
 
           <div>
-            <h3 className="text-white font-semibold text-sm mb-3">{t('nav.legal')}</h3>
+            <h3 className="text-white font-semibold text-sm mb-3">Legal</h3>
             <ul className="space-y-2 text-sm">
               <li><Link href={'/legal/terms' as any} className="hover:text-white transition-colors">{t('footer.terms')}</Link></li>
               <li><Link href={'/legal/privacy' as any} className="hover:text-white transition-colors">{t('footer.privacy')}</Link></li>

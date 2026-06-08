@@ -16,6 +16,12 @@ export const revalidate = 300;
 
 const SITE_URL = 'https://neurolearn-rosy.vercel.app';
 
+// Remove qualquer seta inicial ou marca de back ("← ", "‹ ", etc.) de uma string
+// — usado quando a chave i18n já inclui a seta mas mostramos um ícone separado.
+function stripArrow(s: string): string {
+  return (s || '').replace(/^[←‹\s«]+/u, '').trim();
+}
+
 interface BlogPost {
   id: string; slug: string; category: string | null; tags: string[] | null;
   featured_image_url: string | null; published_at: string | null; author_name: string | null;
@@ -42,16 +48,16 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     .select('id, slug, featured_image_url, published_at')
     .eq('slug', slug).not('published_at', 'is', null).maybeSingle();
   if (!post) return { title: 'Artigo não encontrado' };
-  
+
   const { data: trs } = await sb.from('nl_blog_post_translations')
     .select('lang, title, excerpt').eq('post_id', post.id);
   const tr = (trs || []).find((x: any) => x.lang === locale) || (trs || [])[0];
   if (!tr) return { title: 'Artigo' };
-  
+
   const title = tr.title as string;
   const desc = ((tr.excerpt as string | null) || title).slice(0, 160);
   const ogImage = post.featured_image_url || `${SITE_URL}/${locale}/opengraph-image`;
-  
+
   return {
     title, description: desc,
     alternates: {
@@ -109,6 +115,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
   const blocks = await getHomeBlocks(locale);
   const heroEmoji = CATEGORY_EMOJI[post.category || ''] || '📝';
+  const backLabel = stripArrow(t('blog.back'));
 
   return (
     <>
@@ -130,9 +137,10 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       <main className="bg-white min-h-screen">
         <section className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10">
           <Link href={'/blog' as any}
-            className="group inline-flex items-center gap-2 mb-5 px-3 py-1.5 rounded-full bg-white hover:bg-slate-50 border border-slate-200 hover:border-brand-300 text-slate-700 hover:text-brand-700 text-sm font-medium transition-all">
+            className="group inline-flex items-center gap-2 mb-5 px-3 py-1.5 rounded-full bg-white hover:bg-slate-50 border border-slate-200 hover:border-brand-300 text-slate-700 hover:text-brand-700 text-sm font-medium transition-all"
+            aria-label={backLabel}>
             <ArrowLeft className="h-4 w-4 -ml-0.5 transition-transform group-hover:-translate-x-0.5" strokeWidth={2.5} />
-            <span>{t('blog.back')}</span>
+            <span>{backLabel}</span>
           </Link>
           <div className="rounded-2xl overflow-hidden border border-slate-200">
             <CoverImage src={post.featured_image_url} alt={translation.title} seed={post.slug}
