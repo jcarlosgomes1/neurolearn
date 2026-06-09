@@ -63,5 +63,9 @@ export async function getSessionWithArea() {
     role === 'admin' || role === 'super_admin' ? 'admin' :
     role === 'instructor' ? 'instructor' : 'student';
 
-  return { user, role, area };
+  const areas: Area[] =
+    role === 'admin' || role === 'super_admin' ? ['admin', 'instructor', 'student'] :
+    role === 'instructor' ? ['instructor', 'student'] : ['student'];
+
+  return { user, role, area, areas };
 }

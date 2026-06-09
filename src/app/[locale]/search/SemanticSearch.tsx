@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link, useRouter } from '@/i18n/routing';
-import { SUPABASE_URL } from '@/lib/supabase/config';
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from '@/lib/supabase/config';
 
 interface Result {
   id: string;
@@ -38,7 +38,7 @@ export function SemanticSearch({ initialQuery, locale }: { initialQuery: string;
     try {
       const resp = await fetch(`${SUPABASE_URL}/functions/v1/embeddings`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'apikey': SUPABASE_ANON_KEY },
         body: JSON.stringify({
           action: 'search',
           query: q.trim(),

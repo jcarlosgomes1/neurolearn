@@ -10,7 +10,7 @@ import { usePathname } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { LogOut, LayoutDashboard, BookOpen, Route, Sparkles, Building2, Newspaper } from 'lucide-react';
 
-interface Session { email: string; area: 'student' | 'instructor' | 'admin' }
+interface Session { email: string; area: 'student' | 'instructor' | 'admin'; areas: Array<'student' | 'instructor' | 'admin'> }
 
 export function HeaderClient({ session }: { session: Session | null }) {
   const t = useTranslations();
@@ -79,7 +79,7 @@ export function HeaderClient({ session }: { session: Session | null }) {
 
             {!session && <div className="hidden sm:block"><LanguageSwitcher /></div>}
             {session ? (
-              <div className="hidden sm:block"><UserMenu email={session.email} area={session.area} /></div>
+              <div className="hidden sm:block"><UserMenu email={session.email} area={session.area} areas={session.areas} /></div>
             ) : (
               <Link href={'/login' as any} className="hidden sm:inline-flex btn-primary text-sm py-2 px-4">{t('nav.signin')}</Link>
             )}

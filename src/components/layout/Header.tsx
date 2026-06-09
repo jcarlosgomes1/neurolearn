@@ -3,5 +3,5 @@ import { HeaderClient } from './HeaderClient';
 
 export async function Header() {
   const session = await getSessionWithArea();
-  return <HeaderClient session={session ? { email: session.user.email!, area: session.area } : null} />;
+  return <HeaderClient session={session ? { email: session.user.email!, area: session.area, areas: session.areas } : null} />;
 }
