@@ -1,5 +1,3 @@
-import { Header } from '@/components/layout/Header';
-import { Footer } from '@/components/sections/Footer';
 import { Link } from '@/i18n/routing';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
 import { Newspaper, Download, ExternalLink, Mail, Calendar, FileText, Image as ImageIcon } from 'lucide-react';
@@ -23,8 +21,6 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   const { locale } = await params;
   const blocks = await getHomeBlocks(locale);
   return (
-    <>
-      <Header />
       <main className="bg-white min-h-screen">
         <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-zinc-50 border-b border-slate-200/60">
           <div className="absolute inset-0 -z-10">
@@ -82,8 +78,6 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
           </Link>
         </section>
 
-        <Footer data={(blocks as any).footer_brand || { brand: 'NeuroLearn' }} />
       </main>
-    </>
   );
 }

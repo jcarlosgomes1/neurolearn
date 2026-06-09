@@ -1,5 +1,3 @@
-import { Header } from '@/components/layout/Header';
-import { Footer } from '@/components/sections/Footer';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { Link } from '@/i18n/routing';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
@@ -28,8 +26,6 @@ export default async function EssentialsPage({ params }: { params: Promise<{ loc
   const blocks = await getHomeBlocks(locale);
 
   return (
-    <>
-      <Header />
       <main className="bg-white min-h-screen">
         <PageHeader badge={t('ess.badge')} title={t('ess.title')} subtitle={t('ess.subtitle')} />
         <section className="max-w-6xl mx-auto px-4 py-12">
@@ -49,8 +45,6 @@ export default async function EssentialsPage({ params }: { params: Promise<{ loc
             </div>
           )}
         </section>
-        <Footer data={blocks.footer_brand || {}} />
       </main>
-    </>
   );
 }

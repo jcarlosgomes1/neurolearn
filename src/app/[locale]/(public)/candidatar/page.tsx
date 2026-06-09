@@ -1,5 +1,3 @@
-import { Header } from '@/components/layout/Header';
-import { Footer } from '@/components/sections/Footer';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
 import { CandidaturaForm } from './CandidaturaForm';
 import { getTranslations } from 'next-intl/server';
@@ -20,8 +18,6 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   ];
 
   return (
-    <>
-      <Header />
       <main className="bg-white min-h-screen">
         <section className="bg-gradient-to-br from-brand-50 via-purple-50 to-white pt-16 pb-12">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
@@ -67,8 +63,6 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
           </ol>
         </section>
 
-        <Footer data={blocks.footer_brand || {}} />
       </main>
-    </>
   );
 }

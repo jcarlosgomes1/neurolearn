@@ -1,5 +1,3 @@
-import { Header } from '@/components/layout/Header';
-import { Footer } from '@/components/sections/Footer';
 import { Link } from '@/i18n/routing';
 import { getTranslations } from 'next-intl/server';
 import { createClient } from '@/lib/supabase/server';
@@ -35,8 +33,6 @@ export default async function Page({ params, searchParams }: {
   const blocks = await getHomeBlocks(locale);
 
   return (
-    <>
-      <Header />
       <main className="bg-white min-h-screen">
         {/* Hero */}
         <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-blue-50 border-b border-slate-200/60">
@@ -99,8 +95,6 @@ export default async function Page({ params, searchParams }: {
           </div>
         </section>
 
-        <Footer data={(blocks as any).footer_brand || { brand: 'NeuroLearn' }} />
       </main>
-    </>
   );
 }
