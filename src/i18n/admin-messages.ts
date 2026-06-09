@@ -14,6 +14,7 @@ const PT = {
       overview: 'Visão geral', content: 'Conteúdo', people: 'Pessoas',
       operations: 'Operações', system: 'Sistema', community: 'Comunidade',
       learn: 'Aprender', results: 'Resultados',
+      marketing: 'Marketing', revenue: 'Receita', ai: 'IA & Automação', observability: 'Observabilidade',
     },
     admin: {
       overview: 'Visão geral', cockpit: 'Cockpit', system: 'Sistema', events: 'Eventos',
@@ -68,6 +69,7 @@ const EN = {
       overview: 'Overview', content: 'Content', people: 'People',
       operations: 'Operations', system: 'System', community: 'Community',
       learn: 'Learn', results: 'Results',
+      marketing: 'Marketing', revenue: 'Revenue', ai: 'AI & Automation', observability: 'Observability',
     },
     admin: {
       overview: 'Overview', cockpit: 'Cockpit', system: 'System', events: 'Events',
@@ -122,6 +124,7 @@ const ES = {
       overview: 'Visión general', content: 'Contenido', people: 'Personas',
       operations: 'Operaciones', system: 'Sistema', community: 'Comunidad',
       learn: 'Aprender', results: 'Resultados',
+      marketing: 'Marketing', revenue: 'Ingresos', ai: 'IA y Automatización', observability: 'Observabilidad',
     },
     admin: {
       overview: 'Visión general', cockpit: 'Cockpit', system: 'Sistema', events: 'Eventos',
@@ -176,6 +179,7 @@ const FR = {
       overview: "Vue d'ensemble", content: 'Contenu', people: 'Personnes',
       operations: 'Opérations', system: 'Système', community: 'Communauté',
       learn: 'Apprendre', results: 'Résultats',
+      marketing: 'Marketing', revenue: 'Revenus', ai: 'IA & Automatisation', observability: 'Observabilité',
     },
     admin: {
       overview: "Vue d'ensemble", cockpit: 'Cockpit', system: 'Système', events: 'Événements',

@@ -19,45 +19,55 @@ function safeT(t: any, key: string, fb: string): string {
 }
 
 const ADMIN_NAV: NavItem[] = [
+  // Visão geral
   { href: '/admin/overview', labelKey: 'shell.admin.overview', emoji: '🎯', groupKey: 'shell.group.overview' },
-  { href: '/admin', labelKey: 'shell.admin.cockpit', emoji: '🎛', groupKey: 'shell.group.overview' },
-  { href: '/admin/sistema', labelKey: 'shell.admin.system', emoji: '💚', groupKey: 'shell.group.overview' },
   { href: '/admin/eventos', labelKey: 'shell.admin.events', emoji: '📡', groupKey: 'shell.group.overview' },
-  { href: '/admin/agentes', labelKey: 'shell.admin.agentes', emoji: '🤝', groupKey: 'shell.group.overview' },
 
+  // Conteúdo
   { href: '/admin/cursos', labelKey: 'shell.admin.courses', emoji: '📚', groupKey: 'shell.group.content' },
   { href: '/admin/learning-paths', labelKey: 'shell.admin.learning_paths', emoji: '🛤', groupKey: 'shell.group.content' },
   { href: '/admin/preview', labelKey: 'shell.admin.preview', emoji: '👀', groupKey: 'shell.group.content' },
   { href: '/admin/cms', labelKey: 'shell.admin.cms', emoji: '📝', groupKey: 'shell.group.content' },
-  { href: '/admin/cms-pages', labelKey: 'shell.admin.cms_pages', emoji: '📄', groupKey: 'shell.group.content', badge: 'Novo' },
-  { href: '/admin/marketing', labelKey: 'shell.admin.marketing', emoji: '📢', groupKey: 'shell.group.content' },
-  { href: '/admin/social', labelKey: 'shell.admin.social', emoji: '📣', groupKey: 'shell.group.content' },
+  { href: '/admin/cms-pages', labelKey: 'shell.admin.cms_pages', emoji: '📄', groupKey: 'shell.group.content' },
 
+  // Marketing
+  { href: '/admin/marketing', labelKey: 'shell.admin.marketing', emoji: '📢', groupKey: 'shell.group.marketing' },
+  { href: '/admin/social', labelKey: 'shell.admin.social', emoji: '📣', groupKey: 'shell.group.marketing' },
+  { href: '/admin/email-templates', labelKey: 'shell.admin.email_templates', emoji: '✉️', groupKey: 'shell.group.marketing' },
+  { href: '/admin/drip-schedules', labelKey: 'shell.admin.drip_schedules', emoji: '⏳', groupKey: 'shell.group.marketing' },
+
+  // Pessoas & Empresas
   { href: '/admin/empresas', labelKey: 'shell.admin.companies', emoji: '🏢', groupKey: 'shell.group.people' },
   { href: '/admin/candidaturas', labelKey: 'shell.admin.applications', emoji: '🎓', groupKey: 'shell.group.people' },
   { href: '/admin/instrutores', labelKey: 'shell.admin.instructors', emoji: '👨‍🏫', groupKey: 'shell.group.people' },
-  { href: '/admin/instrutores-ai', labelKey: 'shell.admin.smart_features', emoji: '🧠', groupKey: 'shell.group.people' },
-  { href: '/admin/ai-routing', labelKey: 'shell.admin.smart_routing', emoji: '🎚', groupKey: 'shell.group.people' },
 
-  { href: '/admin/billing', labelKey: 'shell.admin.billing', emoji: '💰', groupKey: 'shell.group.operations' },
-  { href: '/admin/payments', labelKey: 'shell.admin.payments', emoji: '💳', groupKey: 'shell.group.operations' },
-  { href: '/admin/video', labelKey: 'shell.admin.video', emoji: '🎥', groupKey: 'shell.group.operations' },
-  { href: '/admin/autopilots', labelKey: 'shell.admin.autopilots', emoji: '🤖', groupKey: 'shell.group.operations' },
-  { href: '/admin/jobs', labelKey: 'shell.admin.jobs', emoji: '⚙️', groupKey: 'shell.group.operations' },
-  { href: '/admin/erros', labelKey: 'shell.admin.errors', emoji: '🐞', groupKey: 'shell.group.operations' },
-  { href: '/admin/tutor-config', labelKey: 'shell.admin.tutor_config', emoji: '💡', groupKey: 'shell.group.operations' },
-  { href: '/admin/prompts', labelKey: 'shell.admin.prompts', emoji: '💬', groupKey: 'shell.group.operations' },
-  { href: '/admin/integracoes', labelKey: 'shell.admin.integrations', emoji: '🔌', groupKey: 'shell.group.operations' },
-  { href: '/admin/audit-logs', labelKey: 'shell.admin.audit_logs', emoji: '🔎', groupKey: 'shell.group.operations' },
-  { href: '/admin/api-keys', labelKey: 'shell.admin.api_keys', emoji: '🔑', groupKey: 'shell.group.operations' },
+  // Receita
+  { href: '/admin/billing', labelKey: 'shell.admin.billing', emoji: '💰', groupKey: 'shell.group.revenue' },
+  { href: '/admin/payments', labelKey: 'shell.admin.payments', emoji: '💳', groupKey: 'shell.group.revenue' },
 
+  // IA & Automação
+  { href: '/admin/instrutores-ai', labelKey: 'shell.admin.smart_features', emoji: '🧠', groupKey: 'shell.group.ai' },
+  { href: '/admin/ai-routing', labelKey: 'shell.admin.smart_routing', emoji: '🎚', groupKey: 'shell.group.ai' },
+  { href: '/admin/tutor-config', labelKey: 'shell.admin.tutor_config', emoji: '💡', groupKey: 'shell.group.ai' },
+  { href: '/admin/prompts', labelKey: 'shell.admin.prompts', emoji: '💬', groupKey: 'shell.group.ai' },
+  { href: '/admin/autopilots', labelKey: 'shell.admin.autopilots', emoji: '🤖', groupKey: 'shell.group.ai' },
+  { href: '/admin/video', labelKey: 'shell.admin.video', emoji: '🎥', groupKey: 'shell.group.ai' },
+
+  // Observabilidade
+  { href: '/admin/sistema', labelKey: 'shell.admin.system', emoji: '💚', groupKey: 'shell.group.observability' },
+  { href: '/admin/agentes', labelKey: 'shell.admin.agentes', emoji: '🤝', groupKey: 'shell.group.observability' },
+  { href: '/admin/jobs', labelKey: 'shell.admin.jobs', emoji: '⚙️', groupKey: 'shell.group.observability' },
+  { href: '/admin/erros', labelKey: 'shell.admin.errors', emoji: '🐞', groupKey: 'shell.group.observability' },
+  { href: '/admin/audit-logs', labelKey: 'shell.admin.audit_logs', emoji: '🔎', groupKey: 'shell.group.observability' },
+
+  // Sistema & Segurança
   { href: '/admin/sso', labelKey: 'shell.admin.sso', emoji: '🛡', groupKey: 'shell.group.system' },
   { href: '/admin/scim', labelKey: 'shell.admin.scim', emoji: '🆔', groupKey: 'shell.group.system' },
-  { href: '/admin/email-templates', labelKey: 'shell.admin.email_templates', emoji: '✉️', groupKey: 'shell.group.system' },
-  { href: '/admin/drip-schedules', labelKey: 'shell.admin.drip_schedules', emoji: '⏳', groupKey: 'shell.group.system' },
-  { href: '/admin/nav-items', labelKey: 'shell.admin.nav_items', emoji: '🧭', groupKey: 'shell.group.system', badge: 'Novo' },
-  { href: '/admin/platform-config', labelKey: 'shell.admin.platform_config', emoji: '⚙️', groupKey: 'shell.group.system', badge: 'Novo' },
-  { href: '/admin/i18n', labelKey: 'shell.admin.i18n', emoji: '🌐', groupKey: 'shell.group.system', badge: 'Novo' },
+  { href: '/admin/integracoes', labelKey: 'shell.admin.integrations', emoji: '🔌', groupKey: 'shell.group.system' },
+  { href: '/admin/api-keys', labelKey: 'shell.admin.api_keys', emoji: '🔑', groupKey: 'shell.group.system' },
+  { href: '/admin/nav-items', labelKey: 'shell.admin.nav_items', emoji: '🧭', groupKey: 'shell.group.system' },
+  { href: '/admin/platform-config', labelKey: 'shell.admin.platform_config', emoji: '⚙️', groupKey: 'shell.group.system' },
+  { href: '/admin/i18n', labelKey: 'shell.admin.i18n', emoji: '🌐', groupKey: 'shell.group.system' },
 ];
 
 const INSTRUCTOR_NAV: NavItem[] = [
@@ -102,12 +112,15 @@ export function AppShellClient({ role, pageTitle, session, children }: Props) {
     return Object.values(acc);
   }, [nav]);
 
+  // Normalize pathname (strip leading locale segment) for precise active matching
+  const cleanPath = pathname.replace(/^\/[a-z]{2}(?=\/|$)/, '') || '/';
+
   function isActive(href: string): boolean {
-    const cleanHref = href.split('?')[0];
-    if (cleanHref === '/admin' || cleanHref === '/teach' || cleanHref === '/learn') {
-      return pathname === cleanHref || pathname.endsWith(cleanHref);
+    const clean = href.split('?')[0];
+    if (clean === '/admin' || clean === '/teach' || clean === '/learn') {
+      return cleanPath === clean;
     }
-    return pathname.includes(cleanHref);
+    return cleanPath === clean || cleanPath.startsWith(clean + '/');
   }
 
   return (
@@ -157,29 +170,59 @@ export function AppShellClient({ role, pageTitle, session, children }: Props) {
 }
 
 function SidebarContent({ groups, isActive, t }: { groups: { groupKey: string; items: NavItem[] }[]; isActive: (href: string) => boolean; t: any }) {
+  // Group that contains the active route (open by default)
+  let activeKey = groups[0]?.groupKey;
+  for (const g of groups) {
+    if (g.items.some((i) => isActive(i.href))) { activeKey = g.groupKey; break; }
+  }
+
+  const [open, setOpen] = useState<string[]>(() => (activeKey ? [activeKey] : []));
+
+  useEffect(() => {
+    if (activeKey) setOpen((prev) => (prev.includes(activeKey!) ? prev : [...prev, activeKey!]));
+  }, [activeKey]);
+
+  function toggle(k: string) {
+    setOpen((prev) => (prev.includes(k) ? prev.filter((x) => x !== k) : [...prev, k]));
+  }
+
   return (
-    <nav className="flex-1 px-3 py-4 space-y-5">
-      {groups.map((group) => (
-        <div key={group.groupKey}>
-          <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-3 mb-2">{safeT(t, group.groupKey, group.groupKey.split('.').pop() || '')}</h3>
-          <div className="space-y-0.5">
-            {group.items.map((item) => {
-              const active = isActive(item.href);
-              const label = safeT(t, item.labelKey, item.labelKey.split('.').pop() || item.href);
-              return (
-                <Link key={item.href} href={item.href as any}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${active ? 'bg-brand-50 text-brand-700' : 'text-slate-700 hover:bg-slate-50'}`}>
-                  <span className="text-base flex-shrink-0">{item.emoji}</span>
-                  <span className="truncate flex-1">{label}</span>
-                  {item.badge && (
-                    <span className="text-[9px] bg-fuchsia-100 text-fuchsia-700 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider flex-shrink-0">{item.badge}</span>
-                  )}
-                </Link>
-              );
-            })}
+    <nav className="flex-1 px-3 py-4 space-y-1">
+      {groups.map((group) => {
+        const isOpen = open.includes(group.groupKey);
+        const label = safeT(t, group.groupKey, group.groupKey.split('.').pop() || '');
+        const hasActive = group.items.some((i) => isActive(i.href));
+        return (
+          <div key={group.groupKey}>
+            <button
+              onClick={() => toggle(group.groupKey)}
+              aria-expanded={isOpen}
+              className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-colors ${hasActive ? 'text-brand-700' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}>
+              <svg className={`h-3.5 w-3.5 flex-shrink-0 transition-transform duration-150 ${isOpen ? 'rotate-90' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+              <span className="flex-1 text-left truncate">{label}</span>
+              {!isOpen && hasActive && <span className="w-1.5 h-1.5 rounded-full bg-brand-500 flex-shrink-0" />}
+            </button>
+            {isOpen && (
+              <div className="mt-0.5 ml-[1.1rem] pl-2 border-l border-slate-100 space-y-0.5 animate-in fade-in slide-in-from-top-1 duration-150">
+                {group.items.map((item) => {
+                  const active = isActive(item.href);
+                  const ilabel = safeT(t, item.labelKey, item.labelKey.split('.').pop() || item.href);
+                  return (
+                    <Link key={item.href} href={item.href as any}
+                      className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${active ? 'bg-brand-50 text-brand-700' : 'text-slate-700 hover:bg-slate-50'}`}>
+                      <span className="text-base flex-shrink-0">{item.emoji}</span>
+                      <span className="truncate flex-1">{ilabel}</span>
+                      {item.badge && (
+                        <span className="text-[9px] bg-fuchsia-100 text-fuchsia-700 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider flex-shrink-0">{item.badge}</span>
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
           </div>
-        </div>
-      ))}
+        );
+      })}
     </nav>
   );
 }
