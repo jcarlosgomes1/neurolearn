@@ -7,6 +7,7 @@ import { callAgentOps } from '@/lib/api/client';
 import { Stat } from '@/components/shared/Stat';
 import { DashboardSkeleton } from '@/components/shared/DashboardSkeleton';
 import { fmtCents, relTime } from '@/lib/utils/cn';
+import { ArrowLeft } from 'lucide-react';
 
 export function AdminInstructorDetail({ instructorId }: { instructorId: string }) {
   const t = useTranslations('instr_detail');
@@ -35,8 +36,15 @@ export function AdminInstructorDetail({ instructorId }: { instructorId: string }
   return (
     <div className="max-w-7xl mx-auto px-6 lg:px-8 py-8 space-y-6 animate-fade-in">
       <div>
-        <Link href={'/admin/instrutores' as any} className="text-sm text-brand-600 hover:underline">{t('back_all')}</Link>
-        <div className="flex items-center gap-3 mt-2">
+        <Link href={'/admin/instrutores' as any} className="group inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900 font-medium transition-colors">
+          <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" /> {t('back_all')}
+        </Link>
+        <div className="flex flex-wrap items-center gap-2 mt-3">
+          <Link href={'/admin/instrutores' as any} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-violet-100 hover:text-violet-700 hover:ring-violet-200 transition-colors"><span className="text-sm leading-none">👨‍🏫</span> Instrutores</Link>
+          <Link href={'/admin/candidaturas' as any} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-violet-100 hover:text-violet-700 hover:ring-violet-200 transition-colors"><span className="text-sm leading-none">🎓</span> Candidaturas</Link>
+          <Link href={'/admin/cursos' as any} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-violet-100 hover:text-violet-700 hover:ring-violet-200 transition-colors"><span className="text-sm leading-none">📚</span> Cursos</Link>
+        </div>
+        <div className="flex items-center gap-3 mt-3">
           {inst && (inst.avatar_url || inst.profile_picture_url) ? (
             <img src={inst.avatar_url || inst.profile_picture_url} alt="" className="w-12 h-12 rounded-full object-cover" />
           ) : (

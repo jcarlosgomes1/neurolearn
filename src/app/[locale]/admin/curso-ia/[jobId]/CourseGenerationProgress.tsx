@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
 interface Job {
   id: string;
@@ -89,10 +90,15 @@ export function CourseGenerationProgress({ jobId }: { jobId: string }) {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-5 animate-fade-in">
-      <div>
-        <Link href={'/admin' as any} className="text-sm text-brand-600 hover:underline">{t('back')}</Link>
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mt-2">{t('title')}</h1>
-      </div>
+      <AdminPageHeader
+        backHref="/admin/cursos"
+        backLabel={t('back')}
+        title={t('title')}
+        related={[
+          { href: '/admin/cursos', label: 'Cursos', emoji: '📚' },
+          { href: '/admin/curso-ia/novo', label: 'Gerar curso', emoji: '✨' },
+        ]}
+      />
 
       <div className="bg-white rounded-xl border border-slate-200 p-5 sm:p-6">
         <div className="flex items-center justify-between gap-3 flex-wrap mb-4">

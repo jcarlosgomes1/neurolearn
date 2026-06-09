@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Link, useRouter } from '@/i18n/routing';
 import { callAgentOps } from '@/lib/api/client';
 import { toast } from 'sonner';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { useTranslations } from 'next-intl';
 
 const EMOJIS = ['📚','🤖','🧠','💡','📊','🎨','⚙️','🚀','📈','🔬','💬','🎯'];
@@ -40,9 +41,17 @@ export function NewEssentialForm() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 animate-fade-in">
-      <Link href={'/admin/cursos' as any} className="text-sm text-brand-600 hover:underline">{t('ness.back_courses')}</Link>
-      <h1 className="text-2xl font-bold text-slate-900 mt-2 mb-1">{t('ness.title')}</h1>
-      <p className="text-slate-500 text-sm mb-6">{t('ness.subtitle')}</p>
+      <AdminPageHeader
+        backHref="/admin/cursos"
+        backLabel={t('ness.back_courses')}
+        title={t('ness.title')}
+        description={t('ness.subtitle')}
+        related={[
+          { href: '/admin/cursos', label: 'Cursos', emoji: '📚' },
+          { href: '/admin/curso-ia/novo', label: 'Gerar curso', emoji: '✨' },
+          { href: '/admin/learning-paths', label: 'Percursos', emoji: '🛤️' },
+        ]}
+      />
 
       <form onSubmit={handleCreate} className="space-y-5 bg-white rounded-xl border border-slate-200 p-6">
         <div>

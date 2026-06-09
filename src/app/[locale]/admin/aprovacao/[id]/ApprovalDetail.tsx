@@ -7,6 +7,7 @@ import { DashboardSkeleton } from '@/components/shared/DashboardSkeleton';
 import { Markdown } from '@/components/shared/Markdown';
 import { relTime } from '@/lib/utils/cn';
 import { toast } from 'sonner';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { useTranslations } from 'next-intl';
 
 const PLATFORM_ICONS: Record<string, string> = {
@@ -54,16 +55,19 @@ export function ApprovalDetail({ approvalId }: { approvalId: string }) {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-5 animate-fade-in">
-      <div>
-        <Link href={'/admin#aprovacoes' as any} className="text-sm text-brand-600 hover:underline">{t('approval.back_cockpit')}</Link>
-        <div className="flex items-start justify-between gap-3 mt-2 flex-wrap">
-          <div className="min-w-0">
-            <h1 className="text-xl sm:text-2xl font-bold text-slate-900">{t(titleKey)}</h1>
-            <p className="text-sm text-slate-500 mt-1">{approval.reason || approval.action} · {relTime(approval.created_at)}</p>
-          </div>
+      <AdminPageHeader
+        backHref="/admin/overview"
+        backLabel={t('approval.back_cockpit')}
+        title={t(titleKey)}
+        description={`${approval.reason || approval.action} · ${relTime(approval.created_at)}`}
+        related={[
+          { href: '/admin/candidaturas', label: 'Candidaturas', emoji: '🎓' },
+          { href: '/admin/instrutores', label: 'Instrutores', emoji: '👨‍🏫' },
+        ]}
+        actions={
           <span className={`px-2.5 py-1 rounded-full text-xs font-medium flex-shrink-0 ${approval.status === 'pending' ? 'bg-amber-100 text-amber-700' : approval.status === 'approved' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>{approval.status}</span>
-        </div>
-      </div>
+        }
+      />
 
       {kind === 'blog_post' && data.post && (
         <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">

@@ -6,6 +6,7 @@ import { SUPABASE_URL } from '@/lib/supabase/config';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
 const EMOJIS = ['📚','🤖','🧠','💡','📊','🎨','⚙️','🚀','📈','🔬','💬','🎯','📝','🎓','🛠','🔮','💼','🌐'];
 
@@ -119,11 +120,16 @@ export function CourseGeneratorForm() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 animate-fade-in">
-      <Link href={'/admin' as any} className="text-sm text-brand-600 hover:underline">{t('cgf.back')}</Link>
-      <div className="mt-2 mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">{t('cgf.title')}</h1>
-        <p className="text-sm text-slate-500 mt-1">{t('cgf.subtitle')}</p>
-      </div>
+      <AdminPageHeader
+        backHref="/admin/cursos"
+        backLabel={t('cgf.back')}
+        title={t('cgf.title')}
+        description={t('cgf.subtitle')}
+        related={[
+          { href: '/admin/cursos', label: 'Cursos', emoji: '📚' },
+          { href: '/admin/learning-paths', label: 'Percursos', emoji: '🛤️' },
+        ]}
+      />
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <section className="bg-white rounded-xl border border-slate-200 p-5 sm:p-6 space-y-4">

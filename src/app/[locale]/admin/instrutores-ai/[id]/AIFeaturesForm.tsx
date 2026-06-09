@@ -6,6 +6,7 @@ import { Link, useRouter } from '@/i18n/routing';
 import { callAgentOps } from '@/lib/api/client';
 import { DashboardSkeleton } from '@/components/shared/DashboardSkeleton';
 import { toast } from 'sonner';
+import { ArrowLeft } from 'lucide-react';
 
 interface Features {
   can_generate_lessons: boolean;
@@ -109,7 +110,14 @@ export function AIFeaturesForm({ instructorId }: { instructorId: string }) {
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-5 animate-fade-in">
-      <Link href={'/admin/instrutores-ai' as any} className="text-sm text-brand-600 hover:underline">{t('back')}</Link>
+      <Link href={'/admin/instrutores-ai' as any} className="group inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900 font-medium transition-colors">
+        <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" /> {t('back')}
+      </Link>
+      <div className="flex flex-wrap items-center gap-2">
+        <Link href={'/admin/instrutores-ai' as any} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-violet-100 hover:text-violet-700 hover:ring-violet-200 transition-colors"><span className="text-sm leading-none">🧠</span> Funcionalidades IA</Link>
+        <Link href={'/admin/ai-routing' as any} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-violet-100 hover:text-violet-700 hover:ring-violet-200 transition-colors"><span className="text-sm leading-none">🎚️</span> AI Routing</Link>
+        <Link href={'/admin/prompts' as any} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-violet-100 hover:text-violet-700 hover:ring-violet-200 transition-colors"><span className="text-sm leading-none">💬</span> Prompts</Link>
+      </div>
 
       <div className="bg-white rounded-xl border border-slate-200 p-5 sm:p-6 flex items-center gap-4">
         {pic ? (
