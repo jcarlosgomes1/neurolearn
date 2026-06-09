@@ -56,7 +56,7 @@ export function HeaderClient({ session }: { session: Session | null }) {
 
             <div className="hidden sm:block"><CurrencySwitcher /></div>
 
-            {session && <NotificationsDropdown locale={locale} />}
+            {session && <div className="hidden md:block"><NotificationsDropdown locale={locale} /></div>}
 
             {(!session || session.area === 'student') && (
               <Link href={'/candidatar' as any}
