@@ -9,6 +9,8 @@ export interface AppShellProps {
   children: React.ReactNode;
 }
 
+interface NavItem { href: string; labelKey: string; emoji: string; groupKey: string; badge?: string }
+
 const SUPPORTED = ['pt', 'en', 'es', 'fr'] as const;
 type Lang = (typeof SUPPORTED)[number];
 
@@ -35,10 +37,32 @@ async function readPreferredLang(userId: string): Promise<string | null> {
   }
 }
 
+async function readNav(role: 'admin' | 'instructor' | 'student'): Promise<NavItem[]> {
+  try {
+    const sb = await createClient();
+    const location = role === 'admin' ? 'sidebar_admin' : role === 'instructor' ? 'sidebar_instructor' : 'sidebar_student';
+    const { data } = await sb
+      .from('nl_nav_items')
+      .select('href,i18n_key,icon,group_key,badge')
+      .eq('location', location)
+      .eq('enabled', true)
+      .order('sort_order', { ascending: true });
+    return (data || []).map((r: any) => ({
+      href: r.href as string,
+      labelKey: r.i18n_key as string,
+      emoji: (r.icon as string) || '\u2022',
+      groupKey: (r.group_key as string) || '',
+      badge: (r.badge as string) || undefined,
+    }));
+  } catch {
+    return [];
+  }
+}
+
 /**
- * Server component. Reads user's preferred_lang from nl_profiles
- * and redirects when the URL locale doesn't match. Redirect lives OUTSIDE
- * any try/catch (Next.js redirect throws a sentinel that must propagate).
+ * Server component. Reads preferred_lang and redirects when URL locale
+ * mismatches. Redirect lives OUTSIDE try/catch. Sidebar nav is loaded
+ * from nl_nav_items (DB-driven, no hardcode).
  */
 export async function AppShell({ role, pageTitle, children }: AppShellProps) {
   const session = await getSessionWithArea();
@@ -51,15 +75,17 @@ export async function AppShell({ role, pageTitle, children }: AppShellProps) {
 
     if (isSupported(pref) && isSupported(currentLocale) && pref !== currentLocale) {
       const rest = '/' + segments.slice(1).join('/');
-      // Throws NEXT_REDIRECT — propaga sem try/catch
       redirect({ href: (rest || '/') as any, locale: pref });
     }
   }
+
+  const nav = await readNav(role);
 
   return (
     <AppShellClient
       role={role}
       pageTitle={pageTitle}
+      nav={nav}
       session={session ? { email: session.user.email!, area: session.area, areas: session.areas } : null}
     >
       {children}

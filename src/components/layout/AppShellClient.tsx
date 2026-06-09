@@ -7,8 +7,8 @@ import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
 interface Session { email: string; area: 'student' | 'instructor' | 'admin'; areas: Array<'student' | 'instructor' | 'admin'> }
-interface Props { role: 'admin' | 'instructor' | 'student'; pageTitle?: string; session: Session | null; children: React.ReactNode; }
 interface NavItem { href: string; labelKey: string; emoji: string; groupKey: string; badge?: string }
+interface Props { role: 'admin' | 'instructor' | 'student'; pageTitle?: string; session: Session | null; nav: NavItem[]; children: React.ReactNode; }
 
 function safeT(t: any, key: string, fb: string): string {
   try {
@@ -18,76 +18,7 @@ function safeT(t: any, key: string, fb: string): string {
   return fb;
 }
 
-const ADMIN_NAV: NavItem[] = [
-  // Visão geral
-  { href: '/admin/overview', labelKey: 'shell.admin.overview', emoji: '🎯', groupKey: 'shell.group.overview' },
-  { href: '/admin/eventos', labelKey: 'shell.admin.events', emoji: '📡', groupKey: 'shell.group.overview' },
-
-  // Conteúdo
-  { href: '/admin/cursos', labelKey: 'shell.admin.courses', emoji: '📚', groupKey: 'shell.group.content' },
-  { href: '/admin/learning-paths', labelKey: 'shell.admin.learning_paths', emoji: '🛤', groupKey: 'shell.group.content' },
-  { href: '/admin/preview', labelKey: 'shell.admin.preview', emoji: '👀', groupKey: 'shell.group.content' },
-  { href: '/admin/cms', labelKey: 'shell.admin.cms', emoji: '📝', groupKey: 'shell.group.content' },
-  { href: '/admin/cms-pages', labelKey: 'shell.admin.cms_pages', emoji: '📄', groupKey: 'shell.group.content' },
-
-  // Marketing
-  { href: '/admin/marketing', labelKey: 'shell.admin.marketing', emoji: '📢', groupKey: 'shell.group.marketing' },
-  { href: '/admin/social', labelKey: 'shell.admin.social', emoji: '📣', groupKey: 'shell.group.marketing' },
-  { href: '/admin/email-templates', labelKey: 'shell.admin.email_templates', emoji: '✉️', groupKey: 'shell.group.marketing' },
-  { href: '/admin/drip-schedules', labelKey: 'shell.admin.drip_schedules', emoji: '⏳', groupKey: 'shell.group.marketing' },
-
-  // Pessoas & Empresas
-  { href: '/admin/empresas', labelKey: 'shell.admin.companies', emoji: '🏢', groupKey: 'shell.group.people' },
-  { href: '/admin/candidaturas', labelKey: 'shell.admin.applications', emoji: '🎓', groupKey: 'shell.group.people' },
-  { href: '/admin/instrutores', labelKey: 'shell.admin.instructors', emoji: '👨‍🏫', groupKey: 'shell.group.people' },
-
-  // Receita
-  { href: '/admin/billing', labelKey: 'shell.admin.billing', emoji: '💰', groupKey: 'shell.group.revenue' },
-  { href: '/admin/payments', labelKey: 'shell.admin.payments', emoji: '💳', groupKey: 'shell.group.revenue' },
-
-  // IA & Automação
-  { href: '/admin/instrutores-ai', labelKey: 'shell.admin.smart_features', emoji: '🧠', groupKey: 'shell.group.ai' },
-  { href: '/admin/ai-routing', labelKey: 'shell.admin.smart_routing', emoji: '🎚', groupKey: 'shell.group.ai' },
-  { href: '/admin/tutor-config', labelKey: 'shell.admin.tutor_config', emoji: '💡', groupKey: 'shell.group.ai' },
-  { href: '/admin/prompts', labelKey: 'shell.admin.prompts', emoji: '💬', groupKey: 'shell.group.ai' },
-  { href: '/admin/autopilots', labelKey: 'shell.admin.autopilots', emoji: '🤖', groupKey: 'shell.group.ai' },
-  { href: '/admin/video', labelKey: 'shell.admin.video', emoji: '🎥', groupKey: 'shell.group.ai' },
-
-  // Observabilidade
-  { href: '/admin/sistema', labelKey: 'shell.admin.system', emoji: '💚', groupKey: 'shell.group.observability' },
-  { href: '/admin/agentes', labelKey: 'shell.admin.agentes', emoji: '🤝', groupKey: 'shell.group.observability' },
-  { href: '/admin/jobs', labelKey: 'shell.admin.jobs', emoji: '⚙️', groupKey: 'shell.group.observability' },
-  { href: '/admin/erros', labelKey: 'shell.admin.errors', emoji: '🐞', groupKey: 'shell.group.observability' },
-  { href: '/admin/audit-logs', labelKey: 'shell.admin.audit_logs', emoji: '🔎', groupKey: 'shell.group.observability' },
-
-  // Sistema & Segurança
-  { href: '/admin/sso', labelKey: 'shell.admin.sso', emoji: '🛡', groupKey: 'shell.group.system' },
-  { href: '/admin/scim', labelKey: 'shell.admin.scim', emoji: '🆔', groupKey: 'shell.group.system' },
-  { href: '/admin/integracoes', labelKey: 'shell.admin.integrations', emoji: '🔌', groupKey: 'shell.group.system' },
-  { href: '/admin/api-keys', labelKey: 'shell.admin.api_keys', emoji: '🔑', groupKey: 'shell.group.system' },
-  { href: '/admin/nav-items', labelKey: 'shell.admin.nav_items', emoji: '🧭', groupKey: 'shell.group.system' },
-  { href: '/admin/platform-config', labelKey: 'shell.admin.platform_config', emoji: '⚙️', groupKey: 'shell.group.system' },
-  { href: '/admin/i18n', labelKey: 'shell.admin.i18n', emoji: '🌐', groupKey: 'shell.group.system' },
-];
-
-const INSTRUCTOR_NAV: NavItem[] = [
-  { href: '/teach', labelKey: 'shell.instructor.dashboard', emoji: '📊', groupKey: 'shell.group.overview' },
-  { href: '/teach/avaliacoes-pendentes', labelKey: 'shell.instructor.evaluations_pending', emoji: '✅', groupKey: 'shell.group.overview', badge: 'Novo' },
-  { href: '/teach/novo', labelKey: 'shell.instructor.create', emoji: '✨', groupKey: 'shell.group.content' },
-  { href: '/teach/servicos', labelKey: 'shell.instructor.services', emoji: '🤝', groupKey: 'shell.group.content' },
-  { href: '/teach/pedidos', labelKey: 'shell.instructor.requests', emoji: '📥', groupKey: 'shell.group.community' },
-  { href: '/conta/agendamento', labelKey: 'shell.instructor.scheduling', emoji: '📅', groupKey: 'shell.group.operations' },
-];
-
-const STUDENT_NAV: NavItem[] = [
-  { href: '/learn', labelKey: 'shell.student.learning', emoji: '📚', groupKey: 'shell.group.learn' },
-  { href: '/aprender/percursos', labelKey: 'shell.student.learning_paths', emoji: '🛤', groupKey: 'shell.group.learn' },
-  { href: '/cursos', labelKey: 'shell.student.explore', emoji: '🔍', groupKey: 'shell.group.learn' },
-  { href: '/search', labelKey: 'shell.student.search', emoji: '🔎', groupKey: 'shell.group.learn' },
-  { href: '/talento', labelKey: 'shell.student.talent', emoji: '💼', groupKey: 'shell.group.results' },
-];
-
-export function AppShellClient({ role, pageTitle, session, children }: Props) {
+export function AppShellClient({ role, pageTitle, session, nav, children }: Props) {
   const t = useTranslations();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
@@ -99,7 +30,6 @@ export function AppShellClient({ role, pageTitle, session, children }: Props) {
     return () => { document.body.style.overflow = ''; };
   }, [sidebarOpen]);
 
-  const nav = role === 'admin' ? ADMIN_NAV : role === 'instructor' ? INSTRUCTOR_NAV : STUDENT_NAV;
   const roleBadge = role === 'admin' ? 'bg-rose-100 text-rose-700' : role === 'instructor' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700';
   const roleLabel = safeT(t, `shell.role.${role}`, role);
 
@@ -112,7 +42,6 @@ export function AppShellClient({ role, pageTitle, session, children }: Props) {
     return Object.values(acc);
   }, [nav]);
 
-  // Normalize pathname (strip leading locale segment) for precise active matching
   const cleanPath = pathname.replace(/^\/[a-z]{2}(?=\/|$)/, '') || '/';
 
   function isActive(href: string): boolean {
@@ -170,7 +99,6 @@ export function AppShellClient({ role, pageTitle, session, children }: Props) {
 }
 
 function SidebarContent({ groups, isActive, t }: { groups: { groupKey: string; items: NavItem[] }[]; isActive: (href: string) => boolean; t: any }) {
-  // Group that contains the active route (open by default)
   let activeKey = groups[0]?.groupKey;
   for (const g of groups) {
     if (g.items.some((i) => isActive(i.href))) { activeKey = g.groupKey; break; }
