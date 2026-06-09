@@ -44,7 +44,9 @@ export function MobileBottomNav() {
   if (hide) return null;
 
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-40 md:hidden bg-white/95 backdrop-blur border-t border-slate-200 pb-safe">
+    <>
+      <div className="h-14 md:hidden" aria-hidden />
+      <nav className="fixed bottom-0 inset-x-0 z-40 md:hidden bg-white/95 backdrop-blur border-t border-slate-200 pb-safe">
       <div className="grid grid-cols-5 px-1">
         {ITEMS.map((it) => {
           const Icon = it.icon;
@@ -66,6 +68,7 @@ export function MobileBottomNav() {
           );
         })}
       </div>
-    </nav>
+      </nav>
+    </>
   );
 }
