@@ -163,7 +163,7 @@ export function AppShellClient({ role, pageTitle, session, children }: Props) {
             </aside>
           </div>
         )}
-        <main className="flex-1 min-w-0">{children}</main>
+        <main className="flex-1 min-w-0"><div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8">{children}</div></main>
       </div>
     </div>
   );

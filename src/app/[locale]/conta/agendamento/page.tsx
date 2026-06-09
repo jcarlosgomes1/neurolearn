@@ -1,7 +1,5 @@
-import { AppShell } from '@/components/layout/AppShell';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from '@/i18n/routing';
-import { getTranslations } from 'next-intl/server';
 import { SchedulingDashboard } from './SchedulingDashboard';
 
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
@@ -12,20 +10,16 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
 
   const { data: profile } = await sb.from('nl_profiles').select('role').eq('id', user.id).single();
   const role = profile?.role || 'student';
-  if (!['instructor','admin','super_admin','account_manager'].includes(role)) {
+  if (!['instructor', 'admin', 'super_admin', 'account_manager'].includes(role)) {
     redirect({ href: '/conta', locale });
     return null;
   }
-  const area: 'admin' | 'instructor' | 'student' =
-    role === 'admin' || role === 'super_admin' ? 'admin' :
-    role === 'instructor' ? 'instructor' : 'student';
 
-  const t = await getTranslations();
   const { data: dash } = await sb.rpc('nl_scheduling_my_dashboard');
 
   return (
-    <AppShell role={area} pageTitle={t('sched.dashboard.title')}>
+    <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <SchedulingDashboard initial={dash || null} />
-    </AppShell>
+    </div>
   );
 }
