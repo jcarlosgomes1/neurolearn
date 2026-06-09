@@ -48,7 +48,7 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale}>
-      <body className="min-h-screen bg-slate-50 font-sans antialiased">
+      <body className="min-h-screen bg-slate-50 font-sans antialiased [overflow-x:clip]">
         <NextIntlClientProvider locale={locale} messages={messages}>
           <TopBar locale={locale} />
           <OnboardingGate />
