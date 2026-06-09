@@ -1,6 +1,5 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { Header } from '@/components/layout/Header';
 import { AfiliadoClient } from './AfiliadoClient';
 
 export const metadata = { title: 'Programa de Afiliados · NeuroLearn' };
@@ -14,7 +13,6 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   const { data } = await sb.rpc('nl_affiliate_my_dashboard');
   return (
     <>
-      <Header />
       <AfiliadoClient initial={data as any} baseUrl="https://neurolearn-rosy.vercel.app" />
     </>
   );

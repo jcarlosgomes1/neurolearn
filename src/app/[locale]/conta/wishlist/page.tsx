@@ -1,6 +1,5 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { Header } from '@/components/layout/Header';
 import { Link } from '@/i18n/routing';
 import { Heart, BookOpen } from 'lucide-react';
 
@@ -16,7 +15,6 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   const courses = (data as any)?.courses || [];
   return (
     <>
-      <Header />
       <main className="bg-slate-50 min-h-screen">
         <section className="bg-white border-b border-slate-200">
           <div className="max-w-5xl mx-auto px-4 py-6">

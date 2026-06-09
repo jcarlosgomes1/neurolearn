@@ -1,6 +1,5 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { Header } from '@/components/layout/Header';
 import { PrivacidadeClient } from './PrivacidadeClient';
 
 export const metadata = { title: 'Privacidade · NeuroLearn', robots: { index: false } };
@@ -14,7 +13,6 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   const { data: reqs } = await sb.rpc('nl_gdpr_my_requests');
   return (
     <>
-      <Header />
       <PrivacidadeClient email={user.email || ''} requests={(reqs as any)?.requests || []} />
     </>
   );

@@ -1,6 +1,5 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { Header } from '@/components/layout/Header';
 import { Link } from '@/i18n/routing';
 import { SubscriptionClient } from './SubscriptionClient';
 
@@ -15,7 +14,6 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   const { data } = await sb.rpc('nl_my_subscription');
   return (
     <>
-      <Header />
       <SubscriptionClient initial={data as any} />
     </>
   );
