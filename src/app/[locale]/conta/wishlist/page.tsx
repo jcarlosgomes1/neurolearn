@@ -17,12 +17,12 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
     <>
       <main className="bg-slate-50 min-h-screen">
         <section className="bg-white border-b border-slate-200">
-          <div className="max-w-5xl mx-auto px-4 py-6">
+          <div className="">
             <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2"><Heart className="h-6 w-6 text-rose-500 fill-rose-500" /> Wishlist</h1>
             <p className="text-sm text-slate-500 mt-1">{courses.length} curso{courses.length === 1 ? '' : 's'} guardado{courses.length === 1 ? '' : 's'}</p>
           </div>
         </section>
-        <div className="max-w-5xl mx-auto px-4 py-6">
+        <div className="">
           {courses.length === 0 ? (
             <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
               <Heart className="h-12 w-12 text-slate-300 mx-auto mb-3" />

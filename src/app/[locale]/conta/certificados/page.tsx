@@ -23,7 +23,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
 
   return (
     <main className="bg-slate-50 min-h-screen">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
+      <div className="">
         <header className="mb-8">
           <div className="flex items-center gap-2 text-fuchsia-600 text-xs font-semibold uppercase tracking-wider mb-1">
             <Award className="h-3.5 w-3.5" /> A minha conta

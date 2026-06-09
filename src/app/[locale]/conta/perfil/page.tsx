@@ -19,7 +19,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
 
   return (
     <main className="bg-slate-50 min-h-screen">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
+      <div className="">
         <ProfileForm
           email={user.email || ''}
           handle={profile?.handle || ''}

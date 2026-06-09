@@ -33,7 +33,7 @@ export default async function MeuAprendizagemPage({ params }: { params: Promise<
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.18),transparent_50%)]" />
         <div className="absolute -bottom-12 -right-12 w-64 h-64 bg-fuchsia-500/20 rounded-full blur-3xl" />
 
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 relative">
+        <div className="relative">
           <div className="flex items-center gap-2 text-white/80 text-xs font-medium uppercase tracking-wider mb-2">
             <Sparkles className="h-3.5 w-3.5" /> A tua aprendizagem
           </div>

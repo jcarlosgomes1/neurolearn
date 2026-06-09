@@ -16,7 +16,7 @@ export default async function CandidatoPage({ params }: { params: Promise<{ loca
   const { data: files } = await sb.rpc('nl_instructor_files_my');
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="">
       <div className="mb-8">
         <div className="flex items-center gap-2 text-violet-600 text-xs font-semibold uppercase tracking-wider mb-1">
           <FileText className="h-3.5 w-3.5" /> Candidatura a instrutor

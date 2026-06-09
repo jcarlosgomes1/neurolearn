@@ -14,7 +14,7 @@ export default async function NotifPrefsPage({ params }: { params: Promise<{ loc
   const whatsappEnabled = (await sb.rpc('nl_platform_config_get', { p_key: 'feature.whatsapp_notifications' })).data === 'true';
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="">
       <div className="mb-8">
         <div className="flex items-center gap-2 text-blue-600 text-xs font-semibold uppercase tracking-wider mb-1">
           <Bell className="h-3.5 w-3.5" /> Notificações
