@@ -100,7 +100,7 @@ export function AccountClient({ initialData, initialLocale }: Props) {
           </div>
           <div>
             <label className="label">{t('account.field.name')}</label>
-            <input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="Nome completo" />
+            <input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder={t('account.profile.name_ph')} />
           </div>
           <div>
             <label className="label">{t('account.field.country')}</label>
@@ -118,7 +118,7 @@ export function AccountClient({ initialData, initialLocale }: Props) {
                   <option key={c.code} value={c.dial}>{c.dial} ({c.code})</option>
                 ))}
               </select>
-              <input type="tel" className="input flex-1" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="912 345 678" />
+              <input type="tel" className="input flex-1" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={t('account.profile.phone_ph')} />
             </div>
           </div>
         </div>
