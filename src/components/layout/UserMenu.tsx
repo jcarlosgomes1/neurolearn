@@ -2,6 +2,7 @@
 
 import { Link } from '@/i18n/routing';
 import { useState, useEffect, useRef } from 'react';
+import { usePathname } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 
 interface Props {
@@ -22,8 +23,16 @@ export function UserMenu({ email, area, areas }: Props) {
   const areaList = areas && areas.length ? areas : [area];
   const t = useTranslations();
   const locale = useLocale();
+  const pathname = usePathname() || '';
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+
+  // A vista atual e determinada pela rota, nao pelo role de origem do utilizador.
+  const currentView: 'student' | 'instructor' | 'admin' =
+    pathname.includes('/teach') ? 'instructor'
+    : pathname.includes('/learn') ? 'student'
+    : pathname.includes('/admin') ? 'admin'
+    : area;
 
   useEffect(() => {
     const close = (e: MouseEvent) => {
@@ -33,7 +42,7 @@ export function UserMenu({ email, area, areas }: Props) {
     return () => document.removeEventListener('mousedown', close);
   }, []);
 
-  const areaLabel = safeT(t, `user_menu.area.${area}`, area === 'admin' ? 'Admin' : area === 'instructor' ? 'Instrutor' : 'Aluno');
+  const areaLabel = safeT(t, `user_menu.area.${currentView}`, currentView === 'admin' ? 'Admin' : currentView === 'instructor' ? 'Instrutor' : 'Aluno');
   const isHost = area === 'instructor' || area === 'admin';
 
   return (
@@ -65,7 +74,7 @@ export function UserMenu({ email, area, areas }: Props) {
                 {areaList.map((a) => {
                   const href = a === 'admin' ? `/${locale}/admin` : a === 'instructor' ? `/${locale}/teach` : `/${locale}/learn`;
                   const label = safeT(t, `user_menu.area.${a}`, a === 'admin' ? 'Admin' : a === 'instructor' ? 'Instrutor' : 'Aluno');
-                  const active = a === area;
+                  const active = a === currentView;
                   return (
                     <a key={a} href={href}
                       className={`text-center text-xs font-medium rounded-md py-1.5 transition-colors ${active ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}>
