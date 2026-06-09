@@ -1,5 +1,3 @@
-import { Header } from '@/components/layout/Header';
-import { Footer } from '@/components/sections/Footer';
 import { Link } from '@/i18n/routing';
 import { getTranslations } from 'next-intl/server';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
@@ -27,8 +25,6 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   ];
 
   return (
-    <>
-      <Header />
       <main className="bg-white min-h-screen">
         {/* Hero */}
         <section className="relative overflow-hidden bg-gradient-to-br from-violet-50 via-white to-indigo-50 border-b border-slate-200/60">
@@ -115,8 +111,6 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
           </div>
         </section>
 
-        <Footer data={(blocks as any).footer_brand || { brand: 'NeuroLearn' }} />
       </main>
-    </>
   );
 }
