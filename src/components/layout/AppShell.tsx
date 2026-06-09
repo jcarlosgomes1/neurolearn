@@ -60,7 +60,7 @@ export async function AppShell({ role, pageTitle, children }: AppShellProps) {
     <AppShellClient
       role={role}
       pageTitle={pageTitle}
-      session={session ? { email: session.user.email!, area: session.area } : null}
+      session={session ? { email: session.user.email!, area: session.area, areas: session.areas } : null}
     >
       {children}
     </AppShellClient>

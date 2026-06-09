@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
-interface Session { email: string; area: 'student' | 'instructor' | 'admin' }
+interface Session { email: string; area: 'student' | 'instructor' | 'admin'; areas: Array<'student' | 'instructor' | 'admin'> }
 interface Props { role: 'admin' | 'instructor' | 'student'; pageTitle?: string; session: Session | null; children: React.ReactNode; }
 interface NavItem { href: string; labelKey: string; emoji: string; groupKey: string; badge?: string }
 
@@ -140,7 +140,7 @@ export function AppShellClient({ role, pageTitle, session, children }: Props) {
         <Link href={'/search' as any} aria-label={safeT(t, 'nav.search', 'Search')} className="w-9 h-9 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-600">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
         </Link>
-        {session && <UserMenu email={session.email} area={session.area} />}
+        {session && <UserMenu email={session.email} area={session.area} areas={session.areas} />}
       </header>
       <div className="flex">
         <aside className="hidden lg:flex w-60 flex-shrink-0 sticky top-14 h-[calc(100vh-3.5rem)] border-r border-slate-200 bg-white flex-col overflow-y-auto">
