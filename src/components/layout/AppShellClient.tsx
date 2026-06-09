@@ -1,8 +1,8 @@
 'use client';
 
-import { Link } from '@/i18n/routing';
+import { Link, useRouter } from '@/i18n/routing';
 import { UserMenu } from './UserMenu';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
@@ -18,9 +18,92 @@ function safeT(t: any, key: string, fb: string): string {
   return fb;
 }
 
+function scoreMatch(term: string, label: string, href: string): number {
+  if (!term) return 1;
+  if (label.startsWith(term)) return 100;
+  if (label.split(/\s+/).some((w) => w.startsWith(term))) return 80;
+  if (label.includes(term)) return 60;
+  if (href.includes(term)) return 40;
+  let i = 0;
+  for (let c = 0; c < label.length && i < term.length; c++) { if (label[c] === term[i]) i++; }
+  return i === term.length ? 20 : 0;
+}
+
+function SearchTrigger({ onClick, t }: { onClick: () => void; t: any }) {
+  return (
+    <button onClick={onClick}
+      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 text-slate-400 hover:bg-white hover:border-slate-300 transition-colors text-sm">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
+      <span className="flex-1 text-left">{safeT(t, 'shell.search.placeholder', 'Pesquisar…')}</span>
+      <kbd className="hidden lg:inline text-[10px] font-sans font-semibold text-slate-400 border border-slate-200 rounded px-1.5 py-0.5">⌘K</kbd>
+    </button>
+  );
+}
+
+function CommandPalette({ open, onClose, items, t }: { open: boolean; onClose: () => void; items: NavItem[]; t: any }) {
+  const router = useRouter();
+  const [q, setQ] = useState('');
+  const [hi, setHi] = useState(0);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (open) { setQ(''); setHi(0); const id = setTimeout(() => inputRef.current?.focus(), 30); return () => clearTimeout(id); }
+  }, [open]);
+
+  const results = useMemo(() => {
+    const labelled = items.map((it) => ({ it, label: safeT(t, it.labelKey, it.labelKey.split('.').pop() || it.href), group: safeT(t, it.groupKey, '') }));
+    const term = q.trim().toLowerCase();
+    if (!term) return labelled.slice(0, 60);
+    return labelled
+      .map((x) => ({ ...x, score: scoreMatch(term, x.label.toLowerCase(), x.it.href.toLowerCase()) }))
+      .filter((x) => x.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 60);
+  }, [q, items, t]);
+
+  useEffect(() => { setHi(0); }, [q]);
+
+  if (!open) return null;
+
+  function go(href: string) { onClose(); router.push(href as any); }
+
+  return (
+    <div className="fixed inset-0 z-[60] bg-slate-900/40 backdrop-blur-sm flex items-start justify-center p-4 pt-[14vh] animate-in fade-in duration-150" onClick={onClose}>
+      <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-in zoom-in-95 slide-in-from-top-2 duration-150" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center gap-2.5 px-4 border-b border-slate-100">
+          <svg className="text-slate-400 flex-shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
+          <input ref={inputRef} value={q} onChange={(e) => setQ(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'ArrowDown') { e.preventDefault(); setHi((h) => Math.min(h + 1, results.length - 1)); }
+              else if (e.key === 'ArrowUp') { e.preventDefault(); setHi((h) => Math.max(h - 1, 0)); }
+              else if (e.key === 'Enter') { e.preventDefault(); const r = results[hi]; if (r) go(r.it.href); }
+              else if (e.key === 'Escape') { e.preventDefault(); onClose(); }
+            }}
+            placeholder={safeT(t, 'shell.search.placeholder', 'Pesquisar…')}
+            className="flex-1 py-3.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none bg-transparent" />
+          <button onClick={onClose} className="text-[10px] font-semibold text-slate-400 border border-slate-200 rounded px-1.5 py-0.5 hover:bg-slate-50">ESC</button>
+        </div>
+        <div className="max-h-[52vh] overflow-y-auto py-2">
+          {results.length === 0 ? (
+            <div className="px-4 py-8 text-center text-sm text-slate-400">{safeT(t, 'shell.search.empty', 'Sem resultados')}</div>
+          ) : results.map((r, i) => (
+            <button key={r.it.href} onMouseEnter={() => setHi(i)} onClick={() => go(r.it.href)}
+              className={`w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors ${i === hi ? 'bg-brand-50 text-brand-700' : 'text-slate-700 hover:bg-slate-50'}`}>
+              <span className="text-base flex-shrink-0">{r.it.emoji}</span>
+              <span className="flex-1 truncate font-medium">{r.label}</span>
+              {r.group && <span className="text-[11px] text-slate-400 flex-shrink-0">{r.group}</span>}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function AppShellClient({ role, pageTitle, session, nav, children }: Props) {
   const t = useTranslations();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => { setSidebarOpen(false); }, [pathname]);
@@ -29,6 +112,16 @@ export function AppShellClient({ role, pageTitle, session, nav, children }: Prop
     else document.body.style.overflow = '';
     return () => { document.body.style.overflow = ''; };
   }, [sidebarOpen]);
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setPaletteOpen((o) => !o); }
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+  const openPalette = () => { setSidebarOpen(false); setPaletteOpen(true); };
 
   const roleBadge = role === 'admin' ? 'bg-rose-100 text-rose-700' : role === 'instructor' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700';
   const roleLabel = safeT(t, `shell.role.${role}`, role);
@@ -66,13 +159,14 @@ export function AppShellClient({ role, pageTitle, session, nav, children }: Prop
         <span className={`hidden sm:inline-flex items-center text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${roleBadge}`}>{roleLabel}</span>
         {pageTitle && <span className="hidden md:inline text-sm text-slate-400 ml-2">/ {pageTitle}</span>}
         <div className="flex-1" />
-        <Link href={'/search' as any} aria-label={safeT(t, 'nav.search', 'Search')} className="w-9 h-9 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-600">
+        <button onClick={openPalette} aria-label={safeT(t, 'shell.search.placeholder', 'Pesquisar…')} className="w-9 h-9 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-600">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
-        </Link>
+        </button>
         {session && <UserMenu email={session.email} area={session.area} areas={session.areas} />}
       </header>
       <div className="flex">
         <aside className="hidden lg:flex w-60 flex-shrink-0 sticky top-14 h-[calc(100vh-3.5rem)] border-r border-slate-200 bg-white flex-col overflow-y-auto">
+          <div className="px-3 pt-4 pb-1"><SearchTrigger onClick={openPalette} t={t} /></div>
           <SidebarContent groups={groups} isActive={isActive} t={t} />
         </aside>
         {sidebarOpen && (
@@ -88,12 +182,14 @@ export function AppShellClient({ role, pageTitle, session, nav, children }: Prop
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M6 6l12 12M6 18L18 6"/></svg>
                 </button>
               </div>
+              <div className="px-3 pt-3 pb-1"><SearchTrigger onClick={openPalette} t={t} /></div>
               <SidebarContent groups={groups} isActive={isActive} t={t} />
             </aside>
           </div>
         )}
         <main className="flex-1 min-w-0"><div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8">{children}</div></main>
       </div>
+      <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} items={nav} t={t} />
     </div>
   );
 }
