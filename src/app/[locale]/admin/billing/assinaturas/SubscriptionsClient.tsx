@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { FileText, Plus, X, Save, Loader2, Euro, AlertCircle, RefreshCw } from 'lucide-react';
 import { assignSubscriptionAction, listSubscriptionsAction, syncStripeAction } from './actions';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
 interface Sub {
   subscription_id: string; org_id: string; org_name: string; org_slug: string;
@@ -49,21 +50,29 @@ export function SubscriptionsClient({ initial, plans, orgs }: { initial: Sub[]; 
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-      <div className="flex items-start justify-between gap-3 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2"><FileText className="h-6 w-6 text-brand-600" /> Subscrições</h1>
-          <p className="text-sm text-slate-500 mt-1">Todas as empresas com sub activa. Atribuição manual + sync com Stripe.</p>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={handleSyncStripe} disabled={syncing} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md hover:bg-slate-100 text-slate-700 text-sm border border-slate-200">
-            {syncing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
-            Sync Stripe
-          </button>
-          <button onClick={() => setShowAssign(true)} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold">
-            <Plus className="h-3.5 w-3.5" /> Atribuir sub manual
-          </button>
-        </div>
-      </div>
+      <AdminPageHeader
+        backHref="/admin/billing"
+        backLabel="Faturação"
+        title="Subscrições"
+        description="Todas as empresas com sub activa. Atribuição manual + sync com Stripe."
+        related={[
+          { href: '/admin/billing/planos', label: 'Planos', emoji: '📦' },
+          { href: '/admin/billing/addons', label: 'Add-ons', emoji: '✨' },
+          { href: '/admin/billing/marketplace', label: 'Marketplace', emoji: '🛒' },
+          { href: '/admin/payments', label: 'Pagamentos', emoji: '💳' },
+        ]}
+        actions={
+          <div className="flex gap-2">
+            <button onClick={handleSyncStripe} disabled={syncing} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md hover:bg-slate-100 text-slate-700 text-sm border border-slate-200">
+              {syncing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+              Sync Stripe
+            </button>
+            <button onClick={() => setShowAssign(true)} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold">
+              <Plus className="h-3.5 w-3.5" /> Atribuir sub manual
+            </button>
+          </div>
+        }
+      />
       
       {plans.length === 0 && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-900 flex items-start gap-2">

@@ -2,6 +2,8 @@ import { Link } from '@/i18n/routing';
 import { ArrowLeft, type LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 
+interface RelatedLink { href: string; label: string; emoji?: string }
+
 interface Props {
   backHref?: string;
   backLabel?: string;
@@ -11,9 +13,10 @@ interface Props {
   title: string;
   description?: string;
   actions?: ReactNode;
+  related?: RelatedLink[];
 }
 
-export function AdminPageHeader({ backHref, backLabel, eyebrow, eyebrowIcon: EyeIcon, eyebrowAccent = 'text-violet-600', title, description, actions }: Props) {
+export function AdminPageHeader({ backHref, backLabel, eyebrow, eyebrowIcon: EyeIcon, eyebrowAccent = 'text-violet-600', title, description, actions, related }: Props) {
   return (
     <header className="mb-8">
       {backHref && (
@@ -36,6 +39,19 @@ export function AdminPageHeader({ backHref, backLabel, eyebrow, eyebrowIcon: Eye
         </div>
         {actions && <div className="flex-shrink-0">{actions}</div>}
       </div>
+      {related && related.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 mt-4">
+          {related.map((r) => (
+            <Link
+              key={r.href}
+              href={r.href as any}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-violet-100 hover:text-violet-700 hover:ring-violet-200 transition-colors">
+              {r.emoji && <span className="text-sm leading-none">{r.emoji}</span>}
+              {r.label}
+            </Link>
+          ))}
+        </div>
+      )}
     </header>
   );
 }

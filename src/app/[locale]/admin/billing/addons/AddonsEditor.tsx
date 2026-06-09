@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { Plus, Trash2, Loader2, X, Save } from 'lucide-react';
 import { upsertAddonAction, deleteAddonAction, listAddonsAction } from '../actions';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
 interface Addon {
   id: string; name: string; description?: string; feature_key: string;
@@ -54,15 +55,23 @@ export function AddonsEditor({ initial }: { initial: Addon[] }) {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2"><Plus className="h-6 w-6 text-emerald-600" /> Add-ons</h1>
-          <p className="text-sm text-slate-500 mt-1">Funcionalidades extra vendíveis à parte: catálogo, talent, SSO, etc.</p>
-        </div>
-        <button onClick={() => setEditing({ ...EMPTY, sort_order: items.length })} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold">
-          <Plus className="h-3.5 w-3.5" /> Novo add-on
-        </button>
-      </div>
+      <AdminPageHeader
+        backHref="/admin/billing"
+        backLabel="Faturação"
+        title="Add-ons"
+        description="Funcionalidades extra vendíveis à parte: catálogo, talent, SSO, etc."
+        related={[
+          { href: '/admin/billing/planos', label: 'Planos', emoji: '📦' },
+          { href: '/admin/billing/assinaturas', label: 'Subscrições', emoji: '🔁' },
+          { href: '/admin/billing/marketplace', label: 'Marketplace', emoji: '🛒' },
+          { href: '/admin/payments', label: 'Pagamentos', emoji: '💳' },
+        ]}
+        actions={
+          <button onClick={() => setEditing({ ...EMPTY, sort_order: items.length })} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold">
+            <Plus className="h-3.5 w-3.5" /> Novo add-on
+          </button>
+        }
+      />
 
       {items.length === 0 ? (
         <div className="bg-white rounded-xl border border-slate-200 p-8 text-center text-sm text-slate-500">

@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { Loader2, Save, AlertCircle, Sliders } from 'lucide-react';
 import { setMarketplaceSettingAction, listMarketplaceSettingsAction } from '../actions';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
 interface Setting {
   key: string; value: unknown; default_value: unknown;
@@ -69,10 +70,18 @@ export function MarketplaceSettings({ initial }: { initial: Setting[] }) {
   
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2"><Sliders className="h-6 w-6 text-indigo-600" /> Marketplace Settings</h1>
-        <p className="text-sm text-slate-500 mt-1">Comportamentos globais. Define os valores que controlam talent placement, catalog access e mais.</p>
-      </div>
+      <AdminPageHeader
+        backHref="/admin/billing"
+        backLabel="Faturação"
+        title="Marketplace Settings"
+        description="Comportamentos globais. Define os valores que controlam talent placement, catalog access e mais."
+        related={[
+          { href: '/admin/billing/planos', label: 'Planos', emoji: '📦' },
+          { href: '/admin/billing/addons', label: 'Add-ons', emoji: '✨' },
+          { href: '/admin/billing/assinaturas', label: 'Subscrições', emoji: '🔁' },
+          { href: '/admin/payments', label: 'Pagamentos', emoji: '💳' },
+        ]}
+      />
 
       {unset > 0 && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-start gap-2">
