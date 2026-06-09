@@ -9,7 +9,7 @@ export default async function AdminCmsPagesPage() {
   const { data: pages } = await sb.rpc('nl_admin_pages_list');
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="">
       <div className="mb-8">
         <div className="flex items-center gap-2 text-fuchsia-600 text-xs font-semibold uppercase tracking-wider mb-1">
           <FileEdit className="h-3.5 w-3.5" /> CMS · Páginas

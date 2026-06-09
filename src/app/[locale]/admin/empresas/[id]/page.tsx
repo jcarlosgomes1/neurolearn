@@ -24,7 +24,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
     .map(([k]) => k.replace('enable_', '').replace(/_/g, ' '));
   
   return (
-    <div className="px-4 sm:px-6 py-6 max-w-5xl mx-auto">
+    <div className="">
       <Link href={'/admin/empresas' as any} className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-brand-700 mb-4">
         <ArrowLeft className="h-4 w-4" /> Voltar
       </Link>

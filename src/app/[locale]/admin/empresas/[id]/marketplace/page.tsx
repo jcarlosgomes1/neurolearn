@@ -22,7 +22,7 @@ export default async function OrgMarketplacePage({ params }: { params: Promise<{
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="">
       <Link href={{ pathname: '/admin/empresas/[id]', params: { id } } as any}
         className="group inline-flex items-center gap-1.5 mb-5 text-sm text-slate-500 hover:text-slate-900 font-medium">
         <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" /> {org.name}

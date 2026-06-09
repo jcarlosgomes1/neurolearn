@@ -21,7 +21,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   const settingsUnset = (settings as any[] || []).filter((s) => s.value === null).length;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-slate-900">Billing & Planos</h1>
         <p className="text-sm text-slate-500 mt-1">

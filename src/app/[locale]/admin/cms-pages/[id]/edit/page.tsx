@@ -13,7 +13,7 @@ export default async function EditCmsPage({ params }: { params: Promise<{ id: st
   if (!data || !(data as any).page) notFound();
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="">
       <Link
         href={'/admin/cms-pages' as any}
         className="group inline-flex items-center gap-1.5 mb-5 text-sm text-slate-500 hover:text-slate-900 font-medium">
