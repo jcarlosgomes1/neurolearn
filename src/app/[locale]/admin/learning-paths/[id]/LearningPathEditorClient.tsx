@@ -75,8 +75,8 @@ export function LearningPathEditorClient({ pathId }: { pathId: string }) {
     <div className="space-y-4">
       <div className="flex items-start justify-between">
         <div>
-          <Link href={'/admin/learning-paths' as any} className="text-xs text-slate-500 hover:text-slate-700 flex items-center gap-1 mb-2">
-            <ChevronLeft className="h-3 w-3" /> Voltar
+          <Link href={'/admin/learning-paths' as any} className="group inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900 font-medium transition-colors mb-2">
+            <ChevronLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" /> Percursos
           </Link>
           <h1 className="text-2xl font-bold text-slate-900">
             <span className="text-3xl mr-2">{path.emoji}</span>
@@ -88,6 +88,10 @@ export function LearningPathEditorClient({ pathId }: { pathId: string }) {
           className="inline-flex items-center gap-1.5 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-medium disabled:opacity-50">
           {saving ? <><Check className="h-4 w-4" /> A guardar...</> : <><Save className="h-4 w-4" /> Guardar ordem</>}
         </button>
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <Link href={`/admin/learning-paths/${pathId}/gaps` as any} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-violet-100 hover:text-violet-700 hover:ring-violet-200 transition-colors"><span className="text-sm leading-none">📊</span> Gaps</Link>
+        <Link href={'/admin/cursos' as any} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-violet-100 hover:text-violet-700 hover:ring-violet-200 transition-colors"><span className="text-sm leading-none">📚</span> Cursos</Link>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
