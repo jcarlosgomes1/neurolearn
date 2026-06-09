@@ -32,7 +32,7 @@ export default async function ObservabilityPage({ searchParams }: { searchParams
   const seoSummary = Array.isArray(seo) && seo.length > 0 ? seo[0] : null;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="">
       <header className="mb-8">
         <div className="flex items-center gap-2 text-blue-600 text-xs font-semibold uppercase tracking-wider mb-1">
           <Activity className="h-3.5 w-3.5" /> {safeT('admin.observability.eyebrow', 'Admin · Observabilidade')}

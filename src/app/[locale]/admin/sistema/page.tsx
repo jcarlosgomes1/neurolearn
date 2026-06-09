@@ -35,7 +35,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   
   if (!overview.ok) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="">
         <div className="bg-rose-50 border border-rose-200 rounded-xl p-6 text-center">
           <AlertCircle className="h-8 w-8 text-rose-600 mx-auto mb-2" />
           <p className="text-sm text-rose-900">Erro a carregar overview: {overview.error}</p>

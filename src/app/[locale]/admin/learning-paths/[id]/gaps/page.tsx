@@ -16,7 +16,7 @@ export default async function PathGapsPage({ params }: { params: Promise<{ id: s
     .select('course_id, sort_order').eq('path_id', id).order('sort_order');
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="">
       <Link
         href={{ pathname: '/admin/learning-paths/[id]', params: { id } } as any}
         className="group inline-flex items-center gap-1.5 mb-5 text-sm text-slate-500 hover:text-slate-900 font-medium">

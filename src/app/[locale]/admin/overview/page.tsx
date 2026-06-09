@@ -33,7 +33,7 @@ export default async function Page() {
   ] : [];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+    <div className="">
       <header className="mb-6 sm:mb-8">
         <div className="flex items-center gap-2 text-slate-600 text-xs font-semibold uppercase tracking-wider mb-1">
           <Sparkles className="h-3.5 w-3.5" /> Cockpit administrativo
