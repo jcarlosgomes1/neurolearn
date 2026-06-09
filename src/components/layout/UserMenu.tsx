@@ -7,7 +7,7 @@ import { useTranslations, useLocale } from 'next-intl';
 interface Props {
   email: string;
   area: 'student' | 'instructor' | 'admin';
-  areas: Array<'student' | 'instructor' | 'admin'>;
+  areas?: Array<'student' | 'instructor' | 'admin'>;
 }
 
 function safeT(t: any, key: string, fb: string): string {
@@ -19,6 +19,7 @@ function safeT(t: any, key: string, fb: string): string {
 }
 
 export function UserMenu({ email, area, areas }: Props) {
+  const areaList = areas && areas.length ? areas : [area];
   const t = useTranslations();
   const locale = useLocale();
   const [open, setOpen] = useState(false);
@@ -55,13 +56,13 @@ export function UserMenu({ email, area, areas }: Props) {
             <div className="text-sm font-medium text-slate-900 truncate">{email}</div>
           </div>
 
-          {areas.length > 1 && (
+          {areaList.length > 1 && (
             <div className="px-3 py-2 border-b border-slate-100">
               <div className="px-1 pb-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
                 {safeT(t, 'user_menu.view_as', 'Ver como')}
               </div>
               <div className="grid grid-cols-3 gap-1">
-                {areas.map((a) => {
+                {areaList.map((a) => {
                   const href = a === 'admin' ? `/${locale}/admin` : a === 'instructor' ? `/${locale}/teach` : `/${locale}/learn`;
                   const label = safeT(t, `user_menu.area.${a}`, a === 'admin' ? 'Admin' : a === 'instructor' ? 'Instrutor' : 'Aluno');
                   const active = a === area;
