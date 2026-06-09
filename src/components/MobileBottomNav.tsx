@@ -3,17 +3,27 @@
 import { useEffect, useState } from 'react';
 import { Link, usePathname } from '@/i18n/routing';
 import { createClient } from '@/lib/supabase/client';
+import { useTranslations } from 'next-intl';
 import { Home, BookOpen, GraduationCap, Bell, User } from 'lucide-react';
 
+function safeT(t: any, key: string, fb: string): string {
+  try {
+    const v = t(key);
+    if (v && typeof v === 'string' && v !== key) return v;
+  } catch {}
+  return fb;
+}
+
 const ITEMS = [
-  { href: '/', icon: Home, label: 'Início' },
-  { href: '/cursos', icon: BookOpen, label: 'Cursos' },
-  { href: '/learn', icon: GraduationCap, label: 'Learn' },
-  { href: '/conta/notificacoes', icon: Bell, label: 'Alertas', isBell: true },
-  { href: '/conta', icon: User, label: 'Conta' },
+  { href: '/', icon: Home, labelKey: 'nav.home', fb: 'Início' },
+  { href: '/cursos', icon: BookOpen, labelKey: 'nav.courses', fb: 'Cursos' },
+  { href: '/learn', icon: GraduationCap, labelKey: 'nav.learn', fb: 'Aprender' },
+  { href: '/conta/notificacoes', icon: Bell, labelKey: 'nav.alerts', fb: 'Alertas', isBell: true },
+  { href: '/conta', icon: User, labelKey: 'nav.account', fb: 'Conta' },
 ];
 
 export function MobileBottomNav() {
+  const t = useTranslations();
   const pathname = usePathname();
   const [loggedIn, setLoggedIn] = useState(false);
   const [unread, setUnread] = useState(0);
@@ -50,6 +60,7 @@ export function MobileBottomNav() {
       <div className="grid grid-cols-5 px-1">
         {ITEMS.map((it) => {
           const Icon = it.icon;
+          const label = safeT(t, it.labelKey, it.fb);
           const active = pathname === it.href || (it.href !== '/' && pathname?.startsWith(it.href));
           return (
             <Link key={it.href} href={it.href as any}
@@ -62,7 +73,7 @@ export function MobileBottomNav() {
                   </span>
                 )}
               </div>
-              {it.label}
+              {label}
               {active && <span className="absolute top-0 inset-x-3 h-0.5 bg-brand-600 rounded-b-full" />}
             </Link>
           );
