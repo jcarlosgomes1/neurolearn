@@ -8,12 +8,12 @@ export const revalidate = 600;
 export async function generateMetadata() { return { title: 'Centro de ajuda · NeuroLearn' }; }
 
 const CATS = [
-  { icon: User, title: 'Conta e perfil', items: ['Criar conta', 'Recuperar password', 'Apagar conta (GDPR)', 'Mudar email', 'Activar 2FA'], cls: 'from-violet-500 to-indigo-600' },
-  { icon: BookOpen, title: 'Cursos e aprendizagem', items: ['Inscrever-me num curso', 'Descarregar materiais', 'Tutor 24/7', 'Velocidade vídeo', 'Subtítulos'], cls: 'from-emerald-500 to-teal-600' },
-  { icon: CreditCard, title: 'Pagamentos e faturação', items: ['Métodos aceites', 'Pedir fatura empresarial', 'Cancelar subscrição', 'Reembolsos', 'IVA internacional'], cls: 'from-amber-500 to-orange-600' },
-  { icon: Award, title: 'Certificados', items: ['Como obter', 'Verificação pública', 'Adicionar ao LinkedIn', 'Reemitir', 'Validade'], cls: 'from-fuchsia-500 to-pink-600' },
-  { icon: Building2, title: 'Empresas e seats', items: ['Comprar seats', 'Convidar colaboradores', 'Atribuir cursos', 'Reportar progresso', 'Reduzir/aumentar plano'], cls: 'from-blue-500 to-cyan-600' },
-  { icon: ShieldCheck, title: 'Privacidade e GDPR', items: ['Exportar os meus dados', 'Direito ao esquecimento', 'Política de cookies', 'Como tratamos dados', 'Encarregado de proteção'], cls: 'from-rose-500 to-red-600' },
+  { icon: User, title: 'Conta e perfil', href: '/conta', items: ['Criar conta', 'Recuperar password', 'Apagar conta (GDPR)', 'Mudar email', 'Activar 2FA'], cls: 'from-violet-500 to-indigo-600' },
+  { icon: BookOpen, title: 'Cursos e aprendizagem', href: '/cursos', items: ['Inscrever-me num curso', 'Descarregar materiais', 'Tutor 24/7', 'Velocidade vídeo', 'Subtítulos'], cls: 'from-emerald-500 to-teal-600' },
+  { icon: CreditCard, title: 'Pagamentos e faturação', href: '/legal/refunds', items: ['Métodos aceites', 'Pedir fatura empresarial', 'Cancelar subscrição', 'Reembolsos', 'IVA internacional'], cls: 'from-amber-500 to-orange-600' },
+  { icon: Award, title: 'Certificados', href: '/legal/faq', items: ['Como obter', 'Verificação pública', 'Adicionar ao LinkedIn', 'Reemitir', 'Validade'], cls: 'from-fuchsia-500 to-pink-600' },
+  { icon: Building2, title: 'Empresas e seats', href: '/para-empresas', items: ['Comprar seats', 'Convidar colaboradores', 'Atribuir cursos', 'Reportar progresso', 'Reduzir/aumentar plano'], cls: 'from-blue-500 to-cyan-600' },
+  { icon: ShieldCheck, title: 'Privacidade e GDPR', href: '/legal/privacy', items: ['Exportar os meus dados', 'Direito ao esquecimento', 'Política de cookies', 'Como tratamos dados', 'Encarregado de proteção'], cls: 'from-rose-500 to-red-600' },
 ];
 
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
@@ -52,9 +52,9 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
                 <ul className="space-y-1.5">
                   {c.items.map((it, ii) => (
                     <li key={ii}>
-                      <a href="#" className="text-sm text-slate-600 hover:text-slate-900 inline-flex items-center gap-1 hover:gap-1.5 transition-all">
+                      <Link href={c.href as any} className="text-sm text-slate-600 hover:text-slate-900 inline-flex items-center gap-1 hover:gap-1.5 transition-all">
                         <ArrowRight className="h-3 w-3 text-slate-400" /> {it}
-                      </a>
+                      </Link>
                     </li>
                   ))}
                 </ul>

@@ -28,7 +28,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
         <AccountTile href={`/conta/certificados`} icon={<Award className="h-5 w-5" />} title="Certificados" desc="Conclusões e partilhar" color="text-indigo-600" />
         <AccountTile href={`/conta/privacidade`} icon={<FileText className="h-5 w-5" />} title="Privacidade" desc="Exportar, eliminar dados" color="text-rose-600" />
         {profile?.role === 'admin' && (
-          <AccountTile href={`/admin`} icon={<CreditCard className="h-5 w-5" />} title="Admin" desc="Plataforma" color="text-slate-700" />
+          <AccountTile href={`/conta/subscription`} icon={<CreditCard className="h-5 w-5" />} title="Admin" desc="Plataforma" color="text-slate-700" />
         )}
       </div>
       
