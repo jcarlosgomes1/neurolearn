@@ -1,40 +1,42 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { Link } from '@/i18n/routing';
+import { getTranslations } from 'next-intl/server';
 import { User, Shield, Bell, Award, FileText, CreditCard, LogOut, Globe } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  const t = await getTranslations();
   const sb = await createClient();
   const { data: { user } } = await sb.auth.getUser();
   if (!user) redirect(`/${locale}/login`);
-  
+
   const { data: profile } = await sb.from('nl_profiles').select('name, role, preferred_lang').eq('id', user.id).maybeSingle();
   const { data: unreadCount } = await sb.rpc('nl_notifications_unread_count');
-  
+
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2"><User className="h-6 w-6 text-brand-600" /> A minha conta</h1>
+        <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2"><User className="h-6 w-6 text-brand-600" /> {t('account.home.title')}</h1>
         <p className="text-sm text-slate-500 mt-1">{profile?.name || user.email}</p>
       </div>
-      
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <AccountTile href={`/conta/perfil`} icon={<User className="h-5 w-5" />} title="Perfil" desc="Nome, idioma, contactos" color="text-brand-600" />
-        <AccountTile href={`/conta/seguranca`} icon={<Shield className="h-5 w-5" />} title="Segurança" desc="Password, 2FA" color="text-emerald-600" />
-        <AccountTile href={`/conta/notificacoes`} icon={<Bell className="h-5 w-5" />} title="Notificações" desc={`${unreadCount || 0} não lidas`} color="text-amber-600" badge={(unreadCount as number) || 0} />
-        <AccountTile href={`/conta/certificados`} icon={<Award className="h-5 w-5" />} title="Certificados" desc="Conclusões e partilhar" color="text-indigo-600" />
-        <AccountTile href={`/conta/privacidade`} icon={<FileText className="h-5 w-5" />} title="Privacidade" desc="Exportar, eliminar dados" color="text-rose-600" />
+        <AccountTile href={`/conta/perfil`} icon={<User className="h-5 w-5" />} title={t('account.home.profile_title')} desc={t('account.home.profile_desc')} color="text-brand-600" />
+        <AccountTile href={`/conta/seguranca`} icon={<Shield className="h-5 w-5" />} title={t('account.home.security_title')} desc={t('account.home.security_desc')} color="text-emerald-600" />
+        <AccountTile href={`/conta/notificacoes`} icon={<Bell className="h-5 w-5" />} title={t('account.home.notifs_title')} desc={t('account.home.notifs_unread', { n: (unreadCount as number) || 0 })} color="text-amber-600" badge={(unreadCount as number) || 0} />
+        <AccountTile href={`/conta/certificados`} icon={<Award className="h-5 w-5" />} title={t('account.home.certs_title')} desc={t('account.home.certs_desc')} color="text-indigo-600" />
+        <AccountTile href={`/conta/privacidade`} icon={<FileText className="h-5 w-5" />} title={t('account.home.privacy_title')} desc={t('account.home.privacy_desc')} color="text-rose-600" />
         {profile?.role === 'admin' && (
-          <AccountTile href={`/conta/subscription`} icon={<CreditCard className="h-5 w-5" />} title="Admin" desc="Plataforma" color="text-slate-700" />
+          <AccountTile href={`/conta/subscription`} icon={<CreditCard className="h-5 w-5" />} title={t('account.home.admin_title')} desc={t('account.home.admin_desc')} color="text-slate-700" />
         )}
       </div>
-      
+
       <form action={`/${locale}/logout`} method="POST" className="pt-2">
         <button type="submit" className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-medium">
-          <LogOut className="h-4 w-4" /> Terminar sessão
+          <LogOut className="h-4 w-4" /> {t('user_menu.signout')}
         </button>
       </form>
     </div>
