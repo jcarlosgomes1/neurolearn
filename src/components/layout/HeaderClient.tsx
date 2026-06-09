@@ -8,7 +8,7 @@ import { CurrencySwitcher } from '@/components/currency/CurrencySwitcher';
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
-import { LogOut, LayoutDashboard } from 'lucide-react';
+import { LogOut, LayoutDashboard, BookOpen, Route, Sparkles, Building2, Newspaper } from 'lucide-react';
 
 interface Session { email: string; area: 'student' | 'instructor' | 'admin' }
 
@@ -25,27 +25,39 @@ export function HeaderClient({ session }: { session: Session | null }) {
     return () => { document.body.style.overflow = ''; };
   }, [open]);
 
-  const NAV: Array<{ href: string; label: string }> = [
-    { href: '/cursos', label: t('nav.courses') },
-    { href: '/aprender/percursos', label: 'Percursos' },
-    { href: '/essentials', label: t('nav.essentials') },
-    { href: '/para-empresas', label: t('nav.business') },
-    { href: '/blog', label: t('nav.blog') },
+  const NAV: Array<{ href: string; label: string; Icon: typeof BookOpen }> = [
+    { href: '/cursos', label: t('nav.courses'), Icon: BookOpen },
+    { href: '/aprender/percursos', label: 'Percursos', Icon: Route },
+    { href: '/essentials', label: t('nav.essentials'), Icon: Sparkles },
+    { href: '/para-empresas', label: t('nav.business'), Icon: Building2 },
+    { href: '/blog', label: t('nav.blog'), Icon: Newspaper },
   ];
+
+  const cleanPath = pathname.replace(/^\/[a-z]{2}(?=\/|$)/, '') || '/';
+  const isActive = (href: string) =>
+    href === '/' ? cleanPath === '/' : cleanPath === href || cleanPath.startsWith(href + '/');
 
   return (
     <>
       <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200/60">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
-          <Link href="/" className="flex items-center gap-2 font-bold text-slate-900 group">
+        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-3">
+          <Link href="/" className="flex items-center gap-2 font-bold text-slate-900 group shrink-0">
             <span className="text-2xl transition-transform group-hover:scale-110">🧠</span>
             <span className="text-lg tracking-tight">NeuroLearn</span>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-1">
-            {NAV.map((item) => (
-              <Link key={item.href} href={item.href as any} className="btn-ghost">{item.label}</Link>
-            ))}
+          <nav className="hidden md:flex items-stretch h-full">
+            {NAV.map((item) => {
+              const active = isActive(item.href);
+              return (
+                <Link key={item.href} href={item.href as any}
+                  className={`group relative flex flex-col items-center justify-center h-full px-3 lg:px-4 min-w-[60px] gap-0.5 text-[11px] font-medium transition-colors ${active ? 'text-brand-700' : 'text-slate-500 hover:text-slate-900'}`}>
+                  <item.Icon className="h-[18px] w-[18px]" strokeWidth={active ? 2.4 : 2} />
+                  <span>{item.label}</span>
+                  <span className={`absolute bottom-0 left-2.5 right-2.5 h-[2.5px] rounded-full transition-colors ${active ? 'bg-brand-600' : 'bg-transparent group-hover:bg-slate-200'}`} />
+                </Link>
+              );
+            })}
           </nav>
 
           <div className="flex items-center gap-1 sm:gap-2">
@@ -134,7 +146,7 @@ export function HeaderClient({ session }: { session: Session | null }) {
               {NAV.map((item) => (
                 <Link key={item.href} href={item.href as any}
                   className="flex items-center gap-3 px-3 py-3.5 rounded-lg hover:bg-slate-50 text-slate-800 font-medium transition-colors">
-                  {item.label}
+                  <item.Icon className="h-5 w-5 text-slate-400" /> {item.label}
                 </Link>
               ))}
 
