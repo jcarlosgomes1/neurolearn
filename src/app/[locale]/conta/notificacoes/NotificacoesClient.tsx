@@ -3,14 +3,15 @@
 import { useState, useTransition } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Link } from '@/i18n/routing';
+import { useTranslations } from 'next-intl';
 import { Bell, Check, Trash2, Filter } from 'lucide-react';
 
-function relTime(date: string) {
+function relTime(date: string, nowLabel: string) {
   const seconds = (Date.now() - new Date(date).getTime()) / 1000;
-  if (seconds < 60) return 'agora';
+  if (seconds < 60) return nowLabel;
   if (seconds < 3600) return Math.floor(seconds / 60) + 'm';
   if (seconds < 86400) return Math.floor(seconds / 3600) + 'h';
-  return new Date(date).toLocaleDateString('pt-PT');
+  return new Date(date).toLocaleDateString();
 }
 
 function link(kind?: string, id?: string): string | null {
@@ -23,6 +24,7 @@ function link(kind?: string, id?: string): string | null {
 }
 
 export function NotificacoesClient({ initial }: { initial: any[] }) {
+  const t = useTranslations();
   const [items, setItems] = useState(initial);
   const [filter, setFilter] = useState<'all'|'unread'>('all');
   const [pending, startTransition] = useTransition();
@@ -54,16 +56,16 @@ export function NotificacoesClient({ initial }: { initial: any[] }) {
       <section className="bg-white border-b border-slate-200">
         <div className="max-w-3xl mx-auto px-4 py-6 flex items-start justify-between gap-3 flex-wrap">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2"><Bell className="h-6 w-6" /> Notificações</h1>
-            <p className="text-sm text-slate-500 mt-1">{items.length} no total · {items.filter(n => !n.read_at).length} por ler</p>
+            <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2"><Bell className="h-6 w-6" /> {t('notifs.title')}</h1>
+            <p className="text-sm text-slate-500 mt-1">{t('notifs.count_summary', { total: items.length, unread: items.filter(n => !n.read_at).length })}</p>
           </div>
           <div className="flex gap-2">
             <div className="inline-flex rounded-lg border border-slate-200 bg-white overflow-hidden">
-              <button onClick={() => setFilter('all')} className={`px-3 py-1.5 text-xs font-medium ${filter === 'all' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>Todas</button>
-              <button onClick={() => setFilter('unread')} className={`px-3 py-1.5 text-xs font-medium ${filter === 'unread' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>Por ler</button>
+              <button onClick={() => setFilter('all')} className={`px-3 py-1.5 text-xs font-medium ${filter === 'all' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>{t('notifs.tab_all')}</button>
+              <button onClick={() => setFilter('unread')} className={`px-3 py-1.5 text-xs font-medium ${filter === 'unread' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>{t('notifs.tab_unread')}</button>
             </div>
             <button onClick={markAll} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-lg">
-              <Check className="h-3 w-3" /> Marcar todas
+              <Check className="h-3 w-3" /> {t('notifs.mark_all')}
             </button>
           </div>
         </div>
@@ -73,7 +75,7 @@ export function NotificacoesClient({ initial }: { initial: any[] }) {
         {visible.length === 0 ? (
           <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
             <Bell className="h-12 w-12 text-slate-300 mx-auto mb-3" />
-            <h3 className="font-semibold text-slate-900 mb-1">Sem notificações</h3>
+            <h3 className="font-semibold text-slate-900 mb-1">{t('notifs.empty')}</h3>
           </div>
         ) : (
           <div className="bg-white border border-slate-200 rounded-xl divide-y divide-slate-100">
@@ -95,11 +97,11 @@ export function NotificacoesClient({ initial }: { initial: any[] }) {
                         <p className="text-sm text-slate-600 mt-0.5">{n.message}</p>
                       </>
                     )}
-                    <span className="text-xs text-slate-400 mt-1 inline-block">{relTime(n.created_at)}</span>
+                    <span className="text-xs text-slate-400 mt-1 inline-block">{relTime(n.created_at, t('notifs.now'))}</span>
                   </div>
                   <div className="flex gap-1">
-                    {isUnread && <button onClick={() => markRead(n.id)} className="p-1.5 text-slate-400 hover:text-emerald-600" aria-label="Lida"><Check className="h-4 w-4" /></button>}
-                    <button onClick={() => remove(n.id)} className="p-1.5 text-slate-400 hover:text-rose-600" aria-label="Eliminar"><Trash2 className="h-4 w-4" /></button>
+                    {isUnread && <button onClick={() => markRead(n.id)} className="p-1.5 text-slate-400 hover:text-emerald-600" aria-label={t('notifs.mark_read')}><Check className="h-4 w-4" /></button>}
+                    <button onClick={() => remove(n.id)} className="p-1.5 text-slate-400 hover:text-rose-600" aria-label={t('notifs.delete')}><Trash2 className="h-4 w-4" /></button>
                   </div>
                 </div>
               );
