@@ -95,7 +95,7 @@ export function CookieBanner() {
                 <h3 className="font-bold text-slate-900 text-sm">Cookies e privacidade</h3>
                 <p className="text-xs sm:text-sm text-slate-600 mt-1 leading-relaxed">
                   Usamos cookies essenciais ao funcionamento do site e, com a tua autorização, cookies de analytics e marketing.
-                  Lê a <Link href={'/legal/privacidade' as any} className="text-brand-600 hover:underline">política de privacidade</Link>.
+                  Lê a <Link href={'/legal/privacy' as any} className="text-brand-600 hover:underline">política de privacidade</Link>.
                 </p>
               </div>
             </div>
