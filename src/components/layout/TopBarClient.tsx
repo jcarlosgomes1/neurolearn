@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { X, Sparkles, Info, AlertTriangle, CheckCircle2, ArrowRight } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface TopBarData {
   enabled: boolean;
@@ -40,6 +41,7 @@ function setDismissed(message: string) {
 }
 
 export function TopBarClient({ data }: { data: TopBarData }) {
+  const t = useTranslations();
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
@@ -81,7 +83,7 @@ export function TopBarClient({ data }: { data: TopBarData }) {
         inner
       )}
       {data.dismissible && (
-        <button onClick={handleDismiss} aria-label="Fechar"
+        <button onClick={handleDismiss} aria-label={t('btn.close')}
           className="absolute top-1/2 right-2 -translate-y-1/2 p-1.5 rounded hover:bg-white/20 text-white/80 hover:text-white transition-colors">
           <X className="h-3.5 w-3.5" />
         </button>
