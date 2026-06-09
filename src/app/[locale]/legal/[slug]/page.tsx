@@ -35,7 +35,7 @@ export default async function LegalPage({ params }: { params: Promise<{ slug: st
     <>
       <Header />
       <main className="bg-white min-h-screen">
-        <article className="max-w-3xl mx-auto px-4 py-10 sm:py-12">
+        <article className="max-w-5xl mx-auto px-4 py-10 sm:py-12">
           <Link
             href={'/' as any}
             className="group inline-flex items-center gap-1.5 mb-6 text-sm text-slate-500 hover:text-slate-900 font-medium transition-colors"

@@ -5,8 +5,8 @@ import type { NavItem } from '@/lib/api/nav-items';
 
 interface FooterData { brand?: string }
 
-export default function FooterClient({ data, platform, company, legal }: {
-  data: FooterData; platform: NavItem[]; company: NavItem[]; legal: NavItem[];
+export default function FooterClient({ data, platform, solutions, company, legal }: {
+  data: FooterData; platform: NavItem[]; solutions: NavItem[]; company: NavItem[]; legal: NavItem[];
 }) {
   const t = useTranslations();
   const year = new Date().getFullYear();
@@ -44,7 +44,7 @@ export default function FooterClient({ data, platform, company, legal }: {
   return (
     <footer className="bg-slate-900 text-slate-400">
       <div className="max-w-6xl mx-auto px-4 py-14">
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-6">
           <div className="lg:col-span-2">
             <div className="flex items-center gap-2 font-bold text-white text-lg">
               <span className="text-2xl">🧠</span>
@@ -65,6 +65,13 @@ export default function FooterClient({ data, platform, company, legal }: {
             <div>
               <h3 className="text-white font-semibold text-sm mb-3">{t('footer.platform')}</h3>
               <ul className="space-y-2 text-sm">{platform.map(renderItem)}</ul>
+            </div>
+          )}
+
+          {solutions.length > 0 && (
+            <div>
+              <h3 className="text-white font-semibold text-sm mb-3">{t('footer.solutions')}</h3>
+              <ul className="space-y-2 text-sm">{solutions.map(renderItem)}</ul>
             </div>
           )}
 
