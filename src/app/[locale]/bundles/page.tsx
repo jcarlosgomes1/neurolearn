@@ -1,17 +1,19 @@
 import { createClient } from '@/lib/supabase/server';
 import { Header } from '@/components/layout/Header';
 import { Link } from '@/i18n/routing';
+import { getTranslations } from 'next-intl/server';
 import { Package, Star, BookOpen } from 'lucide-react';
 
 export const metadata = { title: 'Bundles · NeuroLearn' };
 
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  const t = await getTranslations();
   const sb = await createClient();
   const { data } = await sb.rpc('nl_bundles_public_list');
   const bundles = (data as any)?.bundles || [];
   
-  function fmt(c: number, cur = 'EUR') { return new Intl.NumberFormat('pt-PT', { style: 'currency', currency: cur }).format(c/100); }
+  function fmt(c: number, cur = 'EUR') { return new Intl.NumberFormat(locale, { style: 'currency', currency: cur }).format(c/100); }
 
   return (
     <>
@@ -21,18 +23,18 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
           <div className="max-w-5xl mx-auto px-4 py-12 sm:py-16">
             <div className="flex items-center gap-2 mb-3">
               <Package className="h-6 w-6" />
-              <span className="text-sm font-semibold uppercase tracking-wider text-brand-200">Bundles</span>
+              <span className="text-sm font-semibold uppercase tracking-wider text-brand-200">{t('bn.badge')}</span>
             </div>
-            <h1 className="text-3xl sm:text-5xl font-bold mb-3">Aprende mais, poupa mais</h1>
-            <p className="text-lg text-brand-100 max-w-2xl">Cursos empacotados com desconto. Acesso vitalício a tudo o que adicionares.</p>
+            <h1 className="text-3xl sm:text-5xl font-bold mb-3">{t('bn.h1')}</h1>
+            <p className="text-lg text-brand-100 max-w-2xl">{t('bn.sub')}</p>
           </div>
         </section>
         <div className="max-w-5xl mx-auto px-4 py-8">
           {bundles.length === 0 ? (
             <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
               <Package className="h-12 w-12 text-slate-300 mx-auto mb-3" />
-              <h3 className="font-semibold text-slate-900 mb-1">Sem bundles disponíveis</h3>
-              <Link href={'/cursos' as any} className="text-sm text-brand-600 hover:underline">Ver cursos individuais →</Link>
+              <h3 className="font-semibold text-slate-900 mb-1">{t('bn.empty')}</h3>
+              <Link href={'/cursos' as any} className="text-sm text-brand-600 hover:underline">{t('bn.see_individual')} →</Link>
             </div>
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -47,14 +49,14 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
                     <h3 className="font-bold text-slate-900 text-lg mb-1">{b.title}</h3>
                     {b.description && <p className="text-sm text-slate-600 mb-3 line-clamp-2">{b.description}</p>}
                     <div className="text-xs text-slate-500 mb-3 flex items-center gap-1">
-                      <BookOpen className="h-3 w-3" /> {b.course_ids?.length || 0} cursos
+                      <BookOpen className="h-3 w-3" /> {t('bn.courses', { count: b.course_ids?.length || 0 })}
                     </div>
                     <div className="flex items-baseline gap-2 mb-3">
                       <span className="text-2xl font-bold text-slate-900">{fmt(b.price_cents, b.currency)}</span>
                       {b.original_total_cents > b.price_cents && <span className="text-sm text-slate-400 line-through">{fmt(b.original_total_cents, b.currency)}</span>}
                     </div>
                     <button disabled className="w-full px-4 py-2 bg-brand-600 text-white text-sm font-semibold rounded-lg opacity-60 cursor-not-allowed">
-                      Em breve (Stripe)
+                      {t('bn.soon_stripe')}
                     </button>
                   </div>
                 </div>
