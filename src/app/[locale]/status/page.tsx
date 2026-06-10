@@ -1,6 +1,7 @@
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/sections/Footer';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
+import { getTranslations } from 'next-intl/server';
 import type { Metadata } from 'next';
 import { CheckCircle2, AlertCircle, XCircle, Activity } from 'lucide-react';
 
@@ -45,6 +46,7 @@ function StatusIcon({ ok }: { ok: boolean }) {
 
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  const t = await getTranslations();
   const blocks = await getHomeBlocks(locale);
   const health = await getHealth();
   
@@ -62,7 +64,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
             <div className="flex items-center gap-3 mb-4">
               <Activity className="h-7 w-7 text-brand-600" strokeWidth={2.4} />
               <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">
-                Estado da Plataforma
+                {t('st.h1')}
               </h1>
             </div>
             <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${
@@ -70,48 +72,48 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
             }`}>
               {allOk ? <CheckCircle2 className="h-5 w-5" /> : <AlertCircle className="h-5 w-5" />}
               <span className="font-semibold">
-                {allOk ? 'Todos os sistemas operacionais' : 'Alguns serviços a operar com restrições'}
+                {allOk ? t('st.all_ok') : t('st.some_restricted')}
               </span>
             </div>
             <p className="mt-4 text-sm text-slate-500">
-              Última verificação: {health?.timestamp ? new Date(health.timestamp).toLocaleString(locale) : 'indisponível'}
+              {t('st.last_check')} {health?.timestamp ? new Date(health.timestamp).toLocaleString(locale) : t('st.unavailable')}
             </p>
           </div>
         </section>
 
         <section className="max-w-4xl mx-auto px-4 py-10">
-          <h2 className="text-xl font-semibold text-slate-900 mb-6">Componentes</h2>
+          <h2 className="text-xl font-semibold text-slate-900 mb-6">{t('st.components')}</h2>
           <div className="space-y-3">
             <div className="bg-white border border-slate-200 rounded-xl p-5 flex items-center justify-between">
               <div>
                 <h3 className="font-semibold text-slate-900">API</h3>
-                <p className="text-sm text-slate-500 mt-0.5">Endpoint /api/health responde</p>
+                <p className="text-sm text-slate-500 mt-0.5">{t('st.api_desc')}</p>
               </div>
               <StatusIcon ok={apiOk} />
             </div>
             <div className="bg-white border border-slate-200 rounded-xl p-5 flex items-center justify-between">
               <div>
-                <h3 className="font-semibold text-slate-900">Base de Dados</h3>
+                <h3 className="font-semibold text-slate-900">{t('st.database')}</h3>
                 <p className="text-sm text-slate-500 mt-0.5">
-                  {dbOk ? `Postgres responde · ${health?.db_size_mb} MB` : 'Sem resposta'}
+                  {dbOk ? `${t('st.db_ok')} · ${health?.db_size_mb} MB` : t('st.no_response')}
                 </p>
               </div>
               <StatusIcon ok={dbOk} />
             </div>
             <div className="bg-white border border-slate-200 rounded-xl p-5 flex items-center justify-between">
               <div>
-                <h3 className="font-semibold text-slate-900">Jobs em background</h3>
+                <h3 className="font-semibold text-slate-900">{t('st.jobs')}</h3>
                 <p className="text-sm text-slate-500 mt-0.5">
-                  {jobsOk ? `${health?.jobs_pending ?? 0} pending · ${health?.jobs_failed_24h ?? 0} falharam nas últimas 24h` : 'Falhas elevadas'}
+                  {jobsOk ? t('st.jobs_ok', { pending: health?.jobs_pending ?? 0, failed: health?.jobs_failed_24h ?? 0 }) : t('st.jobs_high')}
                 </p>
               </div>
               <StatusIcon ok={jobsOk} />
             </div>
             <div className="bg-white border border-slate-200 rounded-xl p-5 flex items-center justify-between">
               <div>
-                <h3 className="font-semibold text-slate-900">Inteligência Artificial</h3>
+                <h3 className="font-semibold text-slate-900">{t('st.engine')}</h3>
                 <p className="text-sm text-slate-500 mt-0.5">
-                  {(health?.ai_calls_24h ?? 0)} chamadas · €{(health?.ai_cost_24h_eur ?? 0).toFixed(2)} (24h)
+                  {t('st.engine_desc', { calls: health?.ai_calls_24h ?? 0, cost: (health?.ai_cost_24h_eur ?? 0).toFixed(2) })}
                 </p>
               </div>
               <StatusIcon ok={apiOk} />
@@ -119,11 +121,9 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
           </div>
 
           <div className="mt-10 p-6 bg-slate-50 rounded-xl">
-            <h3 className="font-semibold text-slate-900 mb-2">Sobre esta página</h3>
+            <h3 className="font-semibold text-slate-900 mb-2">{t('st.about')}</h3>
             <p className="text-sm text-slate-600 leading-relaxed">
-              Esta página mostra o estado em tempo real dos serviços principais. 
-              É actualizada a cada minuto e usa o endpoint público <code className="bg-white px-1.5 py-0.5 rounded text-xs">/api/health</code>.
-              Para informação detalhada sobre incidentes ou manutenções planeadas, contacte o suporte.
+              {t('st.about_pre')} <code className="bg-white px-1.5 py-0.5 rounded text-xs">/api/health</code>. {t('st.about_post')}
             </p>
           </div>
         </section>
