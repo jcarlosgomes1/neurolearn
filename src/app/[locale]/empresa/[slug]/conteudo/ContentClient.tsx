@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter, Link } from '@/i18n/routing';
 import { toast } from 'sonner';
@@ -24,11 +25,11 @@ interface ContentItem {
   uploader_id: string;
 }
 
-const STATUS_META: Record<string, { label: string; icon: any; cls: string }> = {
-  pending:    { label: 'Pendente',    icon: Clock,        cls: 'bg-amber-50 text-amber-700 border-amber-200' },
-  processing: { label: 'A processar', icon: Loader2,      cls: 'bg-blue-50 text-blue-700 border-blue-200' },
-  completed:  { label: 'Pronto',      icon: CheckCircle,  cls: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-  failed:     { label: 'Falhou',      icon: XCircle,      cls: 'bg-rose-50 text-rose-700 border-rose-200' },
+const STATUS_META: Record<string, { labelKey: string; icon: any; cls: string }> = {
+  pending:    { labelKey: 'org.cnt.status_pending',    icon: Clock,        cls: 'bg-amber-50 text-amber-700 border-amber-200' },
+  processing: { labelKey: 'org.cnt.status_processing', icon: Loader2,      cls: 'bg-blue-50 text-blue-700 border-blue-200' },
+  completed:  { labelKey: 'org.cnt.status_completed',  icon: CheckCircle,  cls: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  failed:     { labelKey: 'org.cnt.status_failed',     icon: XCircle,      cls: 'bg-rose-50 text-rose-700 border-rose-200' },
 };
 
 const MAX_BYTES = 100 * 1024 * 1024; // 100 MB
@@ -42,6 +43,8 @@ function formatBytes(n: number): string {
 export function ContentClient({ orgId, orgSlug, userId, items }: {
   orgId: string; orgSlug: string; userId: string; items: ContentItem[];
 }) {
+  const t = useTranslations();
+  const locale = useLocale();
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [busy, setBusy] = useState(false);
@@ -65,7 +68,7 @@ export function ContentClient({ orgId, orgSlug, userId, items }: {
 
   async function uploadFile(file: File) {
     if (file.size > MAX_BYTES) {
-      toast.error(`Ficheiro demasiado grande (máx ${formatBytes(MAX_BYTES)})`);
+      toast.error(t('org.cnt.too_large', { size: formatBytes(MAX_BYTES) }));
       return;
     }
     setBusy(true);
@@ -85,10 +88,10 @@ export function ContentClient({ orgId, orgSlug, userId, items }: {
         p_mime_type: file.type || 'application/octet-stream',
       });
       if (rpcErr) throw rpcErr;
-      toast.success('Documento enviado · processamento iniciado');
+      toast.success(t('org.cnt.uploaded'));
       router.refresh();
     } catch (e: any) {
-      toast.error(e?.message || 'Erro no upload');
+      toast.error(e?.message || t('org.cnt.upload_error'));
     } finally { setBusy(false); }
   }
 
@@ -97,21 +100,21 @@ export function ContentClient({ orgId, orgSlug, userId, items }: {
       const sb = createClient();
       const { error } = await sb.rpc('nl_org_content_retry_ingest', { p_content_id: id });
       if (error) throw error;
-      toast.success('Re-enviado para processamento');
+      toast.success(t('org.cnt.retried'));
       router.refresh();
-    } catch (e: any) { toast.error(e?.message || 'Erro'); }
+    } catch (e: any) { toast.error(e?.message || t('tea.error')); }
   }
 
   async function archive(id: string) {
-    if (!confirm('Arquivar este documento?')) return;
+    if (!confirm(t('org.cnt.archive_confirm'))) return;
     try {
       const sb = createClient();
       const { error } = await sb.rpc('nl_org_content_archive', { p_content_id: id });
       if (error) throw error;
-      toast.success('Arquivado');
+      toast.success(t('org.cnt.archived'));
       const next = new Set(selected); next.delete(id); setSelected(next);
       router.refresh();
-    } catch (e: any) { toast.error(e?.message || 'Erro'); }
+    } catch (e: any) { toast.error(e?.message || t('tea.error')); }
   }
 
   function toggleSelect(id: string) {
@@ -121,7 +124,7 @@ export function ContentClient({ orgId, orgSlug, userId, items }: {
   }
 
   async function createProposal() {
-    if (selected.size === 0) { toast.error('Selecciona pelo menos 1 documento'); return; }
+    if (selected.size === 0) { toast.error(t('org.cnt.select_min')); return; }
     setBusy(true);
     try {
       const sb = createClient();
@@ -133,10 +136,10 @@ export function ContentClient({ orgId, orgSlug, userId, items }: {
         p_source_lang: 'pt',
       });
       if (error) throw error;
-      toast.success('Proposta criada · vai processar em background');
+      toast.success(t('org.cnt.proposal_created'));
       setSelected(new Set());
       router.push({ pathname: '/empresa/[slug]/propostas', params: { slug: orgSlug } } as any);
-    } catch (e: any) { toast.error(e?.message || 'Erro'); }
+    } catch (e: any) { toast.error(e?.message || t('tea.error')); }
     finally { setBusy(false); }
   }
 
@@ -145,11 +148,11 @@ export function ContentClient({ orgId, orgSlug, userId, items }: {
       {/* Upload zone */}
       <div className="bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 border-2 border-dashed border-emerald-300 rounded-2xl p-6 text-center">
         <Upload className="h-10 w-10 text-emerald-600 mx-auto mb-2" />
-        <h2 className="font-bold text-slate-900">Carregar documento</h2>
-        <p className="text-xs text-slate-600 mt-1">PDF, DOCX, Markdown, vídeo · até 100 MB · processamos automaticamente</p>
+        <h2 className="font-bold text-slate-900">{t('org.cnt.upload_h')}</h2>
+        <p className="text-xs text-slate-600 mt-1">{t('org.cnt.upload_p')}</p>
         <button onClick={() => inputRef.current?.click()} disabled={busy}
           className="inline-flex items-center gap-1.5 mt-4 px-5 py-2 bg-gradient-to-br from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-sm font-semibold rounded-lg shadow-sm disabled:opacity-50">
-          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />} Escolher ficheiro
+          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />} {t('org.cnt.choose_file')}
         </button>
         <input ref={inputRef} type="file" className="hidden"
           accept=".pdf,.doc,.docx,.md,.txt,.mp4,.mov,.webm,.mp3,.wav,.m4a"
@@ -162,19 +165,19 @@ export function ContentClient({ orgId, orgSlug, userId, items }: {
           {(['all','completed','pending','failed'] as const).map((f) => (
             <button key={f} onClick={() => setFilter(f)}
               className={`px-2.5 py-1.5 text-xs font-semibold rounded transition-colors ${filter === f ? 'bg-emerald-100 text-emerald-700' : 'text-slate-600 hover:bg-slate-50'}`}>
-              {f === 'all' ? 'Todos' : f === 'completed' ? 'Prontos' : f === 'pending' ? 'A processar' : 'Falhou'}
+              {f === 'all' ? t('org.cnt.filter_all') : f === 'completed' ? t('org.cnt.filter_completed') : f === 'pending' ? t('org.cnt.status_processing') : t('org.cnt.status_failed')}
               <span className="ml-1 text-[10px] opacity-70">({counts[f]})</span>
             </button>
           ))}
         </div>
         {selected.size > 0 && (
           <div className="flex items-center gap-2 bg-violet-50 border border-violet-200 rounded-lg px-3 py-1.5">
-            <span className="text-xs font-semibold text-violet-700">{selected.size} seleccionado(s)</span>
+            <span className="text-xs font-semibold text-violet-700">{t('org.cnt.selected_count', { count: selected.size })}</span>
             <button onClick={createProposal} disabled={busy}
               className="inline-flex items-center gap-1 px-3 py-1 bg-gradient-to-br from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white text-xs font-semibold rounded shadow-sm disabled:opacity-50">
-              {busy ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />} Gerar proposta de curso
+              {busy ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />} {t('org.cnt.gen_proposal')}
             </button>
-            <button onClick={() => setSelected(new Set())} className="text-violet-600 hover:text-violet-900 text-xs">Limpar</button>
+            <button onClick={() => setSelected(new Set())} className="text-violet-600 hover:text-violet-900 text-xs">{t('org.cnt.clear')}</button>
           </div>
         )}
       </div>
@@ -184,7 +187,7 @@ export function ContentClient({ orgId, orgSlug, userId, items }: {
         <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center">
           <FileText className="h-10 w-10 text-slate-300 mx-auto mb-2" />
           <p className="text-sm text-slate-500">
-            {filter === 'all' ? 'Sem documentos ainda. Carrega o primeiro acima.' : 'Sem documentos neste filtro.'}
+            {filter === 'all' ? t('org.cnt.empty_all') : t('org.cnt.empty_filtered')}
           </p>
         </div>
       ) : (
@@ -210,11 +213,11 @@ export function ContentClient({ orgId, orgSlug, userId, items }: {
                       <div className="min-w-0 flex-1">
                         <div className="font-semibold text-sm text-slate-900 truncate">{it.original_name}</div>
                         <div className="text-[11px] text-slate-500 mt-0.5">
-                          {formatBytes(it.file_size_bytes || 0)} · {new Date(it.created_at).toLocaleDateString('pt-PT')}
+                          {formatBytes(it.file_size_bytes || 0)} · {new Date(it.created_at).toLocaleDateString(locale)}
                         </div>
                       </div>
                       <span className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border font-bold uppercase tracking-wider ${meta.cls}`}>
-                        <Icon className={`h-3 w-3 ${it.extraction_status === 'processing' ? 'animate-spin' : ''}`} /> {meta.label}
+                        <Icon className={`h-3 w-3 ${it.extraction_status === 'processing' ? 'animate-spin' : ''}`} /> {t(meta.labelKey)}
                       </span>
                     </div>
                     {it.summary && (
@@ -239,12 +242,12 @@ export function ContentClient({ orgId, orgSlug, userId, items }: {
                       {it.extraction_status === 'failed' && (
                         <button onClick={() => retry(it.id)}
                           className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-semibold text-amber-700 hover:bg-amber-50 rounded">
-                          <RefreshCw className="h-3 w-3" /> Tentar novamente
+                          <RefreshCw className="h-3 w-3" /> {t('org.cnt.retry_btn')}
                         </button>
                       )}
                       <button onClick={() => archive(it.id)}
                         className="inline-flex items-center gap-1 px-2 py-1 text-[11px] text-slate-400 hover:text-rose-700 hover:bg-rose-50 rounded">
-                        <Trash2 className="h-3 w-3" /> Arquivar
+                        <Trash2 className="h-3 w-3" /> {t('org.cnt.archive_btn')}
                       </button>
                     </div>
                   </div>
