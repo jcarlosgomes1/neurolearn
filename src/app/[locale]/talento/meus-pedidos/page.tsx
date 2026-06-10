@@ -2,19 +2,20 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { myPlacementsAction } from '../../empresa/[slug]/talent-actions';
 import { Link } from '@/i18n/routing';
+import { getTranslations } from 'next-intl/server';
 import { Header } from '@/components/layout/Header';
 import { Briefcase, ArrowLeft } from 'lucide-react';
 
 export const metadata = { title: 'Os Meus Pedidos · Talent' };
 export const dynamic = 'force-dynamic';
 
-const STAGE_LABELS: Record<string, { label: string; color: string }> = {
-  introduced: { label: 'Empresa interessada', color: 'bg-blue-100 text-blue-800' },
-  interested: { label: 'Em contacto', color: 'bg-violet-100 text-violet-800' },
-  interviewed: { label: 'Entrevista realizada', color: 'bg-violet-100 text-violet-800' },
-  offered: { label: 'Oferta recebida', color: 'bg-amber-100 text-amber-800' },
-  hired: { label: 'Contratado/a 🎉', color: 'bg-emerald-100 text-emerald-800' },
-  rejected: { label: 'Não selecionado', color: 'bg-rose-100 text-rose-700' },
+const STAGE_LABELS: Record<string, { labelKey: string; color: string }> = {
+  introduced: { labelKey: 'tal.stage_introduced', color: 'bg-blue-100 text-blue-800' },
+  interested: { labelKey: 'tal.stage_interested', color: 'bg-violet-100 text-violet-800' },
+  interviewed: { labelKey: 'tal.stage_interviewed', color: 'bg-violet-100 text-violet-800' },
+  offered: { labelKey: 'tal.stage_offered', color: 'bg-amber-100 text-amber-800' },
+  hired: { labelKey: 'tal.stage_hired', color: 'bg-emerald-100 text-emerald-800' },
+  rejected: { labelKey: 'tal.stage_rejected', color: 'bg-rose-100 text-rose-700' },
 };
 
 function fmt(cents?: number | null) {
@@ -24,6 +25,7 @@ function fmt(cents?: number | null) {
 
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  const t = await getTranslations();
   const sb = await createClient();
   const { data: { user } } = await sb.auth.getUser();
   if (!user) redirect(`/${locale}/login`);
@@ -38,13 +40,13 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
         <section className="bg-white border-b border-slate-200">
           <div className="max-w-3xl mx-auto px-4 py-6">
             <Link href={'/talento' as any} className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-emerald-700 mb-3">
-              <ArrowLeft className="h-4 w-4" /> Voltar ao perfil
+              <ArrowLeft className="h-4 w-4" /> {t('tal.back_profile')}
             </Link>
             <div className="flex items-center gap-2">
               <Briefcase className="h-6 w-6 text-emerald-600" />
-              <h1 className="text-2xl font-bold text-slate-900">Os Meus Pedidos</h1>
+              <h1 className="text-2xl font-bold text-slate-900">{t('tal.requests_h')}</h1>
             </div>
-            <p className="text-sm text-slate-500 mt-1">Empresas que se interessaram pelo teu perfil.</p>
+            <p className="text-sm text-slate-500 mt-1">{t('tal.requests_sub')}</p>
           </div>
         </section>
 
@@ -52,8 +54,8 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
           {placements.length === 0 ? (
             <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
               <Briefcase className="h-12 w-12 text-slate-300 mx-auto mb-3" />
-              <h3 className="font-semibold text-slate-900 mb-1">Ainda sem interesse</h3>
-              <p className="text-sm text-slate-500">Mantém o teu perfil actualizado e visível. As empresas vêm ter contigo.</p>
+              <h3 className="font-semibold text-slate-900 mb-1">{t('tal.requests_empty_h')}</h3>
+              <p className="text-sm text-slate-500">{t('tal.requests_empty_p')}</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -75,11 +77,11 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
                           {p.job_title && <div className="text-xs text-slate-500">{p.job_title}</div>}
                         </div>
                       </div>
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${stage.color}`}>{stage.label}</span>
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${stage.color}`}>{t(stage.labelKey)}</span>
                     </div>
                     {p.annual_salary_cents && p.pipeline_status === 'hired' && (
                       <div className="text-sm font-semibold text-emerald-700 mt-2">
-                        Salário: {fmt(p.annual_salary_cents)}/ano
+                        {t('tal.salary_year', { amount: fmt(p.annual_salary_cents) })}
                       </div>
                     )}
                     <div className="text-xs text-slate-400 mt-2">{new Date(p.created_at).toLocaleDateString(locale)}</div>
