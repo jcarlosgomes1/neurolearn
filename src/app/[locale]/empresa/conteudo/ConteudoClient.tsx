@@ -1,30 +1,33 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
-import { useRouter } from '@/i18n/routing';
+import { useRouter, Link } from '@/i18n/routing';
 import { toast } from 'sonner';
 import { Upload, FileText, Trash2, Sparkles, Loader2, CheckCircle, Clock, AlertCircle, Building2 } from 'lucide-react';
 import { SUPABASE_URL } from '@/lib/supabase/config';
 
-const STATUS: Record<string, { label: string; cls: string; icon: any }> = {
-  pending: { label: 'A processar', cls: 'bg-amber-50 text-amber-700 border-amber-200', icon: Clock },
-  processing: { label: 'A analisar', cls: 'bg-blue-50 text-blue-700 border-blue-200', icon: Loader2 },
-  completed: { label: 'Pronto', cls: 'bg-emerald-50 text-emerald-700 border-emerald-200', icon: CheckCircle },
-  failed: { label: 'Erro', cls: 'bg-rose-50 text-rose-700 border-rose-200', icon: AlertCircle },
+const STATUS: Record<string, { labelKey: string; cls: string; icon: any }> = {
+  pending: { labelKey: 'org.cc.st_pending', cls: 'bg-amber-50 text-amber-700 border-amber-200', icon: Clock },
+  processing: { labelKey: 'org.cc.st_processing', cls: 'bg-blue-50 text-blue-700 border-blue-200', icon: Loader2 },
+  completed: { labelKey: 'org.cc.st_completed', cls: 'bg-emerald-50 text-emerald-700 border-emerald-200', icon: CheckCircle },
+  failed: { labelKey: 'org.cc.st_failed', cls: 'bg-rose-50 text-rose-700 border-rose-200', icon: AlertCircle },
 };
-const PROP_STATUS: Record<string, { label: string; cls: string }> = {
-  pending: { label: 'A planear curso', cls: 'bg-violet-50 text-violet-700' },
-  processing: { label: 'A gerar lições', cls: 'bg-blue-50 text-blue-700' },
-  approved: { label: 'Aprovada', cls: 'bg-emerald-50 text-emerald-700' },
-  completed: { label: 'Curso criado', cls: 'bg-emerald-100 text-emerald-800' },
-  failed: { label: 'Falhou', cls: 'bg-rose-50 text-rose-700' },
-  rejected: { label: 'Rejeitada', cls: 'bg-slate-100 text-slate-600' },
+const PROP_STATUS: Record<string, { labelKey: string; cls: string }> = {
+  pending: { labelKey: 'org.cc.ps_pending', cls: 'bg-violet-50 text-violet-700' },
+  processing: { labelKey: 'org.cc.ps_processing', cls: 'bg-blue-50 text-blue-700' },
+  approved: { labelKey: 'org.cc.ps_approved', cls: 'bg-emerald-50 text-emerald-700' },
+  completed: { labelKey: 'org.cc.ps_completed', cls: 'bg-emerald-100 text-emerald-800' },
+  failed: { labelKey: 'org.cc.ps_failed', cls: 'bg-rose-50 text-rose-700' },
+  rejected: { labelKey: 'org.cc.ps_rejected', cls: 'bg-slate-100 text-slate-600' },
 };
 
 export function ConteudoClient({ orgs, activeOrgId, content, proposals }: {
   orgs: any[]; activeOrgId: string; content: any[]; proposals: any[];
 }) {
+  const t = useTranslations();
+  const locale = useLocale();
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -48,7 +51,7 @@ export function ConteudoClient({ orgs, activeOrgId, content, proposals }: {
       const sb = createClient();
       for (const file of Array.from(files)) {
         if (file.size > 104857600) {
-          toast.error(`${file.name}: máximo 100 MB`);
+          toast.error(t('org.cc.too_big', { name: file.name }));
           continue;
         }
         const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
@@ -71,10 +74,10 @@ export function ConteudoClient({ orgs, activeOrgId, content, proposals }: {
           }).catch(() => {});
         } catch {}
       }
-      toast.success(`${files.length} ${files.length === 1 ? 'ficheiro' : 'ficheiros'} carregados`);
+      toast.success(t('org.cc.uploaded', { count: files.length }));
       router.refresh();
     } catch (e: any) {
-      toast.error(e?.message || 'Erro no upload');
+      toast.error(e?.message || t('org.cc.upload_error'));
     } finally {
       setBusy(false);
     }
@@ -82,7 +85,7 @@ export function ConteudoClient({ orgs, activeOrgId, content, proposals }: {
 
   async function createProposal() {
     if (selected.size === 0) {
-      toast.error('Seleciona pelo menos 1 documento');
+      toast.error(t('org.cc.select_min'));
       return;
     }
     setBusy(true);
@@ -101,28 +104,28 @@ export function ConteudoClient({ orgs, activeOrgId, content, proposals }: {
           body: JSON.stringify({ proposal_id: propId, org_id: activeOrgId }),
         }).catch(() => {});
       } catch {}
-      toast.success('Proposta criada · a planear curso');
+      toast.success(t('org.cc.proposal_created'));
       setSelected(new Set());
       router.refresh();
     } catch (e: any) {
-      toast.error(e?.message || 'Erro');
+      toast.error(e?.message || t('tea.error'));
     } finally {
       setBusy(false);
     }
   }
 
   async function archive(id: string) {
-    if (!confirm('Arquivar este documento?')) return;
+    if (!confirm(t('org.cnt.archive_confirm'))) return;
     try {
       const sb = createClient();
       const { data } = await sb.rpc('nl_org_content_archive', { p_content_id: id });
       if (data?.storage_path) {
         await sb.storage.from('org-content').remove([data.storage_path]).catch(() => {});
       }
-      toast.success('Arquivado');
+      toast.success(t('org.cnt.archived'));
       router.refresh();
     } catch (e: any) {
-      toast.error(e?.message || 'Erro');
+      toast.error(e?.message || t('tea.error'));
     }
   }
 
@@ -146,8 +149,8 @@ export function ConteudoClient({ orgs, activeOrgId, content, proposals }: {
         <div className="inline-flex h-14 w-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white items-center justify-center shadow-lg mb-3 group-hover:scale-110 transition-transform">
           {busy ? <Loader2 className="h-7 w-7 animate-spin" /> : <Upload className="h-7 w-7" />}
         </div>
-        <h3 className="font-bold text-slate-900 text-lg">Arrasta ficheiros ou clica para escolher</h3>
-        <p className="text-sm text-slate-600 mt-1">PDF · DOC · DOCX · MD · TXT — até 100 MB cada</p>
+        <h3 className="font-bold text-slate-900 text-lg">{t('org.cc.drop_hint')}</h3>
+        <p className="text-sm text-slate-600 mt-1">{t('org.cc.drop_formats')}</p>
         <input
           ref={fileRef} type="file" multiple
           accept=".pdf,.doc,.docx,.md,.txt"
@@ -159,16 +162,16 @@ export function ConteudoClient({ orgs, activeOrgId, content, proposals }: {
       {selected.size > 0 && (
         <div className="bg-white border border-violet-200 rounded-xl p-3 flex items-center justify-between shadow-sm sticky top-4 z-10">
           <div className="text-sm">
-            <span className="font-semibold text-violet-700">{selected.size}</span> selecionado{selected.size > 1 ? 's' : ''}
+            <span className="font-semibold text-violet-700">{t('org.cc.selected_count', { count: selected.size })}</span>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={() => setSelected(new Set())} className="text-xs text-slate-500 hover:text-slate-900 px-2">Limpar</button>
+            <button onClick={() => setSelected(new Set())} className="text-xs text-slate-500 hover:text-slate-900 px-2">{t('org.cnt.clear')}</button>
             <button
               onClick={createProposal}
               disabled={busy}
               className="inline-flex items-center gap-1.5 px-4 py-2 bg-gradient-to-br from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm disabled:opacity-50">
               <Sparkles className="h-3.5 w-3.5" />
-              {busy ? 'A criar…' : 'Propor curso a partir destes documentos'}
+              {busy ? t('org.cc.creating') : t('org.cc.propose_btn')}
             </button>
           </div>
         </div>
@@ -176,11 +179,11 @@ export function ConteudoClient({ orgs, activeOrgId, content, proposals }: {
 
       <section>
         <h2 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
-          <FileText className="h-4 w-4" /> Documentos ({content.length})
+          <FileText className="h-4 w-4" /> {t('org.cc.docs_h', { count: content.length })}
         </h2>
         {content.length === 0 ? (
           <div className="bg-white rounded-2xl border border-slate-200 p-10 text-center text-sm text-slate-500">
-            Sem documentos ainda. Faz upload acima.
+            {t('org.cc.empty_docs')}
           </div>
         ) : (
           <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden divide-y divide-slate-100">
@@ -200,7 +203,7 @@ export function ConteudoClient({ orgs, activeOrgId, content, proposals }: {
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-sm font-medium text-slate-900 truncate">{c.original_name}</span>
                       <span className={`inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded font-semibold uppercase tracking-wider ${st.cls}`}>
-                        <SIcon className={`h-2.5 w-2.5 ${c.extraction_status === 'processing' ? 'animate-spin' : ''}`} /> {st.label}
+                        <SIcon className={`h-2.5 w-2.5 ${c.extraction_status === 'processing' ? 'animate-spin' : ''}`} /> {t(st.labelKey)}
                       </span>
                     </div>
                     {c.summary && <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">{c.summary}</p>}
@@ -225,7 +228,7 @@ export function ConteudoClient({ orgs, activeOrgId, content, proposals }: {
       {proposals.length > 0 && (
         <section>
           <h2 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-violet-500" /> Propostas ({proposals.length})
+            <Sparkles className="h-4 w-4 text-violet-500" /> {t('org.cc.props_h', { count: proposals.length })}
           </h2>
           <div className="grid sm:grid-cols-2 gap-3">
             {proposals.map((p) => {
@@ -234,18 +237,18 @@ export function ConteudoClient({ orgs, activeOrgId, content, proposals }: {
               return (
                 <div key={p.id} className="bg-white rounded-2xl border border-slate-200 p-4 hover:shadow-md transition-shadow">
                   <div className="flex items-start justify-between gap-2 mb-2">
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold uppercase tracking-wider ${ps.cls}`}>{ps.label}</span>
-                    <span className="text-[10px] text-slate-400">{new Date(p.created_at).toLocaleDateString('pt-PT')}</span>
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold uppercase tracking-wider ${ps.cls}`}>{t(ps.labelKey)}</span>
+                    <span className="text-[10px] text-slate-400">{new Date(p.created_at).toLocaleDateString(locale)}</span>
                   </div>
-                  <h3 className="font-bold text-slate-900 text-sm leading-snug">{proposal.title || 'A planear curso…'}</h3>
+                  <h3 className="font-bold text-slate-900 text-sm leading-snug">{proposal.title || t('org.cc.planning_title')}</h3>
                   {proposal.description && <p className="text-xs text-slate-500 mt-1.5 line-clamp-3 leading-relaxed">{proposal.description}</p>}
                   {proposal.modules?.length > 0 && (
-                    <div className="mt-2 text-[10px] text-slate-400">{proposal.modules.length} módulos · {(proposal.lessons_count || proposal.modules.reduce((a: number, m: any) => a + (m.lessons?.length || 0), 0))} lições</div>
+                    <div className="mt-2 text-[10px] text-slate-400">{t('org.cc.mod_les', { mods: proposal.modules.length, lessons: (proposal.lessons_count || proposal.modules.reduce((a: number, m: any) => a + (m.lessons?.length || 0), 0)) })}</div>
                   )}
                   {p.generated_course_id && (
-                    <a href={`/pt/curso/${p.generated_course_id}`} className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 hover:text-emerald-900">
-                      Abrir curso →
-                    </a>
+                    <Link href={{ pathname: '/curso/[id]', params: { id: p.generated_course_id } } as any} className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 hover:text-emerald-900">
+                      {t('org.cc.open_course')}
+                    </Link>
                   )}
                 </div>
               );
