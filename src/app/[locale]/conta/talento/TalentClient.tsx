@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from '@/i18n/routing';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Save, X, Plus, Briefcase, MapPin, Globe, Award, EyeOff, Loader2, Sparkles } from 'lucide-react';
 
@@ -15,6 +16,7 @@ interface Profile {
 }
 
 export function TalentClient({ initial }: { initial: Profile }) {
+  const t = useTranslations();
   const router = useRouter();
   const [form, setForm] = useState<Profile>({
     available: initial.available ?? false,
@@ -61,10 +63,10 @@ export function TalentClient({ initial }: { initial: Profile }) {
       }
       const { error } = await sb.rpc('nl_my_talent_profile_upsert', { p_data: payload });
       if (error) throw error;
-      toast.success('Perfil guardado');
+      toast.success(t('talent.saved'));
       setDirty(false);
       router.refresh();
-    } catch (e: any) { toast.error(e?.message || 'Erro'); }
+    } catch (e: any) { toast.error(e?.message || t('talent.error')); }
     finally { setBusy(false); }
   }
 
@@ -78,8 +80,8 @@ export function TalentClient({ initial }: { initial: Profile }) {
               <Sparkles className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="font-bold text-sm text-slate-900">Disponível para oportunidades</h2>
-              <p className="text-xs text-slate-500 mt-0.5">{form.available ? 'O teu perfil é visível para empresas elegíveis.' : 'O teu perfil está oculto.'}</p>
+              <h2 className="font-bold text-sm text-slate-900">{t('talent.available_title')}</h2>
+              <p className="text-xs text-slate-500 mt-0.5">{form.available ? t('talent.available_on') : t('talent.available_off')}</p>
             </div>
           </div>
           <input type="checkbox" checked={!!form.available} onChange={(e) => set('available', e.target.checked)}
@@ -91,22 +93,22 @@ export function TalentClient({ initial }: { initial: Profile }) {
       <section className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
         <header className="px-5 py-3 border-b border-slate-100 flex items-center gap-2.5">
           <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 text-white flex items-center justify-center shadow-sm"><Briefcase className="h-4 w-4" /></div>
-          <h2 className="font-semibold text-sm text-slate-900">Resumo profissional</h2>
+          <h2 className="font-semibold text-sm text-slate-900">{t('talent.summary_title')}</h2>
         </header>
         <div className="p-5 space-y-3">
           <div>
-            <label className="text-xs font-semibold text-slate-700 mb-1 block">Headline</label>
-            <input value={form.headline || ''} onChange={(e) => set('headline', e.target.value)} placeholder="ex: Engenheira de Dados · 5 anos · Cloud + ML"
+            <label className="text-xs font-semibold text-slate-700 mb-1 block">{t('talent.headline_label')}</label>
+            <input value={form.headline || ''} onChange={(e) => set('headline', e.target.value)} placeholder={t('talent.headline_ph')}
               className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:border-violet-500 outline-none" />
           </div>
           <div>
-            <label className="text-xs font-semibold text-slate-700 mb-1 block">Bio</label>
-            <textarea value={form.bio || ''} onChange={(e) => set('bio', e.target.value)} rows={4} placeholder="O que te diferencia? Que projetos te apaixonam?"
+            <label className="text-xs font-semibold text-slate-700 mb-1 block">{t('talent.bio_label')}</label>
+            <textarea value={form.bio || ''} onChange={(e) => set('bio', e.target.value)} rows={4} placeholder={t('talent.bio_ph')}
               className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:border-violet-500 outline-none resize-y" />
           </div>
           <div className="grid sm:grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-semibold text-slate-700 mb-1 block">Anos de experiência</label>
+              <label className="text-xs font-semibold text-slate-700 mb-1 block">{t('talent.years_label')}</label>
               <input type="number" min="0" value={form.years_experience ?? ''} onChange={(e) => set('years_experience', e.target.value ? Number(e.target.value) : undefined)}
                 className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:border-violet-500 outline-none" />
             </div>
@@ -118,11 +120,11 @@ export function TalentClient({ initial }: { initial: Profile }) {
       <section className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
         <header className="px-5 py-3 border-b border-slate-100 flex items-center gap-2.5">
           <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 text-white flex items-center justify-center shadow-sm"><Award className="h-4 w-4" /></div>
-          <h2 className="font-semibold text-sm text-slate-900">Posições & competências</h2>
+          <h2 className="font-semibold text-sm text-slate-900">{t('talent.roles_skills_title')}</h2>
         </header>
         <div className="p-5 space-y-4">
           <div>
-            <label className="text-xs font-semibold text-slate-700 mb-1 block">Posições desejadas</label>
+            <label className="text-xs font-semibold text-slate-700 mb-1 block">{t('talent.desired_roles_label')}</label>
             <div className="flex flex-wrap gap-1.5 mb-2">
               {(form.desired_roles || []).map((r, i) => (
                 <span key={i} className="inline-flex items-center gap-1 bg-violet-100 text-violet-700 px-2 py-0.5 rounded text-xs font-medium">
@@ -134,13 +136,13 @@ export function TalentClient({ initial }: { initial: Profile }) {
             <div className="flex gap-2">
               <input value={roleInput} onChange={(e) => setRoleInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTag('desired_roles', roleInput, setRoleInput); } }}
-                placeholder="ex: Senior Data Engineer · Enter para adicionar"
+                placeholder={t('talent.role_ph')}
                 className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-violet-500" />
               <button onClick={() => addTag('desired_roles', roleInput, setRoleInput)} className="px-3 py-2 bg-violet-600 text-white rounded-lg"><Plus className="h-4 w-4" /></button>
             </div>
           </div>
           <div>
-            <label className="text-xs font-semibold text-slate-700 mb-1 block">Competências certificadas (cursos concluídos)</label>
+            <label className="text-xs font-semibold text-slate-700 mb-1 block">{t('talent.skills_label')}</label>
             <div className="flex flex-wrap gap-1.5 mb-2">
               {(form.certified_skills || []).map((s, i) => (
                 <span key={i} className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-xs font-medium">
@@ -152,7 +154,7 @@ export function TalentClient({ initial }: { initial: Profile }) {
             <div className="flex gap-2">
               <input value={skillInput} onChange={(e) => setSkillInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTag('certified_skills', skillInput, setSkillInput); } }}
-                placeholder="ex: PyTorch · Enter para adicionar"
+                placeholder={t('talent.skill_ph')}
                 className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-emerald-500" />
               <button onClick={() => addTag('certified_skills', skillInput, setSkillInput)} className="px-3 py-2 bg-emerald-600 text-white rounded-lg"><Plus className="h-4 w-4" /></button>
             </div>
@@ -164,17 +166,17 @@ export function TalentClient({ initial }: { initial: Profile }) {
       <section className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
         <header className="px-5 py-3 border-b border-slate-100 flex items-center gap-2.5">
           <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-sky-500 to-blue-600 text-white flex items-center justify-center shadow-sm"><MapPin className="h-4 w-4" /></div>
-          <h2 className="font-semibold text-sm text-slate-900">Localização</h2>
+          <h2 className="font-semibold text-sm text-slate-900">{t('talent.location_title')}</h2>
         </header>
         <div className="p-5 grid sm:grid-cols-2 gap-3 items-end">
           <div>
-            <label className="text-xs font-semibold text-slate-700 mb-1 block">Cidade · País</label>
-            <input value={form.location || ''} onChange={(e) => set('location', e.target.value)} placeholder="Lisboa, Portugal"
+            <label className="text-xs font-semibold text-slate-700 mb-1 block">{t('talent.city_country_label')}</label>
+            <input value={form.location || ''} onChange={(e) => set('location', e.target.value)} placeholder={t('talent.location_ph')}
               className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:border-sky-500 outline-none" />
           </div>
           <label className="inline-flex items-center gap-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm cursor-pointer">
             <input type="checkbox" checked={!!form.remote_ok} onChange={(e) => set('remote_ok', e.target.checked)} className="h-4 w-4 rounded text-sky-600" />
-            <Globe className="h-4 w-4 text-slate-400" /> Disponível para remoto
+            <Globe className="h-4 w-4 text-slate-400" /> {t('talent.remote_ok')}
           </label>
         </div>
       </section>
@@ -182,17 +184,17 @@ export function TalentClient({ initial }: { initial: Profile }) {
       {/* Salário */}
       <section className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
         <header className="px-5 py-3 border-b border-slate-100">
-          <h2 className="font-semibold text-sm text-slate-900">Expectativa salarial</h2>
-          <p className="text-[11px] text-slate-500 mt-0.5">Valor anual bruto em euros. Privado — só vês tu e recruiters que aprovares.</p>
+          <h2 className="font-semibold text-sm text-slate-900">{t('talent.salary_title')}</h2>
+          <p className="text-[11px] text-slate-500 mt-0.5">{t('talent.salary_hint')}</p>
         </header>
         <div className="p-5 grid sm:grid-cols-2 gap-3">
           <div>
-            <label className="text-[10px] uppercase font-bold text-slate-500 mb-1 block">Mínimo (€/ano)</label>
+            <label className="text-[10px] uppercase font-bold text-slate-500 mb-1 block">{t('talent.salary_min')}</label>
             <input type="number" min="0" step="1000" value={form.desired_salary_min_cents ? form.desired_salary_min_cents / 100 : ''} onChange={(e) => set('desired_salary_min_cents', e.target.value ? Math.round(Number(e.target.value) * 100) : undefined)}
               className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:border-amber-500 outline-none" />
           </div>
           <div>
-            <label className="text-[10px] uppercase font-bold text-slate-500 mb-1 block">Máximo (€/ano)</label>
+            <label className="text-[10px] uppercase font-bold text-slate-500 mb-1 block">{t('talent.salary_max')}</label>
             <input type="number" min="0" step="1000" value={form.desired_salary_max_cents ? form.desired_salary_max_cents / 100 : ''} onChange={(e) => set('desired_salary_max_cents', e.target.value ? Math.round(Number(e.target.value) * 100) : undefined)}
               className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:border-amber-500 outline-none" />
           </div>
@@ -207,18 +209,18 @@ export function TalentClient({ initial }: { initial: Profile }) {
           <div className="flex-1">
             <div className="flex items-center gap-1.5">
               <EyeOff className="h-4 w-4 text-slate-600" />
-              <span className="font-semibold text-sm text-slate-900">Ocultar do meu atual empregador</span>
+              <span className="font-semibold text-sm text-slate-900">{t('talent.hide_employer')}</span>
             </div>
-            <p className="text-xs text-slate-500 mt-1 leading-relaxed">Se trabalhas atualmente numa empresa cliente NeuroLearn, oculta-te dos recruiters dessa empresa.</p>
+            <p className="text-xs text-slate-500 mt-1 leading-relaxed">{t('talent.hide_employer_desc')}</p>
           </div>
         </label>
       </section>
 
       <div className="sticky bottom-4 bg-white/95 backdrop-blur-sm border border-slate-200 shadow-lg rounded-2xl p-3 flex items-center justify-between">
-        <div className="text-xs text-slate-500 px-2">{dirty ? <span className="text-amber-600 font-medium">Alterações por guardar</span> : 'Sem alterações'}</div>
+        <div className="text-xs text-slate-500 px-2">{dirty ? <span className="text-amber-600 font-medium">{t('talent.unsaved')}</span> : t('talent.no_changes')}</div>
         <button onClick={save} disabled={busy || !dirty}
           className="inline-flex items-center gap-1.5 px-5 py-2 bg-gradient-to-br from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm disabled:opacity-50">
-          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Guardar perfil
+          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} {t('talent.save_profile')}
         </button>
       </div>
     </div>
