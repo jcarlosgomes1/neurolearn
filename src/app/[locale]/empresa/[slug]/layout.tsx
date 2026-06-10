@@ -20,10 +20,17 @@ interface Branding {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const sb = await createClient();
-  const { data } = await sb.rpc('nl_org_branding_public', { p_slug: slug });
-  const b = data as Branding | null;
+  const [brandRes, cfgRes] = await Promise.all([
+    sb.rpc('nl_org_branding_public', { p_slug: slug }),
+    sb.from('nl_platform_config').select('value').eq('key', 'company_name').maybeSingle(),
+  ]);
+  const b = brandRes.data as Branding | null;
+  // Platform brand comes from the backoffice (nl_platform_config), never hardcoded.
+  const platformName = ((cfgRes.data?.value as string | undefined) || '').trim();
+  // White-label: a tenant page shows the tenant's own brand, not the platform brand.
+  const title = (b?.org_name || '').trim() || platformName || undefined;
   return {
-    title: b?.org_name ? `${b.org_name} · NeuroLearn` : 'Empresa · NeuroLearn',
+    title,
     icons: b?.favicon_url ? { icon: b.favicon_url } : undefined,
   };
 }
