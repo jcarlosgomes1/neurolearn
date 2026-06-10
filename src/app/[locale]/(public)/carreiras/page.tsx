@@ -1,4 +1,5 @@
 import { Link } from '@/i18n/routing';
+import { getTranslations } from 'next-intl/server';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
 import { Briefcase, Heart, Zap, Globe2, Coffee, ArrowRight, Code, Palette, BarChart3, Users } from 'lucide-react';
 
@@ -6,10 +7,10 @@ export const revalidate = 600;
 export async function generateMetadata() { return { title: 'Carreiras · NeuroLearn' }; }
 
 const VALUES = [
-  { icon: Zap, title: 'Velocidade > perfeição', desc: 'Lançamos, medimos, iteramos. Nada está terminado — está sempre a evoluir.', cls: 'from-amber-500 to-orange-600' },
-  { icon: Heart, title: 'Cuidamos do produto', desc: 'Pensamos em quem usa. Cada decisão começa numa pergunta: e o utilizador?', cls: 'from-rose-500 to-pink-600' },
-  { icon: Globe2, title: 'Remoto por design', desc: 'Trabalha onde te focas melhor. Equipa global, processos assíncronos.', cls: 'from-emerald-500 to-teal-600' },
-  { icon: Coffee, title: 'Calma e ambição', desc: 'Sem cultura de presença. Resultados, não horas. Férias generosas. Sustentável.', cls: 'from-violet-500 to-indigo-600' },
+  { icon: Zap, tKey: 'ca.v1_t', dKey: 'ca.v1_d', cls: 'from-amber-500 to-orange-600' },
+  { icon: Heart, tKey: 'ca.v2_t', dKey: 'ca.v2_d', cls: 'from-rose-500 to-pink-600' },
+  { icon: Globe2, tKey: 'ca.v3_t', dKey: 'ca.v3_d', cls: 'from-emerald-500 to-teal-600' },
+  { icon: Coffee, tKey: 'ca.v4_t', dKey: 'ca.v4_d', cls: 'from-violet-500 to-indigo-600' },
 ];
 
 const ROLES = [
@@ -21,6 +22,7 @@ const ROLES = [
 
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  const t = await getTranslations();
   const blocks = await getHomeBlocks(locale);
   return (
       <main className="bg-white min-h-screen">
@@ -30,27 +32,27 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
           </div>
           <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-24 text-center">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-rose-200 text-xs font-semibold text-rose-700 mb-6 shadow-sm">
-              <Briefcase className="h-3.5 w-3.5" /> Estamos a contratar
+              <Briefcase className="h-3.5 w-3.5" /> {t('ca.badge')}
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 leading-tight">
-              Constrói o futuro da <span className="bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">aprendizagem</span>
+              {t('ca.h1_pre')}<span className="bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">{t('ca.h1_accent')}</span>
             </h1>
             <p className="mt-6 text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
-              Equipa pequena, impacto grande. Construímos a plataforma que queríamos ter tido quando começámos as nossas próprias carreiras.
+              {t('ca.hero_desc')}
             </p>
           </div>
         </section>
 
         <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 text-center mb-12">Como trabalhamos</h2>
+          <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 text-center mb-12">{t('ca.values_title')}</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {VALUES.map((v, i) => (
               <div key={i} className="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-xl hover:-translate-y-1 transition-all">
                 <div className={`inline-flex h-12 w-12 rounded-xl bg-gradient-to-br ${v.cls} text-white items-center justify-center mb-3 shadow-md`}>
                   <v.icon className="h-5 w-5" />
                 </div>
-                <h3 className="font-bold text-slate-900 mb-1">{v.title}</h3>
-                <p className="text-sm text-slate-600 leading-relaxed">{v.desc}</p>
+                <h3 className="font-bold text-slate-900 mb-1">{t(v.tKey)}</h3>
+                <p className="text-sm text-slate-600 leading-relaxed">{t(v.dKey)}</p>
               </div>
             ))}
           </div>
@@ -58,8 +60,8 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
 
         <section className="bg-slate-50 py-20 border-y border-slate-200/60">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 text-center mb-3">Vagas abertas</h2>
-            <p className="text-center text-slate-600 mb-12">Mesmo que não vejas a tua área, envia candidatura espontânea — adoramos surpresas.</p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 text-center mb-3">{t('ca.roles_title')}</h2>
+            <p className="text-center text-slate-600 mb-12">{t('ca.roles_sub')}</p>
             <div className="grid sm:grid-cols-2 gap-4">
               {ROLES.map((r, i) => (
                 <Link key={i}
@@ -71,7 +73,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
                   <div className="flex-1 min-w-0">
                     <div className="font-bold text-slate-900">{r.title}</div>
                     <div className="text-sm text-slate-600">{r.area}</div>
-                    <div className="text-xs text-slate-500 mt-0.5">{r.level} · Remoto</div>
+                    <div className="text-xs text-slate-500 mt-0.5">{r.level} · {t('ca.remote')}</div>
                   </div>
                   <ArrowRight className="h-5 w-5 text-slate-300 group-hover:text-slate-700 group-hover:translate-x-1 transition-all" />
                 </Link>
@@ -80,7 +82,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
             <div className="text-center mt-8">
               <Link href={{ pathname: '/contacto', query: { topic: 'careers', subject: 'Candidatura espontânea', from: '/carreiras' } } as any}
                 className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-br from-rose-600 to-pink-600 text-white hover:scale-105 transition-all font-bold rounded-xl shadow-lg">
-                Enviar candidatura espontânea <ArrowRight className="h-4 w-4" />
+                {t('ca.spontaneous_cta')} <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
           </div>
