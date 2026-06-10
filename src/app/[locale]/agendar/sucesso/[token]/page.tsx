@@ -20,7 +20,7 @@ export default async function Page({ params, searchParams }: { params: Promise<{
         <main className="min-h-screen bg-white">
           <div className="max-w-md mx-auto px-4 py-20 text-center">
             <h1 className="text-2xl font-bold text-slate-900">404</h1>
-            <p className="mt-3 text-slate-600">Marcação não encontrada.</p>
+            <p className="mt-3 text-slate-600">{t('sched.public.not_found')}</p>
           </div>
         </main>
         <Footer data={blocks.footer_brand || {}} />
