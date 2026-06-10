@@ -46,18 +46,18 @@ export function OrgDashboard({ data }: { data: any }) {
         toast.info(t('emp.dashboard.link_copied'));
         setInviteEmail(''); setShowInvite(false);
       }
-    } catch (e: any) { toast.error(e?.message || 'Invite failed'); }
+    } catch (e: any) { toast.error(e?.message || t('tea.error')); }
     finally { setSending(false); }
   }
   async function removeMember(userId: string) {
-    if (!confirm('Remove member?')) return;
+    if (!confirm(t('org.dash.remove_confirm'))) return;
     try {
       const sb = createClient();
       const { error } = await sb.rpc('nl_org_remove_member', { p_org_id: org.id, p_user_id: userId });
       if (error) throw error;
       setMembers((prev) => prev.filter((m) => m.user_id !== userId));
-      toast.success('Removed');
-    } catch (e: any) { toast.error(e?.message || 'Failed'); }
+      toast.success(t('org.dash.removed'));
+    } catch (e: any) { toast.error(e?.message || t('tea.error')); }
   }
   const trialDays = org.trial_ends_at ? Math.max(0, Math.ceil((new Date(org.trial_ends_at).getTime() - Date.now()) / (1000*60*60*24))) : null;
 
@@ -77,39 +77,38 @@ export function OrgDashboard({ data }: { data: any }) {
       <div className="flex flex-wrap gap-2 mb-8">
         <Link href={`/empresa/${org.slug}/conteudos` as any}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-slate-200 hover:border-brand-300 hover:bg-brand-50 text-slate-700 hover:text-brand-700 text-sm font-medium transition-colors">
-          <FileText className="h-4 w-4" /> Conteúdos
-          <span className="text-xs bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-semibold">IA</span>
+          <FileText className="h-4 w-4" /> {t('org.dash.nav_content')}
         </Link>
         <Link href={`/empresa/${org.slug}/cursos/propostas` as any}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-slate-200 hover:border-brand-300 hover:bg-brand-50 text-slate-700 hover:text-brand-700 text-sm font-medium transition-colors">
-          <Sparkles className="h-4 w-4" /> Propostas
+          <Sparkles className="h-4 w-4" /> {t('org.dash.nav_proposals')}
         </Link>
         <Link href={`/empresa/${org.slug}/marketplace/cursos` as any}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-slate-200 hover:border-blue-300 hover:bg-blue-50 text-slate-700 hover:text-blue-700 text-sm font-medium transition-colors">
-          <BookOpen className="h-4 w-4" /> Marketplace Cursos
-          <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-semibold">NEW</span>
+          <BookOpen className="h-4 w-4" /> {t('org.dash.nav_mkt_courses')}
+          <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-semibold">{t('org.dash.badge_new')}</span>
         </Link>
         <Link href={`/empresa/${org.slug}/cursos-subscritos` as any}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-slate-200 hover:border-blue-300 hover:bg-blue-50 text-slate-700 hover:text-blue-700 text-sm font-medium transition-colors">
-          <GraduationCap className="h-4 w-4" /> Cursos Subscritos
+          <GraduationCap className="h-4 w-4" /> {t('org.dash.nav_subscribed')}
         </Link>
         <Link href={`/empresa/${org.slug}/marketplace/instrutores` as any}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-slate-200 hover:border-violet-300 hover:bg-violet-50 text-slate-700 hover:text-violet-700 text-sm font-medium transition-colors">
-          <Briefcase className="h-4 w-4" /> Marketplace Instrutores
+          <Briefcase className="h-4 w-4" /> {t('org.dash.nav_mkt_instructors')}
         </Link>
         <Link href={`/empresa/${org.slug}/pedidos` as any}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-slate-200 hover:border-violet-300 hover:bg-violet-50 text-slate-700 hover:text-violet-700 text-sm font-medium transition-colors">
-          <Inbox className="h-4 w-4" /> Pedidos
+          <Inbox className="h-4 w-4" /> {t('org.dash.nav_requests')}
         </Link>
         <Link href={`/empresa/${org.slug}/talent` as any}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 text-sm font-medium transition-colors">
-          <Users className="h-4 w-4" /> Talent
-          <span className="text-xs bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-semibold">NEW</span>
+          <Users className="h-4 w-4" /> {t('org.dash.nav_talent')}
+          <span className="text-xs bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-semibold">{t('org.dash.badge_new')}</span>
         </Link>
         {org.is_admin && (
           <Link href={`/empresa/${org.slug}/admin` as any}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-slate-200 hover:border-rose-300 hover:bg-rose-50 text-slate-700 hover:text-rose-700 text-sm font-medium transition-colors">
-            <Settings className="h-4 w-4" /> Administração
+            <Settings className="h-4 w-4" /> {t('org.dash.nav_admin')}
           </Link>
         )}
       </div>
@@ -176,7 +175,7 @@ export function OrgDashboard({ data }: { data: any }) {
                   <div className="font-medium text-amber-900 truncate">{i.email}</div>
                   <div className="text-xs text-amber-700">{t(ROLE_LABEL[i.role] as any)}</div>
                 </div>
-                <span className="text-[10px] font-bold uppercase text-amber-700">pending</span>
+                <span className="text-[10px] font-bold uppercase text-amber-700">{t('org.dash.pending_badge')}</span>
               </div>
             ))}
           </div>

@@ -1,18 +1,20 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import { browseMarketplaceCoursesAction, subscribeCourseAction } from '../../marketplace-actions';
 import { Search, BookOpen, Star, Users, X, Loader2, AlertCircle, CheckCircle, ShoppingCart } from 'lucide-react';
 
-function fmt(cents: number, currency: string) {
-  return new Intl.NumberFormat('pt-PT', { style: 'currency', currency }).format(cents / 100);
+function fmt(cents: number, locale: string, currency: string) {
+  return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(cents / 100);
 }
 
 export function MarketplaceCursosClient({ orgId, orgName, orgSlug, memberRole, featureEnabled, maxSeats, locale, initial }: {
   orgId: string; orgName: string; orgSlug: string; memberRole: string;
   featureEnabled: boolean; maxSeats: number; locale: string; initial: { total: number; courses: any[] };
 }) {
+  const t = useTranslations();
   const [courses, setCourses] = useState(initial.courses);
   const [total, setTotal] = useState(initial.total);
   const [search, setSearch] = useState('');
@@ -33,9 +35,9 @@ export function MarketplaceCursosClient({ orgId, orgName, orgSlug, memberRole, f
         <div className="max-w-4xl mx-auto px-4 py-12">
           <div className="bg-amber-50 border border-amber-200 rounded-2xl p-8 text-center">
             <AlertCircle className="h-12 w-12 text-amber-500 mx-auto mb-3" />
-            <h2 className="font-bold text-slate-900 text-lg mb-1">Módulo não disponível</h2>
-            <p className="text-sm text-slate-600 mb-4">O marketplace B2C não está activo para {orgName}.</p>
-            <Link href={`/empresa/${orgSlug}` as any} className="px-4 py-2 bg-slate-900 text-white text-sm rounded-lg inline-block">Voltar</Link>
+            <h2 className="font-bold text-slate-900 text-lg mb-1">{t('org.mc.unavailable_h')}</h2>
+            <p className="text-sm text-slate-600 mb-4">{t('org.mc.unavailable_p', { org: orgName })}</p>
+            <Link href={`/empresa/${orgSlug}` as any} className="px-4 py-2 bg-slate-900 text-white text-sm rounded-lg inline-block">{t('btn.back')}</Link>
           </div>
         </div>
       </main>
@@ -48,9 +50,9 @@ export function MarketplaceCursosClient({ orgId, orgName, orgSlug, memberRole, f
         <div className="max-w-6xl mx-auto px-4 py-6">
           <div className="flex items-center gap-2 mb-2">
             <BookOpen className="h-6 w-6 text-brand-600" />
-            <h1 className="text-2xl font-bold text-slate-900">Marketplace de Cursos</h1>
+            <h1 className="text-2xl font-bold text-slate-900">{t('org.mc.title')}</h1>
           </div>
-          <p className="text-sm text-slate-500">Subscreve cursos para a tua equipa. Pricing per-seat, flat fee ou unlimited.</p>
+          <p className="text-sm text-slate-500">{t('org.mc.subtitle')}</p>
         </div>
       </section>
 
@@ -60,7 +62,7 @@ export function MarketplaceCursosClient({ orgId, orgName, orgSlug, memberRole, f
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
             <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && applyFilters()}
-              placeholder="Procurar curso, tópico…"
+              placeholder={t('org.mc.search_ph')}
               className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm" />
           </div>
           <button onClick={applyFilters} disabled={pending}
@@ -72,8 +74,8 @@ export function MarketplaceCursosClient({ orgId, orgName, orgSlug, memberRole, f
         {courses.length === 0 ? (
           <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
             <BookOpen className="h-12 w-12 text-slate-300 mx-auto mb-3" />
-            <h3 className="font-semibold text-slate-900 mb-1">Sem cursos</h3>
-            <p className="text-sm text-slate-500">Ainda não há cursos publicados no marketplace.</p>
+            <h3 className="font-semibold text-slate-900 mb-1">{t('org.mc.empty_h')}</h3>
+            <p className="text-sm text-slate-500">{t('org.mc.empty_p')}</p>
           </div>
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -97,11 +99,11 @@ export function MarketplaceCursosClient({ orgId, orgName, orgSlug, memberRole, f
                     </>)}
                   </div>
                   <div className="mt-auto pt-3 border-t border-slate-100 flex items-center justify-between">
-                    <div className="text-lg font-bold text-slate-900">{fmt(c.price_cents, c.currency)}</div>
+                    <div className="text-lg font-bold text-slate-900">{fmt(c.price_cents, locale, c.currency)}</div>
                     {canAct && (
                       <button onClick={() => setSubscribingCourse(c)}
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-lg">
-                        <ShoppingCart className="h-3.5 w-3.5" /> Subscrever
+                        <ShoppingCart className="h-3.5 w-3.5" /> {t('org.mc.subscribe_btn')}
                       </button>
                     )}
                   </div>
@@ -113,14 +115,15 @@ export function MarketplaceCursosClient({ orgId, orgName, orgSlug, memberRole, f
       </div>
 
       {subscribingCourse && (
-        <SubscribeModal course={subscribingCourse} orgId={orgId} orgSlug={orgSlug} maxSeats={maxSeats}
+        <SubscribeModal course={subscribingCourse} orgId={orgId} orgSlug={orgSlug} maxSeats={maxSeats} locale={locale}
           onClose={() => setSubscribingCourse(null)} />
       )}
     </main>
   );
 }
 
-function SubscribeModal({ course, orgId, orgSlug, maxSeats, onClose }: { course: any; orgId: string; orgSlug: string; maxSeats: number; onClose: () => void }) {
+function SubscribeModal({ course, orgId, orgSlug, maxSeats, locale, onClose }: { course: any; orgId: string; orgSlug: string; maxSeats: number; locale: string; onClose: () => void }) {
+  const t = useTranslations();
   const [pricingModel, setPricingModel] = useState<'per_seat'|'flat_fee'|'unlimited'>('per_seat');
   const [seats, setSeats] = useState(10);
   const [pending, startTransition] = useTransition();
@@ -133,12 +136,12 @@ function SubscribeModal({ course, orgId, orgSlug, maxSeats, onClose }: { course:
 
   function submit() {
     setError(null);
-    if (pricingModel === 'per_seat' && (!seats || seats < 1)) return setError('Seats inválidos');
-    if (pricingModel === 'per_seat' && maxSeats > 0 && seats > maxSeats) return setError(`Excede limite: ${maxSeats}`);
+    if (pricingModel === 'per_seat' && (!seats || seats < 1)) return setError(t('org.mc.err_seats'));
+    if (pricingModel === 'per_seat' && maxSeats > 0 && seats > maxSeats) return setError(t('org.mc.err_max', { max: maxSeats }));
     startTransition(async () => {
       const r = await subscribeCourseAction(orgId, course.id, pricingModel, pricingModel === 'per_seat' ? seats : undefined);
       if (r.ok) setSuccess(r);
-      else setError(r.error || 'erro');
+      else setError(r.error || t('tea.error'));
     });
   }
 
@@ -147,10 +150,10 @@ function SubscribeModal({ course, orgId, orgSlug, maxSeats, onClose }: { course:
       <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
         <div className="bg-white max-w-md rounded-2xl p-6 text-center">
           <CheckCircle className="h-12 w-12 text-emerald-500 mx-auto mb-3" />
-          <h3 className="font-bold text-slate-900 mb-1">Subscrito com sucesso</h3>
-          <p className="text-sm text-slate-600 mb-3">Total: {fmt(success.total_cents, course.currency)}.</p>
+          <h3 className="font-bold text-slate-900 mb-1">{t('org.mc.success_h')}</h3>
+          <p className="text-sm text-slate-600 mb-3">{t('org.mc.success_total', { total: fmt(success.total_cents, locale, course.currency) })}</p>
           <Link href={`/empresa/${orgSlug}/cursos-subscritos` as any} className="text-sm text-brand-600 hover:underline">
-            Gerir subscrições →
+            {t('org.mc.manage_subs')}
           </Link>
         </div>
       </div>
@@ -161,7 +164,7 @@ function SubscribeModal({ course, orgId, orgSlug, maxSeats, onClose }: { course:
     <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div className="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl">
         <div className="border-b border-slate-100 p-4 flex items-center justify-between">
-          <h2 className="font-semibold text-slate-900">Subscrever curso</h2>
+          <h2 className="font-semibold text-slate-900">{t('org.mc.modal_title')}</h2>
           <button onClick={onClose} className="p-1.5 hover:bg-slate-100 rounded-lg"><X className="h-4 w-4" /></button>
         </div>
         <div className="p-4 space-y-4">
@@ -169,17 +172,17 @@ function SubscribeModal({ course, orgId, orgSlug, maxSeats, onClose }: { course:
             <div className="text-3xl">{course.emoji || '📘'}</div>
             <div>
               <h3 className="font-bold text-slate-900">{course.title}</h3>
-              <p className="text-xs text-slate-500">Preço base: {fmt(course.price_cents, course.currency)}</p>
+              <p className="text-xs text-slate-500">{t('org.mc.base_price', { price: fmt(course.price_cents, locale, course.currency) })}</p>
             </div>
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">Modelo</label>
+            <label className="block text-sm font-medium text-slate-700 mb-2">{t('org.mc.model_label')}</label>
             <div className="space-y-2">
               {[
-                ['per_seat', 'Per-seat', 'Pagas por cada user enrolled'],
-                ['flat_fee', 'Flat fee', '10x o preço base, ilimitado por seats da org'],
-                ['unlimited', 'Unlimited', '50x o preço base, total liberdade'],
+                ['per_seat', t('org.mc.m_per_seat'), t('org.mc.m_per_seat_d')],
+                ['flat_fee', t('org.mc.m_flat'), t('org.mc.m_flat_d')],
+                ['unlimited', t('org.mc.m_unlimited'), t('org.mc.m_unlimited_d')],
               ].map(([k, label, desc]) => (
                 <label key={k as string} className={`block p-3 rounded-lg border-2 cursor-pointer ${pricingModel === k ? 'border-brand-500 bg-brand-50' : 'border-slate-200'}`}>
                   <input type="radio" checked={pricingModel === k} onChange={() => setPricingModel(k as any)} className="hidden" />
@@ -192,28 +195,28 @@ function SubscribeModal({ course, orgId, orgSlug, maxSeats, onClose }: { course:
           
           {pricingModel === 'per_seat' && (
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Seats {maxSeats > 0 && `(max ${maxSeats})`}</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">{t('org.mc.seats_label')} {maxSeats > 0 && t('org.mc.seats_max', { max: maxSeats })}</label>
               <input type="number" value={seats} onChange={(e) => setSeats(parseInt(e.target.value) || 0)}
                 className="w-full px-3 py-2 border border-slate-200 rounded-lg" min="1" />
             </div>
           )}
           
           <div className="p-3 bg-slate-50 rounded-lg">
-            <div className="text-xs text-slate-500">Total estimado</div>
-            <div className="text-2xl font-bold text-slate-900">{fmt(estimatedTotal, course.currency)}</div>
+            <div className="text-xs text-slate-500">{t('org.mc.est_total')}</div>
+            <div className="text-2xl font-bold text-slate-900">{fmt(estimatedTotal, locale, course.currency)}</div>
             <div className="text-xs text-slate-500 mt-1">
-              Instrutor: {fmt(estimatedTotal * 0.70, course.currency)} (70%) · Plataforma: {fmt(estimatedTotal * 0.30, course.currency)} (30%)
+              {t('org.mc.split', { instructor: fmt(estimatedTotal * 0.70, locale, course.currency), platform: fmt(estimatedTotal * 0.30, locale, course.currency) })}
             </div>
           </div>
           
           {error && <div className="p-2 bg-red-50 border border-red-200 rounded text-sm text-red-700">{error}</div>}
         </div>
         <div className="border-t border-slate-100 p-4 flex justify-end gap-2">
-          <button onClick={onClose} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg text-sm">Cancelar</button>
+          <button onClick={onClose} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg text-sm">{t('btn.cancel')}</button>
           <button onClick={submit} disabled={pending}
             className="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-medium disabled:opacity-50">
             {pending && <Loader2 className="h-4 w-4 animate-spin" />}
-            Confirmar subscrição
+            {t('org.mc.confirm_btn')}
           </button>
         </div>
       </div>
