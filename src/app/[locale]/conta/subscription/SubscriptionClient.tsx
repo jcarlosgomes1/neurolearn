@@ -3,11 +3,13 @@
 import { useState, useTransition } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Link } from '@/i18n/routing';
+import { useTranslations } from 'next-intl';
 import { Sparkles, Calendar, X, RotateCcw, Loader2 } from 'lucide-react';
 
-function fmt(c: number) { return new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(c/100); }
+function fmt(c: number) { return new Intl.NumberFormat(undefined, { style: 'currency', currency: 'EUR' }).format(c/100); }
 
 export function SubscriptionClient({ initial }: { initial: any }) {
+  const t = useTranslations();
   const [data, setData] = useState(initial);
   const [pending, startTransition] = useTransition();
 
@@ -18,7 +20,7 @@ export function SubscriptionClient({ initial }: { initial: any }) {
   }
 
   function cancel() {
-    if (!confirm('Cancelar subscrição no fim do período actual?')) return;
+    if (!confirm(t('sub.confirm_cancel'))) return;
     startTransition(async () => {
       const sb = createClient();
       await sb.rpc('nl_subscription_cancel');
@@ -42,10 +44,10 @@ export function SubscriptionClient({ initial }: { initial: any }) {
         <div className="max-w-3xl mx-auto px-4 py-12">
           <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center">
             <Sparkles className="h-12 w-12 text-violet-500 mx-auto mb-3" />
-            <h1 className="font-bold text-slate-900 text-xl mb-2">Sem subscrição activa</h1>
-            <p className="text-sm text-slate-600 mb-4">Acesso ilimitado a todos os cursos a partir de {fmt(data?.monthly_cents || 1990)}/mês.</p>
+            <h1 className="font-bold text-slate-900 text-xl mb-2">{t('sub.none_title')}</h1>
+            <p className="text-sm text-slate-600 mb-4">{t('sub.none_desc', { amount: fmt(data?.monthly_cents || 1990) })}</p>
             <Link href={'/precos/all-access' as any} className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-violet-600 to-brand-700 text-white font-semibold rounded-lg">
-              <Sparkles className="h-4 w-4" /> Ver planos All-Access
+              <Sparkles className="h-4 w-4" /> {t('sub.view_plans')}
             </Link>
           </div>
         </div>
@@ -56,13 +58,13 @@ export function SubscriptionClient({ initial }: { initial: any }) {
   return (
     <main className="bg-slate-50 min-h-screen">
       <div className="max-w-3xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-2"><Sparkles className="h-6 w-6 text-violet-600" /> A tua subscrição</h1>
+        <h1 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-2"><Sparkles className="h-6 w-6 text-violet-600" /> {t('sub.title')}</h1>
 
         <div className="bg-white border border-slate-200 rounded-2xl p-6 mb-4">
           <div className="flex items-start justify-between gap-3 flex-wrap mb-4">
             <div>
               <h2 className="font-bold text-slate-900 text-xl">{sub.tier === 'all_access' ? 'All-Access' : sub.tier}</h2>
-              <p className="text-sm text-slate-500">Cobrança {sub.billing_cycle === 'monthly' ? 'mensal' : 'anual'}</p>
+              <p className="text-sm text-slate-500">{sub.billing_cycle === 'monthly' ? t('sub.billing_monthly') : t('sub.billing_annual')}</p>
             </div>
             <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
               sub.status === 'active' ? 'bg-emerald-100 text-emerald-800' :
@@ -74,13 +76,13 @@ export function SubscriptionClient({ initial }: { initial: any }) {
 
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div>
-              <div className="text-xs text-slate-500 uppercase tracking-wider">Período actual</div>
-              <div className="text-sm font-medium">{new Date(sub.current_period_start).toLocaleDateString('pt-PT')} → {new Date(sub.current_period_end).toLocaleDateString('pt-PT')}</div>
+              <div className="text-xs text-slate-500 uppercase tracking-wider">{t('sub.current_period')}</div>
+              <div className="text-sm font-medium">{new Date(sub.current_period_start).toLocaleDateString()} → {new Date(sub.current_period_end).toLocaleDateString()}</div>
             </div>
             <div>
-              <div className="text-xs text-slate-500 uppercase tracking-wider">Próxima cobrança</div>
+              <div className="text-xs text-slate-500 uppercase tracking-wider">{t('sub.next_billing')}</div>
               <div className="text-sm font-medium">
-                {sub.cancel_at_period_end ? <span className="text-rose-600">Cancelada</span> : new Date(sub.current_period_end).toLocaleDateString('pt-PT')}
+                {sub.cancel_at_period_end ? <span className="text-rose-600">{t('sub.cancelled')}</span> : new Date(sub.current_period_end).toLocaleDateString()}
               </div>
             </div>
           </div>
@@ -91,13 +93,13 @@ export function SubscriptionClient({ initial }: { initial: any }) {
                 <button onClick={reactivate} disabled={pending}
                   className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg disabled:opacity-50">
                   {pending && <Loader2 className="h-4 w-4 animate-spin" />}
-                  <RotateCcw className="h-4 w-4" /> Reactivar
+                  <RotateCcw className="h-4 w-4" /> {t('sub.reactivate')}
                 </button>
               ) : (
                 <button onClick={cancel} disabled={pending}
                   className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-rose-200 text-rose-700 hover:bg-rose-50 text-sm font-semibold rounded-lg disabled:opacity-50">
                   {pending && <Loader2 className="h-4 w-4 animate-spin" />}
-                  <X className="h-4 w-4" /> Cancelar subscrição
+                  <X className="h-4 w-4" /> {t('sub.cancel_btn')}
                 </button>
               )}
             </div>
@@ -105,7 +107,7 @@ export function SubscriptionClient({ initial }: { initial: any }) {
         </div>
 
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-900">
-          Para alterar método de pagamento ou tier, contacta suporte: <a href="mailto:hello@neurolearn.app" className="underline">hello@neurolearn.app</a>
+          {t('sub.support_pre')}<Link href={'/contacto' as any} className="underline font-medium">{t('sub.support_link')}</Link>.
         </div>
       </div>
     </main>

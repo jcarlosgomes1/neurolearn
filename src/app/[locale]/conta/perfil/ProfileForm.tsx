@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { User, Save, Loader2 } from 'lucide-react';
 
@@ -35,6 +36,7 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
 }
 
 export function ProfileForm({ email, handle, initial }: { email: string; handle: string; initial: Initial }) {
+  const t = useTranslations();
   const [form, setForm] = useState<Initial>(initial);
   const [busy, setBusy] = useState(false);
   const set = (k: keyof Initial, v: string) => setForm((f) => ({ ...f, [k]: v }));
@@ -52,9 +54,9 @@ export function ProfileForm({ email, handle, initial }: { email: string; handle:
         p_bio: form.bio || null,
       });
       if (error) throw error;
-      toast.success('Perfil atualizado');
+      toast.success(t('profile.saved'));
     } catch (e: any) {
-      toast.error(e?.message || 'Erro ao guardar');
+      toast.error(e?.message || t('profile.save_error'));
     } finally {
       setBusy(false);
     }
@@ -64,55 +66,55 @@ export function ProfileForm({ email, handle, initial }: { email: string; handle:
     <div>
       <header className="mb-8">
         <div className="flex items-center gap-2 text-violet-600 text-xs font-semibold uppercase tracking-wider mb-1">
-          <User className="h-3.5 w-3.5" /> A minha conta
+          <User className="h-3.5 w-3.5" /> {t('account.home.title')}
         </div>
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Perfil</h1>
-        <p className="text-sm text-slate-600 mt-1.5">Gere os teus dados pessoais e preferências.</p>
+        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{t('account.home.profile_title')}</h1>
+        <p className="text-sm text-slate-600 mt-1.5">{t('profile.subtitle')}</p>
       </header>
 
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-5">
-        <Field label="Email" hint="O email é usado para iniciar sessão e não pode ser alterado aqui.">
+        <Field label={t('profile.email_label')} hint={t('profile.email_hint')}>
           <input value={email} disabled className={`${inputCls} bg-slate-50 text-slate-500 cursor-not-allowed`} />
         </Field>
 
         {handle && (
-          <Field label="Handle público">
+          <Field label={t('profile.handle_label')}>
             <input value={`@${handle}`} disabled className={`${inputCls} bg-slate-50 text-slate-500 cursor-not-allowed`} />
           </Field>
         )}
 
-        <Field label="Nome">
-          <input value={form.name} onChange={(e) => set('name', e.target.value)} placeholder="O teu nome" className={inputCls} />
+        <Field label={t('profile.name_label')}>
+          <input value={form.name} onChange={(e) => set('name', e.target.value)} placeholder={t('profile.name_ph')} className={inputCls} />
         </Field>
 
-        <Field label="Bio" hint="Uma breve descrição sobre ti (visível no teu perfil público).">
+        <Field label={t('profile.bio_label')} hint={t('profile.bio_hint')}>
           <textarea
             value={form.bio}
             onChange={(e) => set('bio', e.target.value)}
             rows={3}
-            placeholder="Conta-nos um pouco sobre ti..."
+            placeholder={t('profile.bio_ph')}
             className={`${inputCls} resize-none`}
           />
         </Field>
 
         <div className="grid sm:grid-cols-3 gap-4">
           <div className="sm:col-span-1">
-            <Field label="Indicativo">
-              <input value={form.phone_country_code} onChange={(e) => set('phone_country_code', e.target.value)} placeholder="+351" className={inputCls} />
+            <Field label={t('profile.dialcode_label')}>
+              <input value={form.phone_country_code} onChange={(e) => set('phone_country_code', e.target.value)} placeholder={t('profile.dialcode_ph')} className={inputCls} />
             </Field>
           </div>
           <div className="sm:col-span-2">
-            <Field label="Telefone">
-              <input value={form.phone} onChange={(e) => set('phone', e.target.value)} placeholder="912 345 678" className={inputCls} />
+            <Field label={t('profile.phone_label')}>
+              <input value={form.phone} onChange={(e) => set('phone', e.target.value)} placeholder={t('account.profile.phone_ph')} className={inputCls} />
             </Field>
           </div>
         </div>
 
         <div className="grid sm:grid-cols-2 gap-4">
-          <Field label="País (código)">
-            <input value={form.country_code} onChange={(e) => set('country_code', e.target.value.toUpperCase())} placeholder="PT" maxLength={2} className={inputCls} />
+          <Field label={t('profile.country_label')}>
+            <input value={form.country_code} onChange={(e) => set('country_code', e.target.value.toUpperCase())} placeholder={t('profile.country_ph')} maxLength={2} className={inputCls} />
           </Field>
-          <Field label="Idioma preferido">
+          <Field label={t('profile.lang_label')}>
             <select value={form.preferred_lang} onChange={(e) => set('preferred_lang', e.target.value)} className={inputCls}>
               {LANGS.map((l) => (
                 <option key={l.v} value={l.v}>{l.l}</option>
@@ -127,7 +129,7 @@ export function ProfileForm({ email, handle, initial }: { email: string; handle:
             disabled={busy}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white text-sm font-semibold shadow-sm hover:shadow transition-all disabled:opacity-50">
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-            Guardar alterações
+            {t('profile.save_changes')}
           </button>
         </div>
       </div>
