@@ -61,7 +61,7 @@ export function HeaderClient({ session }: { session: Session | null }) {
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-3">
           <Link href="/" className="flex items-center gap-2 font-bold text-slate-900 group shrink-0">
             <span className="text-2xl transition-transform group-hover:scale-110">🧠</span>
-            <span className="text-lg tracking-tight">NeuroLearn</span>
+            <span className="text-lg tracking-tight">{t('brand.name')}</span>
           </Link>
 
           <nav className="hidden md:flex items-stretch h-full">

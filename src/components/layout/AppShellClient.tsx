@@ -154,7 +154,7 @@ export function AppShellClient({ role, pageTitle, session, nav, children }: Prop
         </button>
         <Link href="/" className="flex items-center gap-2 font-bold text-slate-900 group">
           <span className="text-2xl group-hover:scale-110 transition-transform">🧠</span>
-          <span className="hidden sm:inline text-base tracking-tight">NeuroLearn</span>
+          <span className="hidden sm:inline text-base tracking-tight">{t('brand.name')}</span>
         </Link>
         <span className={`hidden sm:inline-flex items-center text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${roleBadge}`}>{roleLabel}</span>
         {pageTitle && <span className="hidden md:inline text-sm text-slate-400 ml-2">/ {pageTitle}</span>}
@@ -175,7 +175,7 @@ export function AppShellClient({ role, pageTitle, session, nav, children }: Prop
               <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white z-10">
                 <div className="flex items-center gap-2">
                   <span className="text-2xl">🧠</span>
-                  <span className="font-bold text-slate-900">NeuroLearn</span>
+                  <span className="font-bold text-slate-900">{t('brand.name')}</span>
                   <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full ${roleBadge}`}>{roleLabel}</span>
                 </div>
                 <button onClick={() => setSidebarOpen(false)} className="w-9 h-9 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-600">

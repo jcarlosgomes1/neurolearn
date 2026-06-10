@@ -48,7 +48,7 @@ export default function FooterClient({ data, platform, solutions, company, legal
           <div className="lg:col-span-2">
             <div className="flex items-center gap-2 font-bold text-white text-lg">
               <span className="text-2xl">🧠</span>
-              <span>NeuroLearn</span>
+              <span>{t('brand.name')}</span>
             </div>
             <p className="mt-3 text-sm max-w-xs leading-relaxed">
               {data?.brand || t('footer.brand_tagline')}
@@ -91,7 +91,7 @@ export default function FooterClient({ data, platform, solutions, company, legal
         </div>
 
         <div className="mt-12 pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-          <span>© {year} NeuroLearn. {t('footer.rights')}.</span>
+          <span>© {year} {t('brand.name')}. {t('footer.rights')}.</span>
           <span className="text-slate-500">{t('footer.built_with_care')}</span>
         </div>
       </div>
