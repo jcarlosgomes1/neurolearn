@@ -28,9 +28,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   // Platform brand comes from the backoffice (nl_platform_config), never hardcoded.
   const platformName = ((cfgRes.data?.value as string | undefined) || '').trim();
   // White-label: a tenant page shows the tenant's own brand, not the platform brand.
-  const title = (b?.org_name || '').trim() || platformName || undefined;
+  // `absolute` bypasses the parent layout's "%s · <brand>" template so the platform brand never leaks into a tenant title.
+  const brand = (b?.org_name || '').trim() || platformName;
   return {
-    title,
+    title: brand ? { absolute: brand } : undefined,
     icons: b?.favicon_url ? { icon: b.favicon_url } : undefined,
   };
 }
