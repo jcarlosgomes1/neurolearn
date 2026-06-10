@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from '@/i18n/routing';
+import { useTranslations, useLocale } from 'next-intl';
 import { toast } from 'sonner';
 import { Building2, Users, Clock, Euro, Calendar, Check, X, Loader2, Send, FileText } from 'lucide-react';
 
@@ -17,17 +18,19 @@ interface Inquiry {
 }
 
 const STATUS_META: Record<string, { label: string; cls: string }> = {
-  pending:    { label: 'Por responder',  cls: 'bg-amber-100 text-amber-700 border-amber-300' },
-  quoted:     { label: 'Cotação enviada', cls: 'bg-blue-100 text-blue-700 border-blue-300' },
-  accepted:   { label: 'Aceite',         cls: 'bg-emerald-100 text-emerald-700 border-emerald-300' },
-  declined:   { label: 'Recusado',       cls: 'bg-rose-100 text-rose-700 border-rose-300' },
-  scheduled:  { label: 'Agendado',       cls: 'bg-indigo-100 text-indigo-700 border-indigo-300' },
-  completed:  { label: 'Concluído',      cls: 'bg-slate-200 text-slate-700 border-slate-300' },
-  cancelled:  { label: 'Cancelado',      cls: 'bg-slate-100 text-slate-500 border-slate-200' },
+  pending:    { label: 'tinq.st_pending',  cls: 'bg-amber-100 text-amber-700 border-amber-300' },
+  quoted:     { label: 'tinq.st_quoted', cls: 'bg-blue-100 text-blue-700 border-blue-300' },
+  accepted:   { label: 'tinq.st_accepted',         cls: 'bg-emerald-100 text-emerald-700 border-emerald-300' },
+  declined:   { label: 'tinq.st_declined',       cls: 'bg-rose-100 text-rose-700 border-rose-300' },
+  scheduled:  { label: 'tinq.st_scheduled',       cls: 'bg-indigo-100 text-indigo-700 border-indigo-300' },
+  completed:  { label: 'tinq.st_completed',      cls: 'bg-slate-200 text-slate-700 border-slate-300' },
+  cancelled:  { label: 'tinq.st_cancelled',      cls: 'bg-slate-100 text-slate-500 border-slate-200' },
 };
 
 export function InquiriesClient({ items, orgsMap, svcMap }: { items: Inquiry[]; orgsMap: Record<string, string>; svcMap: Record<string, string> }) {
   const router = useRouter();
+  const t = useTranslations();
+  const locale = useLocale();
   const [busy, setBusy] = useState<string | null>(null);
   const [quoting, setQuoting] = useState<string | null>(null);
   const [declining, setDeclining] = useState<string | null>(null);
@@ -35,7 +38,7 @@ export function InquiriesClient({ items, orgsMap, svcMap }: { items: Inquiry[]; 
   const [declineReason, setDeclineReason] = useState('');
 
   async function quote(id: string) {
-    if (quoteForm.price_euros <= 0) { toast.error('Preço inválido'); return; }
+    if (quoteForm.price_euros <= 0) { toast.error(t('tinq.err_price')); return; }
     setBusy(id);
     try {
       const sb = createClient();
@@ -47,11 +50,11 @@ export function InquiriesClient({ items, orgsMap, svcMap }: { items: Inquiry[]; 
         p_quoted_valid_until: quoteForm.valid_until ? new Date(quoteForm.valid_until).toISOString() : null,
       });
       if (error) throw error;
-      toast.success('Cotação enviada à empresa');
+      toast.success(t('tinq.quote_sent'));
       setQuoting(null);
       setQuoteForm({ price_euros: 0, notes: '', valid_until: '' });
       router.refresh();
-    } catch (e: any) { toast.error(e?.message || 'Erro'); }
+    } catch (e: any) { toast.error(e?.message || t('sched.err')); }
     finally { setBusy(null); }
   }
 
@@ -61,11 +64,11 @@ export function InquiriesClient({ items, orgsMap, svcMap }: { items: Inquiry[]; 
       const sb = createClient();
       const { error } = await sb.rpc('nl_my_corporate_inquiry_decline', { p_id: id, p_reason: declineReason.trim() || null });
       if (error) throw error;
-      toast.success('Pedido recusado');
+      toast.success(t('tinq.declined_toast'));
       setDeclining(null);
       setDeclineReason('');
       router.refresh();
-    } catch (e: any) { toast.error(e?.message || 'Erro'); }
+    } catch (e: any) { toast.error(e?.message || t('sched.err')); }
     finally { setBusy(null); }
   }
 
@@ -73,8 +76,8 @@ export function InquiriesClient({ items, orgsMap, svcMap }: { items: Inquiry[]; 
     return (
       <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
         <Inbox className="h-10 w-10 text-slate-300 mx-auto mb-3" />
-        <h2 className="font-bold text-slate-900 text-lg">Sem pedidos ainda</h2>
-        <p className="text-sm text-slate-500 mt-1.5 max-w-md mx-auto">Cria os teus serviços em /teach/servicos para que as empresas te encontrem.</p>
+        <h2 className="font-bold text-slate-900 text-lg">{t('tinq.empty_h')}</h2>
+        <p className="text-sm text-slate-500 mt-1.5 max-w-md mx-auto">{t('tinq.empty_p')}</p>
       </div>
     );
   }
@@ -90,7 +93,7 @@ export function InquiriesClient({ items, orgsMap, svcMap }: { items: Inquiry[]; 
             <header className="px-5 py-3 border-b border-slate-100 bg-slate-50/60 flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center gap-2 min-w-0">
                 <Building2 className="h-4 w-4 text-slate-400" />
-                <span className="font-semibold text-sm text-slate-900 truncate">{orgsMap[it.org_id] || 'Empresa'}</span>
+                <span className="font-semibold text-sm text-slate-900 truncate">{orgsMap[it.org_id] || t('tinq.company_fallback')}</span>
                 {it.service_id && svcMap[it.service_id] && (
                   <>
                     <span className="text-slate-300">·</span>
@@ -98,43 +101,43 @@ export function InquiriesClient({ items, orgsMap, svcMap }: { items: Inquiry[]; 
                   </>
                 )}
               </div>
-              <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider border ${st.cls}`}>{st.label}</span>
+              <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider border ${st.cls}`}>{t(st.label)}</span>
             </header>
             <div className="p-5 space-y-3">
               {it.message && (
                 <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
-                  <div className="text-[10px] uppercase font-bold text-slate-400 mb-1">Mensagem</div>
+                  <div className="text-[10px] uppercase font-bold text-slate-400 mb-1">{t('tinq.msg')}</div>
                   <p className="text-sm text-slate-800 whitespace-pre-wrap leading-relaxed">{it.message}</p>
                 </div>
               )}
               <div className="grid sm:grid-cols-4 gap-2 text-xs">
-                {it.expected_participants && <Detail icon={Users} label="Participantes" value={String(it.expected_participants)} />}
-                {it.expected_duration_hours && <Detail icon={Clock} label="Duração" value={`${it.expected_duration_hours}h`} />}
-                {it.budget_cents && <Detail icon={Euro} label="Orçamento" value={`${(it.budget_cents / 100).toFixed(0)} ${it.budget_currency || 'EUR'}`} />}
-                {it.format && <Detail icon={Building2} label="Formato" value={it.format} />}
+                {it.expected_participants && <Detail icon={Users} label={t('tinq.d_participants')} value={String(it.expected_participants)} />}
+                {it.expected_duration_hours && <Detail icon={Clock} label={t('tinq.d_duration')} value={`${it.expected_duration_hours}h`} />}
+                {it.budget_cents && <Detail icon={Euro} label={t('tinq.d_budget')} value={`${(it.budget_cents / 100).toFixed(0)} ${it.budget_currency || 'EUR'}`} />}
+                {it.format && <Detail icon={Building2} label={t('tinq.d_format')} value={it.format} />}
               </div>
               {it.quoted_price_cents && (
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                  <div className="text-[10px] uppercase font-bold text-blue-700 mb-1 flex items-center gap-1"><FileText className="h-3 w-3" /> Cotação enviada</div>
+                  <div className="text-[10px] uppercase font-bold text-blue-700 mb-1 flex items-center gap-1"><FileText className="h-3 w-3" /> {t('tinq.st_quoted')}</div>
                   <div className="text-lg font-bold text-blue-900">{(it.quoted_price_cents / 100).toFixed(2)} {it.quoted_currency || 'EUR'}</div>
                   {it.quoted_notes && <p className="text-xs text-blue-800 mt-1 whitespace-pre-wrap">{it.quoted_notes}</p>}
-                  {it.quoted_valid_until && <p className="text-[10px] text-blue-600 mt-1">Válida até {new Date(it.quoted_valid_until).toLocaleDateString('pt-PT')}</p>}
+                  {it.quoted_valid_until && <p className="text-[10px] text-blue-600 mt-1">{t('tinq.valid_until_date', { date: new Date(it.quoted_valid_until).toLocaleDateString(locale) })}</p>}
                 </div>
               )}
               {it.cancellation_reason && (
                 <div className="bg-rose-50 border border-rose-200 rounded-lg p-3 text-xs text-rose-800">
-                  <div className="text-[10px] uppercase font-bold text-rose-700 mb-1">Razão recusa</div>
+                  <div className="text-[10px] uppercase font-bold text-rose-700 mb-1">{t('tinq.decline_reason_h')}</div>
                   {it.cancellation_reason}
                 </div>
               )}
               {it.status === 'pending' && !isQuoting && !isDeclining && (
                 <div className="flex items-center justify-end gap-2 border-t border-slate-100 pt-3">
                   <button onClick={() => setDeclining(it.id)} className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-rose-50 hover:text-rose-700 rounded-lg">
-                    <X className="h-3.5 w-3.5" /> Recusar
+                    <X className="h-3.5 w-3.5" /> {t('tinq.btn_decline')}
                   </button>
                   <button onClick={() => { setQuoting(it.id); setQuoteForm({ price_euros: (it.budget_cents || 0) / 100 || 0, notes: '', valid_until: '' }); }}
                     className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-br from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-semibold rounded-lg shadow-sm">
-                    <Send className="h-3.5 w-3.5" /> Cotar
+                    <Send className="h-3.5 w-3.5" /> {t('tinq.btn_quote')}
                   </button>
                 </div>
               )}
@@ -142,41 +145,41 @@ export function InquiriesClient({ items, orgsMap, svcMap }: { items: Inquiry[]; 
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-3">
                   <div className="grid sm:grid-cols-2 gap-2">
                     <div>
-                      <label className="text-[10px] uppercase font-bold text-blue-700 mb-1 block">Preço (€)</label>
+                      <label className="text-[10px] uppercase font-bold text-blue-700 mb-1 block">{t('tinq.f_price')}</label>
                       <input type="number" min="0" step="50" value={quoteForm.price_euros} onChange={(e) => setQuoteForm((p) => ({ ...p, price_euros: Number(e.target.value) }))}
                         className="w-full px-3 py-2 border border-blue-200 rounded-lg text-sm focus:border-blue-500 outline-none" />
                     </div>
                     <div>
-                      <label className="text-[10px] uppercase font-bold text-blue-700 mb-1 block">Válida até</label>
+                      <label className="text-[10px] uppercase font-bold text-blue-700 mb-1 block">{t('tinq.valid_until')}</label>
                       <input type="date" value={quoteForm.valid_until} onChange={(e) => setQuoteForm((p) => ({ ...p, valid_until: e.target.value }))}
                         className="w-full px-3 py-2 border border-blue-200 rounded-lg text-sm focus:border-blue-500 outline-none" />
                     </div>
                   </div>
-                  <textarea value={quoteForm.notes} onChange={(e) => setQuoteForm((p) => ({ ...p, notes: e.target.value }))} rows={3} placeholder="Notas opcionais (o que está incluído, condições, etc.)"
+                  <textarea value={quoteForm.notes} onChange={(e) => setQuoteForm((p) => ({ ...p, notes: e.target.value }))} rows={3} placeholder={t('tinq.f_notes_ph')}
                     className="w-full px-3 py-2 border border-blue-200 rounded-lg text-sm focus:border-blue-500 outline-none resize-y" />
                   <div className="flex justify-end gap-2">
-                    <button onClick={() => setQuoting(null)} className="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-900">Cancelar</button>
+                    <button onClick={() => setQuoting(null)} className="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-900">{t('btn.cancel')}</button>
                     <button onClick={() => quote(it.id)} disabled={busy === it.id} className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg disabled:opacity-50">
-                      {busy === it.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />} Enviar cotação
+                      {busy === it.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />} {t('tinq.btn_send_quote')}
                     </button>
                   </div>
                 </div>
               )}
               {isDeclining && (
                 <div className="bg-rose-50 border border-rose-200 rounded-lg p-4 space-y-3">
-                  <textarea value={declineReason} onChange={(e) => setDeclineReason(e.target.value)} rows={2} placeholder="Razão (opcional) — a empresa vê isto"
+                  <textarea value={declineReason} onChange={(e) => setDeclineReason(e.target.value)} rows={2} placeholder={t('tinq.decline_ph')}
                     className="w-full px-3 py-2 border border-rose-200 rounded-lg text-sm focus:border-rose-500 outline-none resize-y" />
                   <div className="flex justify-end gap-2">
-                    <button onClick={() => setDeclining(null)} className="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-900">Voltar</button>
+                    <button onClick={() => setDeclining(null)} className="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-900">{t('btn.back')}</button>
                     <button onClick={() => decline(it.id)} disabled={busy === it.id} className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-lg disabled:opacity-50">
-                      {busy === it.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <X className="h-3.5 w-3.5" />} Recusar
+                      {busy === it.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <X className="h-3.5 w-3.5" />} {t('tinq.btn_decline')}
                     </button>
                   </div>
                 </div>
               )}
             </div>
             <footer className="px-5 py-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400">
-              <span>{new Date(it.created_at).toLocaleString('pt-PT')}</span>
+              <span>{new Date(it.created_at).toLocaleString(locale)}</span>
             </footer>
           </article>
         );
