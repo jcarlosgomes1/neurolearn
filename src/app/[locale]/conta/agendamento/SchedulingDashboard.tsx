@@ -49,12 +49,12 @@ export function SchedulingDashboard({ initial }: { initial: Dashboard | null }) 
   function checkUrlParams() {
     const params = new URLSearchParams(window.location.search);
     if (params.get('gcal') === 'connected') {
-      toast.success('Google Calendar conectado!');
+      toast.success(t('sched.toast.gcal_connected'));
       window.history.replaceState({}, '', window.location.pathname);
     }
     const err = params.get('gcal_error');
     if (err) {
-      toast.error('Erro Google Calendar: ' + err);
+      toast.error(t('sched.toast.gcal_error', { err }));
       window.history.replaceState({}, '', window.location.pathname);
     }
   }
@@ -75,7 +75,7 @@ export function SchedulingDashboard({ initial }: { initial: Dashboard | null }) 
     const { data: cidData } = await sb.from('nl_platform_config').select('value').eq('key', 'google_oauth_client_id').maybeSingle();
     const clientId = cidData?.value;
     if (!clientId) {
-      toast.error('Google OAuth ainda não configurado pelo admin');
+      toast.error(t('sched.toast.oauth_not_configured'));
       return;
     }
 
@@ -90,15 +90,15 @@ export function SchedulingDashboard({ initial }: { initial: Dashboard | null }) 
   }
 
   async function disconnectGoogle() {
-    if (!confirm('Desconectar Google Calendar?')) return;
+    if (!confirm(t('sched.confirm.disconnect_gcal'))) return;
     const sb = createClient();
     await sb.rpc('nl_scheduling_oauth_disconnect', { p_provider: 'google' });
     setGcal({ connected: false });
-    toast.success('Desconectado');
+    toast.success(t('sched.toast.disconnected'));
   }
 
   if (!data || !cal) {
-    return <div className="max-w-3xl mx-auto px-4 py-10 text-center text-slate-500">A carregar…</div>;
+    return <div className="max-w-3xl mx-auto px-4 py-10 text-center text-slate-500">{t('sched.loading')}</div>;
   }
 
   const publicUrl = typeof window !== 'undefined' ? `${window.location.origin}/${locale}/agendar/${data.handle}` : '';
@@ -150,16 +150,16 @@ export function SchedulingDashboard({ initial }: { initial: Dashboard | null }) 
     } finally { setSavingLink(false); }
   }
   async function deleteLink(id: string) {
-    if (!confirm('Eliminar?')) return;
+    if (!confirm(t('sched.confirm.delete'))) return;
     const sb = createClient();
     await sb.rpc('nl_scheduling_delete_link', { p_id: id });
-    toast.success('Eliminado'); await refresh();
+    toast.success(t('sched.toast.deleted')); await refresh();
   }
   async function cancelBooking(id: string) {
-    if (!confirm('Cancelar?')) return;
+    if (!confirm(t('sched.confirm.cancel'))) return;
     const sb = createClient();
     await sb.rpc('nl_scheduling_cancel_booking', { p_booking_id: id, p_reason: 'cancelled_by_host' });
-    toast.success('Cancelado'); await refresh();
+    toast.success(t('sched.toast.cancelled')); await refresh();
   }
 
   return (
@@ -176,11 +176,11 @@ export function SchedulingDashboard({ initial }: { initial: Dashboard | null }) 
             <div className="text-sm font-mono text-slate-700 truncate">{publicUrl}</div>
           </div>
           <div className="flex gap-2">
-            <button onClick={() => { navigator.clipboard.writeText(publicUrl); toast.success('Copiado'); }} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:border-brand-300 text-sm font-medium text-slate-700">
-              <Copy className="h-3.5 w-3.5" /> Copiar
+            <button onClick={() => { navigator.clipboard.writeText(publicUrl); toast.success(t('sched.toast.copied')); }} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:border-brand-300 text-sm font-medium text-slate-700">
+              <Copy className="h-3.5 w-3.5" /> {t('sched.copy')}
             </button>
             <a href={publicUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-sm font-medium text-white">
-              <ExternalLink className="h-3.5 w-3.5" /> Abrir
+              <ExternalLink className="h-3.5 w-3.5" /> {t('sched.open')}
             </a>
           </div>
         </div>
@@ -198,7 +198,7 @@ export function SchedulingDashboard({ initial }: { initial: Dashboard | null }) 
           {gcal?.connected && (
             <div className="text-xs text-slate-600 mt-1.5">
               {t('sched.gcal.connected')} <strong>{gcal.email}</strong>
-              {gcal.last_sync_at && <> · {t('sched.gcal.last_sync')}: {new Date(gcal.last_sync_at).toLocaleString('pt-PT')}</>}
+              {gcal.last_sync_at && <> · {t('sched.gcal.last_sync')}: {new Date(gcal.last_sync_at).toLocaleString(locale)}</>}
             </div>
           )}
         </div>
@@ -275,20 +275,20 @@ export function SchedulingDashboard({ initial }: { initial: Dashboard | null }) 
             </button>
           </div>
           <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100">
-            {data.links.length === 0 && <div className="p-6 text-center text-sm text-slate-500">Ainda sem tipos de reunião.</div>}
+            {data.links.length === 0 && <div className="p-6 text-center text-sm text-slate-500">{t('sched.links.empty')}</div>}
             {data.links.map((l) => (
               <div key={l.id} className="p-4 flex items-start justify-between gap-3 hover:bg-slate-50/50">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <h3 className="font-semibold text-slate-900">{l.title}</h3>
-                    {!l.visible && <span className="text-[10px] uppercase bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">Oculto</span>}
+                    {!l.visible && <span className="text-[10px] uppercase bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">{t('sched.hidden')}</span>}
                   </div>
                   <div className="text-xs text-slate-500 mt-0.5">{l.duration_min} min · {l.price_cents > 0 ? `${(l.price_cents/100).toFixed(2)} €` : t('sched.link.free')} · /{l.slug}</div>
                   {l.description && <p className="text-sm text-slate-600 mt-1.5 line-clamp-2">{l.description}</p>}
                 </div>
                 <div className="flex gap-1 flex-shrink-0">
-                  <button onClick={() => setEditingLink(l)} className="text-xs px-2.5 py-1.5 rounded-md hover:bg-slate-100 text-slate-700">Editar</button>
-                  <button onClick={() => deleteLink(l.id)} className="text-xs px-2.5 py-1.5 rounded-md hover:bg-red-50 text-red-600">Eliminar</button>
+                  <button onClick={() => setEditingLink(l)} className="text-xs px-2.5 py-1.5 rounded-md hover:bg-slate-100 text-slate-700">{t('sched.edit')}</button>
+                  <button onClick={() => deleteLink(l.id)} className="text-xs px-2.5 py-1.5 rounded-md hover:bg-red-50 text-red-600">{t('sched.delete')}</button>
                 </div>
               </div>
             ))}
@@ -297,7 +297,7 @@ export function SchedulingDashboard({ initial }: { initial: Dashboard | null }) 
           {editingLink && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm" onClick={() => setEditingLink(null)}>
               <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 space-y-3" onClick={(e) => e.stopPropagation()}>
-                <h2 className="font-bold text-slate-900 text-lg">{editingLink.id ? 'Editar' : t('sched.new_link')}</h2>
+                <h2 className="font-bold text-slate-900 text-lg">{editingLink.id ? t('sched.edit') : t('sched.new_link')}</h2>
                 <div><label className="label">{t('sched.link.title')}</label><input className="input" value={editingLink.title || ''} onChange={(e) => setEditingLink({ ...editingLink, title: e.target.value })} /></div>
                 <div className="grid grid-cols-2 gap-3">
                   <div><label className="label">{t('sched.link.duration')}</label>
@@ -310,10 +310,10 @@ export function SchedulingDashboard({ initial }: { initial: Dashboard | null }) 
                 <div><label className="label">{t('sched.link.description')}</label><textarea className="input min-h-[80px]" value={editingLink.description || ''} onChange={(e) => setEditingLink({ ...editingLink, description: e.target.value })} /></div>
                 <label className="flex items-center gap-2 text-sm">
                   <input type="checkbox" className="h-4 w-4 accent-brand-600" checked={editingLink.visible !== false} onChange={(e) => setEditingLink({ ...editingLink, visible: e.target.checked })} />
-                  Visível publicamente
+                  {t('sched.link.visible_public')}
                 </label>
                 <div className="flex gap-2 pt-2">
-                  <button onClick={() => setEditingLink(null)} className="flex-1 px-4 py-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-sm font-medium text-slate-700">Cancelar</button>
+                  <button onClick={() => setEditingLink(null)} className="flex-1 px-4 py-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-sm font-medium text-slate-700">{t('btn.cancel')}</button>
                   <button onClick={saveLink} disabled={savingLink} className="flex-1 px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold disabled:opacity-50">{savingLink ? '…' : t('account.save')}</button>
                 </div>
               </div>
@@ -328,14 +328,14 @@ export function SchedulingDashboard({ initial }: { initial: Dashboard | null }) 
           {data.upcoming_bookings.map((b) => (
             <div key={b.id} className="p-4 flex items-start justify-between gap-3 hover:bg-slate-50/50">
               <div className="min-w-0 flex-1">
-                <div className="text-xs text-slate-500">{new Date(b.scheduled_at).toLocaleString('pt-PT', { dateStyle: 'medium', timeStyle: 'short' })}</div>
+                <div className="text-xs text-slate-500">{new Date(b.scheduled_at).toLocaleString(locale, { dateStyle: 'medium', timeStyle: 'short' })}</div>
                 <h3 className="font-semibold text-slate-900 mt-0.5">{b.guest_name}</h3>
                 <div className="text-xs text-slate-500">{b.guest_email}{b.guest_phone && ` · ${b.guest_phone}`}</div>
-                <div className="text-xs text-slate-600 mt-1">{b.link_title} · {b.duration_min} min{b.price_cents > 0 && <> · {(b.price_cents/100).toFixed(2)} € {b.paid_at ? <Check className="inline h-3 w-3 text-emerald-600 ml-1" /> : <span className="text-amber-600 ml-1">pendente</span>}</>}</div>
+                <div className="text-xs text-slate-600 mt-1">{b.link_title} · {b.duration_min} min{b.price_cents > 0 && <> · {(b.price_cents/100).toFixed(2)} € {b.paid_at ? <Check className="inline h-3 w-3 text-emerald-600 ml-1" /> : <span className="text-amber-600 ml-1">{t('sched.pending')}</span>}</>}</div>
                 {b.guest_notes && <p className="text-sm text-slate-700 mt-2 p-2 bg-slate-50 rounded">{b.guest_notes}</p>}
-                {b.meeting_url && <a href={b.meeting_url} target="_blank" rel="noreferrer" className="text-xs text-brand-700 font-medium hover:underline mt-1.5 inline-block">→ Link da reunião</a>}
+                {b.meeting_url && <a href={b.meeting_url} target="_blank" rel="noreferrer" className="text-xs text-brand-700 font-medium hover:underline mt-1.5 inline-block">→ {t('sched.meeting_link')}</a>}
               </div>
-              <button onClick={() => cancelBooking(b.id)} className="text-xs px-2.5 py-1.5 rounded-md hover:bg-red-50 text-red-600 flex-shrink-0">Cancelar</button>
+              <button onClick={() => cancelBooking(b.id)} className="text-xs px-2.5 py-1.5 rounded-md hover:bg-red-50 text-red-600 flex-shrink-0">{t('sched.cancel_booking')}</button>
             </div>
           ))}
         </div>
