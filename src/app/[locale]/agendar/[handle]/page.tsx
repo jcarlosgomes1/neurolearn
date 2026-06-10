@@ -56,7 +56,7 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
           <h2 className="font-bold text-slate-900 mt-8 mb-3 px-1">{t('sched.public.pick_type')}</h2>
           {links.length === 0 ? (
             <div className="bg-white rounded-xl border border-slate-200 p-6 text-center text-sm text-slate-500">
-              Sem tipos de reunião configurados.
+              {t('sched.public.no_types')}
             </div>
           ) : (
             <div className="space-y-2">
