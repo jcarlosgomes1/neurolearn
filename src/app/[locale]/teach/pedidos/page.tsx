@@ -38,7 +38,7 @@ export default async function InquiriesPage() {
         </div>
         <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{safeT('teach.inquiries.title', 'Pedidos recebidos')}</h1>
         <p className="text-sm text-slate-600 mt-1.5 max-w-2xl leading-relaxed">
-          Empresas que pediram um dos teus serviços. Cota, recusa ou negocia.
+          {safeT('teach.inquiries.description', 'Empresas que pediram um dos teus serviços. Cota, recusa ou negocia.')}
         </p>
       </header>
       <InquiriesClient items={Array.isArray(inquiries) ? inquiries : []} orgsMap={orgsMap} svcMap={svcMap} />
