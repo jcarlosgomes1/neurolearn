@@ -2,6 +2,7 @@
 // Mantém a UI funcional mesmo offline. Apenas as chaves essenciais.
 
 export const FALLBACK_MESSAGES = {
+  brand: { name: 'NeuroLearn' },
   nav: {
     courses: 'Cursos', essentials: 'Essentials', business: 'Empresas', blog: 'Blog',
     search: 'Pesquisar', menu: 'Menu', open_menu: 'Abrir menu', close_menu: 'Fechar menu',

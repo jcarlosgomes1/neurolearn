@@ -16,13 +16,13 @@ export async function generateMetadata() {
   return {
     title: {
       default: t('site.meta_title_default'),
-      template: '%s · NeuroLearn',
+      template: `%s · ${t('brand.name')}`,
     },
     description: t('site.meta_description'),
     metadataBase: new URL('https://neurolearn-rosy.vercel.app'),
     openGraph: {
       type: 'website',
-      siteName: 'NeuroLearn',
+      siteName: t('brand.name'),
     },
   };
 }
