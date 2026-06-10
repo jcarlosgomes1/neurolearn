@@ -81,10 +81,10 @@ export function UpgradesClient({ orgId, orgName, orgSlug, memberRole, features, 
                       <Check className="h-4 w-4" /> {t('org.upg.active_badge')}
                     </button>
                   ) : canBuy ? (
-                    <a href={`mailto:hello@neurolearn.app?subject=Add-on: ${encodeURIComponent(a.name)}&body=Empresa: ${encodeURIComponent(orgName)}%0AAdd-on: ${encodeURIComponent(a.name)}%0APreco: ${a.price_cents/100} ${a.currency}`}
+                    <Link href={'/contacto' as any}
                       className="w-full px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-lg text-center block">
                       {t('org.upg.request_btn')}
-                    </a>
+                    </Link>
                   ) : (
                     <div className="text-xs text-slate-500 text-center">{t('org.upg.ask_admin')}</div>
                   )}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter, Link } from '@/i18n/routing';
 import { toast } from 'sonner';
@@ -21,18 +22,20 @@ interface Proposal {
   created_at: string;
 }
 
-const STATUS_META: Record<string, { label: string; icon: any; cls: string; ring: string }> = {
-  pending:    { label: 'Pendente',       icon: Clock,       cls: 'bg-amber-50 text-amber-700 border-amber-200',    ring: 'ring-amber-200' },
-  processing: { label: 'A gerar',        icon: Loader2,     cls: 'bg-blue-50 text-blue-700 border-blue-200',       ring: 'ring-blue-200' },
-  ready:      { label: 'Pronta',         icon: Sparkles,    cls: 'bg-violet-50 text-violet-700 border-violet-200', ring: 'ring-violet-300' },
-  approved:   { label: 'Aprovada',       icon: CheckCircle, cls: 'bg-emerald-50 text-emerald-700 border-emerald-200', ring: 'ring-emerald-200' },
-  rejected:   { label: 'Rejeitada',      icon: XCircle,     cls: 'bg-slate-50 text-slate-500 border-slate-200',    ring: 'ring-slate-200' },
-  failed:     { label: 'Falhou',         icon: XCircle,     cls: 'bg-rose-50 text-rose-700 border-rose-200',       ring: 'ring-rose-200' },
+const STATUS_META: Record<string, { labelKey: string; icon: any; cls: string; ring: string }> = {
+  pending:    { labelKey: 'org.pc.st_pending',    icon: Clock,       cls: 'bg-amber-50 text-amber-700 border-amber-200',    ring: 'ring-amber-200' },
+  processing: { labelKey: 'org.pc.st_processing', icon: Loader2,     cls: 'bg-blue-50 text-blue-700 border-blue-200',       ring: 'ring-blue-200' },
+  ready:      { labelKey: 'org.pc.st_ready',      icon: Sparkles,    cls: 'bg-violet-50 text-violet-700 border-violet-200', ring: 'ring-violet-300' },
+  approved:   { labelKey: 'org.pc.st_approved',   icon: CheckCircle, cls: 'bg-emerald-50 text-emerald-700 border-emerald-200', ring: 'ring-emerald-200' },
+  rejected:   { labelKey: 'org.pc.st_rejected',   icon: XCircle,     cls: 'bg-slate-50 text-slate-500 border-slate-200',    ring: 'ring-slate-200' },
+  failed:     { labelKey: 'org.pc.st_failed',     icon: XCircle,     cls: 'bg-rose-50 text-rose-700 border-rose-200',       ring: 'ring-rose-200' },
 };
 
 export function ProposalsClient({ orgId, orgSlug, isOrgAdmin, proposals: initialProposals }: {
   orgId: string; orgSlug: string; isOrgAdmin: boolean; proposals: Proposal[];
 }) {
+  const t = useTranslations();
+  const locale = useLocale();
   const router = useRouter();
   const [proposals, setProposals] = useState<Proposal[]>(initialProposals);
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -46,29 +49,29 @@ export function ProposalsClient({ orgId, orgSlug, isOrgAdmin, proposals: initial
   }
 
   async function approve(id: string) {
-    if (!confirm('Aprovar esta proposta? Vai criar o curso e ficará disponível para a equipa.')) return;
+    if (!confirm(t('org.pc.approve_confirm'))) return;
     setBusy(true);
     try {
       const sb = createClient();
       const { error } = await sb.rpc('nl_org_proposal_approve', { p_proposal_id: id });
       if (error) throw error;
-      toast.success('Proposta aprovada · curso criado');
+      toast.success(t('org.pc.approved_toast'));
       await refresh();
-    } catch (e: any) { toast.error(e?.message || 'Erro'); }
+    } catch (e: any) { toast.error(e?.message || t('tea.error')); }
     finally { setBusy(false); }
   }
 
   async function reject(id: string) {
-    const reason = prompt('Razão da rejeição (opcional):');
+    const reason = prompt(t('org.pc.reject_prompt'));
     if (reason === null) return;
     setBusy(true);
     try {
       const sb = createClient();
       const { error } = await sb.rpc('nl_org_proposal_reject', { p_proposal_id: id, p_reason: reason || null });
       if (error) throw error;
-      toast.success('Proposta rejeitada');
+      toast.success(t('org.pc.rejected_toast'));
       await refresh();
-    } catch (e: any) { toast.error(e?.message || 'Erro'); }
+    } catch (e: any) { toast.error(e?.message || t('tea.error')); }
     finally { setBusy(false); }
   }
 
@@ -76,11 +79,11 @@ export function ProposalsClient({ orgId, orgSlug, isOrgAdmin, proposals: initial
     return (
       <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center">
         <Sparkles className="h-10 w-10 text-violet-300 mx-auto mb-2" />
-        <p className="text-sm text-slate-600 font-medium">Sem propostas ainda.</p>
-        <p className="text-xs text-slate-500 mt-1 mb-4">Vai a Documentos, selecciona conteúdos e gera a primeira proposta.</p>
+        <p className="text-sm text-slate-600 font-medium">{t('org.pc.empty_h')}</p>
+        <p className="text-xs text-slate-500 mt-1 mb-4">{t('org.pc.empty_p')}</p>
         <Link href={{ pathname: '/empresa/[slug]/conteudo', params: { slug: orgSlug } } as any}
           className="inline-flex items-center gap-1.5 px-4 py-2 bg-gradient-to-br from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm">
-          <FileText className="h-4 w-4" /> Ir para Documentos
+          <FileText className="h-4 w-4" /> {t('org.pc.go_docs')}
         </Link>
       </div>
     );
@@ -92,7 +95,7 @@ export function ProposalsClient({ orgId, orgSlug, isOrgAdmin, proposals: initial
         const meta = STATUS_META[p.status] || STATUS_META.pending;
         const Icon = meta.icon;
         const isExpanded = expanded === p.id;
-        const courseTitle: string = p.proposal?.title || p.proposal?.name || `Proposta de ${new Date(p.created_at).toLocaleDateString('pt-PT')}`;
+        const courseTitle: string = p.proposal?.title || p.proposal?.name || t('org.pc.untitled_date', { date: new Date(p.created_at).toLocaleDateString(locale) });
         const courseSummary: string = p.proposal?.summary || p.proposal?.description || '';
         const modules: any[] = Array.isArray(p.proposal?.modules) ? p.proposal.modules : [];
 
@@ -107,11 +110,11 @@ export function ProposalsClient({ orgId, orgSlug, isOrgAdmin, proposals: initial
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="font-semibold text-sm text-slate-900 truncate">{courseTitle}</span>
                   <span className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border font-bold uppercase tracking-wider ${meta.cls}`}>
-                    {meta.label}
+                    {t(meta.labelKey)}
                   </span>
                 </div>
                 <div className="text-[11px] text-slate-500 mt-0.5">
-                  {p.content_ids?.length || 0} documento(s) · {p.difficulty} · {p.source_lang.toUpperCase()} · {new Date(p.created_at).toLocaleDateString('pt-PT')}
+                  {t('org.pc.docs_count', { count: p.content_ids?.length || 0 })} · {p.difficulty} · {p.source_lang.toUpperCase()} · {new Date(p.created_at).toLocaleDateString(locale)}
                 </div>
               </div>
               <ChevronRight className={`h-4 w-4 text-slate-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
@@ -125,7 +128,7 @@ export function ProposalsClient({ orgId, orgSlug, isOrgAdmin, proposals: initial
 
                 {modules.length > 0 && (
                   <div>
-                    <div className="text-[10px] uppercase font-bold text-slate-500 mb-2">Módulos propostos ({modules.length})</div>
+                    <div className="text-[10px] uppercase font-bold text-slate-500 mb-2">{t('org.pc.modules_h', { count: modules.length })}</div>
                     <div className="space-y-1.5">
                       {modules.map((m: any, i: number) => (
                         <div key={i} className="flex items-start gap-2 text-xs">
@@ -133,9 +136,9 @@ export function ProposalsClient({ orgId, orgSlug, isOrgAdmin, proposals: initial
                             {i + 1}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="font-semibold text-slate-800">{m.title || m.name || `Módulo ${i + 1}`}</div>
+                            <div className="font-semibold text-slate-800">{m.title || m.name || t('org.pc.module_n', { n: i + 1 })}</div>
                             {Array.isArray(m.lessons) && m.lessons.length > 0 && (
-                              <div className="text-[10px] text-slate-500 mt-0.5">{m.lessons.length} aulas</div>
+                              <div className="text-[10px] text-slate-500 mt-0.5">{t('org.pc.lessons_count', { count: m.lessons.length })}</div>
                             )}
                           </div>
                         </div>
@@ -154,7 +157,7 @@ export function ProposalsClient({ orgId, orgSlug, isOrgAdmin, proposals: initial
                 {p.status === 'approved' && p.generated_course_id && (
                   <Link href={{ pathname: '/curso/[id]', params: { id: p.generated_course_id } } as any}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-xs font-semibold rounded-lg">
-                    <BookOpen className="h-3.5 w-3.5" /> Ver curso criado
+                    <BookOpen className="h-3.5 w-3.5" /> {t('org.pc.view_course')}
                   </Link>
                 )}
 
@@ -162,11 +165,11 @@ export function ProposalsClient({ orgId, orgSlug, isOrgAdmin, proposals: initial
                   <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-100">
                     <button onClick={() => approve(p.id)} disabled={busy}
                       className="inline-flex items-center gap-1.5 px-4 py-2 bg-gradient-to-br from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-sm font-semibold rounded-lg shadow-sm disabled:opacity-50">
-                      {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle className="h-3.5 w-3.5" />} Aprovar e criar curso
+                      {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle className="h-3.5 w-3.5" />} {t('org.pc.approve_btn')}
                     </button>
                     <button onClick={() => reject(p.id)} disabled={busy}
                       className="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-slate-200 hover:bg-rose-50 hover:border-rose-300 hover:text-rose-700 text-slate-700 text-sm font-semibold rounded-lg disabled:opacity-50">
-                      <XCircle className="h-3.5 w-3.5" /> Rejeitar
+                      <XCircle className="h-3.5 w-3.5" /> {t('org.pc.reject_btn')}
                     </button>
                   </div>
                 )}
@@ -174,7 +177,7 @@ export function ProposalsClient({ orgId, orgSlug, isOrgAdmin, proposals: initial
                 {p.status === 'processing' && (
                   <div className="bg-blue-50 border border-blue-200 rounded p-2 flex items-center gap-2 text-xs text-blue-800">
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    A processar — em breve será marcada como Pronta para revisão. Atualiza esta página em alguns minutos.
+                    {t('org.pc.processing_note')}
                   </div>
                 )}
               </div>
