@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
@@ -14,13 +15,14 @@ interface Plan {
   min_seats?: number; currency: string;
 }
 
-function formatMoney(cents: number, currency: string) {
-  return new Intl.NumberFormat('pt-PT', { style: 'currency', currency, maximumFractionDigits: 0 }).format(cents / 100);
+function formatMoney(cents: number, currency: string, locale: string) {
+  return new Intl.NumberFormat(locale, { style: 'currency', currency, maximumFractionDigits: 0 }).format(cents / 100);
 }
 
 export function OnboardingClient({ locale, plans, selectedPlanId, selectedCycle, userEmail }: {
   locale: string; plans: Plan[]; selectedPlanId?: string; selectedCycle: string; userEmail: string;
 }) {
+  const t = useTranslations();
   const [step, setStep] = useState<1|2>(1);
   const [planId, setPlanId] = useState(selectedPlanId || plans[0]?.id || '');
   const [cycle, setCycle] = useState(selectedCycle as 'monthly'|'annual');
@@ -33,29 +35,26 @@ export function OnboardingClient({ locale, plans, selectedPlanId, selectedCycle,
   const selectedPlan = plans.find((p) => p.id === planId);
   
   function handleCreate() {
-    if (!orgName.trim()) { toast.error('Nome obrigatório'); return; }
-    if (!planId) { toast.error('Escolhe um plano'); return; }
+    if (!orgName.trim()) { toast.error(t('bo.err_name')); return; }
+    if (!planId) { toast.error(t('bo.err_plan')); return; }
     startTransition(async () => {
       const sb = createClient();
-      // 1. Criar org
       const { data: orgData, error: orgErr } = await sb.rpc('nl_org_create', {
         p_name: orgName, p_legal_name: legalName || null, p_country_code: country,
       });
-      if (orgErr || !(orgData as any)?.ok) { toast.error(orgErr?.message || (orgData as any)?.error || 'Falhou criar empresa'); return; }
+      if (orgErr || !(orgData as any)?.ok) { toast.error(orgErr?.message || (orgData as any)?.error || t('bo.err_create')); return; }
       const orgId = (orgData as any).org_id;
       const slug = (orgData as any).slug;
       
-      // 2. Atribuir sub (trial se plano tem trial_days)
       const { error: subErr } = await sb.rpc('nl_admin_org_subscription_assign', {
         p_org_id: orgId, p_plan_id: planId, p_billing_cycle: cycle,
         p_seats_purchased: seats, p_status: selectedPlan?.trial_days ? 'trial' : 'manual',
         p_trial_days: selectedPlan?.trial_days || null, p_period_days: 30,
       });
       if (subErr) {
-        // Não bloqueia — empresa criada, sub pode ser atribuída depois manualmente
-        toast.warning('Empresa criada, mas subscrição ficou pendente (admin tem que aprovar)');
+        toast.warning(t('bo.warn_pending'));
       } else {
-        toast.success(`Empresa criada · ${selectedPlan?.trial_days ? `${selectedPlan.trial_days}d trial` : 'sub activa'}`);
+        toast.success(t('bo.created', { detail: selectedPlan?.trial_days ? t('bo.trial_detail', { days: selectedPlan.trial_days }) : t('bo.sub_active') }));
       }
       router.push(`/${locale}/empresa/${slug}` as any);
     });
@@ -65,9 +64,9 @@ export function OnboardingClient({ locale, plans, selectedPlanId, selectedCycle,
     return (
       <div className="min-h-[60vh] max-w-2xl mx-auto px-6 py-20 text-center">
         <Sparkles className="h-10 w-10 mx-auto text-brand-600 mb-3" />
-        <h1 className="text-2xl font-bold text-slate-900">Planos em preparação</h1>
-        <p className="text-sm text-slate-500 mt-2">Volta em breve ou fala connosco.</p>
-        <Link href={`/contacto` as any} className="inline-flex items-center gap-2 mt-4 text-sm text-brand-600 hover:underline">Contactar →</Link>
+        <h1 className="text-2xl font-bold text-slate-900">{t('bo.no_plans_h')}</h1>
+        <p className="text-sm text-slate-500 mt-2">{t('bo.no_plans_p')}</p>
+        <Link href={`/contacto` as any} className="inline-flex items-center gap-2 mt-4 text-sm text-brand-600 hover:underline">{t('bo.contact')} →</Link>
       </div>
     );
   }
@@ -76,8 +75,8 @@ export function OnboardingClient({ locale, plans, selectedPlanId, selectedCycle,
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12 space-y-6">
       <div className="text-center">
         <Building2 className="h-10 w-10 mx-auto text-brand-600 mb-2" />
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Começar com NeuroLearn</h1>
-        <p className="text-sm text-slate-500 mt-1">{step === 1 ? 'Escolhe o plano' : 'Cria a tua empresa'}</p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">{t('bo.h1')}</h1>
+        <p className="text-sm text-slate-500 mt-1">{step === 1 ? t('bo.step1') : t('bo.step2')}</p>
       </div>
       
       <div className="flex items-center gap-2 max-w-xs mx-auto">
@@ -88,8 +87,8 @@ export function OnboardingClient({ locale, plans, selectedPlanId, selectedCycle,
       {step === 1 ? (
         <>
           <div className="flex bg-slate-100 rounded-full p-1 max-w-xs mx-auto text-sm font-medium">
-            <button onClick={() => setCycle('monthly')} className={`flex-1 px-3 py-1.5 rounded-full ${cycle === 'monthly' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'}`}>Mensal</button>
-            <button onClick={() => setCycle('annual')} className={`flex-1 px-3 py-1.5 rounded-full ${cycle === 'annual' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'}`}>Anual</button>
+            <button onClick={() => setCycle('monthly')} className={`flex-1 px-3 py-1.5 rounded-full ${cycle === 'monthly' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'}`}>{t('bo.monthly')}</button>
+            <button onClick={() => setCycle('annual')} className={`flex-1 px-3 py-1.5 rounded-full ${cycle === 'annual' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'}`}>{t('bo.annual')}</button>
           </div>
           
           <div className="space-y-2">
@@ -107,12 +106,12 @@ export function OnboardingClient({ locale, plans, selectedPlanId, selectedCycle,
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <h3 className="font-semibold text-slate-900">{p.name}</h3>
-                        {p.trial_days > 0 && <span className="text-[10px] uppercase font-bold tracking-wider bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded">{p.trial_days}d trial</span>}
+                        {p.trial_days > 0 && <span className="text-[10px] uppercase font-bold tracking-wider bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded">{t('bo.trial_detail', { days: p.trial_days })}</span>}
                       </div>
                       {p.tagline && <p className="text-xs text-slate-500 mt-0.5">{p.tagline}</p>}
                       <div className="mt-2 text-sm font-medium text-slate-700">
-                        {flat != null && flat > 0 && <>{formatMoney(flat / (cycle === 'annual' ? 12 : 1), p.currency)}/mês</>}
-                        {seat != null && seat > 0 && <span> + {formatMoney(seat / (cycle === 'annual' ? 12 : 1), p.currency)}/seat</span>}
+                        {flat != null && flat > 0 && <>{formatMoney(flat / (cycle === 'annual' ? 12 : 1), p.currency, locale)}{t('bo.per_month')}</>}
+                        {seat != null && seat > 0 && <span> + {formatMoney(seat / (cycle === 'annual' ? 12 : 1), p.currency, locale)}{t('bo.per_seat')}</span>}
                       </div>
                     </div>
                   </div>
@@ -122,49 +121,49 @@ export function OnboardingClient({ locale, plans, selectedPlanId, selectedCycle,
           </div>
           
           <button onClick={() => setStep(2)} disabled={!planId} className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-semibold disabled:opacity-50">
-            Continuar <ArrowRight className="h-4 w-4" />
+            {t('bo.continue')} <ArrowRight className="h-4 w-4" />
           </button>
         </>
       ) : (
         <>
           <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 space-y-3">
-            <Field label="Nome da empresa *">
-              <input type="text" value={orgName} onChange={(e) => setOrgName(e.target.value)} placeholder="Acme Lda" className="w-full text-sm px-3 py-2 rounded-lg border border-slate-200 focus:border-brand-400 outline-none" />
+            <Field label={t('bo.f_orgname')}>
+              <input type="text" value={orgName} onChange={(e) => setOrgName(e.target.value)} placeholder={t('bo.f_orgname_ph')} className="w-full text-sm px-3 py-2 rounded-lg border border-slate-200 focus:border-brand-400 outline-none" />
             </Field>
-            <Field label="Razão social (opcional)">
-              <input type="text" value={legalName} onChange={(e) => setLegalName(e.target.value)} placeholder="Acme – Sociedade Unipessoal Lda" className="w-full text-sm px-3 py-2 rounded-lg border border-slate-200" />
+            <Field label={t('bo.f_legalname')}>
+              <input type="text" value={legalName} onChange={(e) => setLegalName(e.target.value)} placeholder={t('bo.f_legalname_ph')} className="w-full text-sm px-3 py-2 rounded-lg border border-slate-200" />
             </Field>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="País">
+              <Field label={t('bo.f_country')}>
                 <select value={country} onChange={(e) => setCountry(e.target.value)} className="w-full text-sm px-3 py-2 rounded-lg border border-slate-200 bg-white">
-                  <option value="PT">Portugal</option>
-                  <option value="ES">Espanha</option>
-                  <option value="FR">França</option>
-                  <option value="BR">Brasil</option>
-                  <option value="GB">Reino Unido</option>
-                  <option value="US">EUA</option>
-                  <option value="DE">Alemanha</option>
-                  <option value="IT">Itália</option>
+                  <option value="PT">{t('bo.c_PT')}</option>
+                  <option value="ES">{t('bo.c_ES')}</option>
+                  <option value="FR">{t('bo.c_FR')}</option>
+                  <option value="BR">{t('bo.c_BR')}</option>
+                  <option value="GB">{t('bo.c_GB')}</option>
+                  <option value="US">{t('bo.c_US')}</option>
+                  <option value="DE">{t('bo.c_DE')}</option>
+                  <option value="IT">{t('bo.c_IT')}</option>
                 </select>
               </Field>
-              <Field label="Seats iniciais">
+              <Field label={t('bo.f_seats')}>
                 <input type="number" min={selectedPlan?.min_seats || 1} value={seats} onChange={(e) => setSeats(Number(e.target.value) || 1)} className="w-full text-sm px-3 py-2 rounded-lg border border-slate-200" />
-                {selectedPlan?.min_seats && <p className="text-[10px] text-slate-500 mt-0.5">Min: {selectedPlan.min_seats}</p>}
+                {selectedPlan?.min_seats && <p className="text-[10px] text-slate-500 mt-0.5">{t('bo.min_seats', { n: selectedPlan.min_seats })}</p>}
               </Field>
             </div>
           </div>
           
           <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs text-emerald-900">
-            <strong>Plano:</strong> {selectedPlan?.name} · {cycle === 'monthly' ? 'Mensal' : 'Anual'}
-            {selectedPlan?.trial_days ? <> · {selectedPlan.trial_days} dias grátis</> : null}
-            <br />Email da conta: {userEmail}
+            <strong>{t('bo.plan_label')}</strong> {selectedPlan?.name} · {cycle === 'monthly' ? t('bo.monthly') : t('bo.annual')}
+            {selectedPlan?.trial_days ? <> · {t('bo.days_free', { days: selectedPlan.trial_days })}</> : null}
+            <br />{t('bo.account_email')} {userEmail}
           </div>
           
           <div className="flex gap-2">
-            <button onClick={() => setStep(1)} disabled={isPending} className="px-4 py-2.5 rounded-lg hover:bg-slate-100 text-slate-700 text-sm">← Voltar</button>
+            <button onClick={() => setStep(1)} disabled={isPending} className="px-4 py-2.5 rounded-lg hover:bg-slate-100 text-slate-700 text-sm">← {t('btn.back')}</button>
             <button onClick={handleCreate} disabled={isPending || !orgName} className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-r from-brand-600 to-violet-600 hover:opacity-90 text-white font-semibold disabled:opacity-50">
               {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-              Criar empresa
+              {t('bo.create_company')}
             </button>
           </div>
         </>
