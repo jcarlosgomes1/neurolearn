@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { Link } from '@/i18n/routing';
+import { getTranslations } from 'next-intl/server';
 import { TalentProfileClient } from './TalentProfileClient';
 import { Briefcase } from 'lucide-react';
 
@@ -8,6 +9,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  const t = await getTranslations();
   const sb = await createClient();
   const { data: { user } } = await sb.auth.getUser();
   if (!user) redirect(`/${locale}/login?next=/${locale}/talento`);
@@ -27,8 +29,8 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
             <div className="flex items-center gap-3">
               <Briefcase className="h-5 w-5 text-emerald-600" />
               <div>
-                <div className="font-semibold text-emerald-900 text-sm">Tens {placementsCount} {placementsCount === 1 ? 'empresa interessada' : 'empresas interessadas'}</div>
-                <div className="text-xs text-emerald-700">Ver os teus pedidos →</div>
+                <div className="font-semibold text-emerald-900 text-sm">{t('tal.interested_count', { count: placementsCount ?? 0 })}</div>
+                <div className="text-xs text-emerald-700">{t('tal.see_requests')} →</div>
               </div>
             </div>
           </Link>
