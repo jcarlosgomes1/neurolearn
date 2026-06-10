@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition, useRef, useCallback } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import { toast } from 'sonner';
@@ -32,9 +33,10 @@ const ACCEPTED_MIME = ['application/pdf', 'text/plain', 'text/markdown'];
 const MAX_SIZE = 100 * 1024 * 1024;
 
 function formatBytes(n: number): string { if (n < 1024) return `${n} B`; if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`; return `${(n / (1024 * 1024)).toFixed(1)} MB`; }
-function formatDate(iso: string): string { return new Date(iso).toLocaleString('pt-PT', { dateStyle: 'short', timeStyle: 'short' }); }
+function formatDate(iso: string, locale: string): string { return new Date(iso).toLocaleString(locale, { dateStyle: 'short', timeStyle: 'short' }); }
 
 export function ContentList({ slug, orgId, role, initial }: { slug: string; orgId: string; role: string; initial: ContentRow[] }) {
+  const t = useTranslations();
   const [items, setItems] = useState<ContentRow[]>(initial);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<{ name: string; pct: number } | null>(null);
@@ -67,25 +69,25 @@ export function ContentList({ slug, orgId, role, initial }: { slug: string; orgI
   function clearSelection() { setSelected(new Set()); }
   
   function handlePropose() {
-    if (selected.size === 0) { toast.error('Selecciona pelo menos 1 conteúdo'); return; }
-    if (selected.size > 20) { toast.error('Máximo 20 conteúdos por proposta'); return; }
+    if (selected.size === 0) { toast.error(t('org.cl.select_min')); return; }
+    if (selected.size > 20) { toast.error(t('org.cl.max20')); return; }
     startProposing(async () => {
       const r = await proposeCourseAction(slug, Array.from(selected), audience, difficulty, 'pt');
       if (r.ok && r.data) {
-        toast.success('Proposta criada — IA a trabalhar');
+        toast.success(t('org.cl.proposal_created'));
         clearSelection();
         router.push(`/empresa/${slug}/cursos/propostas/${r.data.proposal_id}` as any);
       } else {
-        toast.error(r.error || 'Falhou');
+        toast.error(r.error || t('tea.error'));
       }
     });
   }
 
   async function handleFiles(files: FileList | File[]) {
-    if (!canUpload) { toast.error('Sem permissão'); return; }
+    if (!canUpload) { toast.error(t('org.cl.no_perm')); return; }
     const validFiles = Array.from(files).filter((f) => {
-      if (!ACCEPTED_MIME.includes(f.type)) { toast.error(`${f.name}: tipo não suportado`); return false; }
-      if (f.size > MAX_SIZE) { toast.error(`${f.name}: maior que 100MB`); return false; }
+      if (!ACCEPTED_MIME.includes(f.type)) { toast.error(t('org.cl.unsupported', { name: f.name })); return false; }
+      if (f.size > MAX_SIZE) { toast.error(t('org.cl.too_big', { name: f.name })); return false; }
       return true;
     });
     if (validFiles.length === 0) return;
@@ -98,16 +100,16 @@ export function ContentList({ slug, orgId, role, initial }: { slug: string; orgI
         const uuid = crypto.randomUUID();
         const path = `${orgId}/${uuid}.${ext}`;
         const { error: uploadErr } = await sb.storage.from('org-content').upload(path, file, { cacheControl: '3600', contentType: file.type, upsert: false });
-        if (uploadErr) { toast.error(`Upload falhou para ${file.name}: ${uploadErr.message}`); continue; }
+        if (uploadErr) { toast.error(t('org.cl.upload_failed', { name: file.name, error: uploadErr.message })); continue; }
         setUploadProgress({ name: file.name, pct: 90 });
         const result = await registerUploadAction(slug, path, file.name, file.size, file.type);
         if (!result.ok) {
-          toast.error(`Registo falhou: ${result.error}`);
+          toast.error(t('org.cl.register_failed', { error: result.error ?? '' }));
           await sb.storage.from('org-content').remove([path]);
           continue;
         }
-        toast.success(`${file.name} carregado · a processar…`);
-      } catch (e) { toast.error(`Erro: ${e instanceof Error ? e.message : String(e)}`); }
+        toast.success(t('org.cl.uploaded', { name: file.name }));
+      } catch (e) { toast.error(t('org.cl.error_generic', { error: e instanceof Error ? e.message : String(e) })); }
     }
     setUploadProgress(null);
     setUploading(false);
@@ -124,14 +126,14 @@ export function ContentList({ slug, orgId, role, initial }: { slug: string; orgI
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 pb-24">
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Conteúdos da empresa</h1>
+          <h1 className="text-2xl font-bold text-slate-900">{t('org.cl.title')}</h1>
           <p className="text-sm text-slate-500 mt-1">
-            Carrega PDFs, manuais e documentos. A IA extrai texto, gera resumo e identifica tópicos.
-            {readyItems.length > 0 && <> Selecciona vários para propor um curso completo.</>}
+            {t('org.cl.subtitle')}
+            {readyItems.length > 0 && <>{t('org.cl.subtitle_extra')}</>}
           </p>
         </div>
         <button type="button" onClick={refresh} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md hover:bg-slate-100 text-slate-700 text-sm">
-          <RefreshCw className="h-3.5 w-3.5" /> Atualizar
+          <RefreshCw className="h-3.5 w-3.5" /> {t('org.cl.refresh')}
         </button>
       </div>
 
@@ -149,13 +151,13 @@ export function ContentList({ slug, orgId, role, initial }: { slug: string; orgI
           {uploading && uploadProgress ? (
             <div className="space-y-2">
               <Loader2 className="h-8 w-8 mx-auto text-brand-600 animate-spin" />
-              <div className="text-sm font-medium text-slate-700">A carregar {uploadProgress.name}…</div>
+              <div className="text-sm font-medium text-slate-700">{t('org.cl.uploading', { name: uploadProgress.name })}</div>
             </div>
           ) : (
             <>
               <Upload className="h-8 w-8 mx-auto text-slate-400 mb-2" />
-              <div className="text-sm font-semibold text-slate-700">Arrasta ficheiros aqui ou clica para escolher</div>
-              <div className="text-xs text-slate-500 mt-1">PDF, TXT ou MD — máx 100MB</div>
+              <div className="text-sm font-semibold text-slate-700">{t('org.cl.drop_hint')}</div>
+              <div className="text-xs text-slate-500 mt-1">{t('org.cl.drop_formats')}</div>
             </>
           )}
         </div>
@@ -163,7 +165,7 @@ export function ContentList({ slug, orgId, role, initial }: { slug: string; orgI
 
       {items.length === 0 ? (
         <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
-          Sem conteúdos ainda. {canUpload ? 'Faz upload do primeiro acima.' : ''}
+          {t('org.cl.empty')} {canUpload ? t('org.cl.empty_upload') : ''}
         </div>
       ) : (
         <div className="space-y-3">
@@ -189,7 +191,7 @@ export function ContentList({ slug, orgId, role, initial }: { slug: string; orgI
             <div className="flex items-center gap-2 mb-2 flex-wrap">
               <Sparkles className="h-4 w-4 text-brand-600 flex-shrink-0" />
               <span className="font-semibold text-slate-900 text-sm">
-                {selected.size} conteúdo{selected.size > 1 ? 's' : ''} seleccionado{selected.size > 1 ? 's' : ''}
+                {t('org.cl.selected_count', { count: selected.size })}
               </span>
               <button onClick={clearSelection} className="ml-auto text-slate-400 hover:text-slate-600">
                 <X className="h-4 w-4" />
@@ -198,22 +200,22 @@ export function ContentList({ slug, orgId, role, initial }: { slug: string; orgI
             <div className="grid grid-cols-2 gap-2 mb-2">
               <select value={audience} onChange={(e) => setAudience(e.target.value as any)}
                 className="text-sm px-2 py-1.5 rounded-md border border-slate-200 focus:border-brand-400 outline-none bg-white">
-                <option value="beginner">👶 Iniciantes</option>
-                <option value="intermediate">📚 Intermédios</option>
-                <option value="advanced">🎓 Avançados</option>
-                <option value="executive">👔 Executivos</option>
+                <option value="beginner">{t('org.cl.aud_beginner')}</option>
+                <option value="intermediate">{t('org.cl.aud_intermediate')}</option>
+                <option value="advanced">{t('org.cl.aud_advanced')}</option>
+                <option value="executive">{t('org.cl.aud_executive')}</option>
               </select>
               <select value={difficulty} onChange={(e) => setDifficulty(e.target.value as any)}
                 className="text-sm px-2 py-1.5 rounded-md border border-slate-200 focus:border-brand-400 outline-none bg-white">
-                <option value="easy">⚡ Curto</option>
-                <option value="medium">📖 Médio</option>
-                <option value="hard">🧠 Aprofundado</option>
+                <option value="easy">{t('org.cl.diff_easy')}</option>
+                <option value="medium">{t('org.cl.diff_medium')}</option>
+                <option value="hard">{t('org.cl.diff_hard')}</option>
               </select>
             </div>
             <button type="button" onClick={handlePropose} disabled={isProposing}
               className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-r from-brand-600 to-violet-600 hover:opacity-90 text-white text-sm font-semibold disabled:opacity-50">
               {isProposing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-              Propor curso com IA
+              {t('org.cl.propose_btn')}
             </button>
           </div>
         </div>
@@ -226,23 +228,25 @@ function ContentCard({ item, slug, canArchive, canSelect, isSelected, onToggleSe
   item: ContentRow; slug: string; canArchive: boolean; canSelect: boolean;
   isSelected: boolean; onToggleSelect: () => void; onUpdate: () => Promise<void>;
 }) {
+  const t = useTranslations();
+  const locale = useLocale();
   const [expanded, setExpanded] = useState(false);
   const [isPending, startTransition] = useTransition();
   
   function handleRetry() {
     startTransition(async () => {
       const result = await retryIngestAction(slug, item.id);
-      if (result.ok) { toast.success('Reprocessamento iniciado'); await onUpdate(); }
-      else toast.error(result.error || 'Falhou');
+      if (result.ok) { toast.success(t('org.cl.retry_started')); await onUpdate(); }
+      else toast.error(result.error || t('tea.error'));
     });
   }
   
   function handleArchive() {
-    if (!confirm(`Arquivar "${item.original_name}"?`)) return;
+    if (!confirm(t('org.cl.archive_confirm', { name: item.original_name }))) return;
     startTransition(async () => {
       const result = await archiveContentAction(slug, item.id);
-      if (result.ok) { toast.success('Arquivado'); await onUpdate(); }
-      else toast.error(result.error || 'Falhou');
+      if (result.ok) { toast.success(t('org.cl.archived')); await onUpdate(); }
+      else toast.error(result.error || t('tea.error'));
     });
   }
   
@@ -266,18 +270,18 @@ function ContentCard({ item, slug, canArchive, canSelect, isSelected, onToggleSe
               <div className="text-xs text-slate-500 mt-1 flex items-center gap-3 flex-wrap">
                 <span>{formatBytes(item.file_size_bytes)}</span>
                 <span>·</span>
-                <span>{formatDate(item.created_at)}</span>
+                <span>{formatDate(item.created_at, locale)}</span>
                 {item.extracted_at && (
                   <>
                     <span>·</span>
-                    <span className="inline-flex items-center gap-1"><Sparkles className="h-3 w-3" /> processado {formatDate(item.extracted_at)}</span>
+                    <span className="inline-flex items-center gap-1"><Sparkles className="h-3 w-3" /> {t('org.cl.processed', { date: formatDate(item.extracted_at, locale) })}</span>
                   </>
                 )}
               </div>
               {item.extraction_error && (
                 <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-800 break-words">
                   <AlertCircle className="h-3 w-3 inline mr-1" />
-                  <strong>Erro:</strong> {item.extraction_error}
+                  <strong>{t('org.cl.error_label')}</strong> {item.extraction_error}
                 </div>
               )}
             </div>
@@ -305,21 +309,21 @@ function ContentCard({ item, slug, canArchive, canSelect, isSelected, onToggleSe
           <div className="mt-4 pt-4 border-t border-slate-100 space-y-3">
             {item.summary && (
               <div>
-                <div className="text-[10px] uppercase font-bold tracking-wider text-slate-500 mb-1">Resumo</div>
+                <div className="text-[10px] uppercase font-bold tracking-wider text-slate-500 mb-1">{t('org.cl.summary')}</div>
                 <p className="text-sm text-slate-700">{item.summary}</p>
               </div>
             )}
             {item.detected_topics && item.detected_topics.length > 0 && (
               <div>
-                <div className="text-[10px] uppercase font-bold tracking-wider text-slate-500 mb-1.5">Tópicos detectados</div>
+                <div className="text-[10px] uppercase font-bold tracking-wider text-slate-500 mb-1.5">{t('org.cl.topics')}</div>
                 <div className="flex flex-wrap gap-1.5">
-                  {item.detected_topics.map((t, i) => (<span key={i} className="text-xs bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded">{t}</span>))}
+                  {item.detected_topics.map((topic, i) => (<span key={i} className="text-xs bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded">{topic}</span>))}
                 </div>
               </div>
             )}
             {item.detected_skills && item.detected_skills.length > 0 && (
               <div>
-                <div className="text-[10px] uppercase font-bold tracking-wider text-slate-500 mb-1.5">Competências</div>
+                <div className="text-[10px] uppercase font-bold tracking-wider text-slate-500 mb-1.5">{t('org.cl.skills')}</div>
                 <div className="flex flex-wrap gap-1.5">
                   {item.detected_skills.map((s, i) => (<span key={i} className="text-xs bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded">{s}</span>))}
                 </div>
@@ -333,11 +337,12 @@ function ContentCard({ item, slug, canArchive, canSelect, isSelected, onToggleSe
 }
 
 function StatusBadge({ status }: { status: string }) {
+  const t = useTranslations();
   switch (status) {
-    case 'pending': return <span className="inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded"><Clock className="h-2.5 w-2.5" /> Pendente</span>;
-    case 'processing': return <span className="inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded"><Loader2 className="h-2.5 w-2.5 animate-spin" /> A processar</span>;
-    case 'ready': return <span className="inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded"><CheckCircle2 className="h-2.5 w-2.5" /> Pronto</span>;
-    case 'failed': return <span className="inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider bg-red-100 text-red-700 px-1.5 py-0.5 rounded"><XCircle className="h-2.5 w-2.5" /> Falhou</span>;
+    case 'pending': return <span className="inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded"><Clock className="h-2.5 w-2.5" /> {t('org.cnt.status_pending')}</span>;
+    case 'processing': return <span className="inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded"><Loader2 className="h-2.5 w-2.5 animate-spin" /> {t('org.cnt.status_processing')}</span>;
+    case 'ready': return <span className="inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded"><CheckCircle2 className="h-2.5 w-2.5" /> {t('org.cnt.status_completed')}</span>;
+    case 'failed': return <span className="inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider bg-red-100 text-red-700 px-1.5 py-0.5 rounded"><XCircle className="h-2.5 w-2.5" /> {t('org.cnt.status_failed')}</span>;
     default: return <span className="inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">{status}</span>;
   }
 }
