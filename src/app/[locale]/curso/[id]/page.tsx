@@ -184,9 +184,9 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
             <div className="border-t border-slate-100 pt-10">
               <h2 className="text-2xl font-bold text-slate-900 mb-1 flex items-center gap-2">
                 <Star className="h-6 w-6 text-amber-500 fill-amber-500" />
-                Avaliações de alunos
+                {t('cdp.reviews_h')}
               </h2>
-              <p className="text-sm text-slate-500 mb-6">Veja o que outros estudantes disseram</p>
+              <p className="text-sm text-slate-500 mb-6">{t('cdp.reviews_sub')}</p>
               <CourseReviews
                 courseId={course.id}
                 currentUserId={user?.id}
@@ -198,9 +198,9 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
             <div className="border-t border-slate-100 pt-10">
               <h2 className="text-2xl font-bold text-slate-900 mb-1 flex items-center gap-2">
                 <MessageCircle className="h-6 w-6 text-blue-500" />
-                Perguntas & Respostas
+                {t('cdp.qa_h')}
               </h2>
-              <p className="text-sm text-slate-500 mb-6">Tira dúvidas com a comunidade e instrutor</p>
+              <p className="text-sm text-slate-500 mb-6">{t('cdp.qa_sub')}</p>
               <CourseQA
                 courseId={course.id}
                 currentUserId={user?.id}
@@ -222,9 +222,9 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
                 <div className="flex items-start gap-2">
                   <ShieldCheck className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
                   <div>
-                    <h4 className="font-semibold text-sm text-emerald-900">Garantia de satisfação</h4>
+                    <h4 className="font-semibold text-sm text-emerald-900">{t('cdp.guarantee_h')}</h4>
                     <p className="text-xs text-emerald-800 mt-1 leading-relaxed">
-                      Devolvemos o teu dinheiro se não estiveres satisfeito nos primeiros 14 dias.
+                      {t('cdp.guarantee_p')}
                     </p>
                   </div>
                 </div>
