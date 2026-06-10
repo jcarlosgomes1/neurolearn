@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { Link } from '@/i18n/routing';
+import { getTranslations } from 'next-intl/server';
 import { Heart, BookOpen } from 'lucide-react';
 
 export const metadata = { title: 'Wishlist · NeuroLearn' };
@@ -8,6 +9,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  const t = await getTranslations();
   const sb = await createClient();
   const { data: { user } } = await sb.auth.getUser();
   if (!user) redirect(`/${locale}/login?next=/${locale}/conta/wishlist`);
@@ -18,18 +20,18 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
       <main className="bg-slate-50 min-h-screen">
         <section className="bg-white border-b border-slate-200">
           <div className="">
-            <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2"><Heart className="h-6 w-6 text-rose-500 fill-rose-500" /> Wishlist</h1>
-            <p className="text-sm text-slate-500 mt-1">{courses.length} curso{courses.length === 1 ? '' : 's'} guardado{courses.length === 1 ? '' : 's'}</p>
+            <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2"><Heart className="h-6 w-6 text-rose-500 fill-rose-500" /> {t('wishlist.title')}</h1>
+            <p className="text-sm text-slate-500 mt-1">{t('wishlist.count', { count: courses.length })}</p>
           </div>
         </section>
         <div className="">
           {courses.length === 0 ? (
             <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
               <Heart className="h-12 w-12 text-slate-300 mx-auto mb-3" />
-              <h3 className="font-semibold text-slate-900 mb-1">Wishlist vazia</h3>
-              <p className="text-sm text-slate-500 mb-4">Guarda cursos para ver mais tarde com o coração.</p>
+              <h3 className="font-semibold text-slate-900 mb-1">{t('wishlist.empty_title')}</h3>
+              <p className="text-sm text-slate-500 mb-4">{t('wishlist.empty_desc')}</p>
               <Link href={'/cursos' as any} className="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-lg">
-                <BookOpen className="h-4 w-4" /> Explorar cursos
+                <BookOpen className="h-4 w-4" /> {t('common.explore_courses')}
               </Link>
             </div>
           ) : (
