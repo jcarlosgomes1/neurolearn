@@ -30,9 +30,9 @@ export function CreateOrgForm({ countries, locale }: { countries: Array<{ code: 
       if (result?.ok && result.slug) {
         toast.success(t('emp.create.success'));
         router.push(`/empresa/${result.slug}` as any);
-      } else throw new Error('Create failed');
+      } else throw new Error(t('tea.error'));
     } catch (e: any) {
-      toast.error(e?.message || 'Error');
+      toast.error(e?.message || t('tea.error'));
     } finally { setLoading(false); }
   }
 
