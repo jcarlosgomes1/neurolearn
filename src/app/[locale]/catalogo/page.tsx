@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { Link } from '@/i18n/routing';
+import { getTranslations } from 'next-intl/server';
 import { BookOpen, Lock, Building2, Sparkles } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
@@ -12,6 +13,7 @@ interface Course {
 
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  const t = await getTranslations();
   const sb = await createClient();
   const [{ data: courses }, { data: ctx }] = await Promise.all([
     sb.rpc('nl_courses_visible_to_user', { p_limit: 100 }),
@@ -27,26 +29,26 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 flex items-center gap-2">
-          <BookOpen className="h-7 w-7 text-brand-600" /> Catálogo
+          <BookOpen className="h-7 w-7 text-brand-600" /> {t('cat.h1')}
         </h1>
         {context?.has_org ? (
           <p className="text-sm text-slate-500 mt-1">
-            Acesso como membro de <strong>{context.org_name}</strong>
-            {!context.has_catalog_access && <> · só cursos da empresa (sem acesso ao catálogo público)</>}
+            {t('cat.member_of')} <strong>{context.org_name}</strong>
+            {!context.has_catalog_access && <> · {t('cat.org_only')}</>}
           </p>
         ) : (
-          <p className="text-sm text-slate-500 mt-1">Catálogo público de cursos</p>
+          <p className="text-sm text-slate-500 mt-1">{t('cat.public_subtitle')}</p>
         )}
       </div>
       
       {orgCourses.length > 0 && (
         <section>
           <h2 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-2">
-            <Building2 className="h-4 w-4 text-brand-600" /> Cursos da tua empresa
+            <Building2 className="h-4 w-4 text-brand-600" /> {t('cat.org_courses')}
             <span className="text-xs bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-semibold">{orgCourses.length}</span>
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {orgCourses.map((c) => <CourseCard key={c.id} course={c} locale={locale} isOrgPrivate />)}
+            {orgCourses.map((c) => <CourseCard key={c.id} course={c} locale={locale} isOrgPrivate companyLabel={t('cat.badge_company')} />)}
           </div>
         </section>
       )}
@@ -54,7 +56,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
       {publicCourses.length > 0 && (
         <section>
           <h2 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-amber-600" /> Catálogo público
+            <Sparkles className="h-4 w-4 text-amber-600" /> {t('cat.public')}
             <span className="text-xs bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded font-semibold">{publicCourses.length}</span>
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -68,24 +70,24 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
           {context?.has_org && !context.has_catalog_access ? (
             <>
               <Lock className="h-6 w-6 mx-auto text-slate-400 mb-2" />
-              A tua empresa ainda não tem cursos. Pede ao administrador para publicar conteúdos.
+              {t('cat.empty_org')}
             </>
           ) : (
-            <>Sem cursos no catálogo público ainda.</>
+            <>{t('cat.empty_public')}</>
           )}
         </div>
       )}
       
       {context?.has_org && !context.has_catalog_access && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-900">
-          💡 A tua empresa pode adicionar o add-on <strong>Catalog Access</strong> para os colaboradores acederem ao catálogo público completo.
+          💡 {t('cat.addon_pre')} <strong>Catalog Access</strong> {t('cat.addon_post')}
         </div>
       )}
     </div>
   );
 }
 
-function CourseCard({ course, locale, isOrgPrivate }: { course: Course; locale: string; isOrgPrivate?: boolean }) {
+function CourseCard({ course, locale, isOrgPrivate, companyLabel }: { course: Course; locale: string; isOrgPrivate?: boolean; companyLabel?: string }) {
   return (
     <Link href={`/cursos/${course.slug}` as any} className="bg-white rounded-xl border border-slate-200 hover:border-brand-300 hover:shadow-sm transition p-4 group">
       <div className="flex items-start gap-2">
@@ -101,7 +103,7 @@ function CourseCard({ course, locale, isOrgPrivate }: { course: Course; locale: 
             <span className="bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">{course.level}</span>
             <span className="bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">{course.language?.toUpperCase()}</span>
             <span className="text-slate-400">{course.duration_hours}h</span>
-            {isOrgPrivate && <span className="bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded">empresa</span>}
+            {isOrgPrivate && <span className="bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded">{companyLabel}</span>}
           </div>
         </div>
       </div>
