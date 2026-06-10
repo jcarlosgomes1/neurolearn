@@ -1,4 +1,5 @@
 import { Link } from '@/i18n/routing';
+import { getTranslations, getLocale } from 'next-intl/server';
 import {
   Building2, Sparkles, Award, Compass, ArrowRight,
   Brain, Code, Briefcase, Palette, BarChart3, Megaphone, Globe2, Heart,
@@ -6,13 +7,14 @@ import {
 } from 'lucide-react';
 
 // ============= TRUSTED BY (logos strip) =============
-export function TrustedByStrip() {
+export async function TrustedByStrip() {
+  const t = await getTranslations();
   const COMPANIES = ['Healthcare Group', 'TechCorp', 'FinanceHub', 'RetailChain', 'ConsultingFirm', 'StartupHub'];
   return (
     <section className="bg-slate-50/60 border-y border-slate-200/60 py-10">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <p className="text-xs uppercase tracking-wider font-bold text-slate-500 mb-4">
-          Equipas e organizações que confiam na NeuroLearn
+          {t('hx.trusted_title')}
         </p>
         <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 sm:gap-x-12 opacity-60 text-slate-700 font-bold text-sm sm:text-base">
           {COMPANIES.map((c) => (
@@ -28,26 +30,12 @@ export function TrustedByStrip() {
 }
 
 // ============= HOW IT WORKS (3 steps) =============
-export function HowItWorksSection() {
+export async function HowItWorksSection() {
+  const t = await getTranslations();
   const STEPS = [
-    {
-      num: '01', icon: Compass,
-      title: 'Escolhe o teu caminho',
-      desc: 'Catálogo extenso ou percurso curado. Iniciante, intermédio ou avançado — sempre com checkpoints validados.',
-      cls: 'from-violet-500 to-indigo-600',
-    },
-    {
-      num: '02', icon: Brain,
-      title: 'Aprende com mãos na massa',
-      desc: 'Cada lição termina com algo entregue. Código, design, análise. Tens tutor 24/7 quando ficares preso.',
-      cls: 'from-emerald-500 to-teal-600',
-    },
-    {
-      num: '03', icon: Award,
-      title: 'Certifica e avança',
-      desc: 'Certificado verificável + portfolio + ponte directa para vagas via marketplace de talento integrado.',
-      cls: 'from-amber-500 to-orange-600',
-    },
+    { num: '01', icon: Compass, titleKey: 'hx.step1_title', descKey: 'hx.step1_desc', cls: 'from-violet-500 to-indigo-600' },
+    { num: '02', icon: Brain, titleKey: 'hx.step2_title', descKey: 'hx.step2_desc', cls: 'from-emerald-500 to-teal-600' },
+    { num: '03', icon: Award, titleKey: 'hx.step3_title', descKey: 'hx.step3_desc', cls: 'from-amber-500 to-orange-600' },
   ];
   return (
     <section className="relative py-20 sm:py-24 bg-white overflow-hidden">
@@ -58,12 +46,12 @@ export function HowItWorksSection() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12 sm:mb-16">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-violet-50 border border-violet-200 text-xs font-semibold text-violet-700 mb-4">
-            <Sparkles className="h-3.5 w-3.5" /> Como funciona
+            <Sparkles className="h-3.5 w-3.5" /> {t('hx.how_badge')}
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 tracking-tight">
-            Três passos. <span className="bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">Resultado real.</span>
+            {t('hx.how_h2a')} <span className="bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">{t('hx.how_h2b')}</span>
           </h2>
-          <p className="mt-3 text-slate-600 max-w-2xl mx-auto">Não é mais um curso na estante. É um sistema completo desde a primeira aula até ao primeiro emprego.</p>
+          <p className="mt-3 text-slate-600 max-w-2xl mx-auto">{t('hx.how_sub')}</p>
         </div>
         <div className="grid sm:grid-cols-3 gap-4 sm:gap-6">
           {STEPS.map((s) => (
@@ -76,8 +64,8 @@ export function HowItWorksSection() {
                   </div>
                   <span className={`text-4xl font-black bg-gradient-to-br ${s.cls} bg-clip-text text-transparent opacity-30`}>{s.num}</span>
                 </div>
-                <h3 className="font-bold text-lg text-slate-900 mb-2">{s.title}</h3>
-                <p className="text-sm text-slate-600 leading-relaxed">{s.desc}</p>
+                <h3 className="font-bold text-lg text-slate-900 mb-2">{t(s.titleKey)}</h3>
+                <p className="text-sm text-slate-600 leading-relaxed">{t(s.descKey)}</p>
               </div>
             </div>
           ))}
@@ -88,47 +76,48 @@ export function HowItWorksSection() {
 }
 
 // ============= CATEGORIES GRID =============
-export function CategoriesGrid() {
+export async function CategoriesGrid() {
+  const t = await getTranslations();
   const CATS = [
-    { name: 'Programação', icon: Code, count: '54+ cursos', href: '/cursos?cat=programacao', cls: 'from-violet-500 to-indigo-600' },
-    { name: 'Data & Analytics', icon: BarChart3, count: '38+ cursos', href: '/cursos?cat=data', cls: 'from-blue-500 to-cyan-600' },
-    { name: 'Design & UX', icon: Palette, count: '27+ cursos', href: '/cursos?cat=design', cls: 'from-fuchsia-500 to-pink-600' },
-    { name: 'Marketing & Growth', icon: Megaphone, count: '22+ cursos', href: '/cursos?cat=marketing', cls: 'from-amber-500 to-orange-600' },
-    { name: 'Negócios & Gestão', icon: Briefcase, count: '31+ cursos', href: '/cursos?cat=business', cls: 'from-emerald-500 to-teal-600' },
-    { name: 'IA Aplicada', icon: Sparkles, count: '19+ cursos', href: '/cursos?cat=ai', cls: 'from-purple-500 to-violet-600' },
-    { name: 'Línguas', icon: Globe2, count: '12+ cursos', href: '/cursos?cat=linguas', cls: 'from-rose-500 to-red-600' },
-    { name: 'Bem-estar', icon: Heart, count: '8+ cursos', href: '/cursos?cat=wellness', cls: 'from-pink-500 to-rose-600' },
+    { nameKey: 'hx.cat_prog', icon: Code, countKey: 'hx.cnt_prog', href: '/cursos?cat=programacao', cls: 'from-violet-500 to-indigo-600' },
+    { nameKey: 'hx.cat_data', icon: BarChart3, countKey: 'hx.cnt_data', href: '/cursos?cat=data', cls: 'from-blue-500 to-cyan-600' },
+    { nameKey: 'hx.cat_design', icon: Palette, countKey: 'hx.cnt_design', href: '/cursos?cat=design', cls: 'from-fuchsia-500 to-pink-600' },
+    { nameKey: 'hx.cat_mkt', icon: Megaphone, countKey: 'hx.cnt_mkt', href: '/cursos?cat=marketing', cls: 'from-amber-500 to-orange-600' },
+    { nameKey: 'hx.cat_biz', icon: Briefcase, countKey: 'hx.cnt_biz', href: '/cursos?cat=business', cls: 'from-emerald-500 to-teal-600' },
+    { nameKey: 'hx.cat_ai', icon: Sparkles, countKey: 'hx.cnt_ai', href: '/cursos?cat=ai', cls: 'from-purple-500 to-violet-600' },
+    { nameKey: 'hx.cat_lang', icon: Globe2, countKey: 'hx.cnt_lang', href: '/cursos?cat=linguas', cls: 'from-rose-500 to-red-600' },
+    { nameKey: 'hx.cat_well', icon: Heart, countKey: 'hx.cnt_well', href: '/cursos?cat=wellness', cls: 'from-pink-500 to-rose-600' },
   ];
   return (
     <section className="bg-slate-50 py-20 sm:py-24 border-y border-slate-200/60">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-slate-200 text-xs font-semibold text-slate-700 mb-4 shadow-sm">
-            <BookOpen className="h-3.5 w-3.5" /> Catálogo
+            <BookOpen className="h-3.5 w-3.5" /> {t('hx.cat_badge')}
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 tracking-tight">
-            Aprende o que <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">precisas</span>
+            {t('hx.cat_h2a')} <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">{t('hx.cat_h2b')}</span>
           </h2>
-          <p className="mt-3 text-slate-600 max-w-2xl mx-auto">8 grandes áreas, centenas de cursos curados, todos com certificado verificável.</p>
+          <p className="mt-3 text-slate-600 max-w-2xl mx-auto">{t('hx.cat_sub')}</p>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {CATS.map((c) => (
             <Link
-              key={c.name}
+              key={c.nameKey}
               href={c.href as any}
               className="group bg-white rounded-2xl border border-slate-200 p-5 hover:-translate-y-1 hover:shadow-xl transition-all"
             >
               <div className={`inline-flex h-11 w-11 rounded-xl bg-gradient-to-br ${c.cls} text-white items-center justify-center mb-3 shadow-md group-hover:scale-110 transition-transform`}>
                 <c.icon className="h-5 w-5" />
               </div>
-              <div className="font-bold text-slate-900 text-sm">{c.name}</div>
-              <div className="text-[11px] text-slate-500 mt-0.5">{c.count}</div>
+              <div className="font-bold text-slate-900 text-sm">{t(c.nameKey)}</div>
+              <div className="text-[11px] text-slate-500 mt-0.5">{t(c.countKey)}</div>
             </Link>
           ))}
         </div>
         <div className="text-center mt-8">
           <Link href={'/cursos' as any} className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-900 hover:gap-2.5 transition-all">
-            Explorar catálogo completo <ArrowRight className="h-4 w-4" />
+            {t('hx.cat_explore')} <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
       </div>
@@ -137,17 +126,19 @@ export function CategoriesGrid() {
 }
 
 // ============= LIVE MOMENTUM =============
-export function LiveMomentumSection() {
+export async function LiveMomentumSection() {
+  const t = await getTranslations();
+  const locale = await getLocale();
   const SIGNUPS = [
-    { name: 'Marina', role: 'Product Designer', city: 'Lisboa', when: 'há 3 min' },
-    { name: 'Tiago', role: 'Backend Eng', city: 'Porto', when: 'há 8 min' },
-    { name: 'Sofia', role: 'Data Analyst', city: 'São Paulo', when: 'há 12 min' },
-    { name: 'Diogo', role: 'Marketing Mgr', city: 'Madrid', when: 'há 19 min' },
+    { name: 'Marina', role: 'Product Designer', city: 'Lisboa', whenKey: 'hx.when1' },
+    { name: 'Tiago', role: 'Backend Eng', city: 'Porto', whenKey: 'hx.when2' },
+    { name: 'Sofia', role: 'Data Analyst', city: 'São Paulo', whenKey: 'hx.when3' },
+    { name: 'Diogo', role: 'Marketing Mgr', city: 'Madrid', whenKey: 'hx.when4' },
   ];
   const TOP_COURSES = [
-    { title: 'Python para Análise de Dados', emoji: '🐍', enrolled: 1240, cls: 'from-yellow-500 to-amber-600' },
-    { title: 'UX Design Foundations', emoji: '🎨', enrolled: 980, cls: 'from-fuchsia-500 to-pink-600' },
-    { title: 'IA Aplicada ao Trabalho', emoji: '🧠', enrolled: 1850, cls: 'from-violet-500 to-indigo-600' },
+    { titleKey: 'hx.tc1', emoji: '🐍', enrolled: 1240, cls: 'from-yellow-500 to-amber-600' },
+    { titleKey: 'hx.tc2', emoji: '🎨', enrolled: 980, cls: 'from-fuchsia-500 to-pink-600' },
+    { titleKey: 'hx.tc3', emoji: '🧠', enrolled: 1850, cls: 'from-violet-500 to-indigo-600' },
   ];
   return (
     <section className="relative py-20 sm:py-24 bg-white overflow-hidden">
@@ -157,10 +148,10 @@ export function LiveMomentumSection() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-700 mb-4">
-            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" /> Atividade ao vivo
+            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" /> {t('hx.live_badge')}
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 tracking-tight">
-            Comunidade <span className="bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">em movimento</span>
+            {t('hx.live_h2a')} <span className="bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">{t('hx.live_h2b')}</span>
           </h2>
         </div>
 
@@ -169,11 +160,11 @@ export function LiveMomentumSection() {
           <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm">
             <div className="flex items-center justify-between mb-5">
               <div>
-                <div className="text-xs uppercase tracking-wider font-bold text-emerald-600 mb-1">Inscrições recentes</div>
-                <div className="font-bold text-slate-900">Novos alunos esta hora</div>
+                <div className="text-xs uppercase tracking-wider font-bold text-emerald-600 mb-1">{t('hx.live_signups_label')}</div>
+                <div className="font-bold text-slate-900">{t('hx.live_signups_title')}</div>
               </div>
               <div className="inline-flex items-center gap-1 text-emerald-700 bg-emerald-50 px-2 py-1 rounded-full text-xs font-bold">
-                <TrendingUp className="h-3 w-3" /> +47 hoje
+                <TrendingUp className="h-3 w-3" /> {t('hx.live_today')}
               </div>
             </div>
             <div className="space-y-2">
@@ -184,7 +175,7 @@ export function LiveMomentumSection() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="font-semibold text-sm text-slate-900 truncate">{s.name} · <span className="text-slate-600 font-normal">{s.role}</span></div>
-                    <div className="text-[11px] text-slate-500">{s.city} · {s.when}</div>
+                    <div className="text-[11px] text-slate-500">{s.city} · {t(s.whenKey)}</div>
                   </div>
                   <Users className="h-4 w-4 text-slate-300" />
                 </div>
@@ -196,11 +187,11 @@ export function LiveMomentumSection() {
           <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm">
             <div className="flex items-center justify-between mb-5">
               <div>
-                <div className="text-xs uppercase tracking-wider font-bold text-amber-600 mb-1">Em destaque</div>
-                <div className="font-bold text-slate-900">Mais procurados este mês</div>
+                <div className="text-xs uppercase tracking-wider font-bold text-amber-600 mb-1">{t('hx.live_feat_label')}</div>
+                <div className="font-bold text-slate-900">{t('hx.live_feat_title')}</div>
               </div>
               <div className="inline-flex items-center gap-1 text-amber-700 bg-amber-50 px-2 py-1 rounded-full text-xs font-bold">
-                <Star className="h-3 w-3 fill-amber-500" /> Trending
+                <Star className="h-3 w-3 fill-amber-500" /> {t('hx.live_trending')}
               </div>
             </div>
             <div className="space-y-2">
@@ -211,8 +202,8 @@ export function LiveMomentumSection() {
                     {c.emoji}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-sm text-slate-900 truncate">{c.title}</div>
-                    <div className="text-[11px] text-slate-500">{c.enrolled.toLocaleString('pt-PT')} alunos inscritos</div>
+                    <div className="font-semibold text-sm text-slate-900 truncate">{t(c.titleKey)}</div>
+                    <div className="text-[11px] text-slate-500">{c.enrolled.toLocaleString(locale)} {t('hx.live_enrolled')}</div>
                   </div>
                   <ArrowRight className="h-4 w-4 text-slate-300 group-hover:text-slate-700 group-hover:translate-x-1 transition-all" />
                 </Link>
