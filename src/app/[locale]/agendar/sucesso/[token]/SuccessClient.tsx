@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import { Calendar as CalIcon, CreditCard, Video, ChevronLeft, ChevronRight, Loader2, Check, X } from 'lucide-react';
@@ -19,10 +19,11 @@ interface Slot { start: string; end: string; date: string; time: string }
 function addDays(d: Date, n: number) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
 function startOfWeek(d: Date) { const x = new Date(d); x.setDate(x.getDate() - x.getDay()); x.setHours(0,0,0,0); return x; }
 function fmtDay(d: Date) { return d.toISOString().slice(0, 10); }
-function fmtDayLabel(d: Date) { return d.toLocaleDateString('pt-PT', { weekday: 'short', day: 'numeric', month: 'short' }); }
+function fmtDayLabel(d: Date, locale: string) { return d.toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short' }); }
 
 export function SuccessClient({ booking: initial, token, initialAction }: { booking: Booking; token: string; initialAction: 'pay' | 'paid_redirect' | null }) {
   const t = useTranslations();
+  const locale = useLocale();
   const [booking, setBooking] = useState(initial);
   const [mode, setMode] = useState<'view' | 'reschedule'>('view');
   const [paying, setPaying] = useState(false);
@@ -77,9 +78,9 @@ export function SuccessClient({ booking: initial, token, initialAction }: { book
       const { data, error } = await sb.functions.invoke('payments', { body: { action: 'create_booking_checkout', booking_id: booking.id, manage_token: token } });
       if (error || !(data as any)?.ok) {
         if ((data as any)?.error === 'stripe_not_configured') {
-          toast.error('Pagamentos em breve. Stripe ainda não está configurado.');
+          toast.error(t('sched.pay_soon'));
         } else {
-          toast.error(error?.message || (data as any)?.error || 'Erro a iniciar pagamento');
+          toast.error(error?.message || (data as any)?.error || t('sched.pay_err'));
         }
         return;
       }
@@ -93,7 +94,7 @@ export function SuccessClient({ booking: initial, token, initialAction }: { book
     try {
       const sb = createClient();
       const { data, error } = await sb.rpc('nl_scheduling_cancel_booking', { p_booking_id: booking.id, p_token: token, p_reason: 'cancelled_by_guest' });
-      if (error || !(data as any)?.ok) { toast.error(error?.message || 'erro'); return; }
+      if (error || !(data as any)?.ok) { toast.error(error?.message || t('sched.err')); return; }
       toast.success(t('sched.public.cancelled'));
       await refresh();
     } finally { setCancelling(false); }
@@ -105,20 +106,20 @@ export function SuccessClient({ booking: initial, token, initialAction }: { book
     // O booking_by_token não devolve link_id, vamos buscar pelo título
     const { data: links } = await sb.from('nl_scheduling_links').select('id, title').limit(50);
     const match = (links || []).find((l: any) => l.title === booking.link_title);
-    if (!match) { toast.error('link não encontrado'); return; }
+    if (!match) { toast.error(t('sched.link_not_found')); return; }
     setLinkId(match.id);
     setMode('reschedule');
   }
 
   async function confirmReschedule(slot: Slot) {
     if (submitting) return;
-    if (!confirm(`Reagendar para ${new Date(slot.start).toLocaleString('pt-PT', { dateStyle: 'full', timeStyle: 'short' })}?`)) return;
+    if (!confirm(t('sched.reschedule_confirm', { date: new Date(slot.start).toLocaleString(locale, { dateStyle: 'full', timeStyle: 'short' }) }))) return;
     setSubmitting(true);
     try {
       const sb = createClient();
       const { data, error } = await sb.rpc('nl_scheduling_reschedule_booking', { p_booking_id: booking.id, p_token: token, p_new_slot_iso: slot.start });
       if (error || !(data as any)?.ok) {
-        toast.error(error?.message || (data as any)?.error || 'erro');
+        toast.error(error?.message || (data as any)?.error || t('sched.err'));
         return;
       }
       toast.success(t('sched.rescheduled'));
@@ -131,15 +132,15 @@ export function SuccessClient({ booking: initial, token, initialAction }: { book
     return (
       <div className="max-w-md mx-auto px-4 sm:px-6 py-10">
         <button onClick={() => setMode('view')} className="text-sm text-slate-500 hover:text-slate-700 mb-4 inline-flex items-center gap-1">
-          <ChevronLeft className="h-4 w-4" /> Voltar
+          <ChevronLeft className="h-4 w-4" /> {t('btn.back')}
         </button>
         <div className="bg-white rounded-2xl border border-slate-200 p-5">
           <h2 className="font-bold text-slate-900 mb-1">{t('sched.public.reschedule_title')}</h2>
-          <p className="text-xs text-slate-500 mb-4">Atual: {new Date(booking.scheduled_at).toLocaleString('pt-PT', { dateStyle: 'medium', timeStyle: 'short' })}</p>
+          <p className="text-xs text-slate-500 mb-4">{t('sched.current_label')} {new Date(booking.scheduled_at).toLocaleString(locale, { dateStyle: 'medium', timeStyle: 'short' })}</p>
           <div className="flex items-center justify-between mb-4">
             <button onClick={() => setWeekStart(addDays(weekStart, -7))} className="p-2 rounded-lg hover:bg-slate-100"><ChevronLeft className="h-4 w-4" /></button>
             <div className="text-sm font-medium text-slate-700">
-              {weekStart.toLocaleDateString('pt-PT', { day: 'numeric', month: 'short' })} — {addDays(weekStart, 6).toLocaleDateString('pt-PT', { day: 'numeric', month: 'short' })}
+              {weekStart.toLocaleDateString(locale, { day: 'numeric', month: 'short' })} — {addDays(weekStart, 6).toLocaleDateString(locale, { day: 'numeric', month: 'short' })}
             </div>
             <button onClick={() => setWeekStart(addDays(weekStart, 7))} className="p-2 rounded-lg hover:bg-slate-100"><ChevronRight className="h-4 w-4" /></button>
           </div>
@@ -153,7 +154,7 @@ export function SuccessClient({ booking: initial, token, initialAction }: { book
                 if (slots.length === 0) return null;
                 return (
                   <div key={key} className="border-b border-slate-100 pb-3 last:border-0">
-                    <div className="text-xs font-semibold text-slate-700 uppercase tracking-wide mb-2">{fmtDayLabel(d)}</div>
+                    <div className="text-xs font-semibold text-slate-700 uppercase tracking-wide mb-2">{fmtDayLabel(d, locale)}</div>
                     <div className="flex flex-wrap gap-1.5">
                       {slots.map((s) => (
                         <button key={s.start} disabled={submitting} onClick={() => confirmReschedule(s)}
@@ -193,7 +194,7 @@ export function SuccessClient({ booking: initial, token, initialAction }: { book
           <div className="font-semibold text-slate-900">{booking.host_name}</div>
           <div className="text-xs text-slate-500 mt-2">{booking.link_title}</div>
           <div className={`font-semibold text-slate-900 ${cancelled ? 'line-through' : ''}`}>
-            {new Date(booking.scheduled_at).toLocaleString('pt-PT', { dateStyle: 'full', timeStyle: 'short' })}
+            {new Date(booking.scheduled_at).toLocaleString(locale, { dateStyle: 'full', timeStyle: 'short' })}
           </div>
           <div className="text-xs text-slate-500">{booking.duration_min} min</div>
           {booking.price_cents > 0 && (
