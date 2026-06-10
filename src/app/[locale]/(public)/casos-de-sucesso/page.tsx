@@ -1,41 +1,39 @@
 import { Link } from '@/i18n/routing';
+import { getTranslations } from 'next-intl/server';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
 import { Trophy, Quote, TrendingUp, Briefcase, GraduationCap, Building2, ArrowRight, Sparkles } from 'lucide-react';
 
 export const revalidate = 600;
 export async function generateMetadata() { return { title: 'Casos de sucesso · NeuroLearn' }; }
 
-interface Case { name: string; role: string; company: string; quote: string; outcome: string; outcomeLabel: string; icon: any; cls: string; }
+interface Case { name: string; role: string; companyKey: string; quoteKey: string; outcomeKey: string; labelKey: string; icon: any; cls: string; }
 
 const CASES: Case[] = [
   {
-    name: 'Ricardo F.', role: 'Software Engineer', company: 'Anteriormente: vendas · Lisboa',
-    quote: 'Em seis meses passei de comercial sem código a desenvolvedor júnior numa scale-up. A diferença foi o foco em projectos reais — tinha portfolio para mostrar em entrevista.',
-    outcome: '+€18k/ano', outcomeLabel: 'Aumento salarial',
+    name: 'Ricardo F.', role: 'Software Engineer', companyKey: 'cs.c1_company',
+    quoteKey: 'cs.c1_quote', outcomeKey: 'cs.c1_outcome', labelKey: 'cs.c1_label',
     icon: Briefcase, cls: 'from-violet-500 to-indigo-600',
   },
   {
-    name: 'Ana M.', role: 'UX Designer Senior', company: 'Promovida de Junior em 9 meses',
-    quote: 'Já trabalhava em design mas estava estagnada. Os percursos guiados deram-me a estrutura que faltava — design systems, research, accessibility. Promoção saiu naturalmente.',
-    outcome: 'Senior', outcomeLabel: 'Promoção em 9 meses',
+    name: 'Ana M.', role: 'UX Designer Senior', companyKey: 'cs.c2_company',
+    quoteKey: 'cs.c2_quote', outcomeKey: 'cs.c2_outcome', labelKey: 'cs.c2_label',
     icon: TrendingUp, cls: 'from-emerald-500 to-teal-600',
   },
   {
-    name: 'Marta C.', role: 'Talent Manager', company: 'Sistema Hospitalar · Porto',
-    quote: 'Subimos os nossos manuais de procedimentos e a plataforma gerou cursos personalizados para 340 enfermeiros. Compliance e formação contínua resolvidos sem contratar formadores externos.',
-    outcome: '340 colaboradores', outcomeLabel: 'Formados em 3 meses',
+    name: 'Marta C.', role: 'Talent Manager', companyKey: 'cs.c3_company',
+    quoteKey: 'cs.c3_quote', outcomeKey: 'cs.c3_outcome', labelKey: 'cs.c3_label',
     icon: Building2, cls: 'from-amber-500 to-orange-600',
   },
   {
-    name: 'João T.', role: 'Data Analyst', company: 'Recém-licenciado · Coimbra',
-    quote: 'Acabei o curso de gestão sem saber Python ou SQL. Em 4 meses completei o percurso completo de análise de dados e fui contratado via marketplace de talento da própria NeuroLearn.',
-    outcome: '1º emprego', outcomeLabel: 'Contratado via marketplace',
+    name: 'João T.', role: 'Data Analyst', companyKey: 'cs.c4_company',
+    quoteKey: 'cs.c4_quote', outcomeKey: 'cs.c4_outcome', labelKey: 'cs.c4_label',
     icon: GraduationCap, cls: 'from-rose-500 to-pink-600',
   },
 ];
 
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  const t = await getTranslations();
   const blocks = await getHomeBlocks(locale);
   return (
       <main className="bg-white min-h-screen">
@@ -47,13 +45,13 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
           </div>
           <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-24 text-center">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-emerald-200 text-xs font-semibold text-emerald-700 mb-6 shadow-sm">
-              <Trophy className="h-3.5 w-3.5" /> Casos de sucesso
+              <Trophy className="h-3.5 w-3.5" /> {t('cs.badge')}
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 leading-tight">
-              Histórias reais de <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">transformação</span>
+              {t('cs.h1_pre')}<span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">{t('cs.h1_accent')}</span>
             </h1>
             <p className="mt-6 text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
-              Não vendemos cursos — vendemos resultados. Conhece pessoas e empresas que mudaram a vida com a plataforma.
+              {t('cs.hero_desc')}
             </p>
           </div>
         </section>
@@ -67,12 +65,12 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
                 <div className="sm:col-span-2 space-y-4">
                   <Quote className={`h-8 w-8 bg-gradient-to-br ${c.cls} text-white p-1.5 rounded-lg`} />
                   <blockquote className="text-lg sm:text-xl text-slate-800 leading-relaxed italic">
-                    "{c.quote}"
+                    "{t(c.quoteKey)}"
                   </blockquote>
                   <div className="pt-2 border-t border-slate-100">
                     <div className="font-bold text-slate-900">{c.name}</div>
                     <div className="text-sm text-slate-600">{c.role}</div>
-                    <div className="text-xs text-slate-500 mt-0.5">{c.company}</div>
+                    <div className="text-xs text-slate-500 mt-0.5">{t(c.companyKey)}</div>
                   </div>
                 </div>
                 <div className="sm:border-l sm:border-slate-100 sm:pl-6 flex flex-col justify-center items-center sm:items-start">
@@ -80,9 +78,9 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
                     <c.icon className="h-7 w-7" />
                   </div>
                   <div className={`text-3xl sm:text-4xl font-bold bg-gradient-to-br ${c.cls} bg-clip-text text-transparent`}>
-                    {c.outcome}
+                    {t(c.outcomeKey)}
                   </div>
-                  <div className="text-xs text-slate-500 mt-1 font-medium">{c.outcomeLabel}</div>
+                  <div className="text-xs text-slate-500 mt-1 font-medium">{t(c.labelKey)}</div>
                 </div>
               </div>
             </article>
@@ -93,14 +91,14 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
         <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
           <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600 p-10 sm:p-14 shadow-2xl text-center text-white">
             <Sparkles className="h-8 w-8 mx-auto mb-4 opacity-70" />
-            <h2 className="text-3xl sm:text-4xl font-bold">A tua história pode ser a próxima</h2>
-            <p className="mt-4 text-lg text-white/90 max-w-2xl mx-auto">Começa hoje. Sem cartão de crédito. Acesso imediato a quatro idiomas e centenas de cursos.</p>
+            <h2 className="text-3xl sm:text-4xl font-bold">{t('cs.cta_title')}</h2>
+            <p className="mt-4 text-lg text-white/90 max-w-2xl mx-auto">{t('cs.cta_desc')}</p>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
               <Link href={'/cursos' as any} className="inline-flex items-center gap-2 px-6 py-3 bg-white text-emerald-700 hover:bg-emerald-50 hover:scale-105 transition-all font-bold rounded-xl shadow-lg">
-                Explorar cursos <ArrowRight className="h-4 w-4" />
+                {t('common.explore_courses')} <ArrowRight className="h-4 w-4" />
               </Link>
               <Link href={'/register' as any} className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold rounded-xl backdrop-blur-sm">
-                Criar conta grátis
+                {t('ps.cta_create')}
               </Link>
             </div>
           </div>
