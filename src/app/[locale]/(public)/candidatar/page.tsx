@@ -44,11 +44,11 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
           </div>
         </section>
 
-        <section className="max-w-3xl mx-auto px-4 sm:px-6 py-12">
+        <section className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
           <CandidaturaForm />
         </section>
 
-        <section className="max-w-3xl mx-auto px-4 sm:px-6 pb-16">
+        <section className="max-w-6xl mx-auto px-4 sm:px-6 pb-16">
           <h2 className="text-xl font-bold text-slate-900 mb-5">{t('apply.how.title')}</h2>
           <ol className="space-y-4">
             {steps.map((s, i) => (
