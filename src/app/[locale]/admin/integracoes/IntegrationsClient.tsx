@@ -1,4 +1,5 @@
 'use client';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
 import { useState, useMemo, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
@@ -62,13 +63,10 @@ export function IntegrationsClient({ initial }: { initial: Integration[] }) {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">{t('integrations.title')}</h1>
-        <p className="text-sm text-slate-500 mt-1">{t('integrations.subtitle')}</p>
-        <p className="text-xs text-slate-400 mt-2">
-          🔐 Chaves OAuth (Google/GitHub/Microsoft) são automaticamente activadas no Supabase Auth quando guardadas — desde que <code className="bg-slate-100 px-1 rounded">SUPABASE_MANAGEMENT_TOKEN</code> esteja configurado.
-        </p>
-      </div>
+      <AdminPageHeader backHref="/admin" emoji="🔌" title={t('integrations.title')} description={t('integrations.subtitle')} />
+      <p className="text-xs text-slate-400 mt-2">
+        🔐 Chaves OAuth (Google/GitHub/Microsoft) são automaticamente activadas no Supabase Auth quando guardadas — desde que <code className="bg-slate-100 px-1 rounded">SUPABASE_MANAGEMENT_TOKEN</code> esteja configurado.
+      </p>
 
       <div className={`rounded-xl border p-4 ${requiredMissing > 0 ? 'bg-amber-50 border-amber-200' : 'bg-emerald-50 border-emerald-200'}`}>
         <div className="flex items-start gap-3">
