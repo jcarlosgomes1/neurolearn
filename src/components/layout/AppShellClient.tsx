@@ -10,6 +10,10 @@ interface Session { email: string; area: 'student' | 'instructor' | 'admin'; are
 interface NavItem { href: string; labelKey: string; emoji: string; groupKey: string; badge?: string }
 interface Props { role: 'admin' | 'instructor' | 'student'; pageTitle?: string; session: Session | null; nav: NavItem[]; children: React.ReactNode; }
 
+const FREQUENT: Record<string, string[]> = {
+  admin: ['/admin/overview', '/admin/tools', '/admin/cursos', '/admin/users', '/admin/payments', '/admin/i18n', '/admin/backlog', '/admin/ai-custos'],
+};
+
 function safeT(t: any, key: string, fb: string): string {
   try {
     const v = t(key);
@@ -135,6 +139,12 @@ export function AppShellClient({ role, pageTitle, session, nav, children }: Prop
     return Object.values(acc);
   }, [nav]);
 
+  const allGroups = useMemo(() => {
+    const wanted = FREQUENT[role] || [];
+    const items = wanted.map((h) => nav.find((n) => n.href === h)).filter(Boolean) as NavItem[];
+    return items.length ? [{ groupKey: 'shell.group.frequent', items }, ...groups] : groups;
+  }, [nav, role, groups]);
+
   const cleanPath = pathname.replace(/^\/[a-z]{2}(?=\/|$)/, '') || '/';
 
   function isActive(href: string): boolean {
@@ -167,7 +177,7 @@ export function AppShellClient({ role, pageTitle, session, nav, children }: Prop
       <div className="flex">
         <aside className="hidden lg:flex w-60 flex-shrink-0 sticky top-14 h-[calc(100vh-3.5rem)] border-r border-slate-200 bg-white flex-col overflow-y-auto">
           <div className="px-3 pt-4 pb-1"><SearchTrigger onClick={openPalette} t={t} /></div>
-          <SidebarContent groups={groups} isActive={isActive} t={t} />
+          <SidebarContent groups={allGroups} isActive={isActive} t={t} />
         </aside>
         {sidebarOpen && (
           <div className="lg:hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm" onClick={() => setSidebarOpen(false)}>
@@ -183,7 +193,7 @@ export function AppShellClient({ role, pageTitle, session, nav, children }: Prop
                 </button>
               </div>
               <div className="px-3 pt-3 pb-1"><SearchTrigger onClick={openPalette} t={t} /></div>
-              <SidebarContent groups={groups} isActive={isActive} t={t} />
+              <SidebarContent groups={allGroups} isActive={isActive} t={t} />
             </aside>
           </div>
         )}
@@ -195,12 +205,19 @@ export function AppShellClient({ role, pageTitle, session, nav, children }: Prop
 }
 
 function SidebarContent({ groups, isActive, t }: { groups: { groupKey: string; items: NavItem[] }[]; isActive: (href: string) => boolean; t: any }) {
-  let activeKey = groups[0]?.groupKey;
-  for (const g of groups) {
+  const FREQUENT_KEY = 'shell.group.frequent';
+  const nonFreq = groups.filter((g) => g.groupKey !== FREQUENT_KEY);
+  let activeKey = nonFreq[0]?.groupKey;
+  for (const g of nonFreq) {
     if (g.items.some((i) => isActive(i.href))) { activeKey = g.groupKey; break; }
   }
 
-  const [open, setOpen] = useState<string[]>(() => (activeKey ? [activeKey] : []));
+  const hasFreq = groups.some((g) => g.groupKey === FREQUENT_KEY);
+  const [open, setOpen] = useState<string[]>(() => {
+    const init: string[] = activeKey ? [activeKey] : [];
+    if (hasFreq) init.push(FREQUENT_KEY);
+    return init;
+  });
 
   useEffect(() => {
     if (activeKey) setOpen((prev) => (prev.includes(activeKey!) ? prev : [...prev, activeKey!]));
