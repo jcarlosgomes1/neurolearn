@@ -13,6 +13,10 @@ const LessonNotesPanel = dynamic(
   () => import('./LessonNotesPanel').then((m) => ({ default: m.LessonNotesPanel })),
   { ssr: false }
 );
+const LessonQuestions = dynamic(
+  () => import('./LessonQuestions').then((m) => ({ default: m.LessonQuestions })),
+  { ssr: false }
+);
 const QuizPlayer = dynamic(
   () => import('@/components/quiz/QuizPlayer').then((m) => ({ default: m.QuizPlayer })),
   { ssr: false }
@@ -70,6 +74,12 @@ export function LessonExtrasMount({
         lessonIndex={lessonIndex}
         lessonTitle={lessonTitle}
         lessonContent={lessonContent || ''}
+        collapsed={true}
+      />
+      <LessonQuestions
+        courseId={courseId}
+        moduleIndex={moduleIndex}
+        lessonIndex={lessonIndex}
         collapsed={true}
       />
 
