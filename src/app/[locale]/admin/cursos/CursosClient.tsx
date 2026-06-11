@@ -1,4 +1,5 @@
 'use client';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from '@/i18n/routing';
@@ -123,18 +124,18 @@ export function CursosClient() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-      <Link href={'/admin' as any} className="text-sm text-brand-600 hover:underline">{t('approval.back_cockpit')}</Link>
-
-      <div className="mt-3 flex items-start justify-between gap-3 flex-wrap mb-5">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">{t('admin_courses.title')}</h1>
-          <p className="text-sm text-slate-500 mt-1">{t('admin_courses.hint')}</p>
-        </div>
-        <div className="flex gap-2 flex-wrap">
-          <Link href={'/admin/essential/novo' as any} className="text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-4 py-2 rounded-lg">{t('admin_courses.btn_manual')}</Link>
-          <Link href={'/admin/curso-ia/novo' as any} className="text-sm bg-gradient-to-r from-brand-600 to-purple-600 text-white font-medium px-4 py-2 rounded-lg shadow hover:shadow-md">{t('admin_courses.btn_ai')}</Link>
-        </div>
-      </div>
+      <AdminPageHeader
+        backHref="/admin"
+        emoji="📚"
+        title={t('admin_courses.title')}
+        description={t('admin_courses.hint')}
+        actions={
+          <div className="flex gap-2 flex-wrap">
+            <Link href={'/admin/essential/novo' as any} className="text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-4 py-2 rounded-lg">{t('admin_courses.btn_manual')}</Link>
+            <Link href={'/admin/curso-ia/novo' as any} className="text-sm bg-gradient-to-r from-brand-600 to-purple-600 text-white font-medium px-4 py-2 rounded-lg shadow hover:shadow-md">{t('admin_courses.btn_ai')}</Link>
+          </div>
+        }
+      />
 
       {/* Filters */}
       <div className="mb-5 bg-white border border-slate-200 rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center flex-wrap">

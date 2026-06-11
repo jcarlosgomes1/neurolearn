@@ -1,4 +1,5 @@
 'use client';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
 import { useEffect, useState } from 'react';
 import { Link } from '@/i18n/routing';
@@ -32,13 +33,12 @@ export function AdminInstructors() {
 
   return (
     <div className="max-w-7xl mx-auto px-6 lg:px-8 py-8 space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <div>
-          <Link href={'/admin' as any} className="text-sm text-brand-600 hover:underline">{t('acom.back_cockpit')}</Link>
-          <h1 className="text-2xl font-bold text-slate-900 mt-1">{t('admin_instr.title')}</h1>
-          <p className="text-slate-500 text-sm">{t('admin_instr.subtitle', { n: list.length })}</p>
-        </div>
-      </div>
+      <AdminPageHeader
+        backHref="/admin"
+        emoji="🎓"
+        title={t('admin_instr.title')}
+        description={t('admin_instr.subtitle', { n: list.length })}
+      />
 
       {list.length === 0 ? (
         <p className="text-sm text-slate-500">{t('admin_instr.empty')}</p>
