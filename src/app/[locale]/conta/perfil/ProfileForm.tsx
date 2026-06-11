@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { assertNotPeekClient } from '@/lib/peek-client';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { User, Save, Loader2 } from 'lucide-react';
@@ -44,6 +45,7 @@ export function ProfileForm({ email, handle, initial }: { email: string; handle:
   async function save() {
     setBusy(true);
     try {
+      assertNotPeekClient();
       const sb = createClient();
       const { error } = await sb.rpc('nl_update_my_profile', {
         p_name: form.name || null,
