@@ -72,7 +72,7 @@ export function SemanticSearch({ initialQuery, locale }: { initialQuery: string;
   const order = ['course', 'lesson', 'blog_post'];
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-16 pb-16">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-16 pb-16">
       <div className="text-center mb-8">
         <span className="inline-block text-xs font-semibold uppercase tracking-widest text-brand-700 bg-brand-50 px-3 py-1 rounded-full mb-4">{t('badge')}</span>
         <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">{t('heading')}</h1>

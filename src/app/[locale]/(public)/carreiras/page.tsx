@@ -30,7 +30,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
           <div className="absolute inset-0 -z-10">
             <div className="absolute top-0 left-1/4 h-96 w-96 rounded-full bg-rose-400/20 blur-3xl animate-pulse" />
           </div>
-          <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-24 text-center">
+          <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-24 text-center">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-rose-200 text-xs font-semibold text-rose-700 mb-6 shadow-sm">
               <Briefcase className="h-3.5 w-3.5" /> {t('ca.badge')}
             </div>
@@ -59,7 +59,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
         </section>
 
         <section className="bg-slate-50 py-20 border-y border-slate-200/60">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 text-center mb-3">{t('ca.roles_title')}</h2>
             <p className="text-center text-slate-600 mb-12">{t('ca.roles_sub')}</p>
             <div className="grid sm:grid-cols-2 gap-4">

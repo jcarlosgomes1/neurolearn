@@ -53,7 +53,7 @@ export default async function Page({ params, searchParams }: {
         </section>
 
         {/* Form + side info */}
-        <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+        <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
           <div className="grid lg:grid-cols-3 gap-6">
             {/* Form */}
             <div className="lg:col-span-2">

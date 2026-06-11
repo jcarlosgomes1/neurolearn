@@ -91,7 +91,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
         </section>
 
         <section className="bg-slate-50 py-20 border-y border-slate-200/60">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 text-center mb-12">{t('pe.steps_title')}</h2>
             <div className="grid sm:grid-cols-3 gap-6">
               {STEPS.map((s) => (
