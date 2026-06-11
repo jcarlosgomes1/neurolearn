@@ -1,3 +1,4 @@
+// rebuild trigger
 import { redirect } from 'next/navigation';
 import { Link } from '@/i18n/routing';
 import { createClient } from '@/lib/supabase/server';
