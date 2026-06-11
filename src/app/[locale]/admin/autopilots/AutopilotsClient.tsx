@@ -1,4 +1,5 @@
 'use client';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
@@ -101,20 +102,17 @@ export function AutopilotsClient({ initial }: { initial: AutopilotRow[] }) {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-      <div className="flex items-start justify-between gap-3 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-            <Activity className="h-6 w-6 text-brand-600" />
-            Autopilots
-          </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Tarefas que correm automaticamente em horários definidos. Liga/desliga ou ajusta o horário sem ter de mexer em código.
-          </p>
-        </div>
-        <button type="button" onClick={refresh} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md hover:bg-slate-100 text-slate-700 text-sm">
-          <RefreshCw className="h-3.5 w-3.5" /> Atualizar
-        </button>
-      </div>
+      <AdminPageHeader
+        backHref="/admin"
+        emoji="🛸"
+        title="Autopilots"
+        description="Tarefas que correm automaticamente em horários definidos. Liga/desliga ou ajusta o horário sem ter de mexer em código."
+        actions={
+          <button type="button" onClick={refresh} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md hover:bg-slate-100 text-slate-700 text-sm">
+            <RefreshCw className="h-3.5 w-3.5" /> Atualizar
+          </button>
+        }
+      />
 
       <div className={`rounded-xl border p-4 ${allPaidOff ? 'bg-indigo-50 border-indigo-200' : 'bg-amber-50 border-amber-200'}`}>
         <div className="flex items-start gap-3">

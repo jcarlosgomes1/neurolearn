@@ -1,4 +1,5 @@
 'use client';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
 import { useState, useTransition } from 'react';
 import { listRefundsAction, resolveRefundAction } from '../revenue/actions';
@@ -33,20 +34,22 @@ export function RefundsClient({ initial }: { initial: any[] }) {
 
   return (
     <div className="px-4 sm:px-6 py-6 max-w-5xl mx-auto">
-      <div className="flex items-start justify-between gap-3 flex-wrap mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2"><RefreshCw className="h-6 w-6 text-rose-600" /> Refunds</h1>
-          <p className="text-sm text-slate-500 mt-1">Pedidos de reembolso. Janela definida em /admin/monetizacao.</p>
-        </div>
-        <div className="inline-flex rounded-lg border border-slate-200 bg-white overflow-hidden">
-          {['pending','approved','rejected','processed'].map((s) => (
-            <button key={s} onClick={() => changeStatus(s)}
-              className={`px-3 py-1.5 text-xs font-medium ${status === s ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>
-              {s}
-            </button>
-          ))}
-        </div>
-      </div>
+      <AdminPageHeader
+        backHref="/admin"
+        emoji="💸"
+        title="Refunds"
+        description="Pedidos de reembolso. Janela definida em /admin/monetizacao."
+        actions={
+          <div className="inline-flex rounded-lg border border-slate-200 bg-white overflow-hidden">
+            {['pending','approved','rejected','processed'].map((s) => (
+              <button key={s} onClick={() => changeStatus(s)}
+                className={`px-3 py-1.5 text-xs font-medium ${status === s ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>
+                {s}
+              </button>
+            ))}
+          </div>
+        }
+      />
 
       {refunds.length === 0 ? (
         <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">

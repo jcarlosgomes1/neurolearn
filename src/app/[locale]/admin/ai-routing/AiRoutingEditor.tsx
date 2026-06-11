@@ -1,4 +1,5 @@
 'use client';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from '@/i18n/routing';
@@ -84,19 +85,20 @@ export function AiRoutingEditor() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-      <Link href={'/admin' as any} className="text-sm text-brand-600 hover:underline">{t('approval.back_cockpit')}</Link>
-      <div className="mt-3 flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">{t('ai_routing.title')}</h1>
-          <p className="text-sm text-slate-500 mt-1">{t('ai_routing.subtitle')}</p>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={() => { setShowRecentCalls((v) => !v); if (!showRecentCalls) loadCalls(); }} className="text-sm bg-white border border-slate-200 hover:border-slate-300 px-3 py-1.5 rounded-lg">
-            {showRecentCalls ? t('ai_routing.hide_calls') : t('ai_routing.show_calls')}
-          </button>
-          <button onClick={load} className="text-sm bg-white border border-slate-200 hover:border-slate-300 px-3 py-1.5 rounded-lg">{t('candlist.reload')}</button>
-        </div>
-      </div>
+      <AdminPageHeader
+        backHref="/admin"
+        emoji="🧠"
+        title={t('ai_routing.title')}
+        description={t('ai_routing.subtitle')}
+        actions={
+          <div className="flex gap-2">
+            <button onClick={() => { setShowRecentCalls((v) => !v); if (!showRecentCalls) loadCalls(); }} className="text-sm bg-white border border-slate-200 hover:border-slate-300 px-3 py-1.5 rounded-lg">
+              {showRecentCalls ? t('ai_routing.hide_calls') : t('ai_routing.show_calls')}
+            </button>
+            <button onClick={load} className="text-sm bg-white border border-slate-200 hover:border-slate-300 px-3 py-1.5 rounded-lg">{t('candlist.reload')}</button>
+          </div>
+        }
+      />
 
       {showRecentCalls && (
         <section className="mt-5 bg-white border border-slate-200 rounded-xl p-4">
