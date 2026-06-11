@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { redirect } from 'next/navigation';
 import { Link } from '@/i18n/routing';
-import { Activity, Database, Users, Briefcase, BookOpen, FileText, AlertCircle, Calendar, Euro, HardDrive, Clock, CheckCircle2 } from 'lucide-react';
+import { Database, Users, Briefcase, BookOpen, FileText, AlertCircle, Calendar, Euro, HardDrive, Clock, CheckCircle2 } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,20 +50,20 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6">
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-            <Activity className="h-6 w-6 text-emerald-600" /> Sistema
-          </h1>
-          <p className="text-sm text-slate-500 mt-1">Saúde da plataforma em tempo real</p>
-        </div>
-        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
-          isHealthy ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-        }`}>
-          <span className={`w-2 h-2 rounded-full ${isHealthy ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
-          {isHealthy ? 'Operacional' : 'Degradado'}
-        </span>
-      </div>
+      <AdminPageHeader
+        backHref="/admin"
+        emoji="🖥️"
+        title="Sistema"
+        description="Saúde da plataforma em tempo real"
+        actions={
+          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
+            isHealthy ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+          }`}>
+            <span className={`w-2 h-2 rounded-full ${isHealthy ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
+            {isHealthy ? 'Operacional' : 'Degradado'}
+          </span>
+        }
+      />
       
       {/* Health KPIs principais */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

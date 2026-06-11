@@ -1,4 +1,5 @@
 'use client';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
 import { useState, useTransition } from 'react';
 import { Link } from '@/i18n/routing';
@@ -72,20 +73,19 @@ export function EmpresasClient({ locale, initial }: Props) {
 
   return (
     <div className="px-4 sm:px-6 py-6 max-w-7xl mx-auto">
-      <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-            <Building2 className="h-6 w-6 text-brand-600" />
-            Empresas
-          </h1>
-          <p className="text-sm text-slate-500 mt-1">{total} {total === 1 ? 'tenant' : 'tenants'} no total</p>
-        </div>
-        <Link href={'/admin/empresas/novo' as any}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-medium text-sm shadow-sm transition-colors">
-          <Plus className="h-4 w-4" />
-          Criar Empresa
-        </Link>
-      </div>
+      <AdminPageHeader
+        backHref="/admin"
+        emoji="🏢"
+        title="Empresas"
+        description={`${total} ${total === 1 ? 'tenant' : 'tenants'} no total`}
+        actions={
+          <Link href={'/admin/empresas/novo' as any}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-medium text-sm shadow-sm transition-colors">
+            <Plus className="h-4 w-4" />
+            Criar Empresa
+          </Link>
+        }
+      />
 
       {/* Filtros */}
       <div className="bg-white border border-slate-200 rounded-xl p-4 mb-4 grid sm:grid-cols-4 gap-3">
