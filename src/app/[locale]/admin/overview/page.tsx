@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { Link } from '@/i18n/routing';
-import { Users, BookOpen, Building2, GraduationCap, TrendingUp, AlertCircle, MessageSquare, Award, Sparkles } from 'lucide-react';
+import { Users, BookOpen, Building2, GraduationCap, TrendingUp, AlertCircle, MessageSquare, Award } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Cockpit · NeuroLearn' };
@@ -34,13 +35,12 @@ export default async function Page() {
 
   return (
     <div className="">
-      <header className="mb-6 sm:mb-8">
-        <div className="flex items-center gap-2 text-slate-600 text-xs font-semibold uppercase tracking-wider mb-1">
-          <Sparkles className="h-3.5 w-3.5" /> Cockpit administrativo
-        </div>
-        <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">Visão geral</h1>
-        <p className="text-sm text-slate-600 mt-1.5">Estado da plataforma em tempo real. Clica em cada cartão para detalhes.</p>
-      </header>
+      <AdminPageHeader
+        emoji="✨"
+        eyebrow="Cockpit administrativo"
+        title="Visão geral"
+        description="Estado da plataforma em tempo real. Clica em cada cartão para detalhes."
+      />
 
       {error && (
         <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700">
