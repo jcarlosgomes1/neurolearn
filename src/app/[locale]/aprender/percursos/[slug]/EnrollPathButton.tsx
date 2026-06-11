@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
 import { createClient } from '@/lib/supabase/client';
+import { assertNotPeekClient } from '@/lib/peek-client';
 import { toast } from 'sonner';
 import { CheckCircle2, Sparkles } from 'lucide-react';
 
@@ -22,6 +23,7 @@ export function EnrollPathButton({ pathId, isEnrolled }: { pathId: string; isEnr
           router.push(('/login?redirect=' + encodeURIComponent(window.location.pathname)) as any);
           return;
         }
+        assertNotPeekClient();
         const { error } = await sb.rpc('nl_learning_path_enroll', { p_path_id: pathId });
         if (error) throw error;
         setEnrolled(true);

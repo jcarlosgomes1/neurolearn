@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useTransition } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { assertNotPeekClient } from '@/lib/peek-client';
 import { Heart, Loader2 } from 'lucide-react';
 
 export function WishlistButton({ courseId, size = 'md' }: { courseId: string; size?: 'sm'|'md'|'lg' }) {
@@ -20,6 +21,7 @@ export function WishlistButton({ courseId, size = 'md' }: { courseId: string; si
 
   function toggle() {
     startTransition(async () => {
+      assertNotPeekClient();
       const { data } = await sb.rpc('nl_wishlist_toggle', { p_course_id: courseId });
       const r = data as any;
       if (r?.ok) setWishlisted(r.wishlisted);

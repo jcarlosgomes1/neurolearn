@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useTransition } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { assertNotPeekClient } from '@/lib/peek-client';
 import { Heart, Loader2 } from 'lucide-react';
 
 export function WishlistHeart({ courseId, initialActive }: { courseId: string; initialActive?: boolean }) {
@@ -27,6 +28,7 @@ export function WishlistHeart({ courseId, initialActive }: { courseId: string; i
         window.location.href = '/pt/login?next=' + encodeURIComponent(window.location.pathname);
         return;
       }
+      assertNotPeekClient();
       const { data, error } = await sb.rpc('nl_wishlist_toggle', { p_course_id: courseId });
       if (error || (data as any)?.ok === false) {
         setActive(!next);

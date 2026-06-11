@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useTransition } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { assertNotPeekClient } from '@/lib/peek-client';
 import { Star, ThumbsUp, MessageSquare, Loader2, Award } from 'lucide-react';
 
 export function CourseReviews({ courseId, currentUserId, isInstructor }: { courseId: string; currentUserId?: string; isInstructor?: boolean }) {
@@ -17,7 +18,7 @@ export function CourseReviews({ courseId, currentUserId, isInstructor }: { cours
   useEffect(() => { reload(); }, [courseId]);
 
   function vote(reviewId: string) {
-    startTransition(async () => { await sb.rpc('nl_review_helpful_toggle', { p_review_id: reviewId }); reload(); });
+    startTransition(async () => { assertNotPeekClient(); await sb.rpc('nl_review_helpful_toggle', { p_review_id: reviewId }); reload(); });
   }
 
   if (!data) return <div className="p-8 text-center text-slate-400"><Loader2 className="h-5 w-5 animate-spin inline" /></div>;
@@ -131,6 +132,7 @@ function ReviewForm({ courseId, onClose, onSaved }: { courseId: string; onClose:
   function submit() {
     if (!rating) return;
     startTransition(async () => {
+      assertNotPeekClient();
       await sb.rpc('nl_course_review_upsert', { p_course_id: courseId, p_rating: rating, p_title: title || null, p_body: body || null });
       onSaved();
     });

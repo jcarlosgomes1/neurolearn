@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
+import { assertNotPeekClient } from '@/lib/peek-client';
 import { toast } from 'sonner';
 
 interface Review {
@@ -76,6 +77,7 @@ export function ReviewSystem({ courseId, courseTitle }: { courseId: string; cour
     if (rating < 1) { toast.error(t('pick_star')); return; }
     setSubmitting(true);
     const sb = createClient();
+    assertNotPeekClient();
     const { data, error } = await sb.rpc('nl_submit_review', {
       p_course_id: courseId, p_rating: rating, p_title: title || null, p_body: body || null
     });
