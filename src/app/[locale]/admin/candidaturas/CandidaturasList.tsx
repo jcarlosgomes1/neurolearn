@@ -1,4 +1,5 @@
 'use client';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
 import { useEffect, useState } from 'react';
 import { Link } from '@/i18n/routing';
@@ -84,14 +85,13 @@ export function CandidaturasList() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-      <Link href={'/admin' as any} className="text-sm text-brand-600 hover:underline">{t('approval.back_cockpit')}</Link>
-      <div className="mt-3 flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">{t('candlist.title')}</h1>
-          <p className="text-sm text-slate-500 mt-1">{t('candlist.subtitle', { n: apps.length })}</p>
-        </div>
-        <button onClick={load} className="text-sm bg-white border border-slate-200 hover:border-slate-300 px-3 py-1.5 rounded-lg">{t('candlist.reload')}</button>
-      </div>
+      <AdminPageHeader
+        backHref="/admin"
+        emoji="🧑‍💼"
+        title={t('candlist.title')}
+        description={t('candlist.subtitle', { n: apps.length })}
+        actions={<button onClick={load} className="text-sm bg-white border border-slate-200 hover:border-slate-300 px-3 py-1.5 rounded-lg">{t('candlist.reload')}</button>}
+      />
 
       <div className="mt-5 flex gap-2 overflow-x-auto pb-2">
         {[

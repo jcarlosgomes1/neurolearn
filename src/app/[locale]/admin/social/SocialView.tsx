@@ -1,4 +1,5 @@
 'use client';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
 import { useEffect, useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
@@ -217,11 +218,12 @@ export function SocialView() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-      <Link href={'/admin' as any} className="text-sm text-brand-600 hover:underline">{t('back')}</Link>
-      <div className="mt-3">
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">{t('title')}</h1>
-        <p className="text-sm text-slate-500 mt-1">{t('subtitle')}</p>
-      </div>
+      <AdminPageHeader
+        backHref="/admin"
+        emoji="📣"
+        title={t('title')}
+        description={t('subtitle')}
+      />
 
       {loading ? (
         <div className="mt-8 text-center text-slate-400 py-10">{t('loading')}</div>

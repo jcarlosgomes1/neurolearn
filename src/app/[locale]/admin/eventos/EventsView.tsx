@@ -1,4 +1,5 @@
 'use client';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
 import { useEffect, useState } from 'react';
 import { Link } from '@/i18n/routing';
@@ -86,17 +87,18 @@ export function EventsView() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-      <Link href={'/admin' as any} className="text-sm text-brand-600 hover:underline">{t('events.back')}</Link>
-      <div className="mt-3 flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">{t('events.title')}</h1>
-          <p className="text-sm text-slate-500 mt-1 tabular-nums">{t('events.subtitle', { total: total24h.toLocaleString(bcp), shown: events.length })}</p>
-        </div>
-        <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
-          <input type="checkbox" checked={autoRefresh} onChange={(e) => setAutoRefresh(e.target.checked)} className="w-4 h-4 accent-brand-600" />
-          {t('events.auto_refresh')}
-        </label>
-      </div>
+      <AdminPageHeader
+        backHref="/admin"
+        emoji="📡"
+        title={t('events.title')}
+        description={t('events.subtitle', { total: total24h.toLocaleString(bcp), shown: events.length })}
+        actions={
+          <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
+            <input type="checkbox" checked={autoRefresh} onChange={(e) => setAutoRefresh(e.target.checked)} className="w-4 h-4 accent-brand-600" />
+            {t('events.auto_refresh')}
+          </label>
+        }
+      />
 
       <div className="mt-5 flex gap-2 overflow-x-auto pb-2">
         <button onClick={() => setFilter('all')} className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium ${filter==='all' ? 'bg-slate-900 text-white' : 'bg-white border border-slate-200 text-slate-700'}`}>
