@@ -1,8 +1,9 @@
 import { createClient } from '@/lib/supabase/server';
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { notFound, redirect } from 'next/navigation';
-import { ArrowLeft, LayoutTemplate } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { LandingEditorClient } from './LandingEditorClient';
 
 export const dynamic = 'force-dynamic';
@@ -34,15 +35,11 @@ export default async function Page({ params }: { params: Promise<{ id: string; l
         className="group inline-flex items-center gap-1.5 mb-5 text-sm text-slate-500 hover:text-slate-900 font-medium">
         <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" /> {result.course.emoji || ''} {result.course.title}
       </Link>
-      <header className="mb-8">
-        <div className="flex items-center gap-2 text-fuchsia-600 text-xs font-semibold uppercase tracking-wider mb-1">
-          <LayoutTemplate className="h-3.5 w-3.5" /> {safeT('admin.course_landing.eyebrow', 'Curso · Landing page')}
-        </div>
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{safeT('admin.course_landing.title', 'Landing page do curso')}</h1>
-        <p className="text-sm text-slate-600 mt-1.5 max-w-2xl leading-relaxed">
-          {safeT('admin.course_landing.description', 'Personaliza hero, bullets, testemunhos e FAQ.')}
-        </p>
-      </header>
+      <AdminPageHeader
+        eyebrow={safeT('admin.course_landing.eyebrow', 'Curso · Landing page')}
+        title={safeT('admin.course_landing.title', 'Landing page do curso')}
+        description={safeT('admin.course_landing.description', 'Personaliza hero, bullets, testemunhos e FAQ.')}
+      />
       <LandingEditorClient
         courseId={id}
         courseTitle={result.course.title}
