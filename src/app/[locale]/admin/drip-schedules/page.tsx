@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { DripClient } from './DripClient';
-import { CalendarClock } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,15 +13,13 @@ export default async function AdminDripSchedulesPage() {
 
   return (
     <div className="">
-      <div className="mb-8">
-        <div className="flex items-center gap-2 text-emerald-600 text-xs font-semibold uppercase tracking-wider mb-1">
-          <CalendarClock className="h-3.5 w-3.5" /> Drip content
-        </div>
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Calendarização de aulas</h1>
-        <p className="text-sm text-slate-600 mt-1.5 max-w-2xl">
-          Liberta aulas progressivamente após a inscrição — aumenta retenção e cria expectativa. Definido em dias a partir do enrolment.
-        </p>
-      </div>
+      <AdminPageHeader
+        backHref="/admin"
+        emoji="📅"
+        eyebrow="Drip content"
+        title="Calendarização de aulas"
+        description="Liberta aulas progressivamente após a inscrição — aumenta retenção e cria expectativa. Definido em dias a partir do enrolment."
+      />
 
       <DripClient
         schedules={Array.isArray(schedules) ? schedules : []}
