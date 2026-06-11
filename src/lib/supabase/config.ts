@@ -29,5 +29,5 @@ export const SITE_URL =
 export const BRAND = {
   name: 'NeuroLearn',
   emoji: '🧠',
-  tagline: 'Plataforma portuguesa de cursos de IA',
+  tagline: 'Plataforma global de cursos de IA',
 } as const;
