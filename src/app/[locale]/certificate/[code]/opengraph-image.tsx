@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from '@/lib/supabase/config';
 
 export const runtime = 'edge';
-export const alt = 'NeuroLearn Certificate';
+export const alt = 'Certificate';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -11,6 +11,12 @@ export default async function Image({ params }: { params: { code: string; locale
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
+
+  let brandName = 'NeuroLearn';
+  try {
+    const cfg = await supabase.from('nl_platform_config').select('value').eq('key', 'company_name').maybeSingle();
+    if (cfg.data?.value) brandName = String(cfg.data.value).trim();
+  } catch {}
 
   let data: any = null;
   try {
@@ -26,7 +32,7 @@ export default async function Image({ params }: { params: { code: string; locale
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontFamily: 'system-ui, sans-serif',
         }}>
-          <div style={{ fontSize: 48, color: '#94a3b8', display: 'flex' }}>Certificado · NeuroLearn</div>
+          <div style={{ fontSize: 48, color: '#94a3b8', display: 'flex' }}>Certificado · {brandName}</div>
         </div>
       ),
       { ...size },
@@ -40,7 +46,6 @@ export default async function Image({ params }: { params: { code: string; locale
   return new ImageResponse(
     (
       <div style={{
-        // Deep navy gradient base with subtle warm glow top-left
         background: 'radial-gradient(circle at 25% 20%, rgba(168, 85, 247, 0.25) 0%, transparent 50%), linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)',
         width: '100%', height: '100%',
         display: 'flex', flexDirection: 'column',
@@ -48,7 +53,6 @@ export default async function Image({ params }: { params: { code: string; locale
         fontFamily: 'system-ui, sans-serif',
         position: 'relative',
       }}>
-        {/* Subtle decorative pattern (top-right corner ring) */}
         <div style={{
           position: 'absolute', top: -120, right: -120, width: 360, height: 360,
           borderRadius: '50%', border: '2px solid rgba(251, 191, 36, 0.08)',
@@ -60,11 +64,10 @@ export default async function Image({ params }: { params: { code: string; locale
           display: 'flex',
         }} />
 
-        {/* Header: logo + verified badge */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{ fontSize: 42, display: 'flex' }}>🧠</div>
-            <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: -0.5, display: 'flex' }}>NeuroLearn</div>
+            <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: -0.5, display: 'flex' }}>{brandName}</div>
           </div>
           <div style={{
             display: 'flex', alignItems: 'center', gap: 8,
@@ -77,9 +80,7 @@ export default async function Image({ params }: { params: { code: string; locale
           </div>
         </div>
 
-        {/* Main content row */}
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 50, marginTop: 20 }}>
-          {/* Medal */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <div style={{
               width: 200, height: 200, borderRadius: '50%',
@@ -89,12 +90,10 @@ export default async function Image({ params }: { params: { code: string; locale
               border: '4px solid rgba(252, 211, 77, 0.6)',
               position: 'relative',
             }}>
-              {/* Inner ring */}
               <div style={{
                 position: 'absolute', inset: 14, borderRadius: '50%',
                 border: '2px dashed rgba(120, 53, 15, 0.5)', display: 'flex',
               }} />
-              {/* Star */}
               <div style={{
                 fontSize: 90, display: 'flex',
                 textShadow: '0 4px 8px rgba(0,0,0,0.25)',
@@ -103,7 +102,6 @@ export default async function Image({ params }: { params: { code: string; locale
             </div>
           </div>
 
-          {/* Text block */}
           <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
             <div style={{
               fontSize: 14, color: '#fbbf24', letterSpacing: 4,
@@ -132,7 +130,6 @@ export default async function Image({ params }: { params: { code: string; locale
           </div>
         </div>
 
-        {/* Footer: cert number + date + domain */}
         <div style={{
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           paddingTop: 24, marginTop: 20,

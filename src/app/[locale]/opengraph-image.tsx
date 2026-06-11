@@ -1,11 +1,31 @@
 import { ImageResponse } from 'next/og';
+import { createClient } from '@supabase/supabase-js';
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from '@/lib/supabase/config';
 
 export const runtime = 'edge';
-export const alt = 'NeuroLearn — Cursos com IA';
+export const alt = 'NeuroLearn — Forma a tua equipa, sem fricção.';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
+async function getBrand() {
+  try {
+    const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+    const { data } = await sb.from('nl_platform_config').select('key, value').in('key', ['company_name', 'site_url']);
+    const m: Record<string, string> = {};
+    for (const r of (data || []) as Array<{ key: string; value: string }>) m[r.key] = r.value;
+    return {
+      name: (m.company_name || 'NeuroLearn').trim(),
+      domain: (m.site_url || 'https://neurolearn-rosy.vercel.app').replace(/^https?:\/\//, '').replace(/\/$/, '').trim(),
+    };
+  } catch {
+    return { name: 'NeuroLearn', domain: 'neurolearn-rosy.vercel.app' };
+  }
+}
+
 export default async function Image() {
+  const brand = await getBrand();
   return new ImageResponse(
     (
       <div style={{
@@ -18,7 +38,7 @@ export default async function Image() {
         <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', width: '100%', height: '100%' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <span style={{ fontSize: 72 }}>🧠</span>
-            <span style={{ fontSize: 48, fontWeight: 800, color: 'white', letterSpacing: -1 }}>NeuroLearn</span>
+            <span style={{ fontSize: 48, fontWeight: 800, color: 'white', letterSpacing: -1 }}>{brand.name}</span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div style={{ fontSize: 68, fontWeight: 800, color: 'white', lineHeight: 1.05, letterSpacing: -2 }}>
@@ -26,13 +46,13 @@ export default async function Image() {
               <span style={{ color: '#a5b4fc' }}>Sem fricção.</span>
             </div>
             <div style={{ fontSize: 24, color: '#94a3b8', maxWidth: 800 }}>
-              A IA gera cursos a partir dos teus manuais internos. Plataforma B2B + B2C + Talent.
+              Gera cursos a partir dos teus manuais internos. Plataforma B2B + B2C + Talent.
             </div>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 16 }}>
-            <div style={{ fontSize: 18, color: '#64748b' }}>neurolearn-rosy.vercel.app</div>
+            <div style={{ fontSize: 18, color: '#64748b' }}>{brand.domain}</div>
             <div style={{ display: 'flex', gap: 8 }}>
-              {['IA', 'B2B', 'LMS', 'Talent'].map((badge) => (
+              {['B2C', 'B2B', 'LMS', 'Talent'].map((badge) => (
                 <span key={badge} style={{
                   padding: '6px 14px', borderRadius: 8, fontSize: 16, fontWeight: 600,
                   background: 'rgba(99, 102, 241, 0.15)', color: '#a5b4fc',
