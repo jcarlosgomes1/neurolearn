@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { assertNotPeekClient } from '@/lib/peek-client';
 import { useRouter } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
@@ -51,6 +52,7 @@ export function CandidatoClient({ application, files, userId }: { application: a
         cacheControl: '3600', upsert: false, contentType: file.type || 'application/octet-stream',
       });
       if (upErr) throw upErr;
+      assertNotPeekClient();
       const { error: rpcErr } = await sb.rpc('nl_instructor_file_register', {
         p_kind: kind, p_storage_path: path, p_original_name: file.name,
         p_mime_type: file.type, p_file_size_bytes: file.size, p_label: null,
@@ -69,6 +71,7 @@ export function CandidatoClient({ application, files, userId }: { application: a
     if (!confirm(t('cand.confirm_delete', { name: f.original_name }))) return;
     try {
       const sb = createClient();
+      assertNotPeekClient();
       const { data } = await sb.rpc('nl_instructor_file_delete', { p_id: f.id });
       if (data?.storage_path) {
         await sb.storage.from('instructor-applications').remove([data.storage_path]);

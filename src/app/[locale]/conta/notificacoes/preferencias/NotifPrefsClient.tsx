@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { assertNotPeekClient } from '@/lib/peek-client';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import { Save, MessageSquare, Mail, Smartphone, BellRing, Clock, AlertCircle } from 'lucide-react';
@@ -18,6 +19,7 @@ export function NotifPrefsClient({ initial, whatsappEnabled }: { initial: any; w
     setBusy(true);
     try {
       const sb = createClient();
+      assertNotPeekClient();
       const { error } = await sb.rpc('nl_my_notif_prefs_set', { p_prefs: form });
       if (error) throw error;
       toast.success(t('notifs.prefs.saved'));

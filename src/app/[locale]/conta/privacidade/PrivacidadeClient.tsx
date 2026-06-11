@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { assertNotPeekClient } from '@/lib/peek-client';
 import { useTranslations } from 'next-intl';
 import { Shield, Download, Trash2, AlertCircle, CheckCircle, Loader2, Clock, RotateCcw } from 'lucide-react';
 
@@ -31,6 +32,7 @@ export function PrivacidadeClient({ email, requests: initial }: { email: string;
     setError(null); setSuccess(null);
     startTransition(async () => {
       const sb = createClient();
+      assertNotPeekClient();
       const { data, error } = await sb.rpc('nl_gdpr_request_export');
       if (error || !(data as any)?.ok) {
         setError(error?.message || (data as any)?.error || t('privacy.failed'));
@@ -46,6 +48,7 @@ export function PrivacidadeClient({ email, requests: initial }: { email: string;
     setError(null); setSuccess(null);
     startTransition(async () => {
       const sb = createClient();
+      assertNotPeekClient();
       const { data, error } = await sb.rpc('nl_gdpr_request_deletion', { p_reason: 'user_request' });
       if (error || !(data as any)?.ok) {
         setError(error?.message || (data as any)?.error || t('privacy.failed'));
@@ -60,6 +63,7 @@ export function PrivacidadeClient({ email, requests: initial }: { email: string;
   function cancelDeletion(id: string) {
     startTransition(async () => {
       const sb = createClient();
+      assertNotPeekClient();
       await sb.rpc('nl_gdpr_cancel_deletion', { p_request_id: id });
       reload();
     });

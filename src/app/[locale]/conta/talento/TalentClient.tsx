@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { assertNotPeekClient } from '@/lib/peek-client';
 import { useRouter } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
@@ -61,6 +62,7 @@ export function TalentClient({ initial }: { initial: Profile }) {
       if (typeof payload.desired_salary_max_cents === 'number' && payload.desired_salary_max_cents < 10000) {
         payload.desired_salary_max_cents = Math.round(payload.desired_salary_max_cents * 100);
       }
+      assertNotPeekClient();
       const { error } = await sb.rpc('nl_my_talent_profile_upsert', { p_data: payload });
       if (error) throw error;
       toast.success(t('talent.saved'));

@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { assertNotPeekClient } from '@/lib/peek-client';
 import { Link } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import { Sparkles, Calendar, X, RotateCcw, Loader2 } from 'lucide-react';
@@ -23,6 +24,7 @@ export function SubscriptionClient({ initial }: { initial: any }) {
     if (!confirm(t('sub.confirm_cancel'))) return;
     startTransition(async () => {
       const sb = createClient();
+      assertNotPeekClient();
       await sb.rpc('nl_subscription_cancel');
       reload();
     });
@@ -31,6 +33,7 @@ export function SubscriptionClient({ initial }: { initial: any }) {
   function reactivate() {
     startTransition(async () => {
       const sb = createClient();
+      assertNotPeekClient();
       await sb.rpc('nl_subscription_reactivate');
       reload();
     });

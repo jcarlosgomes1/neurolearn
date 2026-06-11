@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { assertNotPeekClient } from '@/lib/peek-client';
 import { useTranslations } from 'next-intl';
 import { Users, Copy, DollarSign, TrendingUp, ExternalLink, Loader2, AlertCircle, CheckCircle, Award } from 'lucide-react';
 
@@ -28,6 +29,7 @@ export function AfiliadoClient({ initial, baseUrl }: { initial: any; baseUrl: st
   function signup() {
     startTransition(async () => {
       const sb = createClient();
+      assertNotPeekClient();
       const { data: d, error } = await sb.rpc('nl_affiliate_signup');
       if (error || !(d as any)?.ok) setError(error?.message || t('aff.error'));
       else reload();
@@ -47,6 +49,7 @@ export function AfiliadoClient({ initial, baseUrl }: { initial: any; baseUrl: st
       const sb = createClient();
       let parsedDetails: any = { value: details };
       try { parsedDetails = JSON.parse(details); } catch {}
+      assertNotPeekClient();
       await sb.rpc('nl_affiliate_update_payment', { p_method: method, p_details: parsedDetails });
       setPaymentForm(false);
       reload();
