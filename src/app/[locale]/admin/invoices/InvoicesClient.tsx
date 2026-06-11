@@ -1,4 +1,5 @@
 'use client';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
 import { useState, useTransition } from 'react';
 import { createInvoiceAction, listInvoicesAction } from '../revenue/actions';
@@ -26,16 +27,18 @@ export function InvoicesClient({ initial }: { initial: any[] }) {
 
   return (
     <div className="px-4 sm:px-6 py-6 max-w-6xl mx-auto">
-      <div className="flex items-start justify-between gap-3 flex-wrap mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2"><FileText className="h-6 w-6" /> Invoices</h1>
-          <p className="text-sm text-slate-500 mt-1">Facturas emitidas pela plataforma. VAT calculado por país automaticamente.</p>
-        </div>
-        <button onClick={() => setCreating(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-lg">
-          <Plus className="h-4 w-4" /> Nova invoice
-        </button>
-      </div>
+      <AdminPageHeader
+        backHref="/admin"
+        emoji="🧾"
+        title="Invoices"
+        description="Facturas emitidas pela plataforma. VAT calculado por país automaticamente."
+        actions={
+          <button onClick={() => setCreating(true)}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-lg">
+            <Plus className="h-4 w-4" /> Nova invoice
+          </button>
+        }
+      />
 
       {invoices.length === 0 ? (
         <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
