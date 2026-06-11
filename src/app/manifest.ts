@@ -1,10 +1,12 @@
 import type { MetadataRoute } from 'next';
+import { getPlatformBrand } from '@/lib/platform-brand';
 
-export default function manifest(): MetadataRoute.Manifest {
+export default async function manifest(): Promise<MetadataRoute.Manifest> {
+  const brand = await getPlatformBrand();
   return {
-    name: 'NeuroLearn',
-    short_name: 'NeuroLearn',
-    description: 'Plataforma global de cursos com IA. Forma a tua equipa, sem fricção.',
+    name: brand.name,
+    short_name: brand.name,
+    description: brand.description || undefined,
     start_url: '/',
     display: 'standalone',
     background_color: '#0f172a',

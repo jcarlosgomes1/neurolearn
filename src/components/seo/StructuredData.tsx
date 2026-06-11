@@ -1,9 +1,10 @@
 /**
  * Schema.org JSON-LD components para SEO.
- * Usar diretamente em page server components.
+ * Usar diretamente em page server components (async).
  */
+import { getPlatformBrand } from '@/lib/platform-brand';
 
-export function CourseStructuredData({ course, baseUrl }: {
+export async function CourseStructuredData({ course, baseUrl }: {
   course: {
     title: string; description?: string | null; slug: string;
     duration_hours?: number | null; level?: string | null; language?: string | null;
@@ -15,28 +16,29 @@ export function CourseStructuredData({ course, baseUrl }: {
   };
   baseUrl?: string;
 }) {
-  const base = baseUrl || 'https://neurolearn-rosy.vercel.app';
+  const brand = await getPlatformBrand();
+  const base = baseUrl || brand.url;
   const url = `${base}/cursos/${course.slug}`;
-  
+
   const data: Record<string, unknown> = {
     '@context': 'https://schema.org',
     '@type': 'Course',
     name: course.title,
     description: course.description || course.title,
-    provider: { '@type': 'Organization', name: 'NeuroLearn', sameAs: base },
+    provider: { '@type': 'Organization', name: brand.name, sameAs: base },
     url,
     inLanguage: course.language || 'pt',
     educationalLevel: course.level || 'Beginner',
   };
-  
+
   if (course.cover_url) data.image = course.cover_url;
   if (course.instructor_name) data.instructor = { '@type': 'Person', name: course.instructor_name };
-  
+
   if (course.duration_hours) {
     const hours = Math.max(1, Math.round(course.duration_hours));
     data.timeRequired = `PT${hours}H`;
   }
-  
+
   if (course.price_cents != null && course.price_cents > 0) {
     data.offers = {
       '@type': 'Offer',
@@ -48,7 +50,7 @@ export function CourseStructuredData({ course, baseUrl }: {
   } else if (course.price_cents === 0) {
     data.isAccessibleForFree = true;
   }
-  
+
   if (course.rating_avg && course.rating_count && course.rating_count > 0) {
     data.aggregateRating = {
       '@type': 'AggregateRating',
@@ -57,41 +59,43 @@ export function CourseStructuredData({ course, baseUrl }: {
       bestRating: 5, worstRating: 1,
     };
   }
-  
+
   if (course.skills && course.skills.length > 0) data.teaches = course.skills;
   if (course.created_at) data.datePublished = course.created_at;
-  
+
   data.hasCourseInstance = {
     '@type': 'CourseInstance',
     courseMode: 'Online',
     courseWorkload: course.duration_hours ? `PT${Math.max(1, Math.round(course.duration_hours))}H` : undefined,
   };
-  
+
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
 }
 
-export function OrganizationStructuredData({ baseUrl }: { baseUrl?: string }) {
-  const base = baseUrl || 'https://neurolearn-rosy.vercel.app';
+export async function OrganizationStructuredData({ baseUrl }: { baseUrl?: string }) {
+  const brand = await getPlatformBrand();
+  const base = baseUrl || brand.url;
   const data = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    name: 'NeuroLearn',
+    name: brand.name,
     url: base,
     logo: `${base}/apple-icon`,
-    description: 'Plataforma de cursos com IA. Forma a tua equipa, sem fricção.',
+    description: brand.description || undefined,
     sameAs: [],
   };
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
 }
 
-export function WebsiteStructuredData({ baseUrl }: { baseUrl?: string }) {
-  const base = baseUrl || 'https://neurolearn-rosy.vercel.app';
+export async function WebsiteStructuredData({ baseUrl }: { baseUrl?: string }) {
+  const brand = await getPlatformBrand();
+  const base = baseUrl || brand.url;
   const data = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    name: 'NeuroLearn',
+    name: brand.name,
     url: base,
-    description: 'Plataforma de cursos com IA',
+    description: brand.description || undefined,
     potentialAction: {
       '@type': 'SearchAction',
       target: {
@@ -104,11 +108,12 @@ export function WebsiteStructuredData({ baseUrl }: { baseUrl?: string }) {
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
 }
 
-export function BreadcrumbStructuredData({ items, baseUrl }: {
+export async function BreadcrumbStructuredData({ items, baseUrl }: {
   items: Array<{ name: string; href: string }>;
   baseUrl?: string;
 }) {
-  const base = baseUrl || 'https://neurolearn-rosy.vercel.app';
+  const brand = await getPlatformBrand();
+  const base = baseUrl || brand.url;
   const data = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -135,7 +140,7 @@ export function FAQStructuredData({ items }: { items: Array<{ q: string; a: stri
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
 }
 
-export function ArticleStructuredData({ post, baseUrl }: {
+export async function ArticleStructuredData({ post, baseUrl }: {
   post: {
     title: string; description?: string | null; slug: string;
     cover_url?: string | null; published_at?: string | null;
@@ -143,7 +148,8 @@ export function ArticleStructuredData({ post, baseUrl }: {
   };
   baseUrl?: string;
 }) {
-  const base = baseUrl || 'https://neurolearn-rosy.vercel.app';
+  const brand = await getPlatformBrand();
+  const base = baseUrl || brand.url;
   const data: Record<string, unknown> = {
     '@context': 'https://schema.org',
     '@type': 'Article',
@@ -152,10 +158,10 @@ export function ArticleStructuredData({ post, baseUrl }: {
     image: post.cover_url || undefined,
     datePublished: post.published_at || undefined,
     dateModified: post.updated_at || post.published_at || undefined,
-    author: { '@type': 'Person', name: post.author_name || 'NeuroLearn' },
-    publisher: { 
-      '@type': 'Organization', 
-      name: 'NeuroLearn',
+    author: { '@type': 'Person', name: post.author_name || brand.name },
+    publisher: {
+      '@type': 'Organization',
+      name: brand.name,
       logo: { '@type': 'ImageObject', url: `${base}/apple-icon` }
     },
     mainEntityOfPage: { '@type': 'WebPage', '@id': `${base}/blog/${post.slug}` },
