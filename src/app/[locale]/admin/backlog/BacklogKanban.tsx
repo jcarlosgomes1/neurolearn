@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Loader2, Plus, X, CheckCircle2 } from 'lucide-react';
 
-interface Row { id: number; title: string; area: string; priority: string; status: string; detail: string | null; tested: boolean; }
+interface Row { id: number; title: string; area: string; priority: string; status: string; detail: string | null; tested: boolean; backend_at: string | null; routes_at: string | null; ui_at: string | null; }
 
 const COLS = [
   { key: 'todo', label: 'A Fazer', accent: 'from-slate-400 to-slate-500' },
@@ -106,6 +106,7 @@ export function BacklogKanban() {
                     <p className="text-sm font-semibold text-slate-800 mt-1 leading-snug">{it.title}</p>
                     {it.detail ? <p className="text-[11px] text-slate-500 mt-1 line-clamp-2">{it.detail}</p> : null}
                     <p className="text-[10px] text-slate-400 mt-1.5 uppercase tracking-wide">{it.area}</p>
+                    <div className="flex gap-1 mt-2">{[{ k: 'BE', on: !!it.backend_at, t: 'Backend' }, { k: 'RT', on: !!it.routes_at, t: 'Rotas' }, { k: 'UI', on: !!it.ui_at, t: 'UI' }, { k: '✓', on: it.tested, t: 'Testado' }].map((s) => (<span key={s.k} title={s.t} className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${s.on ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-300'}`}>{s.k}</span>))}</div>
                     <div className="flex gap-1 mt-2">
                       <select value={it.status} onChange={(e) => setStatus(it.id, e.target.value)} className="flex-1 text-[11px] rounded-lg border border-slate-200 px-1.5 py-1 bg-slate-50">
                         {COLS.map((c) => <option key={c.key} value={c.key}>{c.label}</option>)}
