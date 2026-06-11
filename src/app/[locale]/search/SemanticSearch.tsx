@@ -36,11 +36,10 @@ export function SemanticSearch({ initialQuery, locale }: { initialQuery: string;
     setLoading(true);
     setSearched(true);
     try {
-      const resp = await fetch(`${SUPABASE_URL}/functions/v1/embeddings`, {
+      const resp = await fetch(`${SUPABASE_URL}/functions/v1/search-v1`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'apikey': SUPABASE_ANON_KEY },
         body: JSON.stringify({
-          action: 'search',
           query: q.trim(),
           content_types: ['course', 'lesson', 'blog_post'],
           limit: 20,
