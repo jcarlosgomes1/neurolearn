@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
-import { Activity } from 'lucide-react';
 import { ObservabilidadeClient } from './ObservabilidadeClient';
 
 export const dynamic = 'force-dynamic';
@@ -33,15 +33,13 @@ export default async function ObservabilityPage({ searchParams }: { searchParams
 
   return (
     <div className="">
-      <header className="mb-8">
-        <div className="flex items-center gap-2 text-blue-600 text-xs font-semibold uppercase tracking-wider mb-1">
-          <Activity className="h-3.5 w-3.5" /> {safeT('admin.observability.eyebrow', 'Admin · Observabilidade')}
-        </div>
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{safeT('admin.observability.title', 'Observabilidade da plataforma')}</h1>
-        <p className="text-sm text-slate-600 mt-1.5 max-w-3xl leading-relaxed">
-          {safeT('admin.observability.description', 'Custos automatizados, KPIs diários e qualidade SEO. Tudo num só sítio.')}
-        </p>
-      </header>
+      <AdminPageHeader
+        backHref="/admin"
+        emoji="📈"
+        eyebrow={safeT('admin.observability.eyebrow', 'Admin · Observabilidade')}
+        title={safeT('admin.observability.title', 'Observabilidade da plataforma')}
+        description={safeT('admin.observability.description', 'Custos automatizados, KPIs diários e qualidade SEO. Tudo num só sítio.')}
+      />
       <ObservabilidadeClient
         hours={hours}
         aiStats={Array.isArray(aiStats) ? aiStats : []}

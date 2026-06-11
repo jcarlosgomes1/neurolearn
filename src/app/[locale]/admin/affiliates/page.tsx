@@ -1,8 +1,8 @@
 import { createClient } from '@/lib/supabase/server';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { redirect } from 'next/navigation';
-import { ArrowLeft, Handshake } from 'lucide-react';
 import { AffiliatesClient } from './AffiliatesClient';
 
 export const dynamic = 'force-dynamic';
@@ -27,19 +27,13 @@ export default async function Page() {
 
   return (
     <div className="">
-      <Link href={'/admin' as any}
-        className="group inline-flex items-center gap-1.5 mb-5 text-sm text-slate-500 hover:text-slate-900 font-medium">
-        <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" /> Cockpit
-      </Link>
-      <header className="mb-6">
-        <div className="flex items-center gap-2 text-rose-600 text-xs font-semibold uppercase tracking-wider mb-1">
-          <Handshake className="h-3.5 w-3.5" /> {safeT('admin.affiliates.eyebrow', 'Administração · Afiliados')}
-        </div>
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{safeT('admin.affiliates.title', 'Programa de afiliados')}</h1>
-        <p className="text-sm text-slate-600 mt-1.5 max-w-2xl leading-relaxed">
-          {safeT('admin.affiliates.description', 'Aprova candidaturas, define comissões e acompanha o desempenho.')}
-        </p>
-      </header>
+      <AdminPageHeader
+        backHref="/admin"
+        emoji="🤝"
+        eyebrow={safeT('admin.affiliates.eyebrow', 'Administração · Afiliados')}
+        title={safeT('admin.affiliates.title', 'Programa de afiliados')}
+        description={safeT('admin.affiliates.description', 'Aprova candidaturas, define comissões e acompanha o desempenho.')}
+      />
       <AffiliatesClient
         kpis={(kpis as any) || {}}
         initial={Array.isArray(list) ? list : []}
