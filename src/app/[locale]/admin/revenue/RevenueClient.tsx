@@ -1,4 +1,5 @@
 'use client';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
 import { useState, useTransition } from 'react';
 import { revenueDashboardAction } from './actions';
@@ -27,25 +28,27 @@ export function RevenueClient({ initial }: { initial: any }) {
 
   return (
     <div className="px-4 sm:px-6 py-6 max-w-7xl mx-auto">
-      <div className="flex items-start justify-between gap-3 flex-wrap mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2"><TrendingUp className="h-6 w-6 text-emerald-600" /> Revenue Intelligence</h1>
-          <p className="text-sm text-slate-500 mt-1">MRR, ARR, GMV, churn, top customers — atualizado a cada request.</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="inline-flex rounded-lg border border-slate-200 bg-white overflow-hidden">
-            {WINDOWS.map(([k, label]) => (
-              <button key={k} onClick={() => changeWindow(k)}
-                className={`px-3 py-1.5 text-xs font-medium ${window === k ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>
-                {label}
-              </button>
-            ))}
+      <AdminPageHeader
+        backHref="/admin"
+        emoji="📈"
+        title="Revenue Intelligence"
+        description="MRR, ARR, GMV, churn, top customers — atualizado a cada request."
+        actions={
+          <div className="flex items-center gap-2">
+            <div className="inline-flex rounded-lg border border-slate-200 bg-white overflow-hidden">
+              {WINDOWS.map(([k, label]) => (
+                <button key={k} onClick={() => changeWindow(k)}
+                  className={`px-3 py-1.5 text-xs font-medium ${window === k ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>
+                  {label}
+                </button>
+              ))}
+            </div>
+            <button onClick={() => changeWindow(window)} disabled={pending} className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg">
+              {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+            </button>
           </div>
-          <button onClick={() => changeWindow(window)} disabled={pending} className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg">
-            {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-          </button>
-        </div>
-      </div>
+        }
+      />
 
       {/* KPIs principais */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
