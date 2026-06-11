@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useLocale } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from '@/lib/supabase/config';
-import { MessageCircleQuestion, X, Loader2, Globe, CornerDownRight, CheckCircle2, Pin } from 'lucide-react';
+import { MessageCircleQuestion, X, Loader2, Globe, CornerDownRight, CheckCircle2, Pin, Flag } from 'lucide-react';
 
 interface Question {
   id: string;
@@ -41,6 +41,7 @@ export function LessonQuestions({ courseId, moduleIndex, lessonIndex, collapsed 
   const [translated, setTranslated] = useState(false);
   const [tmap, setTmap] = useState<Record<string, string>>({});
   const [translating, setTranslating] = useState(false);
+  const [reported, setReported] = useState<Record<string, boolean>>({});
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [answerText, setAnswerText] = useState('');
@@ -81,6 +82,13 @@ export function LessonQuestions({ courseId, moduleIndex, lessonIndex, collapsed 
     const { data } = await sb.rpc('nl_course_answer', { p_question_id: qid, p_body: answerText.trim() });
     setBusy(false);
     if ((data as any)?.ok) { setAnswerText(''); setAnswers((m) => { const c = { ...m }; delete c[qid]; return c; }); await loadAnswers(qid); }
+  }
+
+  async function report(kind: 'question' | 'answer', id: string) {
+    const key = kind + id;
+    if (reported[key]) return;
+    setReported((m) => ({ ...m, [key]: true }));
+    await sb.rpc('nl_qa_report', { p_kind: kind, p_id: id });
   }
 
   async function toggleTranslate() {
@@ -157,6 +165,11 @@ export function LessonQuestions({ courseId, moduleIndex, lessonIndex, collapsed 
                   </button>
                   {expanded === q.id && (
                     <div className="border-t border-slate-100 p-3 space-y-2 bg-slate-50/60">
+                      <div className="flex justify-end">
+                        <button onClick={() => report('question', q.id)} disabled={!!reported['question' + q.id]} className="text-[11px] text-slate-400 hover:text-rose-500 disabled:text-rose-400 flex items-center gap-1">
+                          <Flag className="h-3 w-3" /> {reported['question' + q.id] ? 'Reportado' : 'Reportar'}
+                        </button>
+                      </div>
                       {(answers[q.id] || []).map((a) => (
                         <div key={a.id} className="flex gap-2">
                           <CornerDownRight className="h-3.5 w-3.5 text-slate-300 mt-1 shrink-0" />
@@ -165,6 +178,7 @@ export function LessonQuestions({ courseId, moduleIndex, lessonIndex, collapsed 
                             <p className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1">
                               {a.is_instructor_answer ? <span className="text-violet-600 font-semibold">Instrutor</span> : (a.author_name || 'Aluno')}
                               {a.marked_as_solution ? <CheckCircle2 className="h-3 w-3 text-emerald-500" /> : null}
+                              <button onClick={() => report('answer', a.id)} disabled={!!reported['answer' + a.id]} className="ml-1 text-slate-300 hover:text-rose-500 disabled:text-rose-400" title="Reportar"><Flag className="h-3 w-3" /></button>
                             </p>
                           </div>
                         </div>
