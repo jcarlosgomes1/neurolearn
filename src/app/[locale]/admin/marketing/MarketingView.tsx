@@ -1,4 +1,5 @@
 'use client';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
 import { useEffect, useState, useCallback } from 'react';
 import { Link } from '@/i18n/routing';
@@ -227,17 +228,18 @@ export function MarketingView() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-      <Link href={'/admin' as any} className="text-sm text-brand-600 hover:underline">{t('mkt.back')}</Link>
-      <div className="mt-3 flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">{t('mkt.title')}</h1>
-          <p className="text-sm text-slate-500 mt-1">{t('mkt.subtitle')}</p>
-        </div>
-        <div className="flex gap-2 flex-wrap">
-          <button onClick={triggerScout} className="text-sm bg-white border border-slate-200 hover:border-slate-300 px-3 py-2 rounded-lg font-medium">{t('mkt.btn_scout')}</button>
-          <button onClick={loadAll} className="text-sm bg-white border border-slate-200 hover:border-slate-300 px-3 py-2 rounded-lg">{t('mkt.btn_reload')}</button>
-        </div>
-      </div>
+      <AdminPageHeader
+        backHref="/admin"
+        emoji="📢"
+        title={t('mkt.title')}
+        description={t('mkt.subtitle')}
+        actions={
+          <div className="flex gap-2 flex-wrap">
+            <button onClick={triggerScout} className="text-sm bg-white border border-slate-200 hover:border-slate-300 px-3 py-2 rounded-lg font-medium">{t('mkt.btn_scout')}</button>
+            <button onClick={loadAll} className="text-sm bg-white border border-slate-200 hover:border-slate-300 px-3 py-2 rounded-lg">{t('mkt.btn_reload')}</button>
+          </div>
+        }
+      />
 
       {kpis && (
         <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">

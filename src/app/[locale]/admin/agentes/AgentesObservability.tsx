@@ -1,4 +1,5 @@
 'use client';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from '@/i18n/routing';
@@ -62,13 +63,12 @@ export function AgentesObservability() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
-      <div>
-        <Link href={'/admin' as any} className="text-sm text-brand-600 hover:underline">{t('approval.back_cockpit')}</Link>
-        <div className="mt-3 flex items-center justify-between flex-wrap gap-3">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">{t('agentes.title')}</h1>
-            <p className="text-sm text-slate-500 mt-1">{t('agentes.subtitle')}</p>
-          </div>
+      <AdminPageHeader
+        backHref="/admin"
+        emoji="🤖"
+        title={t('agentes.title')}
+        description={t('agentes.subtitle')}
+        actions={
           <div className="flex gap-1 bg-white border border-slate-200 rounded-lg p-1">
             {(['1h', '24h', '7d'] as const).map((p) => (
               <button key={p} onClick={() => setPeriod(p)}
@@ -77,8 +77,8 @@ export function AgentesObservability() {
               </button>
             ))}
           </div>
-        </div>
-      </div>
+        }
+      />
 
       {loading ? (
         <div className="text-center py-12 text-slate-500">{t('candlist.loading')}</div>
