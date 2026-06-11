@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { getTranslations } from 'next-intl/server';
 import type { Metadata } from 'next';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from '@/lib/supabase/config';
+import { getPlatformBrand } from '@/lib/platform-brand';
 import ShareButtons from './ShareButtons';
 
 export const dynamic = 'force-dynamic';
@@ -46,17 +47,18 @@ async function verifyCert(code: string): Promise<VerifyResult | null> {
 }
 
 export async function generateMetadata({ params }: { params: { code: string; locale: string } }): Promise<Metadata> {
+  const brand = await getPlatformBrand();
   const data = await verifyCert(params.code);
   if (!data?.ok) {
-    return { title: 'Certificado · NeuroLearn' };
+    return { title: `Certificado · ${brand.name}` };
   }
   const dateStr = new Date(data.issued_at!).toLocaleDateString(params.locale);
-  const title = `${data.student_name} · ${data.course_title} · NeuroLearn`;
-  const description = `${data.student_name} concluiu "${data.course_title}" na NeuroLearn em ${dateStr}.`;
+  const title = `${data.student_name} · ${data.course_title} · ${brand.name}`;
+  const description = `${data.student_name} concluiu "${data.course_title}" na ${brand.name} em ${dateStr}.`;
   return {
     title,
     description,
-    openGraph: { title, description, type: 'website', siteName: 'NeuroLearn' },
+    openGraph: { title, description, type: 'website', siteName: brand.name },
     twitter: { card: 'summary_large_image', title, description },
     robots: { index: true, follow: true },
   };
@@ -64,6 +66,7 @@ export async function generateMetadata({ params }: { params: { code: string; loc
 
 export default async function CertificatePage({ params }: { params: { code: string; locale: string } }) {
   const t = await getTranslations({ locale: params.locale });
+  const brand = await getPlatformBrand();
   const data = await verifyCert(params.code);
 
   if (!data?.ok) {
@@ -84,6 +87,7 @@ export default async function CertificatePage({ params }: { params: { code: stri
   const dateStr = issuedDate.toLocaleDateString(params.locale, {
     year: 'numeric', month: 'long', day: 'numeric',
   });
+  const domain = brand.url.replace(/^https?:\/\//, '').replace(/\/$/, '');
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-amber-50 py-12 px-4">
@@ -91,7 +95,7 @@ export default async function CertificatePage({ params }: { params: { code: stri
         <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border-4 border-indigo-100">
           <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-6 text-white">
             <div className="flex items-center justify-between">
-              <div className="text-2xl md:text-3xl font-bold tracking-tight">🧠 NeuroLearn</div>
+              <div className="text-2xl md:text-3xl font-bold tracking-tight">🧠 {brand.name}</div>
               <div className="text-[10px] md:text-xs uppercase tracking-widest opacity-80 font-mono">
                 {data.certificate_number}
               </div>
@@ -142,7 +146,7 @@ export default async function CertificatePage({ params }: { params: { code: stri
 
           <div className="bg-slate-50 px-6 md:px-8 py-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-2">
             <div className="text-[10px] md:text-xs text-slate-500 break-all">
-              {t('cert.verify_at')} <span className="font-mono">neurolearn-rosy.vercel.app/certificate/{data.verification_code}</span>
+              {t('cert.verify_at')} <span className="font-mono">{domain}/certificate/{data.verification_code}</span>
             </div>
             <div className="text-xs text-slate-600 font-medium whitespace-nowrap">
               {t('cert.authenticated')}
