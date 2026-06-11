@@ -1,4 +1,5 @@
 'use client';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
 import { useState, useTransition } from 'react';
 import { bulkSetMonetizationAction } from './actions';
@@ -62,18 +63,18 @@ export function MonetizacaoClient({ initial }: { initial: any[] }) {
 
   return (
     <div className="px-4 sm:px-6 py-6 max-w-5xl mx-auto">
-      <div className="flex items-start justify-between gap-3 flex-wrap mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Monetização</h1>
-          <p className="text-sm text-slate-500 mt-1">Todas as configurações financeiras da plataforma. Mudanças aplicam-se imediatamente a todas as transações futuras.</p>
-        </div>
-        {Object.keys(edits).length > 0 && (
+      <AdminPageHeader
+        backHref="/admin"
+        emoji="💰"
+        title="Monetização"
+        description="Todas as configurações financeiras da plataforma. Mudanças aplicam-se imediatamente a todas as transações futuras."
+        actions={Object.keys(edits).length > 0 ? (
           <button onClick={save} disabled={pending}
             className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg disabled:opacity-50">
             <Save className="h-4 w-4" /> Guardar {Object.keys(edits).length} alteração{Object.keys(edits).length === 1 ? '' : 'ões'}
           </button>
-        )}
-      </div>
+        ) : undefined}
+      />
 
       {success && <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-sm text-emerald-700 flex items-center gap-2"><CheckCircle className="h-4 w-4" /> Configurações guardadas</div>}
       {error && <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-lg text-sm text-rose-700 flex items-center gap-2"><AlertCircle className="h-4 w-4" /> {error}</div>}
