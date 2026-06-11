@@ -1,4 +1,5 @@
 'use client';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
 import { useEffect, useState } from 'react';
 import { Link } from '@/i18n/routing';
@@ -43,11 +44,7 @@ export function TutorConfigForm() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-5 animate-fade-in">
-      <Link href={'/admin' as any} className="text-sm text-brand-600 hover:underline">{t('tutor.back')}</Link>
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">{t('tutor.title')}</h1>
-        <p className="text-sm text-slate-500 mt-1">{t('tutor.subtitle')}</p>
-      </div>
+      <AdminPageHeader backHref="/admin" emoji="🎓" title={t('tutor.title')} description={t('tutor.subtitle')} />
 
       <section className="bg-white rounded-xl border border-slate-200 p-5 sm:p-6 space-y-5">
         <label className={`flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-all ${enabled ? 'border-brand-300 bg-brand-50/40' : 'border-slate-200 hover:border-slate-300'}`}>

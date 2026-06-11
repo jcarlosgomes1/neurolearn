@@ -1,4 +1,5 @@
 'use client';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
@@ -27,11 +28,7 @@ export function PreviewView() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-      <Link href={'/admin' as any} className="text-sm text-brand-600 hover:underline">{t('back')}</Link>
-      <div className="mt-3">
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">{t('title')}</h1>
-        <p className="text-sm text-slate-500 mt-1">{t('subtitle')}</p>
-      </div>
+      <AdminPageHeader backHref="/admin" emoji="👁️" title={t('title')} description={t('subtitle')} />
 
       <div className="mt-4 bg-amber-50 border border-amber-200 rounded-xl p-3 text-sm text-amber-800">
         {t('warning')}
