@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { Link } from '@/i18n/routing';
 import { createClient } from '@/lib/supabase/server';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { QaModerationClient } from './QaModerationClient';
 
 export const dynamic = 'force-dynamic';
@@ -17,9 +18,7 @@ export default async function Page() {
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Link href={'/admin' as any} className="text-sm text-slate-500 hover:text-slate-700">&larr; Admin</Link>
-        <h1 className="text-2xl font-bold text-slate-900 mt-2 mb-1">Moderacao de Perguntas &amp; Respostas</h1>
-        <p className="text-sm text-slate-500 mb-6">Itens sinalizados: reportados por utilizadores, auto-sinalizados pela IA, ou marcados manualmente.</p>
+        <AdminPageHeader backHref="/admin" emoji="💬" title="Moderação de Perguntas & Respostas" description="Itens sinalizados: reportados por utilizadores, auto-sinalizados pela IA, ou marcados manualmente." />
         <QaModerationClient />
       </div>
     </div>

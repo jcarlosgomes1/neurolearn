@@ -1,5 +1,6 @@
 import { Link } from '@/i18n/routing';
 import { AIFeaturesList } from './AIFeaturesList';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
 export const metadata = { title: 'AI Features dos Instrutores · Admin' };
 
@@ -8,13 +9,7 @@ export default function Page() {
     <>
 
         <div className="">
-          <Link href={'/admin' as any} className="text-sm text-brand-600 hover:underline">← Cockpit</Link>
-          <div className="mt-2 mb-6 flex items-start justify-between gap-3 flex-wrap">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">🤖 AI Features dos Instrutores</h1>
-              <p className="text-sm text-slate-500 mt-1">Activa funcionalidades AI para cada instrutor aprovado. Por defeito, ninguém tem acesso.</p>
-            </div>
-          </div>
+          <AdminPageHeader backHref="/admin" emoji="🤖" title="AI Features dos Instrutores" description="Activa funcionalidades AI para cada instrutor aprovado. Por defeito, ninguém tem acesso." />
           <AIFeaturesList />
         </div>
       
