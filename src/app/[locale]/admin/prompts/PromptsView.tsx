@@ -1,4 +1,5 @@
 'use client';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
 import { useEffect, useState, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
@@ -66,14 +67,13 @@ export function PromptsView() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-      <Link href={'/admin' as any} className="text-sm text-brand-600 hover:underline">{t('prompts_admin.back')}</Link>
-      <div className="mt-3 flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">{t('prompts_admin.title')}</h1>
-          <p className="text-sm text-slate-500 mt-1">{t('prompts_admin.subtitle')}</p>
-        </div>
-        <button onClick={load} className="text-sm bg-white border border-slate-200 hover:border-slate-300 px-3 py-2 rounded-lg">{t('prompts_admin.reload')}</button>
-      </div>
+      <AdminPageHeader
+        backHref="/admin"
+        emoji="📝"
+        title={t('prompts_admin.title')}
+        description={t('prompts_admin.subtitle')}
+        actions={<button onClick={load} className="text-sm bg-white border border-slate-200 hover:border-slate-300 px-3 py-2 rounded-lg">{t('prompts_admin.reload')}</button>}
+      />
 
       {loading ? (
         <div className="mt-8 text-center text-slate-400 py-10">{t('prompts_admin.loading')}</div>
