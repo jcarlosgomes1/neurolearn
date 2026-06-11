@@ -15,7 +15,7 @@ interface Props {
 }
 
 export function AdminPageHeader({ title, subtitle, emoji, icon, backHref = '/admin', actions }: Props) {
-  const t = useTranslations();
+  const t = useTranslations() as unknown as (k: string) => string;
   let back = 'Voltar';
   try { const v = t('shell.back'); if (v && v !== 'shell.back') back = v; } catch {}
   return (
