@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { assertNotPeek } from '@/lib/peek';
 import { revalidatePath } from 'next/cache';
 
 // ============ NOTIFICAÇÕES ============
@@ -25,6 +26,7 @@ export async function getUnreadCountAction() {
 
 export async function markNotificationReadAction(notificationId?: string) {
   try {
+    await assertNotPeek();
     const sb = await createClient();
     const { error } = await sb.rpc('nl_notifications_mark_read', { p_notification_id: notificationId || null });
     if (error) return { ok: false, error: error.message };
@@ -35,6 +37,7 @@ export async function markNotificationReadAction(notificationId?: string) {
 
 export async function deleteNotificationAction(notificationId: string) {
   try {
+    await assertNotPeek();
     const sb = await createClient();
     const { error } = await sb.rpc('nl_notifications_delete', { p_notification_id: notificationId });
     if (error) return { ok: false, error: error.message };
@@ -46,6 +49,7 @@ export async function deleteNotificationAction(notificationId: string) {
 
 export async function requestDataExportAction() {
   try {
+    await assertNotPeek();
     const sb = await createClient();
     const { data, error } = await sb.rpc('nl_gdpr_request_export');
     if (error) return { ok: false, error: error.message };
@@ -58,6 +62,7 @@ export async function requestDataExportAction() {
 
 export async function requestAccountDeletionAction(reason?: string) {
   try {
+    await assertNotPeek();
     const sb = await createClient();
     const { data, error } = await sb.rpc('nl_gdpr_request_deletion', { p_reason: reason || null });
     if (error) return { ok: false, error: error.message };
@@ -70,6 +75,7 @@ export async function requestAccountDeletionAction(reason?: string) {
 
 export async function cancelAccountDeletionAction() {
   try {
+    await assertNotPeek();
     const sb = await createClient();
     const { data, error } = await sb.rpc('nl_gdpr_cancel_deletion');
     if (error) return { ok: false, error: error.message };
@@ -91,6 +97,7 @@ export async function getGdprRequestsAction() {
 
 export async function changePasswordAction(newPassword: string) {
   try {
+    await assertNotPeek();
     if (!newPassword || newPassword.length < 8) return { ok: false, error: 'A password tem de ter pelo menos 8 caracteres' };
     const sb = await createClient();
     const { error } = await sb.auth.updateUser({ password: newPassword });
