@@ -6,7 +6,8 @@ import { callAgentOps } from '@/lib/api/client';
 import { DashboardSkeleton } from '@/components/shared/DashboardSkeleton';
 import { fmtCents, relTime } from '@/lib/utils/cn';
 import { useTranslations } from 'next-intl';
-import { ArrowLeft, Loader2, Search, Filter, ChevronRight, AlertCircle, Database } from 'lucide-react';
+import { Loader2, Search, Filter, ChevronRight, AlertCircle, Database } from 'lucide-react';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
 interface Column { key: string; label: string; primary?: boolean; kind?: 'cents' | 'rating' | 'badge' | 'reltime' }
 
@@ -128,33 +129,22 @@ export function AdminList({
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
-      {/* Header */}
-      <Link href={backHref as any}
-        className="group inline-flex items-center gap-1.5 mb-5 text-sm text-slate-500 hover:text-slate-900 font-medium">
-        <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
-        {safeT('acom.back_cockpit', 'Cockpit')}
-      </Link>
-      <header className="mb-6 flex items-start justify-between gap-4 flex-wrap">
-        <div className="min-w-0 flex-1">
-          {eyebrow && (
-            <div className="flex items-center gap-2 text-violet-600 text-xs font-semibold uppercase tracking-wider mb-1">
-              <Icon className="h-3.5 w-3.5" /> {eyebrow}
+      <AdminPageHeader
+        backHref={backHref}
+        icon={Icon}
+        eyebrow={eyebrow}
+        title={title}
+        description={description}
+        actions={
+          <div className={`inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-br ${accentGradient} text-white rounded-xl shadow-sm`}>
+            <Icon className="h-4 w-4" />
+            <div>
+              <div className="text-2xl font-bold leading-none">{(filtered ?? rows).length}</div>
+              <div className="text-[10px] uppercase tracking-wider opacity-80">{safeT('acom.records', 'registos')}</div>
             </div>
-          )}
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{title}</h1>
-          {description && (
-            <p className="text-sm text-slate-600 mt-1.5 max-w-2xl leading-relaxed">{description}</p>
-          )}
-        </div>
-        {/* Count badge */}
-        <div className={`flex-shrink-0 inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-br ${accentGradient} text-white rounded-xl shadow-sm`}>
-          <Icon className="h-4 w-4" />
-          <div>
-            <div className="text-2xl font-bold leading-none">{(filtered ?? rows).length}</div>
-            <div className="text-[10px] uppercase tracking-wider opacity-80">{safeT('acom.records', 'registos')}</div>
           </div>
-        </div>
-      </header>
+        }
+      />
 
       {/* Search bar */}
       {rows.length > 0 && (
