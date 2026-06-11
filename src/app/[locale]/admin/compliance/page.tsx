@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
-import { ShieldAlert } from 'lucide-react';
 import { ComplianceClient } from './ComplianceClient';
 
 export const dynamic = 'force-dynamic';
@@ -26,15 +26,13 @@ export default async function CompliancePage() {
 
   return (
     <div className="">
-      <header className="mb-8">
-        <div className="flex items-center gap-2 text-rose-600 text-xs font-semibold uppercase tracking-wider mb-1">
-          <ShieldAlert className="h-3.5 w-3.5" /> {safeT('admin.compliance.eyebrow', 'Admin · Compliance')}
-        </div>
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{safeT('admin.compliance.title', 'Issues de compliance')}</h1>
-        <p className="text-sm text-slate-600 mt-1.5 max-w-3xl leading-relaxed">
-          {safeT('admin.compliance.description', 'GDPR, segurança, privacidade e outras questões detectadas automaticamente ou manualmente.')}
-        </p>
-      </header>
+      <AdminPageHeader
+        backHref="/admin"
+        emoji="🛡️"
+        eyebrow={safeT('admin.compliance.eyebrow', 'Admin · Compliance')}
+        title={safeT('admin.compliance.title', 'Issues de compliance')}
+        description={safeT('admin.compliance.description', 'GDPR, segurança, privacidade e outras questões detectadas automaticamente ou manualmente.')}
+      />
       <ComplianceClient
         initialIssues={Array.isArray(issues) ? issues : []}
         summary={Array.isArray(summary) ? summary : []}
