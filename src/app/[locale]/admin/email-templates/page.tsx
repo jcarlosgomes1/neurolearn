@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { EmailTemplatesClient } from './EmailTemplatesClient';
-import { Mail } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,15 +10,15 @@ export default async function AdminEmailTemplatesPage() {
 
   return (
     <div className="">
-      <div className="mb-8">
-        <div className="flex items-center gap-2 text-blue-600 text-xs font-semibold uppercase tracking-wider mb-1">
-          <Mail className="h-3.5 w-3.5" /> Comunicação
-        </div>
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Templates de email</h1>
-        <p className="text-sm text-slate-600 mt-1.5 max-w-2xl">
-          Personaliza os emails transacionais por idioma. Suporta variáveis no formato <code className="text-xs bg-slate-100 px-1 py-0.5 rounded font-mono">{`{{nome_variavel}}`}</code>.
-        </p>
-      </div>
+      <AdminPageHeader
+        backHref="/admin"
+        emoji="✉️"
+        eyebrow="Comunicação"
+        title="Templates de email"
+      />
+      <p className="text-sm text-slate-600 mt-1.5 max-w-2xl">
+        Personaliza os emails transacionais por idioma. Suporta variáveis no formato <code className="text-xs bg-slate-100 px-1 py-0.5 rounded font-mono">{`{{nome_variavel}}`}</code>.
+      </p>
 
       <EmailTemplatesClient templates={Array.isArray(templates) ? templates : []} />
     </div>

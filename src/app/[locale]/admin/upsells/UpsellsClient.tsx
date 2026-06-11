@@ -1,4 +1,5 @@
 'use client';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
 import { useState, useTransition } from 'react';
 import { detectUpsellSignalsAction, listUpsellSignalsAction, actUpsellSignalAction } from '../revenue/actions';
@@ -32,22 +33,24 @@ export function UpsellsClient({ initial }: { initial: any[] }) {
 
   return (
     <div className="px-4 sm:px-6 py-6 max-w-5xl mx-auto">
-      <div className="flex items-start justify-between gap-3 flex-wrap mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2"><Sparkles className="h-6 w-6 text-violet-600" /> Upsell Signals</h1>
-          <p className="text-sm text-slate-500 mt-1">Empresas detectadas com 3+ users B2C — candidatos para plano B2B.</p>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={toggleView} className="px-3 py-1.5 text-xs font-medium bg-white border border-slate-200 rounded-lg hover:bg-slate-50">
-            {showActed ? 'Ver pendentes' : 'Ver tratados'}
-          </button>
-          <button onClick={detect} disabled={pending}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold rounded-lg disabled:opacity-50">
-            {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
-            Detectar agora
-          </button>
-        </div>
-      </div>
+      <AdminPageHeader
+        backHref="/admin"
+        emoji="✨"
+        title="Upsell Signals"
+        description="Empresas detectadas com 3+ users B2C — candidatos para plano B2B."
+        actions={
+          <div className="flex gap-2">
+            <button onClick={toggleView} className="px-3 py-1.5 text-xs font-medium bg-white border border-slate-200 rounded-lg hover:bg-slate-50">
+              {showActed ? 'Ver pendentes' : 'Ver tratados'}
+            </button>
+            <button onClick={detect} disabled={pending}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold rounded-lg disabled:opacity-50">
+              {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+              Detectar agora
+            </button>
+          </div>
+        }
+      />
 
       {signals.length === 0 ? (
         <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
