@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
+import { assertNotPeekClient } from '@/lib/peek-client';
 import { toast } from 'sonner';
 import { Calendar, Link2, Clock, Plus, Trash2, Copy, ExternalLink, Save, Check } from 'lucide-react';
 
@@ -92,6 +93,7 @@ export function SchedulingDashboard({ initial }: { initial: Dashboard | null }) 
   async function disconnectGoogle() {
     if (!confirm(t('sched.confirm.disconnect_gcal'))) return;
     const sb = createClient();
+    assertNotPeekClient();
     await sb.rpc('nl_scheduling_oauth_disconnect', { p_provider: 'google' });
     setGcal({ connected: false });
     toast.success(t('sched.toast.disconnected'));
@@ -113,6 +115,7 @@ export function SchedulingDashboard({ initial }: { initial: Dashboard | null }) 
     setSavingCal(true);
     try {
       const sb = createClient();
+      assertNotPeekClient();
       const { error } = await sb.rpc('nl_scheduling_update_calendar', {
         p_timezone: cal!.timezone, p_weekly_availability: cal!.weekly_availability,
         p_buffer_minutes: cal!.buffer_minutes, p_min_notice_hours: cal!.min_notice_hours,
@@ -137,6 +140,7 @@ export function SchedulingDashboard({ initial }: { initial: Dashboard | null }) 
     setSavingLink(true);
     try {
       const sb = createClient();
+      assertNotPeekClient();
       const { data: res, error } = await sb.rpc('nl_scheduling_upsert_link', {
         p_id: editingLink.id || null,
         p_slug: editingLink.slug || (editingLink.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || `link-${Date.now()}`,
@@ -152,12 +156,14 @@ export function SchedulingDashboard({ initial }: { initial: Dashboard | null }) 
   async function deleteLink(id: string) {
     if (!confirm(t('sched.confirm.delete'))) return;
     const sb = createClient();
+    assertNotPeekClient();
     await sb.rpc('nl_scheduling_delete_link', { p_id: id });
     toast.success(t('sched.toast.deleted')); await refresh();
   }
   async function cancelBooking(id: string) {
     if (!confirm(t('sched.confirm.cancel'))) return;
     const sb = createClient();
+    assertNotPeekClient();
     await sb.rpc('nl_scheduling_cancel_booking', { p_booking_id: id, p_reason: 'cancelled_by_host' });
     toast.success(t('sched.toast.cancelled')); await refresh();
   }

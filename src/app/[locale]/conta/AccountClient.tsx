@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
+import { assertNotPeekClient } from '@/lib/peek-client';
 import { toast } from 'sonner';
 import { COUNTRIES, countryName } from '@/lib/utils/countries';
 import { User, Settings, CreditCard, Save } from 'lucide-react';
@@ -56,6 +57,7 @@ export function AccountClient({ initialData, initialLocale }: Props) {
     setSaving(true);
     try {
       const sb = createClient();
+      assertNotPeekClient();
       const { error } = await sb.rpc('nl_update_my_profile', {
         p_name: name || null,
         p_preferred_lang: prefLang || null,
