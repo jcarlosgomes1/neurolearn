@@ -84,7 +84,7 @@ export default function FooterClient({ data, platform, solutions, company, legal
 
           {legal.length > 0 && (
             <div>
-              <h3 className="text-white font-semibold text-sm mb-3">Legal</h3>
+              <h3 className="text-white font-semibold text-sm mb-3">{t('footer.legal')}</h3>
               <ul className="space-y-2 text-sm">{legal.map(renderItem)}</ul>
             </div>
           )}
