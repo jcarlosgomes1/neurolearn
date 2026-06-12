@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 import { Link } from '@/i18n/routing';
 import { toast } from 'sonner';
-import { Users, UserPlus, Trash2, Building2, Crown, Shield, FileText, Sparkles, Settings, Briefcase, Inbox, BookOpen, GraduationCap } from 'lucide-react';
+import { Users, UserPlus, Trash2, Building2, Crown, Shield, FileText, Sparkles, Settings, Briefcase, Inbox, BookOpen, GraduationCap, Route } from 'lucide-react';
 
 type Member = { user_id: string; role: string; joined_at: string; name?: string | null; avatar_url?: string | null };
 type Invite = { id: string; email: string; role: string; invited_at: string; expires_at: string };
@@ -104,6 +104,11 @@ export function OrgDashboard({ data }: { data: any }) {
           className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 text-sm font-medium transition-colors">
           <Users className="h-4 w-4" /> {t('org.dash.nav_talent')}
           <span className="text-xs bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-semibold">{t('org.dash.badge_new')}</span>
+        </Link>
+        <Link href={`/empresa/${org.slug}/percursos` as any}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-slate-200 hover:border-violet-300 hover:bg-violet-50 text-slate-700 hover:text-violet-700 text-sm font-medium transition-colors">
+          <Route className="h-4 w-4" /> {t('org.dash.nav_paths')}
+          <span className="text-xs bg-violet-100 text-violet-700 px-1.5 py-0.5 rounded font-semibold">{t('org.dash.badge_new')}</span>
         </Link>
         {org.is_admin && (
           <Link href={`/empresa/${org.slug}/admin` as any}
