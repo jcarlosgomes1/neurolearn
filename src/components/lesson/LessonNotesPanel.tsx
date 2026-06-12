@@ -3,6 +3,7 @@
 import { useState, useEffect, useTransition } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { StickyNote, Plus, Trash2, X, Highlighter, Loader2 } from 'lucide-react';
+import { assertNotPeekClient } from '@/lib/peek-client';
 
 export function LessonNotesPanel({ courseId, moduleIndex, lessonIndex, collapsed: defaultCollapsed = true }: {
   courseId: string; moduleIndex: number; lessonIndex: number; collapsed?: boolean;
@@ -12,6 +13,8 @@ export function LessonNotesPanel({ courseId, moduleIndex, lessonIndex, collapsed
   const [notes, setNotes] = useState<any[]>([]);
   const [highlights, setHighlights] = useState<any[]>([]);
   const [newNote, setNewNote] = useState('');
+  const [newHl, setNewHl] = useState('');
+  const [hlColor, setHlColor] = useState('yellow');
   const [pending, startTransition] = useTransition();
   const sb = createClient();
 
@@ -39,6 +42,16 @@ export function LessonNotesPanel({ courseId, moduleIndex, lessonIndex, collapsed
   }
   function delHl(id: string) {
     startTransition(async () => { await sb.rpc('nl_lesson_highlight_delete', { p_id: id }); reload(); });
+  }
+  function addHl() {
+    const txt = newHl.trim();
+    if (!txt) return;
+    setNewHl('');
+    startTransition(async () => {
+      try { assertNotPeekClient(); } catch { return; }
+      await sb.rpc('nl_lesson_highlight_create', { p_course_id: courseId, p_module: moduleIndex, p_lesson: lessonIndex, p_text: txt, p_color: hlColor });
+      reload();
+    });
   }
 
   if (collapsed) {
@@ -118,6 +131,26 @@ export function LessonNotesPanel({ courseId, moduleIndex, lessonIndex, collapsed
             placeholder="Nova nota…"
             className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm" />
           <button onClick={addNote} disabled={pending || !newNote.trim()}
+            className="px-3 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg disabled:opacity-50">
+            {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+          </button>
+        </div>
+      )}
+      {tab === 'highlights' && (
+        <div className="border-t border-slate-200 p-2 flex gap-1 items-center">
+          <input type="text" value={newHl} onChange={(e) => setNewHl(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && !pending && addHl()}
+            placeholder="Destacar texto…"
+            className="flex-1 min-w-0 px-3 py-2 border border-slate-200 rounded-lg text-sm" />
+          <select value={hlColor} onChange={(e) => setHlColor(e.target.value)}
+            className="px-1.5 py-2 border border-slate-200 rounded-lg text-xs bg-white" aria-label="Cor">
+            <option value="yellow">🟡</option>
+            <option value="green">🟢</option>
+            <option value="blue">🔵</option>
+            <option value="pink">🩷</option>
+            <option value="purple">🟣</option>
+          </select>
+          <button onClick={addHl} disabled={pending || !newHl.trim()}
             className="px-3 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg disabled:opacity-50">
             {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
           </button>
