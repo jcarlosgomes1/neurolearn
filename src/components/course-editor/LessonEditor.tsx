@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { SUPABASE_URL } from '@/lib/supabase/config';
 import { createClient } from '@/lib/supabase/client';
+import { assertNotPeekClient } from '@/lib/peek-client';
 import { toast } from 'sonner';
 import { useAIFeatures } from '@/lib/hooks/useAIFeatures';
 import type { Lesson } from './ModulesEditor';
@@ -40,6 +41,7 @@ export function LessonEditor({ course, moduleName, lesson, lessonIndex, totalLes
     try {
       const sb = createClient();
       const { data: { session } } = await sb.auth.getSession();
+      assertNotPeekClient();
       const res = await fetch(`${SUPABASE_URL}/functions/v1/generate-lesson`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}) },

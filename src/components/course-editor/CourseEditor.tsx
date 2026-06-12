@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link, useRouter } from '@/i18n/routing';
 import { callAgentOps } from '@/lib/api/client';
+import { assertNotPeekClient } from '@/lib/peek-client';
 import { DashboardSkeleton } from '@/components/shared/DashboardSkeleton';
 import { fmtCents } from '@/lib/utils/cn';
 import { toast } from 'sonner';
@@ -60,6 +61,7 @@ export function CourseEditor({ courseId, backHref, mode = 'instructor' }: Props)
     if (!course) return;
     setSaving(true);
     try {
+      assertNotPeekClient();
       await callAgentOps(UPDATE_ACTION, {
         course_id: course.id, title: course.title, subtitle: course.subtitle, description: course.description,
         emoji: course.emoji, level: course.level, category: course.category, price_cents: course.price_cents,
@@ -75,6 +77,7 @@ export function CourseEditor({ courseId, backHref, mode = 'instructor' }: Props)
     if (dirty) { toast.error(t('save_first')); return; }
     if (!confirm(t('confirm_submit'))) return;
     try {
+      assertNotPeekClient();
       await callAgentOps('teach_submit_course_for_review', { course_id: course.id });
       toast.success(t('submitted'));
       router.push(backHref as any);
@@ -85,6 +88,7 @@ export function CourseEditor({ courseId, backHref, mode = 'instructor' }: Props)
     if (!course) return;
     if (!confirm(course.published ? t('confirm_unpublish') : t('confirm_publish'))) return;
     try {
+      assertNotPeekClient();
       await callAgentOps('admin_update_course', { course_id: course.id, published: !course.published });
       toast.success(course.published ? t('unpublished') : t('published_toast'));
       setCourse((c) => c ? { ...c, published: !c.published } : c);
