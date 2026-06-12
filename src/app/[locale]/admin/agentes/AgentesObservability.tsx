@@ -6,9 +6,11 @@ import { Link } from '@/i18n/routing';
 import { createClient } from '@/lib/supabase/client';
 import { useTranslations } from 'next-intl';
 import { relTime } from '@/lib/utils/cn';
+import { toast } from 'sonner';
 
 interface AiCall { id: number; operation: string; model: string; input_tokens: number; output_tokens: number; cost_cents: number | null; duration_ms: number; status: string; error_message: string | null; resource_type: string | null; resource_id: string | null; created_at: string }
 interface Job { id: string; job_type: string; status: string; progress_pct: number | null; progress_message: string | null; error_message: string | null; created_at: string; started_at: string | null; completed_at: string | null; retries: number; max_retries: number; payload: Record<string, unknown> | null }
+interface Approval { id: string; action: string; reason: string | null; params: Record<string, unknown> | null; created_at: string; expires_at: string | null }
 interface OpStat { operation: string; calls: number; success: number; errors: number; total_cents: number; avg_ms: number }
 
 export function AgentesObservability() {
@@ -18,17 +20,21 @@ export function AgentesObservability() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [period, setPeriod] = useState<'1h' | '24h' | '7d'>('24h');
   const [loading, setLoading] = useState(true);
+  const [approvals, setApprovals] = useState<Approval[]>([]);
+  const [busyId, setBusyId] = useState<string | null>(null);
 
   async function load() {
     setLoading(true);
     const periodMs = period === '1h' ? 3600_000 : period === '24h' ? 86400_000 : 604800_000;
     const since = new Date(Date.now() - periodMs).toISOString();
-    const [{ data: c }, { data: j }] = await Promise.all([
+    const [{ data: c }, { data: j }, { data: ap }] = await Promise.all([
       supabase.from('nl_ai_calls').select('*').gte('created_at', since).order('created_at', { ascending: false }).limit(200),
       supabase.from('nl_agent_jobs').select('id, job_type, status, progress_pct, progress_message, error_message, created_at, started_at, completed_at, retries, max_retries, payload').gte('created_at', since).order('created_at', { ascending: false }).limit(100),
+      supabase.from('nl_agent_approvals').select('id, action, reason, params, created_at, expires_at').eq('status', 'pending').order('created_at', { ascending: true }),
     ]);
     setCalls((c as AiCall[]) || []);
     setJobs((j as Job[]) || []);
+    setApprovals((ap as Approval[]) || []);
     setLoading(false);
   }
   useEffect(() => { load(); }, [period]);
@@ -60,6 +66,17 @@ export function AgentesObservability() {
 
   const recentFailures = useMemo(() => jobs.filter(j => j.status === 'failed').slice(0, 10), [jobs]);
   const activeJobs = useMemo(() => jobs.filter(j => ['running', 'pending'].includes(j.status)).slice(0, 10), [jobs]);
+
+  async function decide(id: string, approve: boolean) {
+    setBusyId(id);
+    try {
+      const { data, error } = await supabase.rpc('nl_admin_agent_approval_decide', { p_id: id, p_approve: approve });
+      if (error || !(data as { ok: boolean }).ok) throw new Error();
+      toast.success(approve ? 'Aprovado' : 'Rejeitado');
+      setApprovals((xs) => xs.filter((x) => x.id !== id));
+    } catch { toast.error('Falhou. Tenta novamente.'); }
+    finally { setBusyId(null); }
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
@@ -103,6 +120,30 @@ export function AgentesObservability() {
               <div className="text-2xl font-bold text-brand-600 mt-1 tabular-nums">{jobsByStatus.running + jobsByStatus.pending}</div>
             </div>
           </div>
+
+          {/* Aprovacoes pendentes — humano-no-loop */}
+          <section className="bg-white border border-amber-200 rounded-xl p-4 sm:p-5">
+            <h2 className="font-semibold text-slate-900 mb-1 text-sm flex items-center gap-2">🔐 Aprovações pendentes</h2>
+            <p className="text-xs text-slate-500 mb-3">Decisões que os agentes pedem antes de agir.</p>
+            {approvals.length === 0 ? (
+              <p className="text-sm text-slate-400">Nada a aprovar — os agentes estão a operar dentro das permissões.</p>
+            ) : (
+              <ul className="space-y-2">
+                {approvals.map((a) => (
+                  <li key={a.id} className="flex items-start gap-3 py-2 border-b border-slate-50 last:border-0">
+                    <div className="min-w-0 flex-1">
+                      <div className="font-mono text-xs text-slate-900">{a.action}</div>
+                      {a.reason && <div className="text-[11px] text-slate-500 mt-0.5 line-clamp-2">{a.reason}</div>}
+                    </div>
+                    <button onClick={() => decide(a.id, true)} disabled={busyId === a.id}
+                      className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50">Aprovar</button>
+                    <button onClick={() => decide(a.id, false)} disabled={busyId === a.id}
+                      className="text-xs font-medium px-2.5 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-rose-50 hover:text-rose-600 disabled:opacity-50">Rejeitar</button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
 
           {/* Operations breakdown */}
           <section className="bg-white border border-slate-200 rounded-xl p-4 sm:p-5">
