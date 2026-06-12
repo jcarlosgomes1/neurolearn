@@ -4,15 +4,16 @@ import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { assertNotPeekClient } from '@/lib/peek-client';
 import { toast } from 'sonner';
-import { Loader2, ChevronDown, Gauge, Check } from 'lucide-react';
+import { Loader2, ChevronDown, Gauge, Check, Sparkles } from 'lucide-react';
 
 interface Course { id: string; title: string; emoji?: string | null }
 interface Curation { ok: boolean; score: number; curated: boolean; total_lessons: number; lessons_with_questions: number; questions_total: number; questions_with_effort: number; coverage_pct: number; effort_pct: number }
+interface Engagement { ok: boolean; total?: number; accepted?: number; edited?: number; authored?: number; edit_rate?: number | null }
 interface Gov {
   ok: boolean; id: string; title: string; emoji?: string | null; instructor?: string | null;
   approval_status?: string | null; currency: string;
   price_cents?: number | null; proposed_price_cents?: number | null; price_status?: string | null; price_decision_note?: string | null;
-  curation: Curation;
+  curation: Curation; engagement?: Engagement;
 }
 
 export function GovernanceClient() {
@@ -90,6 +91,9 @@ export function GovernanceClient() {
   const cur = gov?.curation;
   const score = cur?.ok ? cur.score : 0;
   const sc = score >= 67 ? { text: 'text-emerald-600', bar: 'bg-emerald-500' } : score >= 34 ? { text: 'text-amber-600', bar: 'bg-amber-500' } : { text: 'text-rose-600', bar: 'bg-rose-500' };
+  const eng = gov?.engagement;
+  const engOk = eng?.ok && (eng?.total ?? 0) > 0;
+  const editRatePct = eng?.edit_rate !== null && eng?.edit_rate !== undefined ? Math.round(eng.edit_rate * 100) : null;
 
   return (
     <div>
@@ -107,52 +111,80 @@ export function GovernanceClient() {
       {loadingGov || !gov ? (
         <div className="flex items-center justify-center py-12 text-slate-400"><Loader2 className="w-5 h-5 animate-spin" /></div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="rounded-2xl border border-slate-200 bg-white p-5">
-            <div className="flex items-center gap-2 mb-3 text-slate-500"><Gauge className="w-4 h-4" /><span className="text-xs font-medium uppercase tracking-wide">Curadoria</span></div>
-            <div className="flex items-end gap-2">
-              <span className={'text-4xl font-bold ' + sc.text}>{score}</span>
-              <span className="text-sm text-slate-400 mb-1">/ 100</span>
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="rounded-2xl border border-slate-200 bg-white p-5">
+              <div className="flex items-center gap-2 mb-3 text-slate-500"><Gauge className="w-4 h-4" /><span className="text-xs font-medium uppercase tracking-wide">Curadoria</span></div>
+              <div className="flex items-end gap-2">
+                <span className={'text-4xl font-bold ' + sc.text}>{score}</span>
+                <span className="text-sm text-slate-400 mb-1">/ 100</span>
+              </div>
+              <div className="mt-3 h-2 rounded-full bg-slate-100 overflow-hidden">
+                <div className={'h-full ' + sc.bar} style={{ width: Math.min(score, 100) + '%' }} />
+              </div>
+              {cur?.ok ? (
+                <ul className="mt-4 space-y-1.5 text-xs text-slate-500">
+                  <li>Cobertura de perguntas: <span className="font-medium text-slate-700">{cur.coverage_pct}%</span> ({cur.lessons_with_questions}/{cur.total_lessons} aulas)</li>
+                  <li>Esforço do instrutor (próprias/editadas): <span className="font-medium text-slate-700">{cur.effort_pct}%</span> ({cur.questions_with_effort}/{cur.questions_total})</li>
+                </ul>
+              ) : null}
+              <p className="mt-3 text-[11px] text-slate-400">A curadoria informa a aprovação e a avaliação do preço.</p>
             </div>
-            <div className="mt-3 h-2 rounded-full bg-slate-100 overflow-hidden">
-              <div className={'h-full ' + sc.bar} style={{ width: Math.min(score, 100) + '%' }} />
-            </div>
-            {cur?.ok ? (
-              <ul className="mt-4 space-y-1.5 text-xs text-slate-500">
-                <li>Cobertura de perguntas: <span className="font-medium text-slate-700">{cur.coverage_pct}%</span> ({cur.lessons_with_questions}/{cur.total_lessons} aulas)</li>
-                <li>Esforço do instrutor (próprias/editadas): <span className="font-medium text-slate-700">{cur.effort_pct}%</span> ({cur.questions_with_effort}/{cur.questions_total})</li>
-              </ul>
-            ) : null}
-            <p className="mt-3 text-[11px] text-slate-400">A curadoria informa a aprovação e a avaliação do preço.</p>
-          </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-5">
-            <div className="flex items-center gap-2 mb-3 text-slate-500"><span className="text-xs font-medium uppercase tracking-wide">Preço</span></div>
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center justify-between"><span className="text-slate-500">Proposto pelo instrutor</span><span className="font-semibold text-slate-900">{money(gov.proposed_price_cents, gov.currency)}</span></div>
-              <div className="flex items-center justify-between"><span className="text-slate-500">Atual / final</span><span className="font-semibold text-slate-900">{money(gov.price_cents, gov.currency)}</span></div>
-              <div className="flex items-center justify-between"><span className="text-slate-500">Estado</span>
-                <span className={gov.price_status === 'approved' ? 'inline-flex rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-medium px-2.5 py-1' : gov.price_status === 'overridden' ? 'inline-flex rounded-full bg-amber-50 text-amber-700 text-[11px] font-medium px-2.5 py-1' : 'inline-flex rounded-full bg-slate-100 text-slate-600 text-[11px] font-medium px-2.5 py-1'}>{gov.price_status || 'proposto'}</span>
+            <div className="rounded-2xl border border-slate-200 bg-white p-5">
+              <div className="flex items-center gap-2 mb-3 text-slate-500"><span className="text-xs font-medium uppercase tracking-wide">Preço</span></div>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center justify-between"><span className="text-slate-500">Proposto pelo instrutor</span><span className="font-semibold text-slate-900">{money(gov.proposed_price_cents, gov.currency)}</span></div>
+                <div className="flex items-center justify-between"><span className="text-slate-500">Atual / final</span><span className="font-semibold text-slate-900">{money(gov.price_cents, gov.currency)}</span></div>
+                <div className="flex items-center justify-between"><span className="text-slate-500">Estado</span>
+                  <span className={gov.price_status === 'approved' ? 'inline-flex rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-medium px-2.5 py-1' : gov.price_status === 'overridden' ? 'inline-flex rounded-full bg-amber-50 text-amber-700 text-[11px] font-medium px-2.5 py-1' : 'inline-flex rounded-full bg-slate-100 text-slate-600 text-[11px] font-medium px-2.5 py-1'}>{gov.price_status || 'proposto'}</span>
+                </div>
+              </div>
+              <div className="mt-4 border-t border-slate-100 pt-4">
+                <label className="block text-xs font-medium text-slate-500 mb-1">Preço final ({gov.currency})</label>
+                <input type="number" min={0} step="0.01" value={priceInput} onChange={(e) => setPriceInput(e.target.value)}
+                  className="w-full rounded-lg border border-slate-200 p-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-200" />
+                {isOverride ? (
+                  <div className="mt-2">
+                    <label className="block text-xs font-medium text-amber-600 mb-1">Justificação (obrigatória — difere do proposto)</label>
+                    <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2}
+                      className="w-full rounded-lg border border-amber-200 p-2 text-sm bg-amber-50/40 focus:outline-none focus:ring-2 focus:ring-amber-200 resize-none" />
+                  </div>
+                ) : null}
+                <button onClick={decide} disabled={saving || !priceInput || (isOverride && !note.trim())}
+                  className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-slate-900 text-white text-sm font-medium px-4 py-2 disabled:opacity-50 hover:bg-slate-800">
+                  {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                  {isOverride ? 'Decidir (override)' : 'Aprovar preço'}
+                </button>
+                {gov.price_decision_note ? <p className="mt-2 text-[11px] text-slate-400">Última nota: {gov.price_decision_note}</p> : null}
               </div>
             </div>
-            <div className="mt-4 border-t border-slate-100 pt-4">
-              <label className="block text-xs font-medium text-slate-500 mb-1">Preço final ({gov.currency})</label>
-              <input type="number" min={0} step="0.01" value={priceInput} onChange={(e) => setPriceInput(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 p-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-200" />
-              {isOverride ? (
-                <div className="mt-2">
-                  <label className="block text-xs font-medium text-amber-600 mb-1">Justificação (obrigatória — difere do proposto)</label>
-                  <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2}
-                    className="w-full rounded-lg border border-amber-200 p-2 text-sm bg-amber-50/40 focus:outline-none focus:ring-2 focus:ring-amber-200 resize-none" />
+          </div>
+
+          <div className="rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50 to-violet-50 p-5">
+            <div className="flex items-center gap-2 mb-3 text-indigo-600"><Sparkles className="w-4 h-4" /><span className="text-xs font-medium uppercase tracking-wide">Empenho do instrutor</span></div>
+            {engOk ? (
+              <>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="rounded-xl bg-white/70 p-3 text-center">
+                    <div className="text-2xl font-bold text-indigo-700">{eng?.authored ?? 0}</div>
+                    <div className="text-[11px] text-slate-500 mt-0.5">Conteúdo próprio</div>
+                  </div>
+                  <div className="rounded-xl bg-white/70 p-3 text-center">
+                    <div className="text-2xl font-bold text-violet-700">{eng?.edited ?? 0}</div>
+                    <div className="text-[11px] text-slate-500 mt-0.5">IA editada</div>
+                  </div>
+                  <div className="rounded-xl bg-white/70 p-3 text-center">
+                    <div className="text-2xl font-bold text-slate-500">{eng?.accepted ?? 0}</div>
+                    <div className="text-[11px] text-slate-500 mt-0.5">IA aceite</div>
+                  </div>
                 </div>
-              ) : null}
-              <button onClick={decide} disabled={saving || !priceInput || (isOverride && !note.trim())}
-                className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-slate-900 text-white text-sm font-medium px-4 py-2 disabled:opacity-50 hover:bg-slate-800">
-                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-                {isOverride ? 'Decidir (override)' : 'Aprovar preço'}
-              </button>
-              {gov.price_decision_note ? <p className="mt-2 text-[11px] text-slate-400">Última nota: {gov.price_decision_note}</p> : null}
-            </div>
+                {editRatePct !== null ? <p className="mt-3 text-xs text-indigo-900">Taxa de edição/contributo sobre a IA: <span className="font-semibold">{editRatePct}%</span></p> : null}
+              </>
+            ) : (
+              <p className="text-sm text-indigo-900/70">Ainda sem sinais de empenho registados para este instrutor.</p>
+            )}
+            <p className="mt-3 text-[11px] text-indigo-900/60">Indicador motivacional (não punitivo): mais conteúdo próprio e editado = mais valor acrescentado. Considerado na curadoria e no preço.</p>
           </div>
         </div>
       )}
