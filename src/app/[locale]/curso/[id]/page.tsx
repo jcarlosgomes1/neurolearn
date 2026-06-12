@@ -77,6 +77,8 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
   const blocks = await getHomeBlocks(locale);
   const modules = Array.isArray(course.modules) ? course.modules : [];
   const topics = Array.isArray(course.topics) ? course.topics : [];
+  const { data: pathsData } = await sb.rpc('nl_course_learning_paths', { p_course_id: id });
+  const coursePaths = ((pathsData as { paths?: any[] })?.paths) || [];
 
   return (
     <>
@@ -142,6 +144,24 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
 
         <section className="max-w-6xl mx-auto px-4 py-12 grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-10">
+            {coursePaths.length > 0 && (
+              <div className="bg-gradient-to-br from-violet-50 to-fuchsia-50 border border-violet-100 rounded-2xl p-5">
+                <h2 className="text-sm font-bold uppercase tracking-widest text-violet-700 mb-1 flex items-center gap-2"><BookOpen className="h-4 w-4" /> {t('cdp.in_paths_h')}</h2>
+                <p className="text-sm text-slate-600 mb-4">{t('cdp.in_paths_sub')}</p>
+                <div className="flex flex-col gap-2">
+                  {coursePaths.map((p: any) => (
+                    <Link key={p.id} href={`/aprender/percursos/${p.slug}` as any} className="group flex items-center gap-3 bg-white rounded-xl border border-violet-100 px-4 py-3 hover:border-violet-300 hover:shadow-sm transition-all">
+                      <span className="text-2xl">{p.emoji || '\u{1F393}'}</span>
+                      <div className="min-w-0 flex-1">
+                        <div className="font-semibold text-slate-900 group-hover:text-violet-700 transition-colors truncate">{p.title}</div>
+                        {p.subtitle && <div className="text-xs text-slate-500 truncate">{p.subtitle}</div>}
+                      </div>
+                      <span className="text-xs text-slate-400 flex-shrink-0">{t('cdp.in_paths_count', { n: p.course_count })}</span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
             {course.description && (
               <div>
                 <h2 className="text-2xl font-bold text-slate-900 mb-4">{t('cdp.about')}</h2>
