@@ -3,7 +3,7 @@
 import { useEffect, useState, useTransition } from 'react';
 import { Link } from '@/i18n/routing';
 import { createClient } from '@/lib/supabase/client';
-import { Plus, Users, BookOpen, Clock, Eye, Trash2, X, Sparkles, Edit } from 'lucide-react';
+import { Plus, Users, BookOpen, Clock, Eye, Trash2, X, Sparkles, Edit, Package } from 'lucide-react';
 import { toast } from 'sonner';
 import { SkeletonCard } from '@/components/shared/LoadingSkeleton';
 import { EmptyState } from '@/components/shared/EmptyState';
@@ -63,6 +63,17 @@ export function LearningPathsClient() {
       if (error) throw error;
       toast.success(currentPublished ? 'Despublicado' : 'Publicado');
       load();
+    } catch (e: any) { toast.error(e?.message || 'Erro'); }
+  }
+
+  async function makeBundle(id: string) {
+    try {
+      const sb = createClient();
+      const { data, error } = await sb.rpc('nl_admin_bundle_from_path', { p_path_id: id, p_discount_pct: 15 });
+      if (error) throw error;
+      const r = data as { ok: boolean; error?: string; price_cents?: number };
+      if (!r.ok) { toast.error(r.error === 'path_has_no_courses' ? 'Percurso sem cursos' : (r.error || 'Erro')); return; }
+      toast.success(`Bundle criado (\u221215%): \u20AC${(((r.price_cents) || 0) / 100).toFixed(2)}`);
     } catch (e: any) { toast.error(e?.message || 'Erro'); }
   }
 
@@ -130,6 +141,10 @@ export function LearningPathsClient() {
                 <button onClick={() => togglePublish(p.id, p.published)}
                   className={`flex-1 text-center text-xs px-2 py-1.5 rounded font-medium ${p.published ? 'bg-amber-50 text-amber-700 hover:bg-amber-100' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'}`}>
                   {p.published ? 'Despublicar' : 'Publicar'}
+                </button>
+                <button onClick={() => makeBundle(p.id)}
+                  className="text-center text-xs px-2 py-1.5 bg-violet-50 text-violet-700 hover:bg-violet-100 rounded font-medium inline-flex items-center gap-1" aria-label="Criar bundle">
+                  <Package className="h-3 w-3" /> Bundle
                 </button>
               </div>
             </div>
