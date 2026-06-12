@@ -20,8 +20,9 @@ export function PathsGrid({ paths }: { paths: any[] }) {
   const t = useTranslations();
   const [shown, setShown] = useState(false);
   useEffect(() => {
-    const id = requestAnimationFrame(() => setShown(true));
-    return () => cancelAnimationFrame(id);
+    let r2 = 0;
+    const r1 = requestAnimationFrame(() => { r2 = requestAnimationFrame(() => setShown(true)); });
+    return () => { cancelAnimationFrame(r1); cancelAnimationFrame(r2); };
   }, []);
 
   return (
