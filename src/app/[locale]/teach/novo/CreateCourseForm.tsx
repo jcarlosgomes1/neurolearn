@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
 import { SUPABASE_URL } from '@/lib/supabase/config';
 import { createClient } from '@/lib/supabase/client';
+import { assertNotPeekClient } from '@/lib/peek-client';
 import { toast } from 'sonner';
 
 type Phase = 'prompt' | 'configuring' | 'generating' | 'review';
@@ -153,6 +154,7 @@ export function CreateCourseForm() {
     if (!course) return;
     setSavingMeta(true);
     const sb = createClient();
+    assertNotPeekClient();
     const { error } = await sb.from('nl_courses').update(updates).eq('id', course.id);
     if (error) toast.error(error.message);
     else { setCourse({ ...course, ...updates }); toast.success(t('saved')); }
@@ -166,6 +168,7 @@ export function CreateCourseForm() {
     if (!user) return;
     const { data: profile } = await sb.from('nl_profiles').select('role').eq('id', user.id).single();
     const isAdmin = profile && ['admin','super_admin'].includes(profile.role);
+    assertNotPeekClient();
     const { error } = await sb.from('nl_courses').update({
       approval_status: isAdmin ? 'approved' : 'pending_review',
       published: isAdmin,

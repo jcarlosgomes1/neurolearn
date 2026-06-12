@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
+import { assertNotPeekClient } from '@/lib/peek-client';
 import { useRouter } from '@/i18n/routing';
 import { toast } from 'sonner';
 import { CheckCircle, XCircle, Sparkles, User2, Clock } from 'lucide-react';
@@ -19,6 +20,7 @@ export function EvaluationsClient({ items }: { items: any[] }) {
     try {
       const sb = createClient();
       const e = edits[id] || {};
+      assertNotPeekClient();
       const { error } = await sb.rpc('nl_quiz_attempt_validate', {
         p_id: id, p_decision: decision,
         p_human_score: e.score ?? null,

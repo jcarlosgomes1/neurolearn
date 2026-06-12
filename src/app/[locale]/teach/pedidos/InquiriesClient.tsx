@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { assertNotPeekClient } from '@/lib/peek-client';
 import { useRouter } from '@/i18n/routing';
 import { useTranslations, useLocale } from 'next-intl';
 import { toast } from 'sonner';
@@ -42,6 +43,7 @@ export function InquiriesClient({ items, orgsMap, svcMap }: { items: Inquiry[]; 
     setBusy(id);
     try {
       const sb = createClient();
+      assertNotPeekClient();
       const { error } = await sb.rpc('nl_my_corporate_inquiry_quote', {
         p_id: id,
         p_quoted_price_cents: Math.round(quoteForm.price_euros * 100),
@@ -62,6 +64,7 @@ export function InquiriesClient({ items, orgsMap, svcMap }: { items: Inquiry[]; 
     setBusy(id);
     try {
       const sb = createClient();
+      assertNotPeekClient();
       const { error } = await sb.rpc('nl_my_corporate_inquiry_decline', { p_id: id, p_reason: declineReason.trim() || null });
       if (error) throw error;
       toast.success(t('tinq.declined_toast'));

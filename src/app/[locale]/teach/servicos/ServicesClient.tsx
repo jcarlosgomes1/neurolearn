@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
+import { assertNotPeekClient } from '@/lib/peek-client';
 import { useRouter } from '@/i18n/routing';
 import { toast } from 'sonner';
 import { Plus, Save, Trash2, Edit3, Loader2, X, Users, Clock, Globe, MapPin, CheckCircle, Circle, Sparkles } from 'lucide-react';
@@ -63,6 +64,7 @@ export function ServicesClient({ initial }: { initial: Service[] }) {
     try {
       const sb = createClient();
       const payload: any = { ...editing };
+      assertNotPeekClient();
       const { error } = await sb.rpc('nl_my_instructor_service_upsert', { p_id: editing.id || null, p_data: payload });
       if (error) throw error;
       toast.success(editing.id ? t('tsvc.updated') : t('tsvc.created'));
@@ -77,6 +79,7 @@ export function ServicesClient({ initial }: { initial: Service[] }) {
     setBusy(true);
     try {
       const sb = createClient();
+      assertNotPeekClient();
       const { error } = await sb.rpc('nl_my_instructor_service_delete', { p_id: s.id });
       if (error) throw error;
       toast.success(t('tsvc.deleted'));
