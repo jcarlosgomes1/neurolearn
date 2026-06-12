@@ -1,4 +1,5 @@
 'use client';
+// rebuild retrigger (infra wobble during prior build)
 
 import { useState, useEffect, useTransition } from 'react';
 import { createClient } from '@/lib/supabase/client';
