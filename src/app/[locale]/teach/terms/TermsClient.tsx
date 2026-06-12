@@ -7,7 +7,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { toast } from 'sonner';
 import { Loader2, CheckCircle2, Clock, Sparkles, ChevronDown, ShieldCheck } from 'lucide-react';
 
-interface CourseTerms { course_id: string; title: string; emoji?: string | null; approval_status?: string | null; accepted: boolean }
+interface CourseTerms { course_id: string; title: string; emoji?: string | null; approval_status?: string | null; accepted: boolean; source_lang?: string | null }
 interface AppTerms { accepted: boolean; body_md: string; hash: string }
 interface Overview { ok: boolean; application: AppTerms; courses: CourseTerms[] }
 
@@ -34,6 +34,8 @@ export function TermsClient() {
 
   useEffect(() => { load(); }, [load]);
 
+  const courseLang = (id: string) => (data?.courses.find((c) => c.course_id === id)?.source_lang) || 'pt';
+
   async function acceptApplication() {
     setAccepting('application');
     try {
@@ -54,7 +56,7 @@ export function TermsClient() {
     if (!courseBodies[courseId]) {
       try {
         const sb = createClient();
-        const { data: s } = await sb.rpc('nl_instructor_terms_status', { p_scope: 'course', p_course_id: courseId, p_lang: locale });
+        const { data: s } = await sb.rpc('nl_instructor_terms_status', { p_scope: 'course', p_course_id: courseId, p_lang: courseLang(courseId) });
         setCourseBodies((prev) => ({ ...prev, [courseId]: ((s as { body_md?: string })?.body_md) || '' }));
       } catch { /* ignore */ }
     }
@@ -65,7 +67,7 @@ export function TermsClient() {
     try {
       assertNotPeekClient();
       const sb = createClient();
-      const { data: r, error } = await sb.rpc('nl_instructor_terms_accept', { p_scope: 'course', p_course_id: courseId, p_lang: locale });
+      const { data: r, error } = await sb.rpc('nl_instructor_terms_accept', { p_scope: 'course', p_course_id: courseId, p_lang: courseLang(courseId) });
       if (error) throw error;
       if (!(r as { ok: boolean })?.ok) throw new Error('rpc');
       toast.success(t('teach.terms.accepted_toast'));
