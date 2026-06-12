@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { PeekLauncher } from '@/components/peek/PeekLauncher';
 import { Link } from '@/i18n/routing';
 import { Users, BookOpen, Building2, GraduationCap, TrendingUp, AlertCircle, MessageSquare, Award } from 'lucide-react';
 
@@ -41,6 +42,8 @@ export default async function Page() {
         title="Visão geral"
         description="Estado da plataforma em tempo real. Clica em cada cartão para detalhes."
       />
+
+      <PeekLauncher />
 
       {error && (
         <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700">
