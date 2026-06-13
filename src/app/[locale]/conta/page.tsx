@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { Link } from '@/i18n/routing';
 import { getTranslations } from 'next-intl/server';
 import { User, Shield, Bell, Award, FileText, CreditCard, LogOut, Globe } from 'lucide-react';
+import { GamificationPanel } from './GamificationPanel';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,6 +23,8 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
         <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2"><User className="h-6 w-6 text-brand-600" /> {t('account.home.title')}</h1>
         <p className="text-sm text-slate-500 mt-1">{profile?.name || user.email}</p>
       </div>
+
+      <GamificationPanel />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <AccountTile href={`/conta/perfil`} icon={<User className="h-5 w-5" />} title={t('account.home.profile_title')} desc={t('account.home.profile_desc')} color="text-brand-600" />
