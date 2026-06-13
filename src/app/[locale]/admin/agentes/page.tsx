@@ -1,7 +1,7 @@
-import { AgentesObservability } from './AgentesObservability';
+import { AgentesCockpit } from './AgentesCockpit';
 
 export const dynamic = 'force-dynamic';
 
 export default function Page() {
-  return <AgentesObservability />;
+  return <AgentesCockpit />;
 }
