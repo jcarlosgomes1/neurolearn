@@ -1,10 +1,12 @@
+import { seoMetadata } from '@/lib/seo';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
 import { CandidaturaForm } from './CandidaturaForm';
 import { getTranslations } from 'next-intl/server';
 
-export const metadata = {
-  title: 'Teach on NeuroLearn — Instructor application',
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  return seoMetadata('marketing', 'candidatar', locale, { title: 'Candidatar · NeuroLearn' });
+}
 
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;

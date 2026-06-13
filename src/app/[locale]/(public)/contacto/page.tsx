@@ -1,3 +1,4 @@
+import { seoMetadata } from '@/lib/seo';
 import { Link } from '@/i18n/routing';
 import { getTranslations } from 'next-intl/server';
 import { createClient } from '@/lib/supabase/server';
@@ -7,9 +8,10 @@ import { ContactForm } from './ContactForm';
 
 export const revalidate = 300;
 
-export async function generateMetadata() {
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
   const t = await getTranslations();
-  return { title: `${safeT(t, 'contact.title', 'Contacto')} · NeuroLearn` };
+  return seoMetadata('marketing', 'contacto', locale, { title: `${safeT(t, 'contact.title', 'Contacto')} · NeuroLearn` });
 }
 
 function safeT(t: any, key: string, fb: string): string {

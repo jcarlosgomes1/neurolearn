@@ -1,3 +1,4 @@
+import { seoMetadata } from '@/lib/seo';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { Link } from '@/i18n/routing';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
@@ -7,9 +8,10 @@ import { CourseCard } from '@/components/shared/CourseCard';
 
 export const revalidate = 120;
 
-export async function generateMetadata() {
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
   const t = await getTranslations();
-  return { title: t('ess.meta_title') };
+  return seoMetadata('marketing', 'essentials', locale, { title: t('ess.meta_title') });
 }
 
 export default async function EssentialsPage({ params }: { params: Promise<{ locale: string }> }) {
