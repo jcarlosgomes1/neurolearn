@@ -108,10 +108,9 @@ export function AgentesCockpit() {
   }
 
   async function runNow(agentName: string) {
-    if (agentName !== 'formacao') { toast.info('—'); return; }
     setBusyId('run-' + agentName);
     try {
-      const { error } = await supabase.rpc('nl_formacao_agent_tick', { p_task_key: null, p_force: false });
+      const { error } = await supabase.rpc('nl_agent_tick', { p_agent_name: agentName, p_task_key: null, p_force: false });
       if (error) throw error;
       toast.success(t('agents.cockpit.saved'));
       await load();
@@ -223,7 +222,7 @@ export function AgentesCockpit() {
                       {isOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
                       {t('agents.cockpit.tasks')}
                     </button>
-                    {a.name === 'formacao' && (
+                    {a.pending_approvals >= 0 && (
                       <button onClick={() => runNow(a.name)} disabled={busyId === 'run-' + a.name}
                         className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-lg bg-violet-50 text-violet-700 hover:bg-violet-100">
                         {busyId === 'run-' + a.name ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Play className="h-3.5 w-3.5" />}
