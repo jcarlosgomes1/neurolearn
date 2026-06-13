@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { PricingClient } from './PricingClient';
 import { BreadcrumbStructuredData } from '@/components/seo/StructuredData';
 import type { Metadata } from 'next';
+import { getSeoOverride } from '@/lib/seo';
 
 const SITE_URL = 'https://neurolearn-rosy.vercel.app';
 
@@ -9,8 +10,11 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const { locale } = await params;
   const title = 'Preços · NeuroLearn';
   const desc = 'Planos transparentes para equipas a partir de empresas pequenas a enterprise — LMS multi-tenant white-label, geração de cursos com IA, marketplace.';
+  const ovr = await getSeoOverride('marketing', 'precos', locale);
+  const finalTitle = ovr?.meta_title || title;
+  const finalDesc = ovr?.meta_description || desc;
   return {
-    title, description: desc,
+    title: finalTitle, description: finalDesc,
     alternates: {
       canonical: `${SITE_URL}/${locale}/precos`,
       languages: {
@@ -21,11 +25,11 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
       },
     },
     openGraph: {
-      type: 'website', title, description: desc,
+      type: 'website', title: finalTitle, description: finalDesc,
       url: `${SITE_URL}/${locale}/precos`, siteName: 'NeuroLearn',
       images: [`${SITE_URL}/${locale}/opengraph-image`],
     },
-    twitter: { card: 'summary_large_image', title, description: desc },
+    twitter: { card: 'summary_large_image', title: finalTitle, description: finalDesc },
   };
 }
 
