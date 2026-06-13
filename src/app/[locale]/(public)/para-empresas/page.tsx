@@ -1,10 +1,15 @@
+import { seoMetadata } from '@/lib/seo';
 import { Link } from '@/i18n/routing';
 import { getTranslations } from 'next-intl/server';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
 import { Building2, Users, Shield, Sparkles, BarChart3, Headphones, Upload, Briefcase, Crown, Check, ArrowRight, Zap } from 'lucide-react';
 
 export const revalidate = 600;
-export async function generateMetadata() { return { title: 'Para empresas · NeuroLearn' }; }
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  return seoMetadata('marketing', 'para-empresas', locale, { title: 'Para empresas · NeuroLearn' });
+}
 
 const FEATURES = [
   { icon: Upload, tKey: 'pe.feat.ingest_t', dKey: 'pe.feat.ingest_d', cls: 'from-violet-500 to-indigo-600' },

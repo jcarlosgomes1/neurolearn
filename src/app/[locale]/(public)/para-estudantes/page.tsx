@@ -1,10 +1,15 @@
+import { seoMetadata } from '@/lib/seo';
 import { Link } from '@/i18n/routing';
 import { getTranslations } from 'next-intl/server';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
 import { Compass, Briefcase, Award, Brain, Zap, Sparkles, ArrowRight, Target, BookMarked, MessageCircle } from 'lucide-react';
 
 export const revalidate = 600;
-export async function generateMetadata() { return { title: 'Para estudantes · NeuroLearn' }; }
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  return seoMetadata('marketing', 'para-estudantes', locale, { title: 'Para estudantes · NeuroLearn' });
+}
 
 const FEATURES = [
   { icon: Compass, tKey: 'ps.feat.guided_t', dKey: 'ps.feat.guided_d', cls: 'from-blue-500 to-cyan-600' },
