@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from '@/lib/supabase/config';
 
 export const runtime = 'edge';
-export const alt = 'NeuroLearn — Forma a tua equipa, sem fricção.';
+export const alt = 'Forma a tua equipa, sem fricção.';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
