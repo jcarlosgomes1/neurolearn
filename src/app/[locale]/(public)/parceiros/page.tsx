@@ -1,10 +1,14 @@
+import { seoMetadata } from '@/lib/seo';
 import { Link } from '@/i18n/routing';
 import { getTranslations } from 'next-intl/server';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
 import { Handshake, Building2, GraduationCap, Briefcase, Globe2, ArrowRight, Sparkles, Check } from 'lucide-react';
 
 export const revalidate = 600;
-export async function generateMetadata() { return { title: 'Parceiros · NeuroLearn' }; }
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  return seoMetadata('marketing', 'parceiros', locale, { title: 'Parceiros · NeuroLearn' });
+}
 
 const TYPES = [
   { icon: Building2, titleKey: 'pa.t1_title', descKey: 'pa.t1_desc', perkKeys: ['pa.t1_p1', 'pa.t1_p2', 'pa.t1_p3', 'pa.t1_p4'], cls: 'from-violet-500 to-indigo-600' },

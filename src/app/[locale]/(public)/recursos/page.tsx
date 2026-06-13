@@ -1,10 +1,14 @@
+import { seoMetadata } from '@/lib/seo';
 import { Link } from '@/i18n/routing';
 import { getTranslations } from 'next-intl/server';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
 import { BookOpen, FileText, Video, Mic, Download, ArrowRight, Sparkles } from 'lucide-react';
 
 export const revalidate = 600;
-export async function generateMetadata() { return { title: 'Recursos · NeuroLearn' }; }
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  return seoMetadata('marketing', 'recursos', locale, { title: 'Recursos · NeuroLearn' });
+}
 
 const CATEGORIES = [
   { icon: BookOpen, titleKey: 're.c1_title', countKey: 're.c1_count', descKey: 're.c1_desc', cls: 'from-violet-500 to-indigo-600' },

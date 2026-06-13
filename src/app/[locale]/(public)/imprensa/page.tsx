@@ -1,10 +1,14 @@
+import { seoMetadata } from '@/lib/seo';
 import { Link } from '@/i18n/routing';
 import { getTranslations } from 'next-intl/server';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
 import { Newspaper, Download, ExternalLink, Mail, Calendar, FileText, Image as ImageIcon } from 'lucide-react';
 
 export const revalidate = 600;
-export async function generateMetadata() { return { title: 'Imprensa · NeuroLearn' }; }
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  return seoMetadata('marketing', 'imprensa', locale, { title: 'Imprensa · NeuroLearn' });
+}
 
 const RELEASES = [
   { date: '2026-05-12', titleKey: 'im.r1_title', summaryKey: 'im.r1_summary' },

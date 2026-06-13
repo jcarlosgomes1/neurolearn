@@ -1,10 +1,14 @@
+import { seoMetadata } from '@/lib/seo';
 import { Link } from '@/i18n/routing';
 import { getTranslations } from 'next-intl/server';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
 import { Calendar, Video, Users, MapPin, Clock, ArrowRight, Sparkles } from 'lucide-react';
 
 export const revalidate = 600;
-export async function generateMetadata() { return { title: 'Eventos & Webinars · NeuroLearn' }; }
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  return seoMetadata('marketing', 'eventos', locale, { title: 'Eventos & Webinars · NeuroLearn' });
+}
 
 interface Event { date: string; timeKey: string; type: string; titleKey: string; speakerKey: string; modeKey: string; cls: string; }
 
