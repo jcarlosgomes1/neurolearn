@@ -12,6 +12,7 @@ import { VideoEmbed } from '@/components/shared/VideoEmbed';
 import { ReviewSystem } from '@/components/course/ReviewSystem';
 import { LessonOpenQuiz } from '@/components/lesson/LessonOpenQuiz';
 import { LessonPractice } from '@/components/lesson/LessonPractice';
+import { CourseFeedbackPanel } from '@/app/[locale]/aprender/CourseFeedbackPanel';
 
 interface Lesson {
   id?: string;
@@ -299,6 +300,7 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
             </div>
 
             {!nextLesson && <ReviewSystem courseId={courseId} courseTitle={course.title} />}
+            {!nextLesson && <div className="mt-4"><CourseFeedbackPanel courseId={courseId} courseTitle={course.title} /></div>}
           </div>
 
           <aside className="hidden lg:flex w-[360px] xl:w-[400px] flex-shrink-0 sticky top-28 self-start h-[calc(100vh-8rem)]">
