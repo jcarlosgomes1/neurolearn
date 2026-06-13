@@ -110,6 +110,10 @@ export function OrgDashboard({ data }: { data: any }) {
           <Route className="h-4 w-4" /> {t('org.dash.nav_paths')}
           <span className="text-xs bg-violet-100 text-violet-700 px-1.5 py-0.5 rounded font-semibold">{t('org.dash.badge_new')}</span>
         </Link>
+        <Link href={`/empresa/${org.slug}/turmas` as any}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-slate-200 hover:border-violet-300 hover:bg-violet-50 text-slate-700 hover:text-violet-700 text-sm font-medium transition-colors">
+          <GraduationCap className="h-4 w-4" /> {t('org.dash.nav_cohorts')}
+        </Link>
         {org.is_admin && (
           <Link href={`/empresa/${org.slug}/admin` as any}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-slate-200 hover:border-rose-300 hover:bg-rose-50 text-slate-700 hover:text-rose-700 text-sm font-medium transition-colors">
