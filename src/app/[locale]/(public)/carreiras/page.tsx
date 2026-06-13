@@ -1,10 +1,14 @@
+import { seoMetadata } from '@/lib/seo';
 import { Link } from '@/i18n/routing';
 import { getTranslations } from 'next-intl/server';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
 import { Briefcase, Heart, Zap, Globe2, Coffee, ArrowRight, Code, Palette, BarChart3, Users } from 'lucide-react';
 
 export const revalidate = 600;
-export async function generateMetadata() { return { title: 'Carreiras · NeuroLearn' }; }
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  return seoMetadata('marketing', 'carreiras', locale, { title: 'Carreiras · NeuroLearn' });
+}
 
 const VALUES = [
   { icon: Zap, tKey: 'ca.v1_t', dKey: 'ca.v1_d', cls: 'from-amber-500 to-orange-600' },

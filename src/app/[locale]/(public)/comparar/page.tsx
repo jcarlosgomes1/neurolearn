@@ -1,10 +1,14 @@
+import { seoMetadata } from '@/lib/seo';
 import { Link } from '@/i18n/routing';
 import { getTranslations } from 'next-intl/server';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
 import { Check, X, ArrowRight, Sparkles, GitCompare } from 'lucide-react';
 
 export const revalidate = 600;
-export async function generateMetadata() { return { title: 'Comparar plataformas · NeuroLearn' }; }
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  return seoMetadata('marketing', 'comparar', locale, { title: 'Comparar plataformas · NeuroLearn' });
+}
 
 interface Row { fKey: string; nl: string | boolean; udemy: string | boolean; coursera: string | boolean; teachable: string | boolean; }
 

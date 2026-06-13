@@ -1,10 +1,14 @@
+import { seoMetadata } from '@/lib/seo';
 import { Link } from '@/i18n/routing';
 import { getTranslations } from 'next-intl/server';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
 import { Search, HelpCircle, User, BookOpen, CreditCard, Award, Building2, ShieldCheck, ArrowRight, MessageCircle, Mail } from 'lucide-react';
 
 export const revalidate = 600;
-export async function generateMetadata() { return { title: 'Centro de ajuda · NeuroLearn' }; }
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  return seoMetadata('marketing', 'ajuda', locale, { title: 'Centro de ajuda · NeuroLearn' });
+}
 
 const CATS = [
   { icon: User, titleKey: 'aj.c1_title', href: '/conta', itemKeys: ['aj.c1_i1', 'aj.c1_i2', 'aj.c1_i3', 'aj.c1_i4', 'aj.c1_i5'], cls: 'from-violet-500 to-indigo-600' },

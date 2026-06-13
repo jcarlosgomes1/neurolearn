@@ -1,10 +1,14 @@
+import { seoMetadata } from '@/lib/seo';
 import { Link } from '@/i18n/routing';
 import { getTranslations } from 'next-intl/server';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
 import { Trophy, Quote, TrendingUp, Briefcase, GraduationCap, Building2, ArrowRight, Sparkles } from 'lucide-react';
 
 export const revalidate = 600;
-export async function generateMetadata() { return { title: 'Casos de sucesso · NeuroLearn' }; }
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  return seoMetadata('marketing', 'casos-de-sucesso', locale, { title: 'Casos de sucesso · NeuroLearn' });
+}
 
 interface Case { name: string; role: string; companyKey: string; quoteKey: string; outcomeKey: string; labelKey: string; icon: any; cls: string; }
 

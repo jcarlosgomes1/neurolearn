@@ -1,9 +1,13 @@
+import { seoMetadata } from '@/lib/seo';
 import { createClient } from '@/lib/supabase/server';
 import { Users } from 'lucide-react';
 import { CommunityClient } from './CommunityClient';
 
 export const dynamic = 'force-dynamic';
-export async function generateMetadata() { return { title: 'Comunidade' }; }
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  return seoMetadata('marketing', 'comunidade', locale, { title: 'Comunidade · NeuroLearn' });
+}
 
 export default async function Page() {
   const sb = await createClient();
