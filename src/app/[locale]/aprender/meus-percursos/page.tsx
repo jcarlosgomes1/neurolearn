@@ -3,6 +3,7 @@ import { Link } from '@/i18n/routing';
 import { redirect } from '@/i18n/routing';
 import { getTranslations } from 'next-intl/server';
 import { GraduationCap, CheckCircle2, Clock, BookOpen, ChevronRight, Sparkles, Building2 } from 'lucide-react';
+import { RecommendationsPanel } from '../RecommendationsPanel';
 
 export const dynamic = 'force-dynamic';
 
@@ -42,6 +43,8 @@ export default async function MyLearningPathsPage({ params }: { params: Promise<
           <Sparkles className="h-4 w-4" /> {t('path.explore')}
         </Link>
       </header>
+
+      <RecommendationsPanel />
 
       {orgPaths.length > 0 && (
         <section className="mb-8">
