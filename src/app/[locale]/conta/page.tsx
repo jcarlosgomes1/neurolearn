@@ -4,6 +4,7 @@ import { Link } from '@/i18n/routing';
 import { getTranslations } from 'next-intl/server';
 import { User, Shield, Bell, Award, FileText, CreditCard, LogOut, Globe } from 'lucide-react';
 import { GamificationPanel } from './GamificationPanel';
+import { ReputationPanel } from './ReputationPanel';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,6 +26,8 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
       </div>
 
       <GamificationPanel />
+
+      <ReputationPanel />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <AccountTile href={`/conta/perfil`} icon={<User className="h-5 w-5" />} title={t('account.home.profile_title')} desc={t('account.home.profile_desc')} color="text-brand-600" />
