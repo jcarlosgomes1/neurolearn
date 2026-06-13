@@ -116,6 +116,12 @@ export function OrgDashboard({ data }: { data: any }) {
             <Settings className="h-4 w-4" /> {t('org.dash.nav_admin')}
           </Link>
         )}
+        {org.is_admin && (
+          <Link href={`/empresa/${org.slug}/definicoes` as any}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 hover:text-slate-900 text-sm font-medium transition-colors">
+            <Building2 className="h-4 w-4" /> {t('org.dash.nav_settings')}
+          </Link>
+        )}
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
