@@ -18,8 +18,13 @@ export function StudentMomentumBar({ nextGoal }: { nextGoal: NextGoal | null }) 
   const [g, setG] = useState<GamState | null>(null);
 
   useEffect(() => {
-    const sb = createClient();
-    sb.rpc('nl_gam_my_state').then(({ data }) => { if (data?.ok) setG(data as GamState); }).catch(() => {});
+    (async () => {
+      try {
+        const sb = createClient();
+        const { data } = await sb.rpc('nl_gam_my_state');
+        if (data?.ok) setG(data as GamState);
+      } catch { /* silencioso */ }
+    })();
   }, []);
 
   if (!g) return null;
