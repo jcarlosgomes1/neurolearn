@@ -8,7 +8,7 @@ import { CurrencySwitcher } from '@/components/currency/CurrencySwitcher';
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
-import { LogOut, LayoutDashboard, BookOpen, Route, Sparkles, Building2, Newspaper } from 'lucide-react';
+import { LogOut, LayoutDashboard, BookOpen, Route, Sparkles, Building2, Newspaper, Tag } from 'lucide-react';
 
 interface Session { email: string; area: 'student' | 'instructor' | 'admin'; areas: Array<'student' | 'instructor' | 'admin'> }
 
@@ -45,9 +45,10 @@ export function HeaderClient({ session }: { session: Session | null }) {
 
   const NAV: Array<{ href: string; label: string; Icon: typeof BookOpen }> = [
     { href: '/cursos', label: t('nav.courses'), Icon: BookOpen },
-    { href: '/aprender/percursos', label: 'Percursos', Icon: Route },
+    { href: '/aprender/percursos', label: t('nav.learning_paths'), Icon: Route },
     { href: '/essentials', label: t('nav.essentials'), Icon: Sparkles },
     { href: '/para-empresas', label: t('nav.business'), Icon: Building2 },
+    { href: '/precos', label: t('nav.pricing'), Icon: Tag },
     { href: '/blog', label: t('nav.blog'), Icon: Newspaper },
   ];
 
