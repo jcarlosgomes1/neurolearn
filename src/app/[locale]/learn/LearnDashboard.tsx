@@ -77,18 +77,20 @@ export function LearnDashboard() {
         ) : (
           <div className="space-y-3">
             {dash.my_courses.map((e) => (
-              <Link key={e.id} href={`/learn/curso/${e.course_id}/aula/0/0` as any} className="flex items-center gap-3 p-3 rounded-lg border border-slate-100 hover:bg-slate-50 hover:border-brand-200 transition-all active:scale-[0.99] touch-manipulation">
+              <Link key={e.id} href={`/learn/curso/${e.course_id}/continuar` as any} className="flex items-center gap-3 p-3 rounded-lg border border-slate-100 hover:bg-slate-50 hover:border-brand-200 transition-all active:scale-[0.99] touch-manipulation">
                 <div className="text-3xl flex-shrink-0">{e.nl_courses?.emoji || '📚'}</div>
                 <div className="flex-1 min-w-0">
                   <div className="font-medium text-slate-900 truncate">{e.nl_courses?.title || t('learn.course_fallback')}</div>
                   <div className="mt-1.5 flex items-center gap-2">
                     <div className="flex-1 h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                      <div className="h-full bg-brand-600 transition-all" style={{ width: `${e.progress_pct || 0}%` }} />
+                      <div className="h-full bg-gradient-to-r from-brand-500 to-purple-500 transition-all" style={{ width: `${e.progress_pct || 0}%` }} />
                     </div>
                     <span className="text-xs text-slate-500 tabular-nums">{Math.round(e.progress_pct || 0)}%</span>
                   </div>
                 </div>
-                {e.completed_at && <span className="text-emerald-600 text-xl">✓</span>}
+                <span className={`flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg ${e.completed_at ? 'bg-emerald-50 text-emerald-700' : (e.progress_pct || 0) > 0 ? 'bg-brand-600 text-white' : 'bg-slate-900 text-white'}`}>
+                  {e.completed_at ? t('learn.cta_review') : (e.progress_pct || 0) > 0 ? t('learn.cta_resume') : t('learn.cta_start')}
+                </span>
               </Link>
             ))}
           </div>
