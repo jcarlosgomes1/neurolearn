@@ -1,5 +1,5 @@
 import { Link } from '@/i18n/routing';
-import { ArrowLeft, type LucideIcon } from 'lucide-react';
+import { ChevronRight, type LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 interface RelatedLink { href: string; label: string; emoji?: string }
@@ -23,39 +23,46 @@ export function AdminPageHeader({ backHref, backLabel, eyebrow, eyebrowIcon: Eye
   const TileGlyph = TileIcon || EyeIcon;
   const showTile = Boolean(emoji || TileGlyph);
   return (
-    <header className="mb-8">
+    <header className="mb-6 sm:mb-8">
+      {/* Breadcrumb (substitui a antiga pílula "Voltar") */}
       {backHref && (
-        <Link
-          href={backHref as any}
-          className="group inline-flex items-center gap-1.5 mb-5 rounded-full bg-white border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm hover:bg-slate-50 hover:text-slate-900 transition-colors active:scale-95">
-          <ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" />
-          {backLabel || 'Voltar'}
-        </Link>
+        <nav aria-label="breadcrumb" className="mb-3 sm:mb-4">
+          <ol className="flex items-center gap-1 text-xs font-medium text-slate-400 min-w-0">
+            <li className="shrink-0">
+              <Link href={backHref as any} className="hover:text-violet-600 transition-colors">
+                {backLabel || 'Voltar'}
+              </Link>
+            </li>
+            <li className="shrink-0"><ChevronRight className="h-3.5 w-3.5" /></li>
+            <li className="text-slate-600 font-semibold truncate">{title}</li>
+          </ol>
+        </nav>
       )}
-      <div className="flex items-start gap-3.5">
+      <div className="flex items-start gap-3 sm:gap-3.5">
+        {/* Tile/ícone grande: escondido em mobile (poupa ecrã), visível a partir de sm */}
         {showTile && (
-          <div className={`flex-shrink-0 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${iconGradient} text-white shadow-md`}>
+          <div className={`hidden sm:inline-flex flex-shrink-0 h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${iconGradient} text-white shadow-md`}>
             {emoji ? <span className="text-2xl leading-none">{emoji}</span> : (TileGlyph ? <TileGlyph className="h-6 w-6" /> : null)}
           </div>
         )}
         <div className="flex-1 min-w-0">
           {eyebrow && (
-            <div className={`flex items-center gap-2 ${eyebrowAccent} text-xs font-semibold uppercase tracking-wider mb-1`}>
-              {EyeIcon && !showTile && <EyeIcon className="h-3.5 w-3.5" />} {eyebrow}
+            <div className={`flex items-center gap-2 ${eyebrowAccent} text-[11px] sm:text-xs font-semibold uppercase tracking-wider mb-1`}>
+              {EyeIcon && <EyeIcon className="h-3.5 w-3.5 shrink-0" />} <span className="truncate">{eyebrow}</span>
             </div>
           )}
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{title}</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight text-balance">{title}</h1>
           {description && <p className="text-sm text-slate-600 mt-1.5 max-w-2xl leading-relaxed">{description}</p>}
         </div>
         {actions && <div className="flex-shrink-0">{actions}</div>}
       </div>
       {related && related.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2 mt-4">
+        <div className="flex gap-2 mt-4 overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap scrollbar-none">
           {related.map((r) => (
             <Link
               key={r.href}
               href={r.href as any}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-violet-100 hover:text-violet-700 hover:ring-violet-200 transition-colors">
+              className="inline-flex shrink-0 items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-violet-100 hover:text-violet-700 hover:ring-violet-200 transition-colors">
               {r.emoji && <span className="text-sm leading-none">{r.emoji}</span>}
               {r.label}
             </Link>
