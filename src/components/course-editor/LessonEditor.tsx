@@ -8,6 +8,8 @@ import { assertNotPeekClient } from '@/lib/peek-client';
 import { toast } from 'sonner';
 import { useAIFeatures } from '@/lib/hooks/useAIFeatures';
 import type { Lesson } from './ModulesEditor';
+import { LessonStudioRecorder } from './LessonStudioRecorder';
+import { VideoEmbed } from '@/components/shared/VideoEmbed';
 
 interface Props {
   course: { id: string; title: string; level: string };
@@ -95,6 +97,20 @@ export function LessonEditor({ course, moduleName, lesson, lessonIndex, totalLes
           </div>
         </div>
       </div>
+
+      {lesson.type === 'video' && (
+        <div className="space-y-3">
+          {(c as any).video_url && (
+            <div className="rounded-xl border border-slate-200 overflow-hidden">
+              <VideoEmbed url={(c as any).video_url} />
+            </div>
+          )}
+          <LessonStudioRecorder
+            currentUrl={(c as any).video_url || null}
+            onUploaded={(url) => onUpdate({ content: { ...c, video_url: url } })}
+          />
+        </div>
+      )}
 
       {featLoading ? null : !canGenerate ? (
         <div className="bg-slate-50 rounded-xl border border-slate-200 p-5 flex items-start gap-3">
