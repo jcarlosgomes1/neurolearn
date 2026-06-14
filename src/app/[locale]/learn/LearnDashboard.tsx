@@ -7,6 +7,7 @@ import { Stat } from '@/components/shared/Stat';
 import { DashboardSkeleton } from '@/components/shared/DashboardSkeleton';
 import { relTime } from '@/lib/utils/cn';
 import { useTranslations } from 'next-intl';
+import { StudentMomentumBar } from '@/components/lesson/StudentMomentumBar';
 
 interface Cert {
   id: string;
@@ -61,6 +62,18 @@ export function LearnDashboard() {
         <h1 className="text-2xl font-bold text-slate-900">{t('learn.title')}</h1>
         <p className="text-slate-500 text-sm mt-1">{t('learn.subtitle')}</p>
       </div>
+
+      {(() => {
+        const inProgress = dash.my_courses.find((e: any) => !e.completed_at && (e.progress_pct || 0) > 0)
+          || dash.my_courses.find((e: any) => !e.completed_at);
+        const goal = inProgress ? {
+          courseId: inProgress.course_id,
+          courseTitle: inProgress.nl_courses?.title || t('learn.course_fallback'),
+          emoji: inProgress.nl_courses?.emoji || '📚',
+          progressPct: inProgress.progress_pct || 0,
+        } : null;
+        return <StudentMomentumBar nextGoal={goal} />;
+      })()}
 
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         <Stat icon="📖" label={t('learn.stat_courses')} value={s.enrollments_total} accent="brand" href="#meus-cursos" />
