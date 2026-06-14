@@ -62,7 +62,7 @@ export function LessonStudioRecorder({ onUploaded, currentUrl, lessonTitle, cont
     const out: Slide[] = [];
     if (lessonTitle) out.push({ kind: 'generated', title: lessonTitle, bullets: content?.kp?.slice(0, 5) || [] });
     (content?.p || []).forEach((para, i) => {
-      const sentences = para.split(/(?<=[.!?])\s+/).filter(Boolean);
+      const sentences = para.replace(/([.!?])\s+/g, '$1\u0001').split('\u0001').filter(Boolean);
       out.push({ kind: 'generated', title: `${i + 1}`, bullets: sentences.slice(0, 4) });
     });
     if (content?.tip) out.push({ kind: 'generated', title: '💡', bullets: [content.tip] });
@@ -94,9 +94,9 @@ export function LessonStudioRecorder({ onUploaded, currentUrl, lessonTitle, cont
     const loaded: Slide[] = [];
     for (const f of Array.from(files)) {
       const url = URL.createObjectURL(f);
-      const img = new Image();
+      const img = document.createElement('img');
       img.src = url;
-      await new Promise((res) => { img.onload = res; });
+      await new Promise<void>((res) => { img.onload = () => res(); });
       loaded.push({ kind: 'image', imageUrl: url, _img: img });
     }
     setSlides((prev) => [...prev, ...loaded]);
@@ -225,7 +225,7 @@ export function LessonStudioRecorder({ onUploaded, currentUrl, lessonTitle, cont
 
   function startRecording() {
     const canvas = canvasRef.current!;
-    const canvasStream = canvas.captureStream(30);
+    const canvasStream = (canvas as any).captureStream(30) as MediaStream;
     const mixed = new MediaStream();
     canvasStream.getVideoTracks().forEach((tr) => mixed.addTrack(tr));
     const micTrack = camStream.current?.getAudioTracks()[0];
