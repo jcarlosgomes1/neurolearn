@@ -13,6 +13,7 @@ import { ReviewSystem } from '@/components/course/ReviewSystem';
 import { LessonOpenQuiz } from '@/components/lesson/LessonOpenQuiz';
 import { LessonPractice } from '@/components/lesson/LessonPractice';
 import { CourseFeedbackPanel } from '@/app/[locale]/aprender/CourseFeedbackPanel';
+import { CourseCurriculumNav } from '@/components/lesson/CourseCurriculumNav';
 
 interface Lesson {
   id?: string;
@@ -39,6 +40,8 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
   const t = useTranslations('lesson_viewer');
   const router = useRouter();
   const [tutorOpen, setTutorOpen] = useState(false);
+  const [navOpen, setNavOpen] = useState(false);
+  const [progressMap, setProgressMap] = useState<Record<string, boolean>>({});
   const [quizPick, setQuizPick] = useState<number | null>(null);
   const [quizReveal, setQuizReveal] = useState(false);
   const [completing, setCompleting] = useState(false);
@@ -57,8 +60,10 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
   useEffect(() => {
     callAgentOps<{ lesson_progress: Array<{ module_index: number; lesson_index: number; completed: boolean }> }>('my_progress', { course_id: courseId })
       .then((r) => {
-        const found = r.lesson_progress?.find((lp) => lp.module_index === moduleIndex && lp.lesson_index === lessonIndex);
-        setCompleted(found?.completed || false);
+        const map: Record<string, boolean> = {};
+        (r.lesson_progress || []).forEach((lp) => { if (lp.completed) map[`${lp.module_index}_${lp.lesson_index}`] = true; });
+        setProgressMap(map);
+        setCompleted(!!map[`${moduleIndex}_${lessonIndex}`]);
       })
       .catch(() => setCompleted(false));
     setQuizPick(null);
@@ -91,6 +96,7 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
     try {
       await callAgentOps('mark_lesson_complete', { course_id: courseId, module_index: moduleIndex, lesson_index: lessonIndex, lesson_id: lesson.id, completed: true });
       setCompleted(true);
+      setProgressMap((prev) => ({ ...prev, [`${moduleIndex}_${lessonIndex}`]: true }));
       toast.success(t('completed_toast'));
       if (nextLesson) setTimeout(() => router.push(`/learn/curso/${courseId}/aula/${nextLesson.modIdx}/${nextLesson.lesIdx}` as any), 800);
       else { toast.success(t('course_done')); setTimeout(() => router.push('/learn' as any), 1500); }
@@ -133,7 +139,16 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
         <div className="flex gap-6 lg:gap-8">
+          <aside className="hidden lg:flex w-[300px] xl:w-[340px] flex-shrink-0 sticky top-28 self-start h-[calc(100vh-8rem)]">
+            <div className="w-full rounded-2xl border border-slate-200 shadow-sm overflow-hidden bg-white">
+              <CourseCurriculumNav courseId={courseId} modules={course.modules} moduleIndex={moduleIndex} lessonIndex={lessonIndex} progress={progressMap} locale={locale} />
+            </div>
+          </aside>
+
           <div className="flex-1 min-w-0 max-w-3xl mx-auto lg:mx-0">
+            <button onClick={() => setNavOpen(true)} className="lg:hidden mb-4 inline-flex items-center gap-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-lg">
+              ☰ {t('curriculum_btn')}
+            </button>
             <header className="mb-6">
               <div className="text-xs text-slate-400 font-medium uppercase tracking-wider flex items-center gap-2 flex-wrap">
                 <span>{course.emoji} {course.title}</span>
@@ -319,6 +334,19 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
         <div className="lg:hidden fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm flex items-end" onClick={() => setTutorOpen(false)}>
           <div className="bg-white w-full rounded-t-2xl shadow-2xl h-[85vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
             <LessonTutor context={tutorContext} onClose={() => setTutorOpen(false)} />
+          </div>
+        </div>
+      )}
+      {navOpen && (
+        <div className="lg:hidden fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm flex" onClick={() => setNavOpen(false)}>
+          <div className="bg-white w-[85%] max-w-sm h-full shadow-2xl flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+              <span className="text-sm font-bold text-slate-800">{t('curriculum_btn')}</span>
+              <button onClick={() => setNavOpen(false)} className="text-slate-400 text-xl leading-none">×</button>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <CourseCurriculumNav courseId={courseId} modules={course.modules} moduleIndex={moduleIndex} lessonIndex={lessonIndex} progress={progressMap} locale={locale} />
+            </div>
           </div>
         </div>
       )}
