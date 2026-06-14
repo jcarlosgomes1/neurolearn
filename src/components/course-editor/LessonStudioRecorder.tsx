@@ -12,6 +12,7 @@ interface Slide {
   kind: 'generated' | 'image';
   title?: string;
   bullets?: string[];
+  code?: string;
   imageUrl?: string;
   _img?: HTMLImageElement;
 }
@@ -65,6 +66,7 @@ export function LessonStudioRecorder({ onUploaded, currentUrl, lessonTitle, cont
       const sentences = para.replace(/([.!?])\s+/g, '$1\u0001').split('\u0001').filter(Boolean);
       out.push({ kind: 'generated', title: `${i + 1}`, bullets: sentences.slice(0, 4) });
     });
+    if (content?.code) out.push({ kind: 'generated', title: t('slide_code_title'), code: content.code });
     if (content?.tip) out.push({ kind: 'generated', title: '💡', bullets: [content.tip] });
     return out;
   }, [lessonTitle, content]);
@@ -115,50 +117,70 @@ export function LessonStudioRecorder({ onUploaded, currentUrl, lessonTitle, cont
     return lines;
   }
 
-  function drawSlide(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, slide: Slide | undefined) {
-    // Fundo gradiente
-    const g = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-    g.addColorStop(0, '#1e1b4b'); g.addColorStop(1, '#4338ca');
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  function drawSlide(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, slide: Slide | undefined, idx: number, total: number) {
+    const W = canvas.width, H = canvas.height;
+    // Fundo premium: gradiente diagonal profundo + leve vinheta
+    const g = ctx.createLinearGradient(0, 0, W, H);
+    g.addColorStop(0, '#0b1024'); g.addColorStop(0.55, '#1e1b4b'); g.addColorStop(1, '#312e81');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    const vg = ctx.createRadialGradient(W * 0.5, H * 0.4, H * 0.2, W * 0.5, H * 0.5, H * 0.95);
+    vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.35)');
+    ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
+
     if (!slide) {
-      ctx.fillStyle = 'rgba(255,255,255,0.5)';
-      ctx.font = '500 36px system-ui, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(t('no_slides_hint'), canvas.width / 2, canvas.height / 2);
-      ctx.textAlign = 'left';
+      ctx.fillStyle = 'rgba(255,255,255,0.45)';
+      ctx.font = '500 34px system-ui, sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(t('no_slides_hint'), W / 2, H / 2); ctx.textAlign = 'left';
       return;
     }
     if (slide.kind === 'image' && slide._img) {
       const img = slide._img;
-      const ar = img.width / img.height, car = canvas.width / canvas.height;
-      let dw = canvas.width, dh = canvas.height, dx = 0, dy = 0;
-      if (ar > car) { dh = canvas.width / ar; dy = (canvas.height - dh) / 2; }
-      else { dw = canvas.height * ar; dx = (canvas.width - dw) / 2; }
-      ctx.fillStyle = '#000'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+      const ar = img.width / img.height, car = W / H;
+      let dw = W, dh = H, dx = 0, dy = 0;
+      if (ar > car) { dh = W / ar; dy = (H - dh) / 2; } else { dw = H * ar; dx = (W - dw) / 2; }
+      ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
       ctx.drawImage(img, dx, dy, dw, dh);
       return;
     }
-    // Slide gerado: título + bullets
-    const pad = 96;
-    ctx.fillStyle = '#ffffff';
-    ctx.textAlign = 'left';
+    const pad = 110;
+    // Barra de marca (accent) à esquerda do título
+    const isCode = !!slide.code;
     if (slide.title) {
-      ctx.font = '700 64px system-ui, sans-serif';
-      const titleLines = wrapText(ctx, slide.title, canvas.width - pad * 2);
-      titleLines.forEach((ln, i) => ctx.fillText(ln, pad, 140 + i * 76));
+      ctx.fillStyle = '#818cf8';
+      ctx.fillRect(pad, 120, 8, 64);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '800 60px system-ui, sans-serif';
+      const titleLines = wrapText(ctx, slide.title, W - pad * 2 - 30);
+      titleLines.slice(0, 2).forEach((ln, i) => ctx.fillText(ln, pad + 32, 170 + i * 70));
     }
-    const startY = 140 + 90;
-    ctx.font = '400 40px system-ui, sans-serif';
-    let y = startY;
-    (slide.bullets || []).forEach((b) => {
-      const lines = wrapText(ctx, b, canvas.width - pad * 2 - 50);
-      ctx.fillStyle = '#a5b4fc';
-      ctx.fillText('•', pad, y);
-      ctx.fillStyle = '#e0e7ff';
-      lines.forEach((ln, i) => ctx.fillText(ln, pad + 50, y + i * 52));
-      y += lines.length * 52 + 28;
-    });
+    let y = (slide.title ? 170 + 70 : 160) + 48;
+    if (isCode && slide.code) {
+      // Bloco de código com fundo
+      ctx.font = '400 30px ui-monospace, Menlo, monospace';
+      const codeLines = slide.code.split('\n').slice(0, 12);
+      const boxX = pad, boxY = y - 20, boxW = W - pad * 2;
+      const boxH = Math.min(codeLines.length * 40 + 40, H - boxY - 80);
+      ctx.fillStyle = 'rgba(2,6,23,0.7)';
+      ctx.beginPath(); (ctx as any).roundRect?.(boxX, boxY, boxW, boxH, 16); ctx.fill();
+      ctx.fillStyle = '#e2e8f0';
+      codeLines.forEach((ln, i) => ctx.fillText(ln.slice(0, 60), boxX + 28, boxY + 50 + i * 40));
+    } else {
+      ctx.font = '400 38px system-ui, sans-serif';
+      (slide.bullets || []).slice(0, 6).forEach((b) => {
+        const lines = wrapText(ctx, b, W - pad * 2 - 56);
+        ctx.fillStyle = '#a5b4fc'; ctx.beginPath(); ctx.arc(pad + 8, y - 12, 7, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#e9edff';
+        lines.forEach((ln, i) => ctx.fillText(ln, pad + 40, y + i * 50));
+        y += lines.length * 50 + 30;
+      });
+    }
+    // Rodapé: marca + número de slide
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.font = '600 24px system-ui, sans-serif';
+    ctx.fillText('NeuroLearn', pad, H - 56);
+    ctx.textAlign = 'right';
+    ctx.fillText(`${idx + 1} / ${total}`, W - pad, H - 56);
+    ctx.textAlign = 'left';
   }
 
   function drawLoop() {
@@ -171,7 +193,7 @@ export function LessonStudioRecorder({ onUploaded, currentUrl, lessonTitle, cont
     if (source === 'screen' && screenV && screenV.videoWidth) {
       ctx.drawImage(screenV, 0, 0, canvas.width, canvas.height);
     } else if (source === 'slides') {
-      drawSlide(ctx, canvas, slidesRef.current[slideIdxRef.current]);
+      drawSlide(ctx, canvas, slidesRef.current[slideIdxRef.current], slideIdxRef.current, slidesRef.current.length);
     } else if (source === 'camera') {
       ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
@@ -357,6 +379,14 @@ export function LessonStudioRecorder({ onUploaded, currentUrl, lessonTitle, cont
 
       <div className={phase === 'preview' || phase === 'recording' ? 'block space-y-3' : 'hidden'}>
         <canvas ref={canvasRef} className="w-full rounded-lg bg-slate-900 aspect-video" />
+        {(content?.p?.length || 0) > 0 && (
+          <details className="rounded-lg border border-slate-200 bg-slate-50">
+            <summary className="px-3 py-2 text-sm font-medium text-slate-600 cursor-pointer select-none">📜 {t('teleprompter')}</summary>
+            <div className="max-h-40 overflow-y-auto px-4 py-3 space-y-2 text-[15px] leading-relaxed text-slate-700">
+              {(content?.p || []).map((para, i) => <p key={i}>{para}</p>)}
+            </div>
+          </details>
+        )}
         {source === 'slides' && slides.length > 0 && (
           <div className="flex items-center justify-center gap-3">
             <button onClick={prevSlide} disabled={slideIdx === 0} className="px-4 py-2 rounded-lg border border-slate-200 disabled:opacity-40 text-slate-700">‹</button>
