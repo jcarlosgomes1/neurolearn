@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 import { FunnelChart, Sparkline, ForecastBar } from '@/components/admin/Charts';
+import { GrowthIntelligence } from '@/components/admin/GrowthIntelligence';
 
 const METRIC_META: Record<string, { label: string; color: string; money?: boolean }> = {
   new_students: { label: 'Novos alunos', color: '#6366f1' },
@@ -72,6 +73,8 @@ export function FunnelConsole() {
         <h2 className="text-sm font-bold text-slate-700 mb-4">Funil de utilizadores</h2>
         <FunnelChart data={funnelData} />
       </section>
+
+      <GrowthIntelligence data={d} onChange={load} />
 
       {/* Previsões */}
       <section>
