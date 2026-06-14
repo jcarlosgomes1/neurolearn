@@ -7,6 +7,7 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import { routing } from '@/i18n/routing';
 import { OnboardingGate } from '@/components/auth/OnboardingGate';
 import { CookieBanner } from '@/components/legal/CookieBanner';
+import { Telemetry } from '@/components/telemetry/Telemetry';
 import { MobileBottomNav } from '@/components/MobileBottomNav';
 import { TopBar } from '@/components/layout/TopBar';
 import { PeekBanner } from '@/components/peek/PeekBanner';
@@ -57,6 +58,7 @@ export default async function LocaleLayout({
           {children}
           <Toaster richColors position="top-right" />
           <CookieBanner />
+          <Telemetry />
           <MobileBottomNav />
         </NextIntlClientProvider>
         <Analytics />
