@@ -99,7 +99,7 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
       <Header />
       <main className="bg-white min-h-screen">
         <section className="bg-gradient-to-br from-brand-50 via-white to-brand-50/30 border-b border-slate-200/60">
-          <div className="max-w-6xl mx-auto px-4 py-12 sm:py-16">
+          <div className="max-w-6xl mx-auto px-4 py-7 sm:py-12">
             <Link
               href={'/cursos' as any}
               className="group inline-flex items-center gap-2 mb-6 px-3 py-1.5 rounded-full bg-white/70 hover:bg-white border border-slate-200 hover:border-brand-300 text-slate-700 hover:text-brand-700 text-sm font-medium transition-all shadow-sm hover:shadow"
@@ -146,7 +146,7 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
           <div className="lg:col-span-2 space-y-10">
             {coursePaths.length > 0 && (
               <div className="bg-gradient-to-br from-violet-50 to-fuchsia-50 border border-violet-100 rounded-2xl p-5">
-                <h2 className="text-sm font-bold uppercase tracking-widest text-violet-700 mb-1 flex items-center gap-2"><BookOpen className="h-4 w-4" /> {t('cdp.in_paths_h')}</h2>
+                <h2 className="text-base font-bold text-violet-700 mb-1 flex items-center gap-2"><BookOpen className="h-4 w-4" /> {t('cdp.in_paths_h')}</h2>
                 <p className="text-sm text-slate-600 mb-4">{t('cdp.in_paths_sub')}</p>
                 <div className="flex flex-col gap-2">
                   {coursePaths.map((p: any) => (
