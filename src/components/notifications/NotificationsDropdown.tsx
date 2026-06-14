@@ -6,6 +6,7 @@ import { Link } from '@/i18n/routing';
 import {
   listNotificationsAction, getUnreadCountAction, markNotificationReadAction, deleteNotificationAction
 } from '@/app/[locale]/conta/actions';
+import { notificationHref } from '@/lib/notifications/href';
 
 interface Notification {
   id: string;
@@ -17,28 +18,6 @@ interface Notification {
   metadata: Record<string, unknown>;
   read_at: string | null;
   created_at: string;
-}
-
-function notificationHref(n: Notification, locale: string): string {
-  if (!n.link_kind || !n.link_id) return '#';
-  switch (n.link_kind) {
-    case 'proposal':
-      return `/${locale}/empresa/${(n.metadata as any).org_slug || ''}/cursos/propostas/${n.link_id}` as string;
-    case 'org_content':
-      return `/${locale}/empresa/conteudo`;
-    case 'certificate':
-      return `/${locale}/conta/certificados`;
-    case 'billing':
-      return `/${locale}/conta/subscription`;
-    case 'gdpr':
-      return `/${locale}/conta/privacidade`;
-    case 'course':
-      return `/${locale}/curso/${n.link_id}`;
-    case 'evaluation':
-      return `/${locale}/teach/avaliacoes-pendentes`;
-    default:
-      return '#';
-  }
 }
 
 function timeAgo(iso: string): string {
@@ -175,13 +154,15 @@ export function NotificationsDropdown({ locale }: { locale: string }) {
                 </div>
               ) : (
                 <div className="divide-y divide-slate-100">
-                  {items.map((n) => (
+                  {items.map((n) => {
+                    const href = notificationHref(n);
+                    return (
                     <div key={n.id} className={`px-4 py-3 hover:bg-slate-50 group ${!n.read_at ? 'bg-brand-50/40' : ''}`}>
                       <div className="flex items-start gap-2">
                         {!n.read_at && <div className="w-1.5 h-1.5 rounded-full bg-brand-500 mt-1.5 flex-shrink-0" />}
                         <div className="flex-1 min-w-0">
-                          {n.link_kind ? (
-                            <Link href={notificationHref(n, locale) as any} onClick={() => { handleMarkOne(n.id); setOpen(false); }}
+                          {href ? (
+                            <Link href={href as any} onClick={() => { handleMarkOne(n.id); setOpen(false); }}
                               className="block">
                               <div className="font-medium text-slate-900 text-sm leading-snug">{n.title}</div>
                               <p className="text-xs text-slate-600 mt-0.5 line-clamp-2 leading-relaxed">{n.message}</p>
@@ -204,7 +185,7 @@ export function NotificationsDropdown({ locale }: { locale: string }) {
                         </div>
                       </div>
                     </div>
-                  ))}
+                  ); })}
                 </div>
               )}
             </div>

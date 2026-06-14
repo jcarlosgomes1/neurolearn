@@ -6,24 +6,12 @@ import { Link } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import { Bell, ArrowLeft, Trash2, Check, CheckCheck, X, Loader2 } from 'lucide-react';
 import { markNotificationReadAction, deleteNotificationAction } from '../actions';
+import { notificationHref } from '@/lib/notifications/href';
 
 interface Notification {
   id: string; kind: string; title: string; message: string;
   link_kind: string | null; link_id: string | null; metadata: Record<string, unknown>;
   read_at: string | null; created_at: string;
-}
-
-function notifHref(n: Notification, locale: string): string {
-  if (!n.link_kind || !n.link_id) return '#';
-  switch (n.link_kind) {
-    case 'proposal': return `/${locale}/empresa/${(n.metadata as any).org_slug || ''}/cursos/propostas/${n.link_id}`;
-    case 'org_content': return `/${locale}/conteudos`;
-    case 'certificate': return `/${locale}/conta/certificados`;
-    case 'billing': return `/${locale}/conta/billing`;
-    case 'gdpr': return `/${locale}/conta/privacidade`;
-    case 'course': return `/${locale}/cursos/${n.link_id}`;
-    default: return '#';
-  }
 }
 
 export function NotificationsListClient({ initial, locale }: { initial: Notification[]; locale: string }) {
@@ -83,12 +71,12 @@ export function NotificationsListClient({ initial, locale }: { initial: Notifica
       ) : (
         <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100">
           {items.map((n) => {
-            const href = notifHref(n, locale);
+            const href = notificationHref(n);
             return (
               <div key={n.id} className={`flex items-start gap-3 p-3 sm:p-4 hover:bg-slate-50 ${!n.read_at ? 'bg-brand-50/30' : ''}`}>
                 {!n.read_at && <div className="w-2 h-2 rounded-full bg-brand-500 mt-2 flex-shrink-0" />}
                 <div className="flex-1 min-w-0">
-                  {n.link_kind && href !== '#' ? (
+                  {href ? (
                     <Link href={href as any} onClick={() => handleMark(n.id)}>
                       <div className="font-semibold text-slate-900">{n.title}</div>
                       <p className="text-sm text-slate-600 mt-0.5">{n.message}</p>
