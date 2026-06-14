@@ -10,10 +10,10 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   const sb = await createClient();
   const { data: { user } } = await sb.auth.getUser();
   if (!user) redirect(`/${locale}/login?next=/${locale}/conta/notificacoes`);
-  const { data } = await sb.rpc('nl_notifications_list', { p_limit: 100, p_offset: 0 });
+  const { data } = await sb.rpc('nl_notifications_list', { p_limit: 100 });
   return (
     <>
-      <NotificacoesClient initial={(data as any)?.notifications || []} />
+      <NotificacoesClient initial={(data as any[]) || []} />
     </>
   );
 }
