@@ -8,6 +8,7 @@ import { DashboardSkeleton } from '@/components/shared/DashboardSkeleton';
 import { relTime } from '@/lib/utils/cn';
 import { useTranslations } from 'next-intl';
 import { StudentMomentumBar } from '@/components/lesson/StudentMomentumBar';
+import { DailyChallenges } from '@/components/lesson/DailyChallenges';
 
 interface Cert {
   id: string;
@@ -74,6 +75,8 @@ export function LearnDashboard() {
         } : null;
         return <StudentMomentumBar nextGoal={goal} />;
       })()}
+
+      <DailyChallenges />
 
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         <Stat icon="📖" label={t('learn.stat_courses')} value={s.enrollments_total} accent="brand" href="#meus-cursos" />
