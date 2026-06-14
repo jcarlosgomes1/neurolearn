@@ -2,11 +2,12 @@
 
 import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
+import { SUPABASE_URL } from '@/lib/supabase/config';
 
 const ANON_KEY = 'nl_anon_id';
 const CONSENT_KEY = 'nl_cookie_consent_v1';
 const ENDPOINT = '/track-ingest'; // reescrito para a edge function via rewrite, ou usa URL absoluta abaixo
-const TRACK_URL = 'https://obpezocujzdaznrdgwoo.supabase.co/functions/v1/track';
+const TRACK_URL = `${SUPABASE_URL}/functions/v1/track`;
 
 function hasAnalyticsConsent(): boolean {
   try {
@@ -153,7 +154,7 @@ export function trackEvent(name: string, props?: Record<string, unknown>) {
       anon_id: anon, consent: true,
       events: [{ name, path: window.location.pathname, props: props || {} }],
     });
-    fetch('https://obpezocujzdaznrdgwoo.supabase.co/functions/v1/track', {
+    fetch(`${SUPABASE_URL}/functions/v1/track`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body, keepalive: true,
     }).catch(() => {});
   } catch { /* */ }

@@ -6,12 +6,12 @@ import { createClient } from '@/lib/supabase/client';
 import { FunnelChart, Sparkline, ForecastBar } from '@/components/admin/Charts';
 import { GrowthIntelligence } from '@/components/admin/GrowthIntelligence';
 
-const METRIC_META: Record<string, { label: string; color: string; money?: boolean }> = {
-  new_students: { label: 'Novos alunos', color: '#6366f1' },
-  course_completions: { label: 'Conclusões', color: '#10b981' },
-  new_instructors: { label: 'Novos instrutores', color: '#8b5cf6' },
-  active_users: { label: 'Utilizadores ativos', color: '#38bdf8' },
-  revenue_cents: { label: 'Receita', color: '#f59e0b', money: true },
+const METRIC_META: Record<string, { i18nKey: string; color: string; money?: boolean }> = {
+  new_students: { i18nKey: 'growth.metric.new_students', color: '#6366f1' },
+  course_completions: { i18nKey: 'growth.metric.course_completions', color: '#10b981' },
+  new_instructors: { i18nKey: 'growth.metric.new_instructors', color: '#8b5cf6' },
+  active_users: { i18nKey: 'growth.metric.active_users', color: '#38bdf8' },
+  revenue_cents: { i18nKey: 'growth.metric.revenue', color: '#f59e0b', money: true },
 };
 
 function fmtForecast(metric: string, v: number) {
@@ -48,7 +48,7 @@ export function FunnelConsole() {
   }
 
   if (err) return <div className="p-6 text-sm text-rose-600">Erro: {err}</div>;
-  if (!d) return <div className="p-6 text-sm text-slate-400">A carregar…</div>;
+  if (!d) return <div className="p-6 text-sm text-slate-400">{safeT('growth.loading','A carregar…')}</div>;
 
   const funnelData = (d.funnel || []).map((f: any) => ({
     label: safeT(f.label_key, f.stage), count: f.count, color: f.color, monetized: f.is_monetized,
@@ -61,16 +61,16 @@ export function FunnelConsole() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <p className="text-xs text-slate-400">
-          {d.computed_at ? `Atualizado ${new Date(d.computed_at).toLocaleString('pt-PT')}` : 'Sem cálculo ainda'}
+          {d.computed_at ? `${safeT('growth.updated_at','Atualizado {when}').replace('{when}', new Date(d.computed_at).toLocaleString('pt-PT'))}` : safeT('growth.no_compute','Sem cálculo ainda')}
         </p>
         <button onClick={recompute} disabled={busy} className="text-xs font-semibold bg-brand-600 hover:bg-brand-700 text-white px-3 py-1.5 rounded-lg disabled:opacity-50">
-          {busy ? '…' : 'Recalcular agora'}
+          {busy ? '…' : safeT('growth.btn.recompute', 'Recalcular agora')}
         </button>
       </div>
 
       {/* Funil visual */}
       <section className="rounded-2xl border border-slate-200 bg-white p-5">
-        <h2 className="text-sm font-bold text-slate-700 mb-4">Funil de utilizadores</h2>
+        <h2 className="text-sm font-bold text-slate-700 mb-4">{safeT('growth.funnel_title','Funil de utilizadores')}</h2>
         <FunnelChart data={funnelData} />
       </section>
 
@@ -78,16 +78,16 @@ export function FunnelConsole() {
 
       {/* Previsões */}
       <section>
-        <h2 className="text-sm font-bold text-slate-700 mb-3">Previsões (próximos 30 dias)</h2>
+        <h2 className="text-sm font-bold text-slate-700 mb-3">{safeT('growth.forecasts_title','Previsões (próximos 30 dias)')}</h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {(d.forecasts || []).map((f: any) => {
-            const meta = METRIC_META[f.metric] || { label: f.metric, color: '#6366f1' };
+            const meta = METRIC_META[f.metric] || { i18nKey: '', color: '#6366f1' };
             return (
               <div key={f.metric} className="rounded-2xl border border-slate-200 bg-white p-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-700">{meta.label}</span>
+                  <span className="text-xs font-semibold text-slate-700">{meta.i18nKey ? safeT(meta.i18nKey, f.metric) : f.metric}</span>
                   <span className={`text-[10px] px-1.5 py-0.5 rounded ${f.confidence === 'high' ? 'bg-emerald-100 text-emerald-700' : f.confidence === 'medium' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500'}`}>
-                    {f.confidence === 'high' ? 'alta' : f.confidence === 'medium' ? 'média' : 'baixa'} conf.
+                    {safeT('growth.conf_short','{lvl} conf.').replace('{lvl}', f.confidence === 'high' ? safeT('growth.conf.high','alta') : f.confidence === 'medium' ? safeT('growth.conf.medium','média') : safeT('growth.conf.low','baixa'))}
                   </span>
                 </div>
                 <div className="text-2xl font-extrabold mt-1" style={{ color: meta.color }}>{fmtForecast(f.metric, f.forecast)}</div>
@@ -100,18 +100,18 @@ export function FunnelConsole() {
 
       {/* Tendências */}
       <section>
-        <h2 className="text-sm font-bold text-slate-700 mb-3">Tendências</h2>
+        <h2 className="text-sm font-bold text-slate-700 mb-3">{safeT('growth.trends_title','Tendências')}</h2>
         <div className="grid sm:grid-cols-3 gap-3">
           <div className="rounded-2xl border border-slate-200 bg-white p-4">
-            <div className="text-xs text-slate-500 mb-1">Novos alunos · 8 semanas</div>
+            <div className="text-xs text-slate-500 mb-1">{safeT('growth.trend_students_8w','Novos alunos · 8 semanas')}</div>
             <Sparkline points={students8w} color="#6366f1" />
           </div>
           <div className="rounded-2xl border border-slate-200 bg-white p-4">
-            <div className="text-xs text-slate-500 mb-1">Conclusões · 8 semanas</div>
+            <div className="text-xs text-slate-500 mb-1">{safeT('growth.trend_completions_8w','Conclusões · 8 semanas')}</div>
             <Sparkline points={completions8w} color="#10b981" />
           </div>
           <div className="rounded-2xl border border-slate-200 bg-white p-4">
-            <div className="text-xs text-slate-500 mb-1">Eventos · 14 dias</div>
+            <div className="text-xs text-slate-500 mb-1">{safeT('growth.trend_events_14d','Eventos · 14 dias')}</div>
             <Sparkline points={events14d} color="#38bdf8" />
           </div>
         </div>
