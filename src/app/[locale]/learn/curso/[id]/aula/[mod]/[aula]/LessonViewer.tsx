@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link, useRouter } from '@/i18n/routing';
 import { callAgentOps } from '@/lib/api/client';
+import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import { LessonTutor } from '@/components/lesson/LessonTutor';
 import { MermaidRender } from '@/components/shared/MermaidRender';
@@ -14,6 +15,7 @@ import { LessonOpenQuiz } from '@/components/lesson/LessonOpenQuiz';
 import { LessonPractice } from '@/components/lesson/LessonPractice';
 import { CourseFeedbackPanel } from '@/app/[locale]/aprender/CourseFeedbackPanel';
 import { CourseCurriculumNav } from '@/components/lesson/CourseCurriculumNav';
+import { LessonRewardBurst } from '@/components/lesson/LessonRewardBurst';
 
 interface Lesson {
   id?: string;
@@ -42,6 +44,7 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
   const [tutorOpen, setTutorOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
   const [progressMap, setProgressMap] = useState<Record<string, boolean>>({});
+  const [reward, setReward] = useState<{ show: boolean; xpGained: number; before: any; after: any; leveledUp: boolean; newBadge: any } | null>(null);
   const [quizPick, setQuizPick] = useState<number | null>(null);
   const [quizReveal, setQuizReveal] = useState(false);
   const [completing, setCompleting] = useState(false);
@@ -90,16 +93,35 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
       ? { modIdx: moduleIndex + 1, lesIdx: 0, title: course.modules[moduleIndex + 1].lessons[0].title }
       : null;
 
+  function goNext() {
+    if (nextLesson) router.push(`/learn/curso/${courseId}/aula/${nextLesson.modIdx}/${nextLesson.lesIdx}` as any);
+    else router.push('/learn' as any);
+  }
+
   async function markComplete() {
     if (completing) return;
+    // Se já estava concluída, não repete recompensa — só navega
+    if (completed) { goNext(); return; }
     setCompleting(true);
+    const sb = createClient();
+    let before: any = null;
+    try { const { data } = await sb.rpc('nl_gam_my_state'); if (data?.ok) before = data; } catch {}
     try {
       await callAgentOps('mark_lesson_complete', { course_id: courseId, module_index: moduleIndex, lesson_index: lessonIndex, lesson_id: lesson.id, completed: true });
       setCompleted(true);
       setProgressMap((prev) => ({ ...prev, [`${moduleIndex}_${lessonIndex}`]: true }));
-      toast.success(t('completed_toast'));
-      if (nextLesson) setTimeout(() => router.push(`/learn/curso/${courseId}/aula/${nextLesson.modIdx}/${nextLesson.lesIdx}` as any), 800);
-      else { toast.success(t('course_done')); setTimeout(() => router.push('/learn' as any), 1500); }
+      let after: any = null;
+      try { const { data } = await sb.rpc('nl_gam_my_state'); if (data?.ok) after = data; } catch {}
+      if (after) {
+        const xpGained = Math.max(0, (after.xp_total || 0) - (before?.xp_total || 0));
+        const leveledUp = !!before && after.level > before.level;
+        const beforeCodes = new Set((before?.badges || []).map((b: any) => b.code));
+        const newBadge = (after.badges || []).find((b: any) => !beforeCodes.has(b.code)) || null;
+        setReward({ show: true, xpGained, before, after, leveledUp, newBadge });
+      } else {
+        toast.success(t('completed_toast'));
+        setTimeout(goNext, 600);
+      }
     } catch (e: any) { toast.error(e.message); } finally { setCompleting(false); }
   }
 
@@ -336,6 +358,17 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
             <LessonTutor context={tutorContext} onClose={() => setTutorOpen(false)} />
           </div>
         </div>
+      )}
+      {reward?.show && (
+        <LessonRewardBurst
+          show={reward.show}
+          xpGained={reward.xpGained}
+          before={reward.before}
+          after={reward.after}
+          leveledUp={reward.leveledUp}
+          newBadge={reward.newBadge}
+          onClose={() => { setReward(null); goNext(); }}
+        />
       )}
       {navOpen && (
         <div className="lg:hidden fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm flex" onClick={() => setNavOpen(false)}>
