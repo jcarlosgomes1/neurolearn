@@ -8,11 +8,14 @@ import { CurrencySwitcher } from '@/components/currency/CurrencySwitcher';
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
-import { LogOut, LayoutDashboard, BookOpen, Route, Sparkles, Building2, Newspaper, Tag } from 'lucide-react';
+import { LogOut, LayoutDashboard, BookOpen, Route, Sparkles, Building2, Newspaper } from 'lucide-react';
+import type { NavItem } from '@/lib/api/nav-items';
 
 interface Session { email: string; area: 'student' | 'instructor' | 'admin'; areas: Array<'student' | 'instructor' | 'admin'> }
 
-export function HeaderClient({ session }: { session: Session | null }) {
+const ICONS: Record<string, typeof BookOpen> = { BookOpen, Route, Sparkles, Building2, Newspaper };
+
+export function HeaderClient({ session, nav }: { session: Session | null; nav: NavItem[] }) {
   const t = useTranslations();
   const locale = useLocale();
   const [open, setOpen] = useState(false);
@@ -43,14 +46,16 @@ export function HeaderClient({ session }: { session: Session | null }) {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const NAV: Array<{ href: string; label: string; Icon: typeof BookOpen }> = [
-    { href: '/cursos', label: t('nav.courses'), Icon: BookOpen },
-    { href: '/aprender/percursos', label: t('nav.learning_paths'), Icon: Route },
-    { href: '/essentials', label: t('nav.essentials'), Icon: Sparkles },
-    { href: '/para-empresas', label: t('nav.business'), Icon: Building2 },
-    { href: '/precos', label: t('nav.pricing'), Icon: Tag },
-    { href: '/blog', label: t('nav.blog'), Icon: Newspaper },
-  ];
+  function navLabel(it: NavItem): string {
+    if (it.label_override) return it.label_override;
+    if (it.i18n_key) { try { const v = t(it.i18n_key as any); if (v && v !== it.i18n_key) return v; } catch {} }
+    return it.href.split('/').filter(Boolean).pop() || it.href;
+  }
+  const NAV: Array<{ href: string; label: string; Icon: typeof BookOpen }> = nav.map((it) => ({
+    href: it.href,
+    label: navLabel(it),
+    Icon: ICONS[it.icon || ''] || Sparkles,
+  }));
 
   const cleanPath = pathname.replace(/^\/[a-z]{2}(?=\/|$)/, '') || '/';
   const isActive = (href: string) =>
