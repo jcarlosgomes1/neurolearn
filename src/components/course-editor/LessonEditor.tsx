@@ -107,6 +107,8 @@ export function LessonEditor({ course, moduleName, lesson, lessonIndex, totalLes
           )}
           <LessonStudioRecorder
             currentUrl={(c as any).video_url || null}
+            lessonTitle={lesson.title}
+            content={c as any}
             onUploaded={(url) => onUpdate({ content: { ...c, video_url: url } })}
           />
         </div>
