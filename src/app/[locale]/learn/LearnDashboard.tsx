@@ -127,7 +127,7 @@ export function LearnDashboard() {
                 <li key={n.id} className="text-sm flex items-start gap-2">
                   <span className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${n.read_at ? 'bg-slate-300' : 'bg-brand-500'}`} />
                   <div className="flex-1 min-w-0">
-                    <div className={n.read_at ? 'text-slate-500' : 'text-slate-900 font-medium'}>{n.title}</div>
+                    <div className={`break-words ${n.read_at ? 'text-slate-500' : 'text-slate-900 font-medium'}`}>{n.title}</div>
                     {n.message && <div className="text-xs text-slate-500 mt-0.5 line-clamp-2">{n.message}</div>}
                     <div className="text-xs text-slate-400 mt-1">{relTime(n.created_at)}</div>
                   </div>

@@ -99,7 +99,7 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
         { name: course.title, href: `/${locale}/curso/${id}` },
       ]} baseUrl={SITE_URL} />
       <Header />
-      <main className="bg-white min-h-screen">
+      <main className="bg-white min-h-screen overflow-x-hidden">
         <section className="bg-gradient-to-br from-brand-50 via-white to-brand-50/30 border-b border-slate-200/60">
           <div className="max-w-6xl mx-auto px-4 py-7 sm:py-12">
             <Link
@@ -110,7 +110,7 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
               <span>{t('cdp.back')}</span>
             </Link>
             <div className="grid lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-2">
+              <div className="lg:col-span-2 min-w-0">
                 <div className="flex items-center gap-3 mb-4 flex-wrap">
                   <span className="text-5xl">{course.emoji || '📚'}</span>
                   {course.level && <span className="px-3 py-1 rounded-full bg-white border border-slate-200 text-xs font-medium text-slate-600">{course.level}</span>}

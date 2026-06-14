@@ -197,7 +197,7 @@ export function AppShellClient({ role, pageTitle, session, nav, children }: Prop
             </aside>
           </div>
         )}
-        <main className="flex-1 min-w-0"><div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8">{children}</div></main>
+        <main className="flex-1 min-w-0 overflow-x-hidden"><div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8">{children}</div></main>
       </div>
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} items={nav} t={t} />
     </div>
