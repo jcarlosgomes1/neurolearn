@@ -4,6 +4,22 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Rede de seguranca universal contra overflow horizontal em mobile.
+   Impede que qualquer elemento mais largo que o ecra crie scroll lateral
+   e faca o conteudo encostar/cortar na margem direita. Padrao global. */
+html, body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+/* Grid tracks devem poder encolher para que truncate/line-clamp
+   funcionem dentro deles. Sem isto, um grid de 1 coluna em mobile usa
+   largura max-content e o texto longo foge para fora e e cortado.
+   So aplicado a grid (flex e deixado intacto para nao alterar layouts
+   que dependem do min-width:auto natural dos itens flex). */
+.grid > * {
+  min-width: 0;
+}
+
 @layer base {
   :root {
     color-scheme: light;
