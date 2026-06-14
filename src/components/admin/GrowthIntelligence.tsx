@@ -59,6 +59,27 @@ export function GrowthIntelligence({ data, onChange }: { data: any; onChange: ()
         </div>
       </section>
 
+      {/* Previsão de vendas (pipeline) */}
+      {data.pipeline && (
+        <section className="rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-5">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-bold text-slate-700">Previsão de vendas — próximos 30 dias</h2>
+            <span className={`text-[10px] px-1.5 py-0.5 rounded ${data.pipeline.confidence === 'high' ? 'bg-emerald-100 text-emerald-700' : data.pipeline.confidence === 'medium' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500'}`}>
+              {data.pipeline.confidence === 'high' ? 'alta' : data.pipeline.confidence === 'medium' ? 'média' : 'baixa'} confiança
+            </span>
+          </div>
+          <div className="text-3xl font-extrabold mt-2 text-amber-700">
+            {new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format((Number(data.pipeline.forecast_cents) || 0) / 100)}
+          </div>
+          {data.pipeline.basis && (
+            <p className="text-xs text-slate-500 mt-1.5">
+              Baseado em {data.pipeline.basis.hot_leads ?? 0} leads quentes, {data.pipeline.basis.warm_leads ?? 0} mornos e {data.pipeline.basis.cold_leads ?? 0} frios · ~{data.pipeline.basis.exp_conversions ?? 0} conversões esperadas · preço médio {new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format((Number(data.pipeline.basis.avg_price_cents) || 0) / 100)}
+            </p>
+          )}
+          <p className="text-[11px] text-slate-400 mt-1">Estimativa por pipeline: leads reais × probabilidade de conversão × valor médio. Afina-se sozinha à medida que há mais dados.</p>
+        </section>
+      )}
+
       {/* Segmentos RFM */}
       {seg.length > 0 && (
         <section className="rounded-2xl border border-slate-200 bg-white p-5">
