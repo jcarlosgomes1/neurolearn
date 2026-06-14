@@ -12,6 +12,7 @@ import { CourseStructuredData, BreadcrumbStructuredData } from '@/components/seo
 import { CourseReviews } from '@/components/course/CourseReviews';
 import { CourseQA } from '@/components/course/CourseQA';
 import { WishlistButton } from '@/components/course/WishlistButton';
+import { CourseViewTracker } from '@/components/telemetry/CourseViewTracker';
 import type { Metadata } from 'next';
 
 export const revalidate = 300; // ISR 5 min — refresca rating/reviews
@@ -82,6 +83,7 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
 
   return (
     <>
+      <CourseViewTracker courseId={course.id} priceCents={course.price_cents} category={course.category} />
       <CourseStructuredData course={{
         title: course.title, description: course.description || course.subtitle,
         slug: course.slug || course.id, duration_hours: course.duration_hours,
