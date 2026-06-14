@@ -109,7 +109,7 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
               <ArrowLeft className="h-4 w-4 -ml-0.5 transition-transform group-hover:-translate-x-0.5" strokeWidth={2.5} />
               <span>{t('cdp.back')}</span>
             </Link>
-            <div className="grid lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2 min-w-0">
                 <div className="flex items-center gap-3 mb-4 flex-wrap">
                   <span className="text-5xl">{course.emoji || '📚'}</span>
@@ -144,7 +144,7 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
           </div>
         </section>
 
-        <section className="max-w-6xl mx-auto px-4 py-12 grid lg:grid-cols-3 gap-8">
+        <section className="max-w-6xl mx-auto px-4 py-12 grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-10">
             {coursePaths.length > 0 && (
               <div className="bg-gradient-to-br from-violet-50 to-fuchsia-50 border border-violet-100 rounded-2xl p-5">
@@ -173,7 +173,7 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
             {topics.length > 0 && (
               <div>
                 <h2 className="text-2xl font-bold text-slate-900 mb-4">{t('cdp.what_youll_learn')}</h2>
-                <ul className="grid sm:grid-cols-2 gap-3">
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {topics.map((tp: string, i: number) => (
                     <li key={i} className="flex items-start gap-2 text-sm text-slate-700"><CheckCircle className="h-5 w-5 text-emerald-500 mt-0.5 flex-shrink-0" /><span>{tp}</span></li>
                   ))}
