@@ -23,7 +23,9 @@ const SECURITY_HEADERS = [
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false, // Don't reveal X-Powered-By: Next.js
+  compress: true, // gzip/brotli nas respostas (menos bytes, paginas mais rapidas)
   images: {
+    formats: ['image/avif', 'image/webp'],
     remotePatterns: [
       { protocol: 'https', hostname: 'obpezocujzdaznrdgwoo.supabase.co' },
       { protocol: 'https', hostname: '*.supabase.co' },
@@ -36,6 +38,9 @@ const nextConfig = {
   async headers() {
     return [
       { source: '/(.*)', headers: SECURITY_HEADERS },
+      // Assets estaticos com hash: cache agressivo imutavel (menos pedidos com milhares de users)
+      { source: '/_next/static/(.*)', headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }] },
+      { source: '/fonts/(.*)', headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }] },
     ];
   },
 };
