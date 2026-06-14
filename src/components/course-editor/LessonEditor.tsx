@@ -109,7 +109,7 @@ export function LessonEditor({ course, moduleName, lesson, lessonIndex, totalLes
             currentUrl={(c as any).video_url || null}
             lessonTitle={lesson.title}
             content={c as any}
-            onUploaded={(url) => onUpdate({ content: { ...c, video_url: url } })}
+            onUploaded={(url) => onUpdate({ content: ({ ...c, video_url: url } as any) })}
           />
         </div>
       )}
