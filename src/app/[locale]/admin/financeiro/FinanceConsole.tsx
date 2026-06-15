@@ -38,7 +38,7 @@ const ROW_LABEL: Record<string, string> = {
 };
 
 const SERIES: { key: string; label: string }[] = [
-  { key: 'forecast', label: 'Projeção' },
+  { key: 'forecast', label: 'Proposto' },
   { key: 'budget', label: 'Orçamento' },
   { key: 'actual', label: 'Real' },
   { key: 'outlook', label: 'Outlook' },
@@ -117,6 +117,69 @@ function LineChart({ series, height = 180, labels }: { series: { name: string; c
   );
 }
 
+function fmtKE(n: number): string {
+  const v = n / 1000;
+  const d = Math.abs(v) < 100 ? 1 : 0;
+  return new Intl.NumberFormat('pt-PT', { maximumFractionDigits: d, minimumFractionDigits: 0 }).format(v) + ' k€';
+}
+function cellSeriesVal(c: StmtCell | undefined, sk: string): number {
+  if (!c) return 0;
+  return sk === 'budget' ? c.budget : sk === 'actual' ? (c.actual ?? 0) : sk === 'forecast' ? c.forecast : c.outlook;
+}
+type FYear = { idx: number; label: string; months: string[] };
+function buildYears(periods: string[]): FYear[] {
+  const out: FYear[] = [];
+  for (let i = 0; i < periods.length; i += 12) out.push({ idx: out.length, label: `Ano ${out.length + 1}`, months: periods.slice(i, i + 12) });
+  return out;
+}
+const PNL_METRICS: { key: string; label: string; good: boolean }[] = [
+  { key: 'revenue', label: 'Receita', good: true },
+  { key: 'gross', label: 'Result. bruto', good: true },
+  { key: 'opex', label: 'OPEX', good: false },
+  { key: 'operating', label: 'Result. operac.', good: true },
+];
+const PNL_COLORS: Record<string, string> = { forecast: '#6366f1', budget: '#f59e0b', outlook: '#10b981', actual: '#64748b' };
+
+function PnlChart({ months, series, type, cumulative, height = 200 }: { months: string[]; series: { name: string; color: string; values: number[] }[]; type: 'line' | 'col'; cumulative: boolean; height?: number }) {
+  const ser = series.map((sx) => ({ ...sx, values: cumulative ? sx.values.reduce((a: number[], v) => { a.push((a.length ? a[a.length - 1] : 0) + v); return a; }, []) : sx.values }));
+  const all = ser.flatMap((sx) => sx.values);
+  if (!all.length) return null;
+  const max = Math.max(...all, 0), min = Math.min(...all, 0), range = max - min || 1;
+  const n = months.length;
+  const W = 360, H = height, padL = 44, padR = 10, padT = 10, padB = 22;
+  const x = (i: number) => (n <= 1 ? padL : padL + (i * (W - padL - padR)) / (n - 1));
+  const groupW = (W - padL - padR) / n;
+  const xb = (i: number) => padL + (i + 0.5) * groupW;
+  const y = (v: number) => padT + (1 - (v - min) / range) * (H - padT - padB);
+  const tickVals = Array.from({ length: 5 }, (_, i) => min + (range * i) / 4);
+  const zeroY = y(0);
+  const barW = Math.max(2, (groupW * 0.8) / Math.max(1, ser.length));
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height }}>
+      {tickVals.map((tv, i) => (
+        <g key={i}>
+          <line x1={padL} y1={y(tv)} x2={W - padR} y2={y(tv)} stroke="#f1f5f9" />
+          <text x={padL - 4} y={y(tv) + 3} textAnchor="end" fontSize="9" fill="#94a3b8">{fmtK(tv)}</text>
+        </g>
+      ))}
+      {[5, 11].filter((i) => i < n).map((i) => (
+        <line key={`m${i}`} x1={type === 'col' ? xb(i) : x(i)} y1={padT} x2={type === 'col' ? xb(i) : x(i)} y2={H - padB} stroke="#e2e8f0" strokeDasharray="2 3" />
+      ))}
+      {min < 0 && max > 0 && <line x1={padL} y1={zeroY} x2={W - padR} y2={zeroY} stroke="#cbd5e1" />}
+      {type === 'line'
+        ? ser.map((sx) => <polyline key={sx.name} fill="none" stroke={sx.color} strokeWidth="2" points={sx.values.map((v, i) => `${x(i)},${y(v)}`).join(' ')} />)
+        : ser.map((sx, si) => sx.values.map((v, i) => {
+            const bx = padL + i * groupW + groupW * 0.1 + si * barW;
+            const yy = Math.min(y(v), zeroY), hh = Math.abs(y(v) - zeroY);
+            return <rect key={`${sx.name}${i}`} x={bx} y={yy} width={barW} height={Math.max(1, hh)} rx="1" fill={sx.color} />;
+          }))}
+      {[0, 5, 11].filter((i) => i < n).map((i) => (
+        <text key={`x${i}`} x={type === 'col' ? xb(i) : x(i)} y={H - 6} textAnchor={i === 0 ? 'start' : i === n - 1 ? 'end' : 'middle'} fontSize="9" fill="#94a3b8">{`M${i + 1}`}</text>
+      ))}
+    </svg>
+  );
+}
+
 export function FinanceConsole({ locale: _locale }: { locale: string }) {
   const supabase = useMemo(() => createClient(), []);
   const [data, setData] = useState<Overview | null>(null);
@@ -128,7 +191,10 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
   const [cash, setCash] = useState<number>(50000);
   const [calibrate, setCalibrate] = useState<boolean>(false);
   const [draftParams, setDraftParams] = useState<Record<string, Record<string, number>>>({});
-  const [editCell, setEditCell] = useState<{ line: string; period: string; series: string; value: string } | null>(null);
+  const [editCell, setEditCell] = useState<{ line: string; series: string; value: string; from: string; to: string; label: string } | null>(null);
+  const [plYear, setPlYear] = useState(0);
+  const [plType, setPlType] = useState<'line' | 'col'>('line');
+  const [plMetric, setPlMetric] = useState('revenue');
   const [compareData, setCompareData] = useState<Record<string, Overview>>({});
   const [compareIds, setCompareIds] = useState<string[]>([]);
 
@@ -226,24 +292,22 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
   }
 
   async function saveCell() {
-    if (!data || !editCell) return;
+    if (!data || !stmt || !editCell) return;
     const amount = editCell.value === '' ? null : Number(editCell.value);
     setBusy('cell');
     try {
-      const periodDate = `${editCell.period}-01`;
       if (editCell.series === 'budget') {
-        const { error } = await supabase.rpc('nl_finance_set_budget', {
-          p_line_key: editCell.line, p_period: periodDate, p_amount_eur: amount ?? 0, p_scenario_id: data.scenario_id,
-        });
-        if (error) throw error;
+        const fromY = editCell.from.slice(0, 7), toY = editCell.to.slice(0, 7);
+        const months = (stmt.periods || []).filter((mp) => mp >= fromY && mp <= toY);
+        for (const mp of months) {
+          const { error } = await supabase.rpc('nl_finance_set_budget', { p_line_key: editCell.line, p_period: `${mp}-01`, p_amount_eur: amount ?? 0, p_scenario_id: data.scenario_id });
+          if (error) throw error;
+        }
       } else {
-        const { error } = await supabase.rpc('nl_finance_set_override', {
-          p_scenario_id: data.scenario_id, p_line_key: editCell.line,
-          p_period_from: periodDate, p_amount_eur: amount, p_note: 'Ajuste manual (consola)',
-        });
+        const { error } = await supabase.rpc('nl_finance_set_override', { p_scenario_id: data.scenario_id, p_line_key: editCell.line, p_period_from: editCell.from, p_amount_eur: amount, p_note: 'Valor mensal (consola)', p_period_to: editCell.to });
         if (error) throw error;
       }
-      toast.success('Valor gravado.');
+      toast.success('Valor mensal aplicado ao ano.');
       setEditCell(null);
       await load(data.scenario_id);
     } catch {
@@ -400,78 +464,156 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
       )}
 
       {tab === 'pl' && stmt && (() => {
-        const cellMap = new Map<string, StmtCell>();
-        stmt.cells.forEach((c) => cellMap.set(`${c.row_key}|${c.period}`, c));
-        const per = stmt.periods || [];
-        const msIdx = Array.from(new Set([0, Math.floor(per.length * 0.25), Math.floor(per.length * 0.5), Math.floor(per.length * 0.75), per.length - 1])).filter((i) => i >= 0 && i < per.length);
-        const ms = msIdx.map((i) => per[i]);
-        const sv = (c: StmtCell | undefined) => !c ? 0 : (serie === 'budget' ? c.budget : serie === 'actual' ? (c.actual ?? 0) : serie === 'forecast' ? c.forecast : c.outlook);
-        const rowTotal = (r: StmtRow) => serie === 'budget' ? r.total_budget : serie === 'actual' ? (r.total_actual ?? 0) : serie === 'forecast' ? r.total_forecast : r.total_outlook;
+        const years = buildYears(stmt.periods || []);
+        if (!years.length) return <div className="text-center py-10 text-sm text-slate-400">Sem dados de P&L.</div>;
+        const yr = years[Math.min(plYear, years.length - 1)];
+        const nM = yr.months.length;
+        const cmap = new Map<string, StmtCell>();
+        stmt.cells.forEach((c) => cmap.set(`${c.row_key}|${c.period}`, c));
+        const lines = stmt.rows.filter((r) => r.level === 0);
+        const isOpex = (l: StmtRow) => (l.section || '').startsWith('opex');
+        const aggM = (pred: (l: StmtRow) => boolean, sk: string) => yr.months.map((p) => lines.filter(pred).reduce((acc, l) => acc + cellSeriesVal(cmap.get(`${l.row_key}|${p}`), sk), 0));
+        const metricMonthly = (metric: string, sk: string): number[] => {
+          if (metric === 'revenue') return aggM((l) => l.kind === 'revenue', sk);
+          if (metric === 'cogs') return aggM((l) => l.section === 'cogs', sk);
+          if (metric === 'opex') return aggM(isOpex, sk);
+          if (metric === 'gross') { const r = aggM((l) => l.kind === 'revenue', sk), c = aggM((l) => l.section === 'cogs', sk); return r.map((v, i) => v - c[i]); }
+          const r = aggM((l) => l.kind === 'revenue', sk), c = aggM((l) => l.section === 'cogs', sk), o = aggM(isOpex, sk);
+          return r.map((v, i) => v - c[i] - o[i]);
+        };
+        const rowMonthly = (row: StmtRow, sk: string): number[] => {
+          if (row.level === 0) return yr.months.map((p) => cellSeriesVal(cmap.get(`${row.row_key}|${p}`), sk));
+          switch (row.row_key) {
+            case 'sub:revenue': return aggM((l) => l.kind === 'revenue', sk);
+            case 'sub:cogs': return aggM((l) => l.section === 'cogs', sk);
+            case 'sub:opex_marketing': return aggM((l) => l.section === 'opex_marketing', sk);
+            case 'sub:opex_team': return aggM((l) => l.section === 'opex_team', sk);
+            case 'sub:opex_other': return aggM((l) => l.section === 'opex_other', sk);
+            case 'total:gross': return metricMonthly('gross', sk);
+            case 'total:opex': return aggM(isOpex, sk);
+            case 'total:operating':
+            case 'total:net': return metricMonthly('operating', sk);
+            default: return yr.months.map(() => 0);
+          }
+        };
+        const sumA = (a: number[], k?: number) => a.slice(0, k ?? a.length).reduce((x, v) => x + v, 0);
         const goodHigher = (r: StmtRow) => r.kind === 'revenue' || ['sub:revenue', 'total:gross', 'total:operating', 'total:net'].includes(r.row_key);
-        const editable = serie === 'budget' || serie === 'forecast' || serie === 'outlook';
+        const editableSerie = serie === 'budget' || serie === 'outlook';
+        const chartSeries = SERIES.map((sx) => ({ name: sx.label, color: PNL_COLORS[sx.key] || '#999', values: metricMonthly(plMetric, sx.key) }));
+
         return (
-          <div className="space-y-3">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              <KMini label="Receita (horizonte)" value={fmtEur(stmt.kpi.revenue)} />
-              <KMini label="Margem bruta" value={stmt.kpi.gross_margin_pct != null ? `${stmt.kpi.gross_margin_pct}%` : '—'} />
-              <KMini label="Resultado operacional" value={fmtEur(stmt.kpi.operating)} tone={stmt.kpi.operating >= 0 ? 'emerald' : 'rose'} />
-              <KMini label="Margem operacional" value={stmt.kpi.operating_margin_pct != null ? `${stmt.kpi.operating_margin_pct}%` : '—'} tone={(stmt.kpi.operating_margin_pct ?? 0) >= 0 ? 'emerald' : 'rose'} />
-            </div>
-            <div className="flex gap-1.5 flex-wrap items-center">
-              {SERIES.map((s) => (
-                <button key={s.key} onClick={() => setSerie(s.key)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-medium ${serie === s.key ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>{s.label}</button>
-              ))}
-              {editable && <span className="text-[11px] text-slate-400 inline-flex items-center gap-1 ml-1"><Pencil className="h-3 w-3" />toca num valor para editar</span>}
-            </div>
-            <Tip>{tipPL}</Tip>
-            <div className="rounded-xl border border-slate-200 overflow-hidden bg-white">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-slate-400 text-[11px] border-b border-slate-200">
-                      <th className="text-left font-medium px-3 py-2 sticky left-0 bg-white z-10">Rubrica</th>
-                      <th className="text-right font-medium px-3 py-2 whitespace-nowrap">Total</th>
-                      <th className="text-right font-medium px-2 py-2 whitespace-nowrap">Peso</th>
-                      <th className="text-right font-medium px-2 py-2 whitespace-nowrap">Δ Orç.</th>
-                      {ms.map((p) => <th key={p} className="text-right font-medium px-3 py-2 whitespace-nowrap">{p}</th>)}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {stmt.rows.map((r) => {
-                      const label = r.level === 0 ? (r.label || r.row_key) : (ROW_LABEL[r.row_key] || r.label_key || r.row_key);
-                      const rowCls = r.level === 2 ? 'bg-slate-100 font-semibold text-slate-900' : r.level === 1 ? 'bg-slate-50 font-medium text-slate-700' : 'text-slate-600';
-                      const stickyBg = r.level === 2 ? 'bg-slate-100' : r.level === 1 ? 'bg-slate-50' : 'bg-white';
-                      const vt = r.var_budget_abs === 0 ? 'text-slate-300' : (goodHigher(r) ? (r.var_budget_abs >= 0 ? 'text-emerald-600' : 'text-rose-600') : (r.var_budget_abs <= 0 ? 'text-emerald-600' : 'text-rose-600'));
-                      return (
-                        <tr key={r.row_key} className={`border-t border-slate-100 ${rowCls}`}>
-                          <td className={`px-3 py-2 sticky left-0 z-10 ${stickyBg}`}>{label}</td>
-                          <td className="px-3 py-2 text-right tabular-nums whitespace-nowrap">{fmtEur(rowTotal(r))}</td>
-                          <td className="px-2 py-2 text-right tabular-nums text-[11px] text-slate-400 whitespace-nowrap">{r.weight_pct != null ? `${r.weight_pct}%` : ''}</td>
-                          <td className={`px-2 py-2 text-right tabular-nums text-[11px] whitespace-nowrap ${vt}`} title="Outlook vs Orçamento">{r.var_budget_abs !== 0 ? `${r.var_budget_abs > 0 ? '+' : ''}${fmtK(r.var_budget_abs)}${r.var_budget_pct != null ? ` (${r.var_budget_pct > 0 ? '+' : ''}${r.var_budget_pct}%)` : ''}` : '—'}</td>
-                          {ms.map((p) => {
-                            const c = cellMap.get(`${r.row_key}|${p}`);
-                            const v = sv(c);
-                            return (
-                              <td key={p} className="px-3 py-2 text-right tabular-nums whitespace-nowrap">
-                                {r.level === 0 && editable ? (
-                                  <button onClick={() => setEditCell({ line: r.row_key, period: p, series: serie === 'outlook' ? 'forecast' : serie, value: String(v) })}
-                                    className="hover:text-indigo-600 hover:underline decoration-dotted">{fmtEur(v)}</button>
-                                ) : <span>{fmtEur(v)}</span>}
-                              </td>
-                            );
-                          })}
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <div className="flex gap-1.5">
+                {years.map((yy) => (
+                  <button key={yy.idx} onClick={() => setPlYear(yy.idx)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${plYear === yy.idx ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>{yy.label}</button>
+                ))}
               </div>
+              <span className="text-[11px] text-slate-400">{yr.months[0]} → {yr.months[nM - 1]}</span>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {PNL_METRICS.map((m) => {
+                const ol = metricMonthly(m.key, 'outlook'); const c12 = sumA(ol); const c6 = sumA(ol, 6); const mensal = c12 / nM;
+                const d = c12 - sumA(metricMonthly(m.key, 'budget'));
+                const dGood = m.good ? d >= 0 : d <= 0;
+                return (
+                  <div key={m.key} className="rounded-xl border border-slate-200 bg-white p-3">
+                    <div className="text-[11px] text-slate-400 mb-1">{m.label}</div>
+                    <div className="text-base font-bold text-slate-900 tabular-nums leading-none">{fmtKE(c12)}</div>
+                    <div className="mt-1.5 flex items-center justify-between text-[10px] text-slate-400">
+                      <span>M6 {fmtKE(c6)}</span>
+                      <span>{fmtEur(Math.round(mensal))}/mês</span>
+                    </div>
+                    <div className={`mt-1 text-[10px] font-medium ${dGood ? 'text-emerald-600' : 'text-rose-600'}`}>{d >= 0 ? '+' : ''}{fmtKE(d)} vs orç.</div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="rounded-xl border border-slate-200 bg-white p-3">
+              <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
+                <div className="flex gap-1 flex-wrap">
+                  {PNL_METRICS.map((m) => (
+                    <button key={m.key} onClick={() => setPlMetric(m.key)}
+                      className={`px-2 py-1 rounded-md text-[11px] font-medium ${plMetric === m.key ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'}`}>{m.label}</button>
+                  ))}
+                </div>
+                <button onClick={() => setPlType(plType === 'line' ? 'col' : 'line')}
+                  className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium bg-slate-100 text-slate-600 hover:bg-slate-200">
+                  {plType === 'line' ? <BarChart3 className="h-3.5 w-3.5" /> : <TrendingUp className="h-3.5 w-3.5" />}
+                  {plType === 'line' ? 'Colunas' : 'Linhas'}
+                </button>
+              </div>
+              <p className="text-[11px] text-slate-400 mb-1">Acumulado ao longo do ano (k€) · marcas em M6 e M12</p>
+              <PnlChart months={yr.months} type={plType} cumulative series={chartSeries} />
+              <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2">
+                {SERIES.map((sx) => (
+                  <span key={sx.key} className="inline-flex items-center gap-1 text-[10px] text-slate-500">
+                    <span className="h-2 w-2 rounded-full" style={{ background: PNL_COLORS[sx.key] }} />{sx.label}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <div className="flex gap-1.5 flex-wrap items-center mb-2">
+                {SERIES.map((sx) => (
+                  <button key={sx.key} onClick={() => setSerie(sx.key)}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-medium ${serie === sx.key ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>{sx.label}</button>
+                ))}
+                {editableSerie && <span className="text-[11px] text-slate-400 inline-flex items-center gap-1 ml-1"><Pencil className="h-3 w-3" />toca no valor mensal</span>}
+              </div>
+              <Tip>{tipPL}</Tip>
+              <div className="rounded-xl border border-slate-200 overflow-hidden bg-white mt-1">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-slate-400 text-[11px] border-b border-slate-200">
+                        <th className="text-left font-medium px-3 py-2 sticky left-0 bg-white z-10">Rubrica</th>
+                        <th className="text-right font-medium px-2 py-2 whitespace-nowrap">Mensal (€)</th>
+                        <th className="text-right font-medium px-2 py-2 whitespace-nowrap">Acum. M6</th>
+                        <th className="text-right font-medium px-2 py-2 whitespace-nowrap">Acum. M12</th>
+                        <th className="text-right font-medium px-2 py-2 whitespace-nowrap">Δ Orç.</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {stmt.rows.map((r) => {
+                        const m = rowMonthly(r, serie);
+                        const c12 = sumA(m); const c6 = sumA(m, 6); const mensal = c12 / nM;
+                        const dv = c12 - sumA(rowMonthly(r, 'budget'));
+                        const label = r.level === 0 ? (r.label || r.row_key) : (ROW_LABEL[r.row_key] || r.label_key || r.row_key);
+                        const rowCls = r.level === 2 ? 'bg-slate-100 font-semibold text-slate-900' : r.level === 1 ? 'bg-slate-50 font-medium text-slate-700' : 'text-slate-600';
+                        const stickyBg = r.level === 2 ? 'bg-slate-100' : r.level === 1 ? 'bg-slate-50' : 'bg-white';
+                        const vt = dv === 0 ? 'text-slate-300' : (goodHigher(r) ? (dv >= 0 ? 'text-emerald-600' : 'text-rose-600') : (dv <= 0 ? 'text-emerald-600' : 'text-rose-600'));
+                        const canEdit = r.level === 0 && editableSerie;
+                        return (
+                          <tr key={r.row_key} className={`border-t border-slate-100 ${rowCls}`}>
+                            <td className={`px-3 py-2 sticky left-0 z-10 ${stickyBg}`}>{label}</td>
+                            <td className="px-2 py-2 text-right tabular-nums whitespace-nowrap">
+                              {canEdit ? (
+                                <button onClick={() => setEditCell({ line: r.row_key, series: serie, value: String(Math.round(mensal)), from: `${yr.months[0]}-01`, to: `${yr.months[nM - 1]}-01`, label: r.label || r.row_key })}
+                                  className="hover:text-indigo-600 hover:underline decoration-dotted">{fmtEur(Math.round(mensal))}</button>
+                              ) : <span>{fmtEur(Math.round(mensal))}</span>}
+                            </td>
+                            <td className="px-2 py-2 text-right tabular-nums text-slate-500 whitespace-nowrap">{fmtKE(c6)}</td>
+                            <td className="px-2 py-2 text-right tabular-nums whitespace-nowrap">{fmtKE(c12)}</td>
+                            <td className={`px-2 py-2 text-right tabular-nums text-[11px] whitespace-nowrap ${vt}`}>{dv !== 0 ? `${dv > 0 ? '+' : ''}${fmtKE(dv)}` : '—'}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <p className="text-[11px] text-slate-400 mt-1.5">Mensal = média por mês no ano (€). Acumulados em k€.</p>
             </div>
           </div>
         );
       })()}
       {tab === 'pl' && !stmt && <div className="text-center py-10 text-sm text-slate-400">A preparar o P&L…</div>}
+
 
       {tab === 'canais' && (
         <div className="space-y-3">
@@ -592,41 +734,28 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 p-4" onClick={() => setEditCell(null)}>
           <div className="bg-white rounded-2xl p-5 w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-slate-800">Editar valor</h3>
+              <h3 className="font-semibold text-slate-800">Valor mensal</h3>
               <button onClick={() => setEditCell(null)}><X className="h-5 w-5 text-slate-400" /></button>
             </div>
             <p className="text-xs text-slate-500 mb-3">
-              {data.lines.find((l) => l.line_key === editCell.line)?.label} · {editCell.period} ·{' '}
-              {editCell.series === 'budget' ? 'Orçamento' : 'Override da projeção'}
+              {editCell.label} · {editCell.series === 'budget' ? 'Orçamento' : 'Outlook'} · aplica a todos os meses do ano
             </p>
             <div className="flex items-center gap-2">
               <input type="number" autoFocus value={editCell.value}
                 onChange={(e) => setEditCell({ ...editCell, value: e.target.value })}
                 placeholder="(vazio = repor base)"
                 className="flex-1 text-sm rounded-lg border border-slate-200 px-3 py-2 text-right tabular-nums" />
-              <span className="text-sm text-slate-500">€</span>
+              <span className="text-sm text-slate-500">€/mês</span>
             </div>
-            {editCell.series !== 'budget' && (
-              <p className="text-[11px] text-slate-400 mt-2">Aplica deste mês em diante. Deixa vazio para repor o valor proposto pelo motor.</p>
-            )}
+            <p className="text-[11px] text-slate-400 mt-2">{editCell.series === 'budget' ? 'Define o orçamento mensal do ano.' : 'Aplica este valor a cada mês do ano. Vazio repõe o valor proposto pelo motor.'}</p>
             <button onClick={saveCell} disabled={busy === 'cell'}
               className="mt-4 w-full inline-flex items-center justify-center gap-1.5 rounded-lg bg-indigo-600 text-white text-sm font-medium py-2.5 hover:bg-indigo-700 disabled:opacity-50">
               {busy === 'cell' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-              Gravar
+              Aplicar ao ano
             </button>
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-function KMini({ label, value, tone = 'slate' }: { label: string; value: string; tone?: 'slate' | 'emerald' | 'rose' }) {
-  const c = tone === 'emerald' ? 'text-emerald-600' : tone === 'rose' ? 'text-rose-600' : 'text-slate-900';
-  return (
-    <div className="rounded-xl border border-slate-200 p-3 bg-white">
-      <div className="text-[11px] text-slate-500 leading-tight">{label}</div>
-      <div className={`text-base font-semibold tabular-nums ${c}`}>{value}</div>
     </div>
   );
 }
