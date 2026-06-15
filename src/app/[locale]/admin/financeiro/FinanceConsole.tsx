@@ -31,6 +31,8 @@ type StmtRow = { row_key: string; level: number; kind: string; section: string |
 type StmtCell = { row_key: string; period: string; outlook: number; budget: number; actual: number | null; forecast: number };
 type Statement = { ok: boolean; periods: string[]; rows: StmtRow[]; cells: StmtCell[]; kpi: { revenue: number; cogs: number; gross: number; gross_margin_pct: number | null; opex: number; operating: number; operating_margin_pct: number | null; net: number; net_margin_pct: number | null } };
 
+type Comp = { line_key: string; comp_key: string; label: string; weight_pct: number; sort: number };
+
 const ROW_LABEL: Record<string, string> = {
   'sub:revenue': 'Receita total', 'sub:cogs': 'Total custos diretos', 'sub:opex_marketing': 'Total Marketing & Vendas',
   'sub:opex_team': 'Total Equipa', 'sub:opex_other': 'Total Outros custos', 'total:gross': 'Lucro bruto',
@@ -196,6 +198,7 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
   const [plType, setPlType] = useState<'line' | 'col'>('line');
   const [plMetric, setPlMetric] = useState('revenue');
   const [plOpen, setPlOpen] = useState<Set<string>>(new Set());
+  const [comps, setComps] = useState<Comp[]>([]);
   const [compareData, setCompareData] = useState<Record<string, Overview>>({});
   const [compareIds, setCompareIds] = useState<string[]>([]);
 
@@ -210,8 +213,14 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
       ov.channels.forEach((c) => { dp[c.channel_key] = { ...c.params }; });
       setDraftParams(dp);
       try {
-        const { data: st } = await supabase.rpc('nl_finance_pl_statement', { p_scenario_id: ov.scenario_id });
-        setStmt((st as Statement)?.ok ? (st as Statement) : null);
+        const [{ data: st }, { data: cp }] = await Promise.all([
+          supabase.rpc('nl_finance_pl_statement', { p_scenario_id: ov.scenario_id }),
+          supabase.rpc('nl_finance_pl_components', { p_scenario_id: ov.scenario_id }),
+        ]);
+        const stt = (st as Statement)?.ok ? (st as Statement) : null;
+        setStmt(stt);
+        setComps(((cp as { components?: Comp[] })?.components) || []);
+        if (stt) { const subs = stt.rows.filter((r) => r.level === 1).map((r) => r.row_key); setPlOpen((prev) => (prev.size ? prev : new Set(subs))); }
       } catch { setStmt(null); }
     } catch {
       toast.error('Falha ao carregar a consola financeira.');
@@ -501,7 +510,12 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
         const goodHigher = (r: StmtRow) => r.kind === 'revenue' || ['sub:revenue', 'total:gross', 'total:operating', 'total:net'].includes(r.row_key);
         const editableSerie = serie === 'budget' || serie === 'outlook';
         const subKeys = stmt.rows.filter((r) => r.level === 1).map((r) => r.row_key);
-        const allOpen = subKeys.length > 0 && subKeys.every((k) => plOpen.has(k));
+        const compLineKeys = Array.from(new Set(comps.map((c) => c.line_key)));
+        const expandable = [...subKeys, ...compLineKeys];
+        const allOpen = expandable.length > 0 && expandable.every((k) => plOpen.has(k));
+        const compsByLine = new Map<string, Comp[]>();
+        comps.forEach((c) => { const a = compsByLine.get(c.line_key) || []; a.push(c); compsByLine.set(c.line_key, a); });
+        const togglePlOpen = (k: string) => setPlOpen((prev) => { const nx = new Set(prev); if (nx.has(k)) nx.delete(k); else nx.add(k); return nx; });
         const chartSeries = SERIES.map((sx) => ({ name: sx.label, color: PNL_COLORS[sx.key] || '#999', values: metricMonthly(plMetric, sx.key) }));
 
         return (
@@ -567,7 +581,7 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
                     className={`px-2.5 py-1 rounded-lg text-xs font-medium ${serie === sx.key ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>{sx.label}</button>
                 ))}
                 {editableSerie && <span className="text-[11px] text-slate-400 inline-flex items-center gap-1 ml-1"><Pencil className="h-3 w-3" />toca no valor mensal</span>}
-                <button onClick={() => setPlOpen(allOpen ? new Set() : new Set(subKeys))} className="ml-auto inline-flex items-center gap-1 text-[11px] font-medium text-indigo-600 hover:text-indigo-700">
+                <button onClick={() => setPlOpen(allOpen ? new Set() : new Set(expandable))} className="ml-auto inline-flex items-center gap-1 text-[11px] font-medium text-indigo-600 hover:text-indigo-700">
                   <ChevronDown className={`h-3.5 w-3.5 transition-transform ${allOpen ? '' : '-rotate-90'}`} />{allOpen ? 'Recolher tudo' : 'Expandir tudo'}
                 </button>
               </div>
@@ -588,12 +602,14 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
                       {(() => {
                         const childrenOf = (subKey: string) => lines.filter((l) => l.section === subKey.slice(4)).sort((a, b) => a.ord - b.ord);
                         const display = stmt.rows.filter((r) => r.level >= 1).sort((a, b) => a.ord - b.ord);
+                        const valsCells = (m: number[]) => { const c12 = sumA(m); return { c12, c6: sumA(m, 6), mensal: c12 / nM }; };
                         const rowTr = (r: StmtRow, isChild: boolean) => {
                           const m = rowMonthly(r, serie);
-                          const c12 = sumA(m); const c6 = sumA(m, 6); const mensal = c12 / nM;
+                          const { c12, c6, mensal } = valsCells(m);
                           const dv = c12 - sumA(rowMonthly(r, 'budget'));
                           const isSub = r.level === 1; const isTotal = r.level === 2;
                           const open = plOpen.has(r.row_key);
+                          const hasComps = isChild && (compsByLine.get(r.row_key)?.length ?? 0) > 0;
                           const label = ROW_LABEL[r.row_key] || r.label || r.label_key || r.row_key;
                           const rowCls = isTotal ? 'bg-slate-100 font-semibold text-slate-900' : isSub ? 'bg-slate-50 font-medium text-slate-700' : 'text-slate-600';
                           const stickyBg = isTotal ? 'bg-slate-100' : isSub ? 'bg-slate-50' : 'bg-white';
@@ -603,12 +619,15 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
                             <tr key={r.row_key} className={`border-t border-slate-100 ${rowCls}`}>
                               <td className={`px-3 py-2 sticky left-0 z-10 ${stickyBg}`}>
                                 {isSub ? (
-                                  <button onClick={() => setPlOpen((prev) => { const nx = new Set(prev); if (nx.has(r.row_key)) nx.delete(r.row_key); else nx.add(r.row_key); return nx; })}
-                                    className="inline-flex items-center gap-1.5 text-left">
+                                  <button onClick={() => togglePlOpen(r.row_key)} className="inline-flex items-center gap-1.5 text-left">
                                     <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform ${open ? '' : '-rotate-90'}`} />{label}
                                   </button>
                                 ) : isChild ? (
-                                  <span className="pl-5 block text-slate-500">{r.label || r.row_key}</span>
+                                  hasComps ? (
+                                    <button onClick={() => togglePlOpen(r.row_key)} className="inline-flex items-center gap-1 text-left pl-3 text-slate-500">
+                                      <ChevronDown className={`h-3 w-3 text-slate-300 transition-transform ${open ? '' : '-rotate-90'}`} />{r.label || r.row_key}
+                                    </button>
+                                  ) : <span className="pl-[26px] block text-slate-500">{r.label || r.row_key}</span>
                                 ) : <span>{label}</span>}
                               </td>
                               <td className="px-2 py-2 text-right tabular-nums whitespace-nowrap">
@@ -623,9 +642,28 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
                             </tr>
                           );
                         };
+                        const compTr = (l: StmtRow, c: Comp) => {
+                          const lm = rowMonthly(l, serie).map((v) => (v * c.weight_pct) / 100);
+                          const { c12, c6, mensal } = valsCells(lm);
+                          return (
+                            <tr key={`${l.row_key}:${c.comp_key}`} className="border-t border-slate-100 text-slate-400">
+                              <td className="px-3 py-1.5 sticky left-0 z-10 bg-white"><span className="pl-[42px] block text-[12px]">{c.label} <span className="text-slate-300">· {c.weight_pct}%</span></span></td>
+                              <td className="px-2 py-1.5 text-right tabular-nums whitespace-nowrap text-[12px]">{fmtEur(Math.round(mensal))}</td>
+                              <td className="px-2 py-1.5 text-right tabular-nums whitespace-nowrap text-[12px]">{fmtKE(c6)}</td>
+                              <td className="px-2 py-1.5 text-right tabular-nums whitespace-nowrap text-[12px]">{fmtKE(c12)}</td>
+                              <td className="px-2 py-1.5 text-right text-[11px] text-slate-300">—</td>
+                            </tr>
+                          );
+                        };
                         return display.flatMap((r) => {
                           const out = [rowTr(r, false)];
-                          if (r.level === 1 && plOpen.has(r.row_key)) childrenOf(r.row_key).forEach((l) => out.push(rowTr(l, true)));
+                          if (r.level === 1 && plOpen.has(r.row_key)) {
+                            childrenOf(r.row_key).forEach((l) => {
+                              out.push(rowTr(l, true));
+                              const cs = compsByLine.get(l.row_key);
+                              if (cs && plOpen.has(l.row_key)) cs.forEach((c) => out.push(compTr(l, c)));
+                            });
+                          }
                           return out;
                         });
                       })()}
