@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import {
   Loader2, TrendingUp, Wallet, AlertTriangle, Sliders, Table2,
   Sparkles, RefreshCw, Check, Flame, Target,
-  Pencil, GitCompare, BarChart3, X, Lightbulb,
+  Pencil, GitCompare, BarChart3, X, Lightbulb, ChevronDown,
 } from 'lucide-react';
 
 type Channel = { channel_key: string; label: string; enabled: boolean; params: Record<string, number>; sort: number };
@@ -195,6 +195,7 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
   const [plYear, setPlYear] = useState(0);
   const [plType, setPlType] = useState<'line' | 'col'>('line');
   const [plMetric, setPlMetric] = useState('revenue');
+  const [plOpen, setPlOpen] = useState<Set<string>>(new Set());
   const [compareData, setCompareData] = useState<Record<string, Overview>>({});
   const [compareIds, setCompareIds] = useState<string[]>([]);
 
@@ -499,6 +500,8 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
         const sumA = (a: number[], k?: number) => a.slice(0, k ?? a.length).reduce((x, v) => x + v, 0);
         const goodHigher = (r: StmtRow) => r.kind === 'revenue' || ['sub:revenue', 'total:gross', 'total:operating', 'total:net'].includes(r.row_key);
         const editableSerie = serie === 'budget' || serie === 'outlook';
+        const subKeys = stmt.rows.filter((r) => r.level === 1).map((r) => r.row_key);
+        const allOpen = subKeys.length > 0 && subKeys.every((k) => plOpen.has(k));
         const chartSeries = SERIES.map((sx) => ({ name: sx.label, color: PNL_COLORS[sx.key] || '#999', values: metricMonthly(plMetric, sx.key) }));
 
         return (
@@ -564,6 +567,9 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
                     className={`px-2.5 py-1 rounded-lg text-xs font-medium ${serie === sx.key ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>{sx.label}</button>
                 ))}
                 {editableSerie && <span className="text-[11px] text-slate-400 inline-flex items-center gap-1 ml-1"><Pencil className="h-3 w-3" />toca no valor mensal</span>}
+                <button onClick={() => setPlOpen(allOpen ? new Set() : new Set(subKeys))} className="ml-auto inline-flex items-center gap-1 text-[11px] font-medium text-indigo-600 hover:text-indigo-700">
+                  <ChevronDown className={`h-3.5 w-3.5 transition-transform ${allOpen ? '' : '-rotate-90'}`} />{allOpen ? 'Recolher tudo' : 'Expandir tudo'}
+                </button>
               </div>
               <Tip>{tipPL}</Tip>
               <div className="rounded-xl border border-slate-200 overflow-hidden bg-white mt-1">
@@ -579,30 +585,50 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
                       </tr>
                     </thead>
                     <tbody>
-                      {stmt.rows.map((r) => {
-                        const m = rowMonthly(r, serie);
-                        const c12 = sumA(m); const c6 = sumA(m, 6); const mensal = c12 / nM;
-                        const dv = c12 - sumA(rowMonthly(r, 'budget'));
-                        const label = r.level === 0 ? (r.label || r.row_key) : (ROW_LABEL[r.row_key] || r.label_key || r.row_key);
-                        const rowCls = r.level === 2 ? 'bg-slate-100 font-semibold text-slate-900' : r.level === 1 ? 'bg-slate-50 font-medium text-slate-700' : 'text-slate-600';
-                        const stickyBg = r.level === 2 ? 'bg-slate-100' : r.level === 1 ? 'bg-slate-50' : 'bg-white';
-                        const vt = dv === 0 ? 'text-slate-300' : (goodHigher(r) ? (dv >= 0 ? 'text-emerald-600' : 'text-rose-600') : (dv <= 0 ? 'text-emerald-600' : 'text-rose-600'));
-                        const canEdit = r.level === 0 && editableSerie;
-                        return (
-                          <tr key={r.row_key} className={`border-t border-slate-100 ${rowCls}`}>
-                            <td className={`px-3 py-2 sticky left-0 z-10 ${stickyBg}`}>{label}</td>
-                            <td className="px-2 py-2 text-right tabular-nums whitespace-nowrap">
-                              {canEdit ? (
-                                <button onClick={() => setEditCell({ line: r.row_key, series: serie, value: String(Math.round(mensal)), from: `${yr.months[0]}-01`, to: `${yr.months[nM - 1]}-01`, label: r.label || r.row_key })}
-                                  className="hover:text-indigo-600 hover:underline decoration-dotted">{fmtEur(Math.round(mensal))}</button>
-                              ) : <span>{fmtEur(Math.round(mensal))}</span>}
-                            </td>
-                            <td className="px-2 py-2 text-right tabular-nums text-slate-500 whitespace-nowrap">{fmtKE(c6)}</td>
-                            <td className="px-2 py-2 text-right tabular-nums whitespace-nowrap">{fmtKE(c12)}</td>
-                            <td className={`px-2 py-2 text-right tabular-nums text-[11px] whitespace-nowrap ${vt}`}>{dv !== 0 ? `${dv > 0 ? '+' : ''}${fmtKE(dv)}` : '—'}</td>
-                          </tr>
-                        );
-                      })}
+                      {(() => {
+                        const childrenOf = (subKey: string) => lines.filter((l) => l.section === subKey.slice(4)).sort((a, b) => a.ord - b.ord);
+                        const display = stmt.rows.filter((r) => r.level >= 1).sort((a, b) => a.ord - b.ord);
+                        const rowTr = (r: StmtRow, isChild: boolean) => {
+                          const m = rowMonthly(r, serie);
+                          const c12 = sumA(m); const c6 = sumA(m, 6); const mensal = c12 / nM;
+                          const dv = c12 - sumA(rowMonthly(r, 'budget'));
+                          const isSub = r.level === 1; const isTotal = r.level === 2;
+                          const open = plOpen.has(r.row_key);
+                          const label = ROW_LABEL[r.row_key] || r.label || r.label_key || r.row_key;
+                          const rowCls = isTotal ? 'bg-slate-100 font-semibold text-slate-900' : isSub ? 'bg-slate-50 font-medium text-slate-700' : 'text-slate-600';
+                          const stickyBg = isTotal ? 'bg-slate-100' : isSub ? 'bg-slate-50' : 'bg-white';
+                          const vt = dv === 0 ? 'text-slate-300' : (goodHigher(r) ? (dv >= 0 ? 'text-emerald-600' : 'text-rose-600') : (dv <= 0 ? 'text-emerald-600' : 'text-rose-600'));
+                          const canEdit = isChild && editableSerie;
+                          return (
+                            <tr key={r.row_key} className={`border-t border-slate-100 ${rowCls}`}>
+                              <td className={`px-3 py-2 sticky left-0 z-10 ${stickyBg}`}>
+                                {isSub ? (
+                                  <button onClick={() => setPlOpen((prev) => { const nx = new Set(prev); if (nx.has(r.row_key)) nx.delete(r.row_key); else nx.add(r.row_key); return nx; })}
+                                    className="inline-flex items-center gap-1.5 text-left">
+                                    <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform ${open ? '' : '-rotate-90'}`} />{label}
+                                  </button>
+                                ) : isChild ? (
+                                  <span className="pl-5 block text-slate-500">{r.label || r.row_key}</span>
+                                ) : <span>{label}</span>}
+                              </td>
+                              <td className="px-2 py-2 text-right tabular-nums whitespace-nowrap">
+                                {canEdit ? (
+                                  <button onClick={() => setEditCell({ line: r.row_key, series: serie, value: String(Math.round(mensal)), from: `${yr.months[0]}-01`, to: `${yr.months[nM - 1]}-01`, label: r.label || r.row_key })}
+                                    className="hover:text-indigo-600 hover:underline decoration-dotted">{fmtEur(Math.round(mensal))}</button>
+                                ) : <span>{fmtEur(Math.round(mensal))}</span>}
+                              </td>
+                              <td className="px-2 py-2 text-right tabular-nums text-slate-500 whitespace-nowrap">{fmtKE(c6)}</td>
+                              <td className="px-2 py-2 text-right tabular-nums whitespace-nowrap">{fmtKE(c12)}</td>
+                              <td className={`px-2 py-2 text-right tabular-nums text-[11px] whitespace-nowrap ${vt}`}>{dv !== 0 ? `${dv > 0 ? '+' : ''}${fmtKE(dv)}` : '—'}</td>
+                            </tr>
+                          );
+                        };
+                        return display.flatMap((r) => {
+                          const out = [rowTr(r, false)];
+                          if (r.level === 1 && plOpen.has(r.row_key)) childrenOf(r.row_key).forEach((l) => out.push(rowTr(l, true)));
+                          return out;
+                        });
+                      })()}
                     </tbody>
                   </table>
                 </div>
