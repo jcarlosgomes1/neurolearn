@@ -37,6 +37,9 @@ export function Markdown({ source, className }: { source: string; className?: st
       if (current) blocks.push(current); current = null; blocks.push({ type: 'hr', content: [] });
     } else if (line.trim() === '') {
       if (current) blocks.push(current); current = null;
+    } else if (/^\s*\|.*\|/.test(line)) {
+      if (current?.type !== 'table') { if (current) blocks.push(current); current = { type: 'table', content: [] }; }
+      current.content.push(line.trim());
     } else {
       if (current?.type !== 'p') { if (current) blocks.push(current); current = { type: 'p', content: [] }; }
       current.content.push(line);
@@ -53,6 +56,20 @@ export function Markdown({ source, className }: { source: string; className?: st
           const cls = level === 1 ? 'text-3xl font-bold mt-8 mb-4 text-slate-900' : level === 2 ? 'text-2xl font-bold mt-6 mb-3 text-slate-900' : level === 3 ? 'text-xl font-semibold mt-5 mb-2 text-slate-900' : 'text-lg font-semibold mt-4 mb-2 text-slate-900';
           const Tag = `h${level}` as 'h1'|'h2'|'h3'|'h4'|'h5'|'h6';
           return <Tag key={i} className={cls} dangerouslySetInnerHTML={{ __html: html }} />;
+        }
+        if (b.type === 'table') {
+          const rows = b.content.map((r) => r.replace(/^\s*\|/, '').replace(/\|\s*$/, '').split('|').map((c) => c.trim()));
+          const isSep = (cells: string[]) => cells.length > 0 && cells.every((c) => /^:?-+:?$/.test(c.replace(/\s/g, '')));
+          const header = rows[0] || [];
+          const bodyRows = rows.slice(1).filter((r) => !isSep(r));
+          return (
+            <div key={i} className="my-4 overflow-x-auto rounded-lg border border-slate-200">
+              <table className="w-full text-sm border-collapse">
+                <thead><tr className="bg-slate-50 border-b border-slate-200">{header.map((c, j) => <th key={j} className="text-left font-semibold text-slate-900 px-3 py-2 align-top" dangerouslySetInnerHTML={{ __html: inline(c) }} />)}</tr></thead>
+                <tbody>{bodyRows.map((r, ri) => <tr key={ri} className="border-b border-slate-100 last:border-0">{r.map((c, j) => <td key={j} className="px-3 py-2 text-slate-700 align-top" dangerouslySetInnerHTML={{ __html: inline(c) }} />)}</tr>)}</tbody>
+              </table>
+            </div>
+          );
         }
         if (b.type === 'ul') return <ul key={i} className="my-4 space-y-1.5 list-disc list-inside text-slate-700">{b.content.map((c,j)=><li key={j} dangerouslySetInnerHTML={{__html:inline(c)}} />)}</ul>;
         if (b.type === 'ol') return <ol key={i} className="my-4 space-y-1.5 list-decimal list-inside text-slate-700">{b.content.map((c,j)=><li key={j} dangerouslySetInnerHTML={{__html:inline(c)}} />)}</ol>;
