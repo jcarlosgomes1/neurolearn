@@ -18,7 +18,7 @@ interface Cert {
   verification_code: string;
   issued_at: string;
 }
-interface Notif { id: string; title: string; message?: string; read_at?: string | null; created_at: string }
+interface Notif { id: string; title: string; message?: string; read_at?: string | null; created_at: string; link_kind?: string | null; link_id?: string | null; metadata?: Record<string, unknown> | null }
 
 const PLATFORM_BRAND = '#6366f1';
 
