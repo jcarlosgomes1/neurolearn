@@ -49,7 +49,16 @@ export function MobileBottomNav() {
     }
     load();
     const id = setInterval(load, 60000);
-    return () => clearInterval(id);
+    const onVisible = () => { if (document.visibilityState === 'visible') load(); };
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', load);
+    window.addEventListener('nl:notifications-changed', load);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('focus', load);
+      window.removeEventListener('nl:notifications-changed', load);
+    };
   }, [loggedIn]);
 
   // Comportamento estilo LinkedIn: esconde ao descer, reaparece (fixo) ao subir.

@@ -23,6 +23,10 @@ function link(kind?: string, id?: string): string | null {
   return null;
 }
 
+function notifyBadge() {
+  try { window.dispatchEvent(new Event('nl:notifications-changed')); } catch {}
+}
+
 export function NotificacoesClient({ initial }: { initial: any[] }) {
   const t = useTranslations();
   const [items, setItems] = useState(initial);
@@ -35,6 +39,7 @@ export function NotificacoesClient({ initial }: { initial: any[] }) {
     const sb = createClient();
     await sb.rpc('nl_notifications_mark_read', { p_id: id });
     setItems((p) => p.map((n) => n.id === id ? { ...n, read_at: new Date().toISOString() } : n));
+    notifyBadge();
   }
 
   async function markAll() {
@@ -43,12 +48,14 @@ export function NotificacoesClient({ initial }: { initial: any[] }) {
     if (ids.length === 0) return;
     await Promise.all(ids.map((nid: string) => sb.rpc('nl_notifications_mark_read', { p_id: nid })));
     setItems((p) => p.map((n) => ({ ...n, read_at: n.read_at || new Date().toISOString() })));
+    notifyBadge();
   }
 
   async function remove(id: string) {
     const sb = createClient();
     await sb.rpc('nl_notifications_delete', { p_notification_id: id });
     setItems((p) => p.filter(n => n.id !== id));
+    notifyBadge();
   }
 
   return (
