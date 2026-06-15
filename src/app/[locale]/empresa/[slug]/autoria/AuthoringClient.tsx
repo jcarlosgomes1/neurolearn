@@ -23,6 +23,7 @@ export function AuthoringClient({ orgId, orgSlug, isAdmin }: { orgId: string; or
   const [orgItems, setOrgItems] = useState<Item[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [isPlatAdmin, setIsPlatAdmin] = useState(false);
+  const [bridgeEnabled, setBridgeEnabled] = useState(false);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
   const [title, setTitle] = useState('');
@@ -41,8 +42,8 @@ export function AuthoringClient({ orgId, orgSlug, isAdmin }: { orgId: string; or
       setMine(((m as { items?: Item[] })?.items) || []);
       if (isAdmin) {
         const { data: o } = await sb.rpc('nl_academy_authoring_for_org', { p_org_id: orgId });
-        const r = o as { items?: Item[]; members?: Member[]; is_platform_admin?: boolean };
-        setOrgItems(r?.items || []); setMembers(r?.members || []); setIsPlatAdmin(!!r?.is_platform_admin);
+        const r = o as { items?: Item[]; members?: Member[]; is_platform_admin?: boolean; marketplace_bridge_enabled?: boolean };
+        setOrgItems(r?.items || []); setMembers(r?.members || []); setIsPlatAdmin(!!r?.is_platform_admin); setBridgeEnabled(!!r?.marketplace_bridge_enabled);
       }
     } catch { /* */ } finally { setLoading(false); }
   }, [orgId, isAdmin]);
@@ -137,21 +138,21 @@ export function AuthoringClient({ orgId, orgSlug, isAdmin }: { orgId: string; or
                       {busy === it.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Award className="h-3 w-3" />}{safeT('academy.authoring.approve_btn', 'Reconhecer')}
                     </button>
                   )}
-                  {it.status === 'published' && (it.marketplace_status || 'internal') === 'internal' && (
+                  {bridgeEnabled && it.status === 'published' && (it.marketplace_status || 'internal') === 'internal' && (
                     <button onClick={() => proposeMarket(it.id)} disabled={busy === it.id} className="inline-flex items-center gap-1 rounded-lg bg-indigo-50 text-indigo-700 text-xs font-medium px-2.5 py-1.5 hover:bg-indigo-100 disabled:opacity-50">
                       {busy === it.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Globe className="h-3 w-3" />}{safeT('academy.authoring.mkt_propose', 'Propor ao marketplace')}
                     </button>
                   )}
-                  {it.marketplace_status === 'submitted' && !isPlatAdmin && (
+                  {bridgeEnabled && it.marketplace_status === 'submitted' && !isPlatAdmin && (
                     <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">{safeT('academy.authoring.mkt_submitted', 'Em revisão')}</span>
                   )}
-                  {it.marketplace_status === 'submitted' && isPlatAdmin && (
+                  {bridgeEnabled && it.marketplace_status === 'submitted' && isPlatAdmin && (
                     <span className="inline-flex items-center gap-1">
                       <button onClick={() => decideMarket(it.id, true)} disabled={busy === it.id} className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 text-white text-xs font-medium px-2 py-1.5 hover:bg-emerald-700 disabled:opacity-50"><Check className="h-3 w-3" />{safeT('academy.authoring.mkt_approve', 'Aprovar')}</button>
                       <button onClick={() => decideMarket(it.id, false)} disabled={busy === it.id} className="inline-flex items-center gap-1 rounded-lg bg-slate-100 text-slate-600 text-xs font-medium px-2 py-1.5 hover:bg-slate-200 disabled:opacity-50"><X className="h-3 w-3" />{safeT('academy.authoring.mkt_reject', 'Rejeitar')}</button>
                     </span>
                   )}
-                  {it.marketplace_status === 'published' && (
+                  {bridgeEnabled && it.marketplace_status === 'published' && (
                     <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700"><Globe className="h-3 w-3" />{safeT('academy.authoring.mkt_published', 'No marketplace')}</span>
                   )}
                 </div>
