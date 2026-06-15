@@ -684,7 +684,7 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
                           const vt = dv === 0 ? 'text-slate-300' : (goodHigher(r) ? (dv >= 0 ? 'text-emerald-600' : 'text-rose-600') : (dv <= 0 ? 'text-emerald-600' : 'text-rose-600'));
                           const canEdit = isChild && editableSerie;
                           const qm = qtyMap.get(r.row_key);
-                          const qtyCap = isChild && qm && qm.qty ? `${qm.qty} ${qm.unit || ''} · ${fmtEur(Math.round(mensal / qm.qty))}/${qm.unit || 'un'}·mês` : null;
+                          const qtyCap = isChild && qm && qm.qty != null ? (qm.qty > 0 ? `${qm.qty} ${qm.unit || ''} · ${fmtEur(Math.round(mensal / qm.qty))}/${qm.unit || 'un'}·mês` : (qm.unit || '—')) : null;
                           return (
                             <tr key={r.row_key} className={`border-t border-slate-100 ${rowCls}`}>
                               <td className={`px-3 py-2 sticky left-0 z-10 ${stickyBg}`}>
