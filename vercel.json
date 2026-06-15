@@ -3,5 +3,8 @@
   "buildCommand": "next build",
   "installCommand": "npm install",
   "outputDirectory": ".next",
-  "regions": ["fra1"]
+  "regions": ["fra1"],
+  "crons": [
+    { "path": "/api/cron", "schedule": "*/15 * * * *" }
+  ]
 }
