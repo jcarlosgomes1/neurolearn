@@ -13,7 +13,7 @@ export function PageHeader({
 }) {
   return (
     <section className="bg-gradient-to-br from-brand-50 via-white to-brand-50/50 border-b border-slate-200/60">
-      <div className="max-w-6xl mx-auto px-4 py-8 sm:py-14 lg:py-16">
+      <div className="max-w-6xl mx-auto px-4 pt-5 pb-7 sm:py-14 lg:py-16">
         {badge && (
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-brand-200 text-xs font-medium text-brand-700 mb-3 sm:mb-4 shadow-sm max-w-full truncate">
             {badge}
