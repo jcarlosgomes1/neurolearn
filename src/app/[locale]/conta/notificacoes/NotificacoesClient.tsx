@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { Link } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import { Bell, Check, Trash2, Filter } from 'lucide-react';
+import { notificationHref } from '@/lib/notifications/href';
 
 function relTime(date: string, nowLabel: string) {
   const seconds = (Date.now() - new Date(date).getTime()) / 1000;
@@ -12,15 +13,6 @@ function relTime(date: string, nowLabel: string) {
   if (seconds < 3600) return Math.floor(seconds / 60) + 'm';
   if (seconds < 86400) return Math.floor(seconds / 3600) + 'h';
   return new Date(date).toLocaleDateString();
-}
-
-function link(kind?: string, id?: string): string | null {
-  if (!kind || !id) return null;
-  if (kind === 'course') return `/curso/${id}`;
-  if (kind === 'org') return `/empresa/${id}`;
-  if (kind === 'inquiry') return `/teach/pedidos`;
-  if (kind === 'placement') return `/talento/meus-pedidos`;
-  return null;
 }
 
 function notifyBadge() {
@@ -87,7 +79,7 @@ export function NotificacoesClient({ initial }: { initial: any[] }) {
         ) : (
           <div className="bg-white border border-slate-200 rounded-xl divide-y divide-slate-100">
             {visible.map((n) => {
-              const href = link(n.link_kind, n.link_id);
+              const href = notificationHref(n);
               const isUnread = !n.read_at;
               return (
                 <div key={n.id} className={`p-4 flex gap-3 ${isUnread ? 'bg-brand-50/30' : ''}`}>

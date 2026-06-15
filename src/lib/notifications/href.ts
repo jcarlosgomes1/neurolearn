@@ -68,6 +68,12 @@ export function notificationHref(n: NotificationLike): string | null {
       return slug ? `/empresa/${slug}` : null;
     }
 
+    case 'inquiry':
+      return '/teach/pedidos';
+
+    case 'placement':
+      return '/talento/meus-pedidos';
+
     default:
       return null;
   }
