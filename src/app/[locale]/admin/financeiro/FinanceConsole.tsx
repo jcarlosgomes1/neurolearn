@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import {
   Loader2, TrendingUp, Wallet, AlertTriangle, Sliders, Table2,
-  Sparkles, ChevronDown, ChevronUp, RefreshCw, Check, Flame, Target,
+  Sparkles, RefreshCw, Check, Flame, Target,
   Pencil, GitCompare, BarChart3, X, Lightbulb,
 } from 'lucide-react';
 
@@ -27,14 +27,16 @@ type Overview = {
   signals: Record<string, unknown> | null;
 };
 
-const SECTION_LABEL: Record<string, string> = {
-  revenue: 'Receita',
-  cogs: 'Custos diretos (COGS)',
-  opex_marketing: 'Marketing & Vendas',
-  opex_team: 'Equipa',
-  opex_other: 'Outros custos',
+type StmtRow = { row_key: string; level: number; kind: string; section: string | null; label: string | null; label_key: string | null; ord: number; total_outlook: number; total_budget: number; total_actual: number | null; total_forecast: number; weight_pct: number | null; var_budget_abs: number; var_budget_pct: number | null };
+type StmtCell = { row_key: string; period: string; outlook: number; budget: number; actual: number | null; forecast: number };
+type Statement = { ok: boolean; periods: string[]; rows: StmtRow[]; cells: StmtCell[]; kpi: { revenue: number; cogs: number; gross: number; gross_margin_pct: number | null; opex: number; operating: number; operating_margin_pct: number | null; net: number; net_margin_pct: number | null } };
+
+const ROW_LABEL: Record<string, string> = {
+  'sub:revenue': 'Receita total', 'sub:cogs': 'Total custos diretos', 'sub:opex_marketing': 'Total Marketing & Vendas',
+  'sub:opex_team': 'Total Equipa', 'sub:opex_other': 'Total Outros custos', 'total:gross': 'Lucro bruto',
+  'total:opex': 'Total OPEX', 'total:operating': 'Resultado operacional', 'total:net': 'Resultado líquido',
 };
-const SECTION_ORDER = ['revenue', 'cogs', 'opex_marketing', 'opex_team', 'opex_other'];
+
 const SERIES: { key: string; label: string }[] = [
   { key: 'forecast', label: 'Projeção' },
   { key: 'budget', label: 'Orçamento' },
@@ -75,23 +77,41 @@ function Tip({ children }: { children: ReactNode }) {
   );
 }
 
-function LineChart({ series, height = 160 }: { series: { name: string; color: string; values: number[] }[]; height?: number }) {
+function fmtK(n: number): string {
+  const a = Math.abs(n);
+  if (a >= 1000) return (n / 1000).toFixed(a >= 10000 ? 0 : 1).replace('.0', '') + 'k';
+  return String(Math.round(n));
+}
+
+function LineChart({ series, height = 180, labels }: { series: { name: string; color: string; values: number[] }[]; height?: number; labels?: string[] }) {
   const all = series.flatMap((s) => s.values);
   if (!all.length) return null;
   const max = Math.max(...all, 0);
   const min = Math.min(...all, 0);
   const range = max - min || 1;
   const n = Math.max(...series.map((s) => s.values.length));
-  const W = 320, H = height, pad = 4;
-  const x = (i: number) => (n <= 1 ? pad : pad + (i * (W - 2 * pad)) / (n - 1));
-  const y = (v: number) => H - pad - ((v - min) / range) * (H - 2 * pad);
+  const W = 340, H = height, padL = 46, padR = 8, padT = 8, padB = labels ? 18 : 8;
+  const x = (i: number) => (n <= 1 ? padL : padL + (i * (W - padL - padR)) / (n - 1));
+  const y = (v: number) => padT + (1 - (v - min) / range) * (H - padT - padB);
+  const ticks = 4;
+  const tickVals = Array.from({ length: ticks + 1 }, (_, i) => min + (range * i) / ticks);
   const zeroY = y(0);
+  const labIdx = labels ? Array.from(new Set([0, Math.floor((n - 1) / 2), n - 1])).filter((v) => v >= 0) : [];
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height }}>
-      {min < 0 && max > 0 && <line x1={pad} y1={zeroY} x2={W - pad} y2={zeroY} stroke="#e2e8f0" strokeDasharray="3 3" />}
+      {tickVals.map((tv, i) => (
+        <g key={i}>
+          <line x1={padL} y1={y(tv)} x2={W - padR} y2={y(tv)} stroke="#f1f5f9" strokeWidth="1" />
+          <text x={padL - 4} y={y(tv) + 3} textAnchor="end" fontSize="9" fill="#94a3b8">{fmtK(tv)}</text>
+        </g>
+      ))}
+      {min < 0 && max > 0 && <line x1={padL} y1={zeroY} x2={W - padR} y2={zeroY} stroke="#cbd5e1" strokeDasharray="3 3" />}
       {series.map((s) => (
         <polyline key={s.name} fill="none" stroke={s.color} strokeWidth="2"
           points={s.values.map((v, i) => `${x(i)},${y(v)}`).join(' ')} />
+      ))}
+      {labels && labIdx.map((i) => (
+        <text key={i} x={x(i)} y={H - 4} textAnchor={i === 0 ? 'start' : i === n - 1 ? 'end' : 'middle'} fontSize="9" fill="#94a3b8">{labels[i]}</text>
       ))}
     </svg>
   );
@@ -100,11 +120,11 @@ function LineChart({ series, height = 160 }: { series: { name: string; color: st
 export function FinanceConsole({ locale: _locale }: { locale: string }) {
   const supabase = useMemo(() => createClient(), []);
   const [data, setData] = useState<Overview | null>(null);
+  const [stmt, setStmt] = useState<Statement | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
   const [tab, setTab] = useState<'resumo' | 'pl' | 'canais' | 'comparar' | 'agente'>('resumo');
   const [serie, setSerie] = useState<string>('outlook');
-  const [openSection, setOpenSection] = useState<string | null>('revenue');
   const [cash, setCash] = useState<number>(50000);
   const [calibrate, setCalibrate] = useState<boolean>(false);
   const [draftParams, setDraftParams] = useState<Record<string, Record<string, number>>>({});
@@ -122,6 +142,10 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
       const dp: Record<string, Record<string, number>> = {};
       ov.channels.forEach((c) => { dp[c.channel_key] = { ...c.params }; });
       setDraftParams(dp);
+      try {
+        const { data: st } = await supabase.rpc('nl_finance_pl_statement', { p_scenario_id: ov.scenario_id });
+        setStmt((st as Statement)?.ok ? (st as Statement) : null);
+      } catch { setStmt(null); }
     } catch {
       toast.error('Falha ao carregar a consola financeira.');
     } finally {
@@ -137,11 +161,6 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
     data.pl.forEach((c) => set.add(c.period));
     return Array.from(set).sort();
   }, [data]);
-
-  const milestoneMonths = useMemo(() => {
-    const idxs = [0, 5, 11, 17, 23];
-    return idxs.filter((i) => i < periods.length).map((i) => periods[i]);
-  }, [periods]);
 
   const plIndex = useMemo(() => {
     const map = new Map<string, number>();
@@ -214,7 +233,7 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
       const periodDate = `${editCell.period}-01`;
       if (editCell.series === 'budget') {
         const { error } = await supabase.rpc('nl_finance_set_budget', {
-          p_line_key: editCell.line, p_period: periodDate, p_amount_eur: amount ?? 0,
+          p_line_key: editCell.line, p_period: periodDate, p_amount_eur: amount ?? 0, p_scenario_id: data.scenario_id,
         });
         if (error) throw error;
       } else {
@@ -352,7 +371,7 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
               { name: 'Receita', color: '#6366f1', values: periods.map((p) => totals[p]?.rev ?? 0) },
               { name: 'Custo', color: '#f43f5e', values: periods.map((p) => totals[p]?.cost ?? 0) },
               { name: 'Resultado', color: '#10b981', values: periods.map((p) => totals[p]?.net ?? 0) },
-            ]} />
+            ]} labels={periods} />
             <div className="flex gap-4 mt-2 text-xs">
               <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-indigo-500" />Receita</span>
               <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-rose-500" />Custo</span>
@@ -380,68 +399,79 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
         </div>
       )}
 
-      {tab === 'pl' && (
-        <div className="space-y-3">
-          <div className="flex gap-1.5 flex-wrap items-center">
-            {SERIES.map((s) => (
-              <button key={s.key} onClick={() => setSerie(s.key)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-medium ${serie === s.key ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
-                {s.label}
-              </button>
-            ))}
-            {(serie === 'budget' || serie === 'forecast' || serie === 'outlook') && (
-              <span className="text-[11px] text-slate-400 inline-flex items-center gap-1 ml-1"><Pencil className="h-3 w-3" />toca num valor para editar</span>
-            )}
-          </div>
-          <Tip>{tipPL}</Tip>
-          {SECTION_ORDER.map((sec) => {
-            const lines = data.lines.filter((l) => l.section === sec);
-            if (!lines.length) return null;
-            const isOpen = openSection === sec;
-            return (
-              <div key={sec} className="rounded-xl border border-slate-200 overflow-hidden bg-white">
-                <button onClick={() => setOpenSection(isOpen ? null : sec)}
-                  className="w-full flex items-center justify-between px-4 py-2.5 bg-slate-50 border-b border-slate-200 text-sm font-semibold text-slate-700">
-                  <span>{SECTION_LABEL[sec]}</span>
-                  {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                </button>
-                {isOpen && (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="text-slate-400 text-xs">
-                          <th className="text-left font-medium px-4 py-2 sticky left-0 bg-white">Rubrica</th>
-                          {milestoneMonths.map((p) => <th key={p} className="text-right font-medium px-3 py-2 whitespace-nowrap">{p}</th>)}
+      {tab === 'pl' && stmt && (() => {
+        const cellMap = new Map<string, StmtCell>();
+        stmt.cells.forEach((c) => cellMap.set(`${c.row_key}|${c.period}`, c));
+        const per = stmt.periods || [];
+        const msIdx = Array.from(new Set([0, Math.floor(per.length * 0.25), Math.floor(per.length * 0.5), Math.floor(per.length * 0.75), per.length - 1])).filter((i) => i >= 0 && i < per.length);
+        const ms = msIdx.map((i) => per[i]);
+        const sv = (c: StmtCell | undefined) => !c ? 0 : (serie === 'budget' ? c.budget : serie === 'actual' ? (c.actual ?? 0) : serie === 'forecast' ? c.forecast : c.outlook);
+        const rowTotal = (r: StmtRow) => serie === 'budget' ? r.total_budget : serie === 'actual' ? (r.total_actual ?? 0) : serie === 'forecast' ? r.total_forecast : r.total_outlook;
+        const goodHigher = (r: StmtRow) => r.kind === 'revenue' || ['sub:revenue', 'total:gross', 'total:operating', 'total:net'].includes(r.row_key);
+        const editable = serie === 'budget' || serie === 'forecast' || serie === 'outlook';
+        return (
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <KMini label="Receita (horizonte)" value={fmtEur(stmt.kpi.revenue)} />
+              <KMini label="Margem bruta" value={stmt.kpi.gross_margin_pct != null ? `${stmt.kpi.gross_margin_pct}%` : '—'} />
+              <KMini label="Resultado operacional" value={fmtEur(stmt.kpi.operating)} tone={stmt.kpi.operating >= 0 ? 'emerald' : 'rose'} />
+              <KMini label="Margem operacional" value={stmt.kpi.operating_margin_pct != null ? `${stmt.kpi.operating_margin_pct}%` : '—'} tone={(stmt.kpi.operating_margin_pct ?? 0) >= 0 ? 'emerald' : 'rose'} />
+            </div>
+            <div className="flex gap-1.5 flex-wrap items-center">
+              {SERIES.map((s) => (
+                <button key={s.key} onClick={() => setSerie(s.key)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium ${serie === s.key ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>{s.label}</button>
+              ))}
+              {editable && <span className="text-[11px] text-slate-400 inline-flex items-center gap-1 ml-1"><Pencil className="h-3 w-3" />toca num valor para editar</span>}
+            </div>
+            <Tip>{tipPL}</Tip>
+            <div className="rounded-xl border border-slate-200 overflow-hidden bg-white">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-slate-400 text-[11px] border-b border-slate-200">
+                      <th className="text-left font-medium px-3 py-2 sticky left-0 bg-white z-10">Rubrica</th>
+                      <th className="text-right font-medium px-3 py-2 whitespace-nowrap">Total</th>
+                      <th className="text-right font-medium px-2 py-2 whitespace-nowrap">Peso</th>
+                      <th className="text-right font-medium px-2 py-2 whitespace-nowrap">Δ Orç.</th>
+                      {ms.map((p) => <th key={p} className="text-right font-medium px-3 py-2 whitespace-nowrap">{p}</th>)}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {stmt.rows.map((r) => {
+                      const label = r.level === 0 ? (r.label || r.row_key) : (ROW_LABEL[r.row_key] || r.label_key || r.row_key);
+                      const rowCls = r.level === 2 ? 'bg-slate-100 font-semibold text-slate-900' : r.level === 1 ? 'bg-slate-50 font-medium text-slate-700' : 'text-slate-600';
+                      const stickyBg = r.level === 2 ? 'bg-slate-100' : r.level === 1 ? 'bg-slate-50' : 'bg-white';
+                      const vt = r.var_budget_abs === 0 ? 'text-slate-300' : (goodHigher(r) ? (r.var_budget_abs >= 0 ? 'text-emerald-600' : 'text-rose-600') : (r.var_budget_abs <= 0 ? 'text-emerald-600' : 'text-rose-600'));
+                      return (
+                        <tr key={r.row_key} className={`border-t border-slate-100 ${rowCls}`}>
+                          <td className={`px-3 py-2 sticky left-0 z-10 ${stickyBg}`}>{label}</td>
+                          <td className="px-3 py-2 text-right tabular-nums whitespace-nowrap">{fmtEur(rowTotal(r))}</td>
+                          <td className="px-2 py-2 text-right tabular-nums text-[11px] text-slate-400 whitespace-nowrap">{r.weight_pct != null ? `${r.weight_pct}%` : ''}</td>
+                          <td className={`px-2 py-2 text-right tabular-nums text-[11px] whitespace-nowrap ${vt}`} title="Outlook vs Orçamento">{r.var_budget_abs !== 0 ? `${r.var_budget_abs > 0 ? '+' : ''}${fmtK(r.var_budget_abs)}${r.var_budget_pct != null ? ` (${r.var_budget_pct > 0 ? '+' : ''}${r.var_budget_pct}%)` : ''}` : '—'}</td>
+                          {ms.map((p) => {
+                            const c = cellMap.get(`${r.row_key}|${p}`);
+                            const v = sv(c);
+                            return (
+                              <td key={p} className="px-3 py-2 text-right tabular-nums whitespace-nowrap">
+                                {r.level === 0 && editable ? (
+                                  <button onClick={() => setEditCell({ line: r.row_key, period: p, series: serie === 'outlook' ? 'forecast' : serie, value: String(v) })}
+                                    className="hover:text-indigo-600 hover:underline decoration-dotted">{fmtEur(v)}</button>
+                                ) : <span>{fmtEur(v)}</span>}
+                              </td>
+                            );
+                          })}
                         </tr>
-                      </thead>
-                      <tbody>
-                        {lines.map((l) => (
-                          <tr key={l.line_key} className="border-t border-slate-100">
-                            <td className="px-4 py-2 text-slate-600 sticky left-0 bg-white">{l.label}</td>
-                            {milestoneMonths.map((p) => {
-                              const editable = serie === 'budget' || serie === 'forecast' || serie === 'outlook';
-                              return (
-                                <td key={p} className="px-3 py-2 text-right tabular-nums whitespace-nowrap">
-                                  {editable ? (
-                                    <button onClick={() => setEditCell({ line: l.line_key, period: p, series: serie === 'outlook' ? 'forecast' : serie, value: String(val(l.line_key, p, serie)) })}
-                                      className="text-slate-700 hover:text-indigo-600 hover:underline decoration-dotted">
-                                      {fmtEur(val(l.line_key, p, serie))}
-                                    </button>
-                                  ) : <span className="text-slate-700">{fmtEur(val(l.line_key, p, serie))}</span>}
-                                </td>
-                              );
-                            })}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
-            );
-          })}
-        </div>
-      )}
+            </div>
+          </div>
+        );
+      })()}
+      {tab === 'pl' && !stmt && <div className="text-center py-10 text-sm text-slate-400">A preparar o P&L…</div>}
 
       {tab === 'canais' && (
         <div className="space-y-3">
@@ -587,6 +617,16 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function KMini({ label, value, tone = 'slate' }: { label: string; value: string; tone?: 'slate' | 'emerald' | 'rose' }) {
+  const c = tone === 'emerald' ? 'text-emerald-600' : tone === 'rose' ? 'text-rose-600' : 'text-slate-900';
+  return (
+    <div className="rounded-xl border border-slate-200 p-3 bg-white">
+      <div className="text-[11px] text-slate-500 leading-tight">{label}</div>
+      <div className={`text-base font-semibold tabular-nums ${c}`}>{value}</div>
     </div>
   );
 }
