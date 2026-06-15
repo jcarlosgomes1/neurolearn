@@ -2,10 +2,9 @@
 
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
-import { Link } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
-import { Shield, Key, Smartphone, ArrowLeft, Loader2, Eye, EyeOff, CheckCircle2, Trash2, AlertTriangle } from 'lucide-react';
+import { Shield, Key, Smartphone, Loader2, Eye, EyeOff, CheckCircle2, Trash2, AlertTriangle } from 'lucide-react';
 import { changePasswordAction } from '../actions';
 
 interface TotpFactor {
@@ -19,10 +18,6 @@ export function SecurityClient({ userEmail, totpFactors }: { userEmail: string; 
   const t = useTranslations();
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 space-y-6">
-      <Link href={`/conta` as any} className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700">
-        <ArrowLeft className="h-3.5 w-3.5" /> {t('btn.back')}
-      </Link>
-
       <div>
         <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
           <Shield className="h-6 w-6 text-brand-600" /> {t('security.title')}

@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { Link } from '@/i18n/routing';
-import { Shield, Download, Trash2, AlertCircle, Loader2, ArrowLeft, ExternalLink, Clock, CheckCircle2, XCircle } from 'lucide-react';
+import { Shield, Download, Trash2, AlertCircle, Loader2, ExternalLink, Clock, CheckCircle2, XCircle } from 'lucide-react';
 import { requestDataExportAction, requestAccountDeletionAction, cancelAccountDeletionAction } from '../actions';
 
 interface GdprRequest {
@@ -85,10 +85,6 @@ export function PrivacyClient({ initial, userEmail }: { initial: GdprRequest[]; 
   
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 space-y-6">
-      <Link href={`/conta` as any} className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700">
-        <ArrowLeft className="h-3.5 w-3.5" /> Voltar
-      </Link>
-      
       <div>
         <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
           <Shield className="h-6 w-6 text-brand-600" /> Privacidade e dados
