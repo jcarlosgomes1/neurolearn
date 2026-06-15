@@ -1,0 +1,19 @@
+name: nl-clock
+# Relógio externo (gratuito) que bate em /api/cron. NÃO há cron na base de dados.
+# A cadência de NEGÓCIO (que posts saem e quando) vive na config da BD; aqui é só o tique.
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch: {}
+concurrency:
+  group: nl-clock
+  cancel-in-progress: false
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    steps:
+      - name: tick /api/cron
+        run: |
+          curl -fsS -X GET "https://neurolearn-rosy.vercel.app/api/cron" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            --max-time 120 -o /dev/null -w "status=%{http_code}\n"
