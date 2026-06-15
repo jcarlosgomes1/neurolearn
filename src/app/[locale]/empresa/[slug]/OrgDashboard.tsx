@@ -172,7 +172,7 @@ export function OrgDashboard({ data }: { data: unknown }) {
         <div className="rounded-2xl border border-slate-200 bg-white p-5">
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-semibold text-slate-800 text-sm flex items-center gap-2"><Target className="h-4 w-4 text-indigo-500" />{t('academy.skillmap.title')}</h2>
-            <Link href={`/empresa/${org.slug}/membros` as never} className="text-xs text-indigo-600 hover:underline">{t('academy.skillmap.see_team')}</Link>
+            <Link href={`/empresa/${org.slug}/competencias` as never} className="text-xs text-indigo-600 hover:underline">{t('academy.skillmap.see_team')}</Link>
           </div>
           {topSkills.length === 0 ? (
             <p className="text-xs text-slate-400 leading-relaxed">{t('academy.skillmap.empty')}</p>
