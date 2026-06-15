@@ -21,6 +21,8 @@ export function LegalAccordion({ source, pageTitle }: { source: string; pageTitl
     let s = source.trim();
     // Remove primeira H1 sempre — o título principal é renderizado pelo layout
     s = s.replace(/^#\s+[^\n]*\n+/, '');
+    // Remove linha de ultima atualizacao no topo (duplica o subtitulo da pagina)
+    s = s.replace(/^\*\*\s*(última atualiza|last updated|última actualiza|dernière mise)[^\n]*\n+/i, '');
     return s;
   }, [source]);
 
