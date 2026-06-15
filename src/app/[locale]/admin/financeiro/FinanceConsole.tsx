@@ -503,7 +503,7 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
         const laborFactor = (laborCfg.spy / 12) * (1 + laborCfg.ss / 100 + laborCfg.misc / 100);
         const lf = (l: StmtRow) => (l.section === 'opex_team' ? laborFactor : 1);
         const isOpex = (l: StmtRow) => (l.section || '').startsWith('opex');
-        const aggM = (pred: (l: StmtRow) => boolean, sk: string) => yr.months.map((p) => lines.filter(pred).reduce((acc, l) => acc + cellSeriesVal(cmap.get(`${l.row_key}|${p}`), sk) * lf(l), 0));
+        const aggM = (pred: (l: StmtRow) => boolean, sk: string) => yr.months.map((p) => lines.filter(pred).reduce((acc, l) => acc + cellSeriesVal(cmap.get(`${l.row_key}|${p}`), sk), 0));
         const metricMonthly = (metric: string, sk: string): number[] => {
           if (metric === 'revenue') return aggM((l) => l.kind === 'revenue', sk);
           if (metric === 'cogs') return aggM((l) => l.section === 'cogs', sk);
@@ -513,7 +513,7 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
           return r.map((v, i) => v - c[i] - o[i]);
         };
         const rowMonthly = (row: StmtRow, sk: string): number[] => {
-          if (row.level === 0) return yr.months.map((p) => cellSeriesVal(cmap.get(`${row.row_key}|${p}`), sk) * lf(row));
+          if (row.level === 0) return yr.months.map((p) => cellSeriesVal(cmap.get(`${row.row_key}|${p}`), sk));
           switch (row.row_key) {
             case 'sub:revenue': return aggM((l) => l.kind === 'revenue', sk);
             case 'sub:cogs': return aggM((l) => l.section === 'cogs', sk);
