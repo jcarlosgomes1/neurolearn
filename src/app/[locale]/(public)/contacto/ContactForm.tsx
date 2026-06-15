@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import { Send, Loader2, CheckCircle2 } from 'lucide-react';
+import { Link } from '@/i18n/routing';
 
 const TOPICS = [
   { value: 'general', label: 'Pergunta geral' },
@@ -129,7 +130,7 @@ export function ContactForm({
       </button>
 
       <p className="text-[11px] text-slate-400 text-center leading-relaxed">
-        Ao enviar, aceitas a nossa <a href="/pt/legal/privacy" className="underline hover:text-slate-700">Política de Privacidade</a>.
+        Ao enviar, aceitas a nossa <Link href={'/legal/privacy' as any} className="underline hover:text-slate-700">Política de Privacidade</Link>.
         Não enviamos spam.
       </p>
     </form>
