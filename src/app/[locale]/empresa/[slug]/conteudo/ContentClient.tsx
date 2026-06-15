@@ -36,8 +36,8 @@ const STATUS_META: Record<string, { labelKey: string; icon: typeof Clock; cls: s
 };
 
 const MAX_BYTES = 100 * 1024 * 1024; // 100 MB
-// O worker processa PDF e texto/markdown. (Vídeo/áudio: em breve.)
-const ACCEPT = '.pdf,.md,.txt,.json';
+// O worker processa PDF, imagens e texto/markdown. (Vídeo/áudio: em breve — #99.)
+const ACCEPT = '.pdf,.md,.txt,.json,.png,.jpg,.jpeg,.gif,.webp';
 
 function formatBytes(n: number): string {
   if (n < 1024) return `${n} B`;
