@@ -7,6 +7,7 @@ import {
   listNotificationsAction, getUnreadCountAction, markNotificationReadAction, deleteNotificationAction
 } from '@/app/[locale]/conta/actions';
 import { notificationHref } from '@/lib/notifications/href';
+import { useNotificationText } from '@/lib/notifications/text';
 
 interface Notification {
   id: string;
@@ -34,6 +35,7 @@ function timeAgo(iso: string): string {
 
 export function NotificationsDropdown({ locale }: { locale: string }) {
   const [open, setOpen] = useState(false);
+  const notifText = useNotificationText();
   const [items, setItems] = useState<Notification[]>([]);
   const [unread, setUnread] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -164,13 +166,13 @@ export function NotificationsDropdown({ locale }: { locale: string }) {
                           {href ? (
                             <Link href={href as any} onClick={() => { handleMarkOne(n.id); setOpen(false); }}
                               className="block">
-                              <div className="font-medium text-slate-900 text-sm leading-snug">{n.title}</div>
-                              <p className="text-xs text-slate-600 mt-0.5 line-clamp-2 leading-relaxed">{n.message}</p>
+                              <div className="font-medium text-slate-900 text-sm leading-snug">{notifText(n).title}</div>
+                              <p className="text-xs text-slate-600 mt-0.5 line-clamp-2 leading-relaxed">{notifText(n).message}</p>
                             </Link>
                           ) : (
                             <div>
-                              <div className="font-medium text-slate-900 text-sm leading-snug">{n.title}</div>
-                              <p className="text-xs text-slate-600 mt-0.5 line-clamp-2 leading-relaxed">{n.message}</p>
+                              <div className="font-medium text-slate-900 text-sm leading-snug">{notifText(n).title}</div>
+                              <p className="text-xs text-slate-600 mt-0.5 line-clamp-2 leading-relaxed">{notifText(n).message}</p>
                             </div>
                           )}
                           <div className="text-[10px] text-slate-400 mt-1">{timeAgo(n.created_at)}</div>

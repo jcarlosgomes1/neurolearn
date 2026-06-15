@@ -6,6 +6,7 @@ import { Link } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import { Bell, Check, Trash2, Filter } from 'lucide-react';
 import { notificationHref } from '@/lib/notifications/href';
+import { useNotificationText } from '@/lib/notifications/text';
 
 function relTime(date: string, nowLabel: string) {
   const seconds = (Date.now() - new Date(date).getTime()) / 1000;
@@ -22,6 +23,7 @@ function notifyBadge() {
 export function NotificacoesClient({ initial }: { initial: any[] }) {
   const t = useTranslations();
   const [items, setItems] = useState(initial);
+  const notifText = useNotificationText();
   const [filter, setFilter] = useState<'all'|'unread'>('all');
   const [pending, startTransition] = useTransition();
 
@@ -87,13 +89,13 @@ export function NotificacoesClient({ initial }: { initial: any[] }) {
                   <div className="flex-1 min-w-0">
                     {href ? (
                       <Link href={href as any} className="block hover:opacity-80" onClick={() => isUnread && markRead(n.id)}>
-                        <h4 className="font-semibold text-slate-900">{n.title}</h4>
-                        <p className="text-sm text-slate-600 mt-0.5">{n.message}</p>
+                        <h4 className="font-semibold text-slate-900">{notifText(n).title}</h4>
+                        <p className="text-sm text-slate-600 mt-0.5">{notifText(n).message}</p>
                       </Link>
                     ) : (
                       <>
-                        <h4 className="font-semibold text-slate-900">{n.title}</h4>
-                        <p className="text-sm text-slate-600 mt-0.5">{n.message}</p>
+                        <h4 className="font-semibold text-slate-900">{notifText(n).title}</h4>
+                        <p className="text-sm text-slate-600 mt-0.5">{notifText(n).message}</p>
                       </>
                     )}
                     <span className="text-xs text-slate-400 mt-1 inline-block">{relTime(n.created_at, t('notifs.now'))}</span>

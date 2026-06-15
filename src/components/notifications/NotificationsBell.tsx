@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Bell, Check, X, ExternalLink } from 'lucide-react';
 import { Link } from '@/i18n/routing';
+import { useNotificationText } from '@/lib/notifications/text';
 
 type Notif = { id: string; kind: string; title: string; message: string; link_kind?: string; link_id?: string; read_at?: string; created_at: string };
 
@@ -29,6 +30,7 @@ function notifLink(kind?: string, id?: string): string | null {
 
 export function NotificationsBell() {
   const [open, setOpen] = useState(false);
+  const notifText = useNotificationText();
   const [count, setCount] = useState(0);
   const [items, setItems] = useState<Notif[]>([]);
   const [loading, setLoading] = useState(false);
@@ -127,10 +129,10 @@ export function NotificationsBell() {
                         {isUnread && <div className="h-2 w-2 rounded-full bg-brand-500 mt-1.5 flex-shrink-0" />}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-2">
-                            <h4 className="text-sm font-semibold text-slate-900 leading-snug">{n.title}</h4>
+                            <h4 className="text-sm font-semibold text-slate-900 leading-snug">{notifText(n).title}</h4>
                             <span className="text-[10px] text-slate-400 flex-shrink-0">{relTime(n.created_at)}</span>
                           </div>
-                          <p className="text-xs text-slate-600 mt-0.5 line-clamp-2">{n.message}</p>
+                          <p className="text-xs text-slate-600 mt-0.5 line-clamp-2">{notifText(n).message}</p>
                         </div>
                         {isUnread && (
                           <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); markRead(n.id); }}

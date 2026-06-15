@@ -3,10 +3,12 @@
 import { useEffect, useState, useRef } from 'react';
 import { Link } from '@/i18n/routing';
 import { createClient } from '@/lib/supabase/client';
+import { useNotificationText } from '@/lib/notifications/text';
 import { Bell, Check, X } from 'lucide-react';
 
 export function NotificationBell() {
   const [open, setOpen] = useState(false);
+  const notifText = useNotificationText();
   const [unread, setUnread] = useState(0);
   const [recent, setRecent] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -98,8 +100,8 @@ export function NotificationBell() {
                   <div className="flex items-start gap-2">
                     {!n.read_at && <span className="h-2 w-2 rounded-full bg-blue-500 mt-1.5 flex-shrink-0" />}
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-slate-900">{n.title}</div>
-                      {n.message && <div className="text-xs text-slate-600 mt-0.5 line-clamp-2">{n.message}</div>}
+                      <div className="text-sm font-medium text-slate-900">{notifText(n).title}</div>
+                      {n.message && <div className="text-xs text-slate-600 mt-0.5 line-clamp-2">{notifText(n).message}</div>}
                       <div className="text-[10px] text-slate-400 mt-1">{relTime(n.created_at)}</div>
                     </div>
                   </div>
