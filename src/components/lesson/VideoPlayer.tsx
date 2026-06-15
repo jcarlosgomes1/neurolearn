@@ -30,10 +30,20 @@ export function VideoPlayer({ playbackId, videoUrl, thumbnail, title, aspectRati
   const src = videoUrl || (playbackId 
     ? `https://stream.mux.com/${playbackId}.m3u8${signedToken ? `?token=${signedToken}` : ''}`
     : null);
+  // Apenas streams HLS (.m3u8, ex. Mux) passam por HLS.js. Ficheiros diretos
+  // (webm/mp4 — ex. gravacoes do estudio guardadas em Storage) tocam nativamente,
+  // caso contrario HLS.js tenta interpretar o ficheiro como manifesto e falha.
+  const isHls = !!src && src.includes('.m3u8');
 
   useEffect(() => {
     if (!src || !videoRef.current) return;
     const video = videoRef.current;
+
+    if (!isHls) {
+      video.src = src;
+      setReady(true);
+      return;
+    }
 
     if (video.canPlayType('application/vnd.apple.mpegurl')) {
       video.src = src;
@@ -77,7 +87,7 @@ export function VideoPlayer({ playbackId, videoUrl, thumbnail, title, aspectRati
     }).catch((e) => setError(e.message));
 
     return () => { if (hls) hls.destroy(); };
-  }, [src, t]);
+  }, [src, isHls, t]);
 
   useEffect(() => {
     const video = videoRef.current;
