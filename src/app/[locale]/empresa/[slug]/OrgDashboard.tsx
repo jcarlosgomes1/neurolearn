@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import {
   Users, UserPlus, Trash2, Building2, Crown, Shield, FileText, Sparkles, Settings,
   Briefcase, Inbox, BookOpen, GraduationCap, Route, ArrowRight, Upload, BadgeCheck,
-  TrendingUp, Target, Gauge,
+  TrendingUp, Target, Gauge, PenLine,
 } from 'lucide-react';
 
 type Member = { user_id: string; role: string; joined_at: string; name?: string | null; avatar_url?: string | null };
@@ -213,6 +213,7 @@ export function OrgDashboard({ data }: { data: unknown }) {
           <Chip href={`/empresa/${org.slug}/cursos/propostas`} icon={Sparkles} label={t('org.dash.nav_proposals')} />
           <Chip href={`/empresa/${org.slug}/percursos`} icon={Route} label={t('org.dash.nav_paths')} />
           <Chip href={`/empresa/${org.slug}/turmas`} icon={GraduationCap} label={t('org.dash.nav_cohorts')} />
+          <Chip href={`/empresa/${org.slug}/autoria`} icon={PenLine} label={t('academy.authoring.nav')} />
         </NavGroup>
         <NavGroup title={t('academy.group.pessoas')}>
           <Chip href={`/empresa/${org.slug}/cursos-subscritos`} icon={BookOpen} label={t('org.dash.nav_subscribed')} />
