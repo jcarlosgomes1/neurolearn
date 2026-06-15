@@ -208,6 +208,7 @@ export function OrgDashboard({ data }: { data: unknown }) {
       {/* Navegação agrupada por intenção */}
       <div className="space-y-4">
         <NavGroup title={t('academy.group.capacitar')}>
+          <Chip href={`/empresa/${org.slug}/aprender`} icon={GraduationCap} label={t('academy.group.my_learning')} />
           <Chip href={`/empresa/${org.slug}/conteudo`} icon={FileText} label={t('org.dash.nav_content')} />
           <Chip href={`/empresa/${org.slug}/cursos/propostas`} icon={Sparkles} label={t('org.dash.nav_proposals')} />
           <Chip href={`/empresa/${org.slug}/percursos`} icon={Route} label={t('org.dash.nav_paths')} />
