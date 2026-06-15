@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter, Link } from '@/i18n/routing';
 import { toast } from 'sonner';
-import { Upload, FileText, Trash2, RefreshCw, Loader2, CheckCircle, Clock, XCircle, AlertCircle, ExternalLink, Tag, Sparkles, Filter } from 'lucide-react';
+import { Upload, FileText, Trash2, RefreshCw, Loader2, CheckCircle, Clock, XCircle, AlertCircle, Tag, Sparkles, Database, TrendingUp } from 'lucide-react';
 
 interface ContentItem {
   id: string;
@@ -25,20 +25,31 @@ interface ContentItem {
   uploader_id: string;
 }
 
-const STATUS_META: Record<string, { labelKey: string; icon: any; cls: string }> = {
+// O worker grava 'ready' quando conclui; 'completed' mantido por retrocompatibilidade.
+const DONE = ['ready', 'completed'];
+const STATUS_META: Record<string, { labelKey: string; icon: typeof Clock; cls: string }> = {
   pending:    { labelKey: 'org.cnt.status_pending',    icon: Clock,        cls: 'bg-amber-50 text-amber-700 border-amber-200' },
   processing: { labelKey: 'org.cnt.status_processing', icon: Loader2,      cls: 'bg-blue-50 text-blue-700 border-blue-200' },
+  ready:      { labelKey: 'org.cnt.status_completed',  icon: CheckCircle,  cls: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
   completed:  { labelKey: 'org.cnt.status_completed',  icon: CheckCircle,  cls: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
   failed:     { labelKey: 'org.cnt.status_failed',     icon: XCircle,      cls: 'bg-rose-50 text-rose-700 border-rose-200' },
 };
 
 const MAX_BYTES = 100 * 1024 * 1024; // 100 MB
+// O worker processa PDF e texto/markdown. (Vídeo/áudio: em breve.)
+const ACCEPT = '.pdf,.md,.txt,.json';
 
 function formatBytes(n: number): string {
   if (n < 1024) return `${n} B`;
   if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
   return `${(n / (1024 * 1024)).toFixed(1)} MB`;
 }
+
+type Usage = {
+  subscription: { plan_id: string; status: string } | null;
+  quotas: Record<string, number | null> | null;
+  period: { counters: Record<string, number> | null; overage_cents: number | null } | null;
+};
 
 export function ContentClient({ orgId, orgSlug, userId, items }: {
   orgId: string; orgSlug: string; userId: string; items: ContentItem[];
@@ -50,10 +61,21 @@ export function ContentClient({ orgId, orgSlug, userId, items }: {
   const [busy, setBusy] = useState(false);
   const [filter, setFilter] = useState<'all' | 'completed' | 'pending' | 'failed'>('all');
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [usage, setUsage] = useState<Usage | null>(null);
+
+  const loadUsage = useCallback(async () => {
+    try {
+      const sb = createClient();
+      const { data } = await sb.rpc('nl_org_usage_summary', { p_org_id: orgId });
+      if (data) setUsage(data as Usage);
+    } catch { /* noop */ }
+  }, [orgId]);
+
+  useEffect(() => { loadUsage(); }, [loadUsage]);
 
   const visible = items.filter((i) => !i.archived).filter((i) => {
     if (filter === 'all') return true;
-    if (filter === 'completed') return i.extraction_status === 'completed';
+    if (filter === 'completed') return DONE.includes(i.extraction_status);
     if (filter === 'pending') return ['pending', 'processing'].includes(i.extraction_status);
     if (filter === 'failed') return i.extraction_status === 'failed';
     return true;
@@ -61,7 +83,7 @@ export function ContentClient({ orgId, orgSlug, userId, items }: {
 
   const counts = {
     all: items.filter((i) => !i.archived).length,
-    completed: items.filter((i) => !i.archived && i.extraction_status === 'completed').length,
+    completed: items.filter((i) => !i.archived && DONE.includes(i.extraction_status)).length,
     pending: items.filter((i) => !i.archived && ['pending','processing'].includes(i.extraction_status)).length,
     failed: items.filter((i) => !i.archived && i.extraction_status === 'failed').length,
   };
@@ -80,7 +102,7 @@ export function ContentClient({ orgId, orgSlug, userId, items }: {
         cacheControl: '3600', upsert: false, contentType: file.type || 'application/octet-stream',
       });
       if (upErr) throw upErr;
-      const { error: rpcErr } = await sb.rpc('nl_org_content_register_upload', {
+      const { data: reg, error: rpcErr } = await sb.rpc('nl_org_content_register_upload', {
         p_org_id: orgId,
         p_storage_path: path,
         p_original_name: file.name,
@@ -88,10 +110,24 @@ export function ContentClient({ orgId, orgSlug, userId, items }: {
         p_mime_type: file.type || 'application/octet-stream',
       });
       if (rpcErr) throw rpcErr;
-      toast.success(t('org.cnt.uploaded'));
+      const res = reg as { ok?: boolean; error?: string; quota_status?: { reason?: string; overage_total_cents?: number } };
+      if (res && res.ok === false) {
+        // bloqueado por quota
+        if (res.error === 'quota_blocked') { toast.error(t('org.cnt.quota_blocked')); return; }
+        throw new Error(res.error || 'upload_error');
+      }
+      // aviso de overage (cobrança extra)
+      if (res?.quota_status?.reason === 'overage') {
+        const eur = ((res.quota_status.overage_total_cents || 0) / 100).toFixed(2);
+        toast.warning(t('org.cnt.overage_notice', { amount: eur }));
+      } else {
+        toast.success(t('org.cnt.uploaded'));
+      }
+      loadUsage();
       router.refresh();
-    } catch (e: any) {
-      toast.error(e?.message || t('org.cnt.upload_error'));
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : t('org.cnt.upload_error');
+      toast.error(msg);
     } finally { setBusy(false); }
   }
 
@@ -102,7 +138,7 @@ export function ContentClient({ orgId, orgSlug, userId, items }: {
       if (error) throw error;
       toast.success(t('org.cnt.retried'));
       router.refresh();
-    } catch (e: any) { toast.error(e?.message || t('tea.error')); }
+    } catch (e) { toast.error(e instanceof Error ? e.message : t('tea.error')); }
   }
 
   async function archive(id: string) {
@@ -114,7 +150,7 @@ export function ContentClient({ orgId, orgSlug, userId, items }: {
       toast.success(t('org.cnt.archived'));
       const next = new Set(selected); next.delete(id); setSelected(next);
       router.refresh();
-    } catch (e: any) { toast.error(e?.message || t('tea.error')); }
+    } catch (e) { toast.error(e instanceof Error ? e.message : t('tea.error')); }
   }
 
   function toggleSelect(id: string) {
@@ -128,7 +164,7 @@ export function ContentClient({ orgId, orgSlug, userId, items }: {
     setBusy(true);
     try {
       const sb = createClient();
-      const { data, error } = await sb.rpc('nl_org_proposal_create', {
+      const { error } = await sb.rpc('nl_org_proposal_create', {
         p_org_id: orgId,
         p_content_ids: Array.from(selected),
         p_target_audience: null,
@@ -138,13 +174,55 @@ export function ContentClient({ orgId, orgSlug, userId, items }: {
       if (error) throw error;
       toast.success(t('org.cnt.proposal_created'));
       setSelected(new Set());
-      router.push({ pathname: '/empresa/[slug]/propostas', params: { slug: orgSlug } } as any);
-    } catch (e: any) { toast.error(e?.message || t('tea.error')); }
+      router.push({ pathname: '/empresa/[slug]/propostas', params: { slug: orgSlug } } as never);
+    } catch (e) { toast.error(e instanceof Error ? e.message : t('tea.error')); }
     finally { setBusy(false); }
   }
 
+  // ---- painel de uso ----
+  const ingestQuota = usage?.quotas?.['ingest_mb_per_month'] ?? null;
+  const ingestUsed = usage?.period?.counters?.['ingest_mb_per_month'] ?? 0;
+  const overageCents = usage?.period?.overage_cents ?? 0;
+  const pct = ingestQuota && ingestQuota > 0 ? Math.min(100, Math.round((ingestUsed / ingestQuota) * 100)) : null;
+  const near = pct != null && pct >= 80;
+
   return (
     <div className="space-y-5">
+      {/* Painel de uso / quota / overage */}
+      {usage && (
+        <div className="bg-white border border-slate-200 rounded-2xl p-4">
+          <div className="flex items-center justify-between gap-3 mb-2">
+            <h2 className="font-semibold text-sm text-slate-800 flex items-center gap-2">
+              <Database className="h-4 w-4 text-emerald-600" />{t('org.cnt.usage_title')}
+            </h2>
+            {usage.subscription && (
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">{usage.subscription.plan_id}</span>
+            )}
+          </div>
+          {ingestQuota === null ? (
+            <p className="text-xs text-slate-500">{t('org.cnt.usage_unlimited')}</p>
+          ) : (
+            <>
+              <div className="flex items-center justify-between text-xs text-slate-600 mb-1">
+                <span>{t('org.cnt.usage_ingest')}</span>
+                <span className="tabular-nums font-medium">{Math.round(ingestUsed)} / {ingestQuota} MB</span>
+              </div>
+              <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+                <div className={`h-full rounded-full transition-all ${near ? 'bg-gradient-to-r from-amber-500 to-orange-500' : 'bg-gradient-to-r from-emerald-500 to-teal-500'}`}
+                  style={{ width: `${pct}%` }} />
+              </div>
+              {near && <p className="text-[11px] text-amber-600 mt-1.5">{t('org.cnt.usage_near')}</p>}
+            </>
+          )}
+          {overageCents > 0 && (
+            <div className="mt-3 flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
+              <TrendingUp className="h-4 w-4 text-amber-600 shrink-0" />
+              <p className="text-xs text-amber-800">{t('org.cnt.overage_accrued', { amount: (overageCents / 100).toFixed(2) })}</p>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Upload zone */}
       <div className="bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 border-2 border-dashed border-emerald-300 rounded-2xl p-6 text-center">
         <Upload className="h-10 w-10 text-emerald-600 mx-auto mb-2" />
@@ -154,8 +232,7 @@ export function ContentClient({ orgId, orgSlug, userId, items }: {
           className="inline-flex items-center gap-1.5 mt-4 px-5 py-2 bg-gradient-to-br from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-sm font-semibold rounded-lg shadow-sm disabled:opacity-50">
           {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />} {t('org.cnt.choose_file')}
         </button>
-        <input ref={inputRef} type="file" className="hidden"
-          accept=".pdf,.doc,.docx,.md,.txt,.mp4,.mov,.webm,.mp3,.wav,.m4a"
+        <input ref={inputRef} type="file" className="hidden" accept={ACCEPT}
           onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadFile(f); e.target.value = ''; }} />
       </div>
 
@@ -196,7 +273,7 @@ export function ContentClient({ orgId, orgSlug, userId, items }: {
             const meta = STATUS_META[it.extraction_status] || STATUS_META.pending;
             const Icon = meta.icon;
             const isSelected = selected.has(it.id);
-            const canSelect = it.extraction_status === 'completed';
+            const canSelect = DONE.includes(it.extraction_status);
             return (
               <div key={it.id} className={`bg-white rounded-2xl border-2 p-4 transition-all ${isSelected ? 'border-violet-400 bg-violet-50/30' : 'border-slate-200 hover:border-slate-300'}`}>
                 <div className="flex items-start gap-3">
