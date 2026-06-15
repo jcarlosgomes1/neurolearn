@@ -22,6 +22,7 @@ interface Props {
 export function AdminPageHeader({ backHref, backLabel, eyebrow, eyebrowIcon: EyeIcon, eyebrowAccent = 'text-violet-600', title, description, emoji, icon: TileIcon, iconGradient = 'from-violet-500 to-indigo-600', actions, related }: Props) {
   const TileGlyph = TileIcon || EyeIcon;
   const showTile = Boolean(emoji || TileGlyph);
+  const resolvedBack = backHref === '/admin' ? '/admin/overview' : backHref;
   return (
     <header className="mb-6 sm:mb-8">
       {/* Breadcrumb (substitui a antiga pílula "Voltar") */}
@@ -29,7 +30,7 @@ export function AdminPageHeader({ backHref, backLabel, eyebrow, eyebrowIcon: Eye
         <nav aria-label="breadcrumb" className="mb-3 sm:mb-4">
           <ol className="flex items-center gap-1 text-xs font-medium text-slate-400 min-w-0">
             <li className="shrink-0">
-              <Link href={backHref as any} className="hover:text-violet-600 transition-colors">
+              <Link href={resolvedBack as any} className="hover:text-violet-600 transition-colors">
                 {backLabel || 'Voltar'}
               </Link>
             </li>
