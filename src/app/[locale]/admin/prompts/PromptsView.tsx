@@ -27,8 +27,8 @@ const CATEGORY_META: Record<string, { emoji: string; labelKey: string }> = {
 
 const MODEL_OPTIONS = [
   { value: 'claude-haiku-4-5-20251001', label: 'Haiku 4.5 (rápido, barato)' },
-  { value: 'claude-sonnet-4-20250514', label: 'Sonnet 4 (equilibrado)' },
-  { value: 'claude-opus-4-7', label: 'Opus 4.7 (máxima qualidade)' },
+  { value: 'claude-sonnet-4-6', label: 'Sonnet 4.6 (equilibrado)' },
+  { value: 'claude-opus-4-8', label: 'Opus 4.8 (máxima qualidade)' },
 ];
 
 async function callApi<T>(action: string, payload: Record<string, unknown> = {}): Promise<T | null> {

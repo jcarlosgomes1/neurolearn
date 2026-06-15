@@ -22,9 +22,9 @@ interface Route {
 }
 
 const MODELS = [
-  { value: 'claude-sonnet-4-5-20250929', label: 'Sonnet 4.5', cost_in: 300, cost_out: 1500, badge: 'bg-emerald-100 text-emerald-700' },
   { value: 'claude-haiku-4-5-20251001', label: 'Haiku 4.5', cost_in: 100, cost_out: 500, badge: 'bg-sky-100 text-sky-700' },
-  { value: 'claude-opus-4-5-20250929', label: 'Opus 4.5 (caro)', cost_in: 1500, cost_out: 7500, badge: 'bg-violet-100 text-violet-700' },
+  { value: 'claude-sonnet-4-6', label: 'Sonnet 4.6', cost_in: 300, cost_out: 1500, badge: 'bg-emerald-100 text-emerald-700' },
+  { value: 'claude-opus-4-8', label: 'Opus 4.8 (caro)', cost_in: 500, cost_out: 2500, badge: 'bg-violet-100 text-violet-700' },
 ] as const;
 
 const CATEGORY_COLORS: Record<string, string> = {
