@@ -5,9 +5,9 @@ import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
-import { Loader2, PenLine, UserPlus, CheckCircle2, Send, Sparkles, Award } from 'lucide-react';
+import { Loader2, PenLine, UserPlus, CheckCircle2, Send, Sparkles, Award, Globe, Check, X } from 'lucide-react';
 
-type Item = { id: string; title: string; brief: string | null; status: string; course_id: string | null; assignee_id?: string; assignee_name?: string | null; org_id?: string; org_name?: string | null; created_at: string };
+type Item = { id: string; title: string; brief: string | null; status: string; course_id: string | null; assignee_id?: string; assignee_name?: string | null; org_id?: string; org_name?: string | null; created_at: string; marketplace_status?: string };
 type Member = { user_id: string; name: string | null; role: string };
 
 const STATUS: Record<string, { label: string; cls: string }> = {
@@ -22,6 +22,7 @@ export function AuthoringClient({ orgId, orgSlug, isAdmin }: { orgId: string; or
   const [mine, setMine] = useState<Item[]>([]);
   const [orgItems, setOrgItems] = useState<Item[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
+  const [isPlatAdmin, setIsPlatAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
   const [title, setTitle] = useState('');
@@ -40,8 +41,8 @@ export function AuthoringClient({ orgId, orgSlug, isAdmin }: { orgId: string; or
       setMine(((m as { items?: Item[] })?.items) || []);
       if (isAdmin) {
         const { data: o } = await sb.rpc('nl_academy_authoring_for_org', { p_org_id: orgId });
-        const r = o as { items?: Item[]; members?: Member[] };
-        setOrgItems(r?.items || []); setMembers(r?.members || []);
+        const r = o as { items?: Item[]; members?: Member[]; is_platform_admin?: boolean };
+        setOrgItems(r?.items || []); setMembers(r?.members || []); setIsPlatAdmin(!!r?.is_platform_admin);
       }
     } catch { /* */ } finally { setLoading(false); }
   }, [orgId, isAdmin]);
@@ -80,6 +81,28 @@ export function AuthoringClient({ orgId, orgSlug, isAdmin }: { orgId: string; or
     } catch (e) { toast.error(e instanceof Error ? e.message : 'Erro'); } finally { setBusy(null); }
   }
 
+  async function proposeMarket(id: string) {
+    setBusy(id);
+    try {
+      const sb = createClient();
+      const { error } = await sb.rpc('nl_academy_submit_to_marketplace', { p_id: id });
+      if (error) throw error;
+      toast.success(safeT('academy.authoring.mkt_proposed', 'Proposta enviada para revisão da plataforma.'));
+      load();
+    } catch (e) { toast.error(e instanceof Error ? e.message : 'Erro'); } finally { setBusy(null); }
+  }
+
+  async function decideMarket(id: string, approve: boolean) {
+    setBusy(id);
+    try {
+      const sb = createClient();
+      const { error } = await sb.rpc('nl_academy_marketplace_decide', { p_id: id, p_approve: approve, p_reason: null });
+      if (error) throw error;
+      toast.success(approve ? safeT('academy.authoring.mkt_approved', 'Curso publicado no marketplace.') : safeT('academy.authoring.mkt_rejected', 'Proposta rejeitada.'));
+      load();
+    } catch (e) { toast.error(e instanceof Error ? e.message : 'Erro'); } finally { setBusy(null); }
+  }
+
   if (loading) return <div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-slate-400" /></div>;
 
   return (
@@ -113,6 +136,23 @@ export function AuthoringClient({ orgId, orgSlug, isAdmin }: { orgId: string; or
                     <button onClick={() => approve(it.id)} disabled={busy === it.id} className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 text-white text-xs font-medium px-2.5 py-1.5 hover:bg-emerald-700 disabled:opacity-50">
                       {busy === it.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Award className="h-3 w-3" />}{safeT('academy.authoring.approve_btn', 'Reconhecer')}
                     </button>
+                  )}
+                  {it.status === 'published' && (it.marketplace_status || 'internal') === 'internal' && (
+                    <button onClick={() => proposeMarket(it.id)} disabled={busy === it.id} className="inline-flex items-center gap-1 rounded-lg bg-indigo-50 text-indigo-700 text-xs font-medium px-2.5 py-1.5 hover:bg-indigo-100 disabled:opacity-50">
+                      {busy === it.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Globe className="h-3 w-3" />}{safeT('academy.authoring.mkt_propose', 'Propor ao marketplace')}
+                    </button>
+                  )}
+                  {it.marketplace_status === 'submitted' && !isPlatAdmin && (
+                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">{safeT('academy.authoring.mkt_submitted', 'Em revisão')}</span>
+                  )}
+                  {it.marketplace_status === 'submitted' && isPlatAdmin && (
+                    <span className="inline-flex items-center gap-1">
+                      <button onClick={() => decideMarket(it.id, true)} disabled={busy === it.id} className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 text-white text-xs font-medium px-2 py-1.5 hover:bg-emerald-700 disabled:opacity-50"><Check className="h-3 w-3" />{safeT('academy.authoring.mkt_approve', 'Aprovar')}</button>
+                      <button onClick={() => decideMarket(it.id, false)} disabled={busy === it.id} className="inline-flex items-center gap-1 rounded-lg bg-slate-100 text-slate-600 text-xs font-medium px-2 py-1.5 hover:bg-slate-200 disabled:opacity-50"><X className="h-3 w-3" />{safeT('academy.authoring.mkt_reject', 'Rejeitar')}</button>
+                    </span>
+                  )}
+                  {it.marketplace_status === 'published' && (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700"><Globe className="h-3 w-3" />{safeT('academy.authoring.mkt_published', 'No marketplace')}</span>
                   )}
                 </div>
               ))}
