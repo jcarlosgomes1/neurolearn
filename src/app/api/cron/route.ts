@@ -35,3 +35,4 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({ ok: true, ran_at: new Date().toISOString(), results });
 }
+
