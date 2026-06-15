@@ -130,9 +130,9 @@ function cellSeriesVal(c: StmtCell | undefined, sk: string): number {
 }
 type FYear = { idx: number; label: string; months: string[] };
 function buildYears(periods: string[]): FYear[] {
-  const out: FYear[] = [];
-  for (let i = 0; i < periods.length; i += 12) out.push({ idx: out.length, label: `Ano ${out.length + 1}`, months: periods.slice(i, i + 12) });
-  return out;
+  const byY = new Map<string, string[]>();
+  periods.forEach((p) => { const k = p.slice(0, 4); const a = byY.get(k) || []; a.push(p); byY.set(k, a); });
+  return Array.from(byY.entries()).sort((a, b) => a[0].localeCompare(b[0])).map(([k, months], idx) => ({ idx, label: k, months: [...months].sort() }));
 }
 const PNL_METRICS: { key: string; label: string; good: boolean }[] = [
   { key: 'revenue', label: 'Receita', good: true },
@@ -141,6 +141,7 @@ const PNL_METRICS: { key: string; label: string; good: boolean }[] = [
   { key: 'operating', label: 'Result. operac.', good: true },
 ];
 const PNL_COLORS: Record<string, string> = { forecast: '#6366f1', budget: '#f59e0b', outlook: '#10b981', actual: '#64748b' };
+const PNL_METRIC_COLORS: Record<string, string> = { revenue: '#10b981', gross: '#6366f1', opex: '#f59e0b', operating: '#ef4444' };
 
 function PnlChart({ months, series, type, cumulative, height = 200 }: { months: string[]; series: { name: string; color: string; values: number[] }[]; type: 'line' | 'col'; cumulative: boolean; height?: number }) {
   const ser = series.map((sx) => ({ ...sx, values: cumulative ? sx.values.reduce((a: number[], v) => { a.push((a.length ? a[a.length - 1] : 0) + v); return a; }, []) : sx.values }));
@@ -164,7 +165,7 @@ function PnlChart({ months, series, type, cumulative, height = 200 }: { months: 
           <text x={padL - 4} y={y(tv) + 3} textAnchor="end" fontSize="9" fill="#94a3b8">{fmtK(tv)}</text>
         </g>
       ))}
-      {[5, 11].filter((i) => i < n).map((i) => (
+      {months.map((p, i) => ({ p, i })).filter(({ p }) => p.slice(5, 7) === '06' || p.slice(5, 7) === '12').map(({ i }) => (
         <line key={`m${i}`} x1={type === 'col' ? xb(i) : x(i)} y1={padT} x2={type === 'col' ? xb(i) : x(i)} y2={H - padB} stroke="#e2e8f0" strokeDasharray="2 3" />
       ))}
       {min < 0 && max > 0 && <line x1={padL} y1={zeroY} x2={W - padR} y2={zeroY} stroke="#cbd5e1" />}
@@ -175,8 +176,8 @@ function PnlChart({ months, series, type, cumulative, height = 200 }: { months: 
             const yy = Math.min(y(v), zeroY), hh = Math.abs(y(v) - zeroY);
             return <rect key={`${sx.name}${i}`} x={bx} y={yy} width={barW} height={Math.max(1, hh)} rx="1" fill={sx.color} />;
           }))}
-      {[0, 5, 11].filter((i) => i < n).map((i) => (
-        <text key={`x${i}`} x={type === 'col' ? xb(i) : x(i)} y={H - 6} textAnchor={i === 0 ? 'start' : i === n - 1 ? 'end' : 'middle'} fontSize="9" fill="#94a3b8">{`M${i + 1}`}</text>
+      {Array.from(new Set([0, months.findIndex((p) => p.slice(5, 7) === '06'), n - 1])).filter((i) => i >= 0).map((i) => (
+        <text key={`x${i}`} x={type === 'col' ? xb(i) : x(i)} y={H - 6} textAnchor={i === 0 ? 'start' : i === n - 1 ? 'end' : 'middle'} fontSize="9" fill="#94a3b8">{`${Number(months[i].slice(5, 7))}/${months[i].slice(2, 4)}`}</text>
       ))}
     </svg>
   );
@@ -196,7 +197,8 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
   const [editCell, setEditCell] = useState<{ line: string; series: string; value: string; from: string; to: string; label: string } | null>(null);
   const [plYear, setPlYear] = useState(0);
   const [plType, setPlType] = useState<'line' | 'col'>('line');
-  const [plMetric, setPlMetric] = useState('revenue');
+  const [plMetricsSel, setPlMetricsSel] = useState<string[]>(['revenue', 'opex']);
+  const [laborCfg, setLaborCfg] = useState<{ spy: number; ss: number; misc: number }>({ spy: 14, ss: 23.75, misc: 5 });
   const [plOpen, setPlOpen] = useState<Set<string>>(new Set());
   const [comps, setComps] = useState<Comp[]>([]);
   const [compareData, setCompareData] = useState<Record<string, Overview>>({});
@@ -220,6 +222,12 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
         const stt = (st as Statement)?.ok ? (st as Statement) : null;
         setStmt(stt);
         setComps(((cp as { components?: Comp[] })?.components) || []);
+        try {
+          const { data: lc } = await supabase.rpc('nl_finance_config_get');
+          const rows = ((lc as { config?: { key: string; value_num: number }[] })?.config) || [];
+          const g = (k: string, d: number) => { const r = rows.find((x) => x.key === k); return r ? Number(r.value_num) : d; };
+          setLaborCfg({ spy: g('payroll_salaries_per_year', 14), ss: g('payroll_ss_pct', 23.75), misc: g('payroll_misc_pct', 5) });
+        } catch { /* */ }
         if (stt) { const subs = stt.rows.filter((r) => r.level === 1).map((r) => r.row_key); setPlOpen((prev) => (prev.size ? prev : new Set(subs))); }
       } catch { setStmt(null); }
     } catch {
@@ -323,6 +331,17 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
     } catch {
       toast.error('Falha ao gravar valor.');
     } finally { setBusy(null); }
+  }
+
+  async function saveLaborCfg(next: { spy: number; ss: number; misc: number }) {
+    try {
+      await Promise.all([
+        supabase.rpc('nl_finance_config_set', { p_key: 'payroll_salaries_per_year', p_value: next.spy }),
+        supabase.rpc('nl_finance_config_set', { p_key: 'payroll_ss_pct', p_value: next.ss }),
+        supabase.rpc('nl_finance_config_set', { p_key: 'payroll_misc_pct', p_value: next.misc }),
+      ]);
+      toast.success('Encargos laborais atualizados.');
+    } catch { toast.error('Falha ao gravar encargos.'); }
   }
 
   const toggleCompare = useCallback(async (id: string) => {
@@ -481,8 +500,10 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
         const cmap = new Map<string, StmtCell>();
         stmt.cells.forEach((c) => cmap.set(`${c.row_key}|${c.period}`, c));
         const lines = stmt.rows.filter((r) => r.level === 0);
+        const laborFactor = (laborCfg.spy / 12) * (1 + laborCfg.ss / 100 + laborCfg.misc / 100);
+        const lf = (l: StmtRow) => (l.section === 'opex_team' ? laborFactor : 1);
         const isOpex = (l: StmtRow) => (l.section || '').startsWith('opex');
-        const aggM = (pred: (l: StmtRow) => boolean, sk: string) => yr.months.map((p) => lines.filter(pred).reduce((acc, l) => acc + cellSeriesVal(cmap.get(`${l.row_key}|${p}`), sk), 0));
+        const aggM = (pred: (l: StmtRow) => boolean, sk: string) => yr.months.map((p) => lines.filter(pred).reduce((acc, l) => acc + cellSeriesVal(cmap.get(`${l.row_key}|${p}`), sk) * lf(l), 0));
         const metricMonthly = (metric: string, sk: string): number[] => {
           if (metric === 'revenue') return aggM((l) => l.kind === 'revenue', sk);
           if (metric === 'cogs') return aggM((l) => l.section === 'cogs', sk);
@@ -492,7 +513,7 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
           return r.map((v, i) => v - c[i] - o[i]);
         };
         const rowMonthly = (row: StmtRow, sk: string): number[] => {
-          if (row.level === 0) return yr.months.map((p) => cellSeriesVal(cmap.get(`${row.row_key}|${p}`), sk));
+          if (row.level === 0) return yr.months.map((p) => cellSeriesVal(cmap.get(`${row.row_key}|${p}`), sk) * lf(row));
           switch (row.row_key) {
             case 'sub:revenue': return aggM((l) => l.kind === 'revenue', sk);
             case 'sub:cogs': return aggM((l) => l.section === 'cogs', sk);
@@ -509,14 +530,29 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
         const sumA = (a: number[], k?: number) => a.slice(0, k ?? a.length).reduce((x, v) => x + v, 0);
         const goodHigher = (r: StmtRow) => r.kind === 'revenue' || ['sub:revenue', 'total:gross', 'total:operating', 'total:net'].includes(r.row_key);
         const editableSerie = serie === 'budget' || serie === 'outlook';
+        const nMy = yr.months.length;
+        const yy = yr.label.slice(2);
+        const midCount = yr.months.filter((p) => p.slice(5, 7) <= '06').length || nMy;
+        const hasMid = midCount < nMy && midCount > 0;
+        const lastMM = Number(yr.months[nMy - 1].slice(5, 7));
+        const midLabel = hasMid ? `6/${yy}` : `${lastMM}/${yy}`;
+        const endLabel = `${lastMM}/${yy}`;
         const subKeys = stmt.rows.filter((r) => r.level === 1).map((r) => r.row_key);
-        const compLineKeys = Array.from(new Set(comps.map((c) => c.line_key)));
-        const expandable = [...subKeys, ...compLineKeys];
-        const allOpen = expandable.length > 0 && expandable.every((k) => plOpen.has(k));
+        const teamLineKeys = lines.filter((l) => l.section === 'opex_team').map((l) => l.row_key);
+        const denomL = 1 + laborCfg.ss / 100 + laborCfg.misc / 100;
+        const laborComps: { comp_key: string; label: string; weight_pct: number }[] = [
+          { comp_key: 'venc', label: 'Vencimento base', weight_pct: (1 / denomL) * 100 },
+          { comp_key: 'ss', label: `Segurança Social (${laborCfg.ss}%)`, weight_pct: ((laborCfg.ss / 100) / denomL) * 100 },
+          { comp_key: 'misc', label: `Diversos/Seguros (${laborCfg.misc}%)`, weight_pct: ((laborCfg.misc / 100) / denomL) * 100 },
+        ];
         const compsByLine = new Map<string, Comp[]>();
         comps.forEach((c) => { const a = compsByLine.get(c.line_key) || []; a.push(c); compsByLine.set(c.line_key, a); });
+        const compsFor = (l: StmtRow): { comp_key: string; label: string; weight_pct: number }[] => (l.section === 'opex_team' ? laborComps : (compsByLine.get(l.row_key) || []));
+        const compLineKeys = Array.from(new Set([...comps.map((c) => c.line_key), ...teamLineKeys]));
+        const expandable = [...subKeys, ...compLineKeys];
+        const allOpen = expandable.length > 0 && expandable.every((k) => plOpen.has(k));
         const togglePlOpen = (k: string) => setPlOpen((prev) => { const nx = new Set(prev); if (nx.has(k)) nx.delete(k); else nx.add(k); return nx; });
-        const chartSeries = SERIES.map((sx) => ({ name: sx.label, color: PNL_COLORS[sx.key] || '#999', values: metricMonthly(plMetric, sx.key) }));
+        const chartSeries = plMetricsSel.map((mk) => ({ name: PNL_METRICS.find((x) => x.key === mk)?.label || mk, color: PNL_METRIC_COLORS[mk] || '#999', values: metricMonthly(mk, serie) }));
 
         return (
           <div className="space-y-4">
@@ -532,7 +568,7 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {PNL_METRICS.map((m) => {
-                const ol = metricMonthly(m.key, 'outlook'); const c12 = sumA(ol); const c6 = sumA(ol, 6); const mensal = c12 / nM;
+                const ol = metricMonthly(m.key, 'outlook'); const c12 = sumA(ol); const c6 = sumA(ol, midCount); const mensal = c12 / nMy;
                 const d = c12 - sumA(metricMonthly(m.key, 'budget'));
                 const dGood = m.good ? d >= 0 : d <= 0;
                 return (
@@ -540,7 +576,7 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
                     <div className="text-[11px] text-slate-400 mb-1">{m.label}</div>
                     <div className="text-base font-bold text-slate-900 tabular-nums leading-none">{fmtKE(c12)}</div>
                     <div className="mt-1.5 flex items-center justify-between text-[10px] text-slate-400">
-                      <span>M6 {fmtKE(c6)}</span>
+                      <span>{midLabel} {fmtKE(c6)}</span>
                       <span>{fmtEur(Math.round(mensal))}/mês</span>
                     </div>
                     <div className={`mt-1 text-[10px] font-medium ${dGood ? 'text-emerald-600' : 'text-rose-600'}`}>{d >= 0 ? '+' : ''}{fmtKE(d)} vs orç.</div>
@@ -552,10 +588,15 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
             <div className="rounded-xl border border-slate-200 bg-white p-3">
               <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
                 <div className="flex gap-1 flex-wrap">
-                  {PNL_METRICS.map((m) => (
-                    <button key={m.key} onClick={() => setPlMetric(m.key)}
-                      className={`px-2 py-1 rounded-md text-[11px] font-medium ${plMetric === m.key ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'}`}>{m.label}</button>
-                  ))}
+                  {PNL_METRICS.map((m) => {
+                    const on = plMetricsSel.includes(m.key);
+                    return (
+                      <button key={m.key} onClick={() => setPlMetricsSel((prev) => prev.includes(m.key) ? (prev.length > 1 ? prev.filter((k) => k !== m.key) : prev) : [...prev, m.key])}
+                        className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium ${on ? 'text-white' : 'bg-slate-100 text-slate-600'}`} style={on ? { background: PNL_METRIC_COLORS[m.key] } : undefined}>
+                        <span className="h-2 w-2 rounded-full" style={{ background: on ? '#fff' : PNL_METRIC_COLORS[m.key] }} />{m.label}
+                      </button>
+                    );
+                  })}
                 </div>
                 <button onClick={() => setPlType(plType === 'line' ? 'col' : 'line')}
                   className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium bg-slate-100 text-slate-600 hover:bg-slate-200">
@@ -563,14 +604,33 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
                   {plType === 'line' ? 'Colunas' : 'Linhas'}
                 </button>
               </div>
-              <p className="text-[11px] text-slate-400 mb-1">Acumulado ao longo do ano (k€) · marcas em M6 e M12</p>
+              <p className="text-[11px] text-slate-400 mb-1">Acumulado no ano (k€) · série {SERIES.find((x) => x.key === serie)?.label} · marcas em {midLabel} e {endLabel}</p>
               <PnlChart months={yr.months} type={plType} cumulative series={chartSeries} />
               <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2">
-                {SERIES.map((sx) => (
-                  <span key={sx.key} className="inline-flex items-center gap-1 text-[10px] text-slate-500">
-                    <span className="h-2 w-2 rounded-full" style={{ background: PNL_COLORS[sx.key] }} />{sx.label}
+                {chartSeries.map((cs) => (
+                  <span key={cs.name} className="inline-flex items-center gap-1 text-[10px] text-slate-500">
+                    <span className="h-2 w-2 rounded-full" style={{ background: cs.color }} />{cs.name}
                   </span>
                 ))}
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-slate-200 bg-white p-3">
+              <div className="flex items-center gap-2 mb-2"><Sliders className="h-4 w-4 text-slate-400" /><h3 className="text-sm font-semibold text-slate-700">Encargos laborais (Portugal)</h3></div>
+              <div className="grid grid-cols-3 gap-2">
+                <label className="text-[11px] text-slate-500 block">Salários/ano
+                  <input type="number" value={laborCfg.spy} onChange={(e) => setLaborCfg({ ...laborCfg, spy: Number(e.target.value) || 0 })} className="mt-1 w-full text-sm rounded-lg border border-slate-200 px-2 py-1.5 tabular-nums" />
+                </label>
+                <label className="text-[11px] text-slate-500 block">Seg. Social %
+                  <input type="number" value={laborCfg.ss} onChange={(e) => setLaborCfg({ ...laborCfg, ss: Number(e.target.value) || 0 })} className="mt-1 w-full text-sm rounded-lg border border-slate-200 px-2 py-1.5 tabular-nums" />
+                </label>
+                <label className="text-[11px] text-slate-500 block">Diversos %
+                  <input type="number" value={laborCfg.misc} onChange={(e) => setLaborCfg({ ...laborCfg, misc: Number(e.target.value) || 0 })} className="mt-1 w-full text-sm rounded-lg border border-slate-200 px-2 py-1.5 tabular-nums" />
+                </label>
+              </div>
+              <div className="flex items-center justify-between gap-2 mt-2 flex-wrap">
+                <span className="text-[11px] text-slate-400">Custo equipa = vencimento × {laborCfg.spy}/12 × (1 + {laborCfg.ss}% + {laborCfg.misc}%) = fator ×{laborFactor.toFixed(3)}</span>
+                <button onClick={() => saveLaborCfg(laborCfg)} className="inline-flex items-center gap-1 rounded-lg bg-indigo-600 text-white text-xs font-medium px-3 py-1.5 hover:bg-indigo-700"><Check className="h-3.5 w-3.5" />Gravar</button>
               </div>
             </div>
 
@@ -593,8 +653,8 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
                       <tr className="text-slate-400 text-[11px] border-b border-slate-200">
                         <th className="text-left font-medium px-3 py-2 sticky left-0 bg-white z-10">Rubrica</th>
                         <th className="text-right font-medium px-2 py-2 whitespace-nowrap">Mensal (€)</th>
-                        <th className="text-right font-medium px-2 py-2 whitespace-nowrap">Acum. M6</th>
-                        <th className="text-right font-medium px-2 py-2 whitespace-nowrap">Acum. M12</th>
+                        <th className="text-right font-medium px-2 py-2 whitespace-nowrap">Acum. {midLabel}</th>
+                        <th className="text-right font-medium px-2 py-2 whitespace-nowrap">Acum. {endLabel}</th>
                         <th className="text-right font-medium px-2 py-2 whitespace-nowrap">Δ Orç.</th>
                       </tr>
                     </thead>
@@ -602,14 +662,14 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
                       {(() => {
                         const childrenOf = (subKey: string) => lines.filter((l) => l.section === subKey.slice(4)).sort((a, b) => a.ord - b.ord);
                         const display = stmt.rows.filter((r) => r.level >= 1).sort((a, b) => a.ord - b.ord);
-                        const valsCells = (m: number[]) => { const c12 = sumA(m); return { c12, c6: sumA(m, 6), mensal: c12 / nM }; };
+                        const valsCells = (m: number[]) => { const c12 = sumA(m); return { c12, c6: sumA(m, midCount), mensal: c12 / nMy }; };
                         const rowTr = (r: StmtRow, isChild: boolean) => {
                           const m = rowMonthly(r, serie);
                           const { c12, c6, mensal } = valsCells(m);
                           const dv = c12 - sumA(rowMonthly(r, 'budget'));
                           const isSub = r.level === 1; const isTotal = r.level === 2;
                           const open = plOpen.has(r.row_key);
-                          const hasComps = isChild && (compsByLine.get(r.row_key)?.length ?? 0) > 0;
+                          const hasComps = isChild && compsFor(r).length > 0;
                           const label = ROW_LABEL[r.row_key] || r.label || r.label_key || r.row_key;
                           const rowCls = isTotal ? 'bg-slate-100 font-semibold text-slate-900' : isSub ? 'bg-slate-50 font-medium text-slate-700' : 'text-slate-600';
                           const stickyBg = isTotal ? 'bg-slate-100' : isSub ? 'bg-slate-50' : 'bg-white';
@@ -632,7 +692,7 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
                               </td>
                               <td className="px-2 py-2 text-right tabular-nums whitespace-nowrap">
                                 {canEdit ? (
-                                  <button onClick={() => setEditCell({ line: r.row_key, series: serie, value: String(Math.round(mensal)), from: `${yr.months[0]}-01`, to: `${yr.months[nM - 1]}-01`, label: r.label || r.row_key })}
+                                  <button onClick={() => setEditCell({ line: r.row_key, series: serie, value: String(Math.round(mensal / lf(r))), from: `${yr.months[0]}-01`, to: `${yr.months[nM - 1]}-01`, label: r.label || r.row_key })}
                                     className="hover:text-indigo-600 hover:underline decoration-dotted">{fmtEur(Math.round(mensal))}</button>
                                 ) : <span>{fmtEur(Math.round(mensal))}</span>}
                               </td>
@@ -642,7 +702,7 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
                             </tr>
                           );
                         };
-                        const compTr = (l: StmtRow, c: Comp) => {
+                        const compTr = (l: StmtRow, c: { comp_key: string; label: string; weight_pct: number }) => {
                           const lm = rowMonthly(l, serie).map((v) => (v * c.weight_pct) / 100);
                           const { c12, c6, mensal } = valsCells(lm);
                           return (
@@ -660,8 +720,8 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
                           if (r.level === 1 && plOpen.has(r.row_key)) {
                             childrenOf(r.row_key).forEach((l) => {
                               out.push(rowTr(l, true));
-                              const cs = compsByLine.get(l.row_key);
-                              if (cs && plOpen.has(l.row_key)) cs.forEach((c) => out.push(compTr(l, c)));
+                              const cs = compsFor(l);
+                              if (cs.length && plOpen.has(l.row_key)) cs.forEach((c) => out.push(compTr(l, c)));
                             });
                           }
                           return out;
