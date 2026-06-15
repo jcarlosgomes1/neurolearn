@@ -1,16 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Link } from '@/i18n/routing';
 import { callAgentOps } from '@/lib/api/client';
-import { Stat } from '@/components/shared/Stat';
+import { createClient } from '@/lib/supabase/client';
 import { DashboardSkeleton } from '@/components/shared/DashboardSkeleton';
 import { relTime } from '@/lib/utils/cn';
 import { useTranslations } from 'next-intl';
-import { StudentMomentumBar } from '@/components/lesson/StudentMomentumBar';
-import { DailyChallenges } from '@/components/lesson/DailyChallenges';
-import { RecommendedForYou } from '@/components/lesson/RecommendedForYou';
+import { toast } from 'sonner';
 import { notificationHref } from '@/lib/notifications/href';
+import { LearnerJourney, type JourneyData } from '@/components/learn/LearnerJourney';
 
 interface Cert {
   id: string;
@@ -18,165 +17,141 @@ interface Cert {
   certificate_number: string;
   verification_code: string;
   issued_at: string;
-  course_level?: string;
-  skills?: string[];
 }
+interface Notif { id: string; title: string; message?: string; read_at?: string | null; created_at: string }
 
-interface Dash {
-  stats: { enrollments_total: number; courses_completed: number; courses_in_progress: number; certificates_earned: number; unread_notifications: number };
-  my_courses: any[];
-  recent_notifications: any[];
-  recent_certificates: any[];
-}
+const PLATFORM_BRAND = '#6366f1';
 
 export function LearnDashboard() {
   const t = useTranslations();
-  const [dash, setDash] = useState<Dash | null>(null);
+  const [data, setData] = useState<JourneyData | null>(null);
   const [certs, setCerts] = useState<Cert[]>([]);
+  const [notifs, setNotifs] = useState<Notif[]>([]);
   const [err, setErr] = useState<string | null>(null);
+  const [claiming, setClaiming] = useState<string | null>(null);
+
+  function safeT(key: string, fb: string): string {
+    try { const v = t(key as never); if (v && typeof v === 'string' && v !== key) return v; } catch { /* */ }
+    return fb;
+  }
+
+  const load = useCallback(async () => {
+    try {
+      const sb = createClient();
+      const { data: d, error } = await sb.rpc('nl_my_academy_home');
+      if (error) throw error;
+      const r = d as { ok?: boolean; error?: string; gam: JourneyData['gam']; challenges?: { challenges: JourneyData['challenges'] }; leaderboard?: { leaderboard: JourneyData['leaderboard']['rows']; my_rank: number | null }; skills: JourneyData['skills']; continue: JourneyData['continue']; enrolled: JourneyData['courses']; available: JourneyData['discover'] };
+      if (!r?.ok) { setErr(r?.error || 'error'); return; }
+      setData({
+        gam: r.gam,
+        challenges: r.challenges?.challenges || [],
+        leaderboard: { rows: r.leaderboard?.leaderboard || [], my_rank: r.leaderboard?.my_rank ?? null },
+        skills: r.skills || [],
+        continue: r.continue,
+        courses: r.enrolled || [],
+        discover: r.available || [],
+      });
+    } catch (e) { setErr(e instanceof Error ? e.message : 'error'); }
+  }, []);
 
   useEffect(() => {
-    Promise.all([
-      callAgentOps<{ dashboard: Dash }>('my_dashboard'),
-      callAgentOps<{ certificates: Cert[] }>('my_certificates').catch(() => ({ certificates: [] })),
-    ])
-      .then(([dashRes, certsRes]) => {
-        setDash(dashRes.dashboard);
-        setCerts(certsRes.certificates || []);
-      })
-      .catch((e) => setErr(e.message));
-  }, []);
+    load();
+    callAgentOps<{ certificates: Cert[] }>('my_certificates').then((c) => setCerts(c.certificates || [])).catch(() => {});
+    callAgentOps<{ dashboard: { recent_notifications: Notif[] } }>('my_dashboard').then((d) => setNotifs(d.dashboard?.recent_notifications || [])).catch(() => {});
+  }, [load]);
+
+  async function claim(code: string) {
+    setClaiming(code);
+    try {
+      const sb = createClient();
+      const { error } = await sb.rpc('nl_gam_challenge_claim', { p_code: code });
+      if (error) throw error;
+      toast.success(safeT('academy.learn.claimed_toast', 'Recompensa resgatada!'));
+      load();
+    } catch (e) { toast.error(e instanceof Error ? e.message : 'Erro'); }
+    finally { setClaiming(null); }
+  }
 
   if (err) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-16 text-center">
         <p className="text-slate-600">{t('learn.err_load')}</p>
         <p className="text-sm text-slate-400 mt-2">{err === 'not_authenticated' ? t('learn.err_signin') : err}</p>
-        <Link href={'/login' as any} className="btn-primary mt-4 inline-flex">{t('learn.btn_signin')}</Link>
+        <Link href={'/login' as never} className="btn-primary mt-4 inline-flex">{t('learn.btn_signin')}</Link>
       </div>
     );
   }
-  if (!dash) return <DashboardSkeleton stats={5} />;
+  if (!data) return <DashboardSkeleton stats={5} />;
 
-  const s = dash.stats;
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">{t('learn.title')}</h1>
-        <p className="text-slate-500 text-sm mt-1">{t('learn.subtitle')}</p>
-      </div>
+    <div className="animate-fade-in">
+      <LearnerJourney
+        data={data}
+        brand={PLATFORM_BRAND}
+        title={safeT('learn.title', 'A minha aprendizagem')}
+        eyebrow={safeT('academy.learn.eyebrow_platform', 'A minha jornada')}
+        onClaim={claim}
+        claimingCode={claiming}
+      />
 
-      {(() => {
-        const inProgress = dash.my_courses.find((e: any) => !e.completed_at && (e.progress_pct || 0) > 0)
-          || dash.my_courses.find((e: any) => !e.completed_at);
-        const goal = inProgress ? {
-          courseId: inProgress.course_id,
-          courseTitle: inProgress.nl_courses?.title || t('learn.course_fallback'),
-          emoji: inProgress.nl_courses?.emoji || '📚',
-          progressPct: inProgress.progress_pct || 0,
-        } : null;
-        return <StudentMomentumBar nextGoal={goal} />;
-      })()}
+      {/* Extras B2C: notificações + certificados */}
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 pb-10">
+        <div className="grid md:grid-cols-2 gap-6">
+          <section className="bg-white rounded-2xl border border-slate-200 p-5">
+            <h2 className="font-semibold text-slate-900 mb-4">{t('learn.notifications')}</h2>
+            {notifs.length === 0 ? (
+              <p className="text-sm text-slate-500">{t('learn.no_notifications')}</p>
+            ) : (
+              <ul className="space-y-3">
+                {notifs.slice(0, 5).map((n) => {
+                  const href = notificationHref(n);
+                  const inner = (
+                    <>
+                      <div className={`break-words ${n.read_at ? 'text-slate-500' : 'text-slate-900 font-medium'}`}>{n.title}</div>
+                      {n.message && <div className="text-xs text-slate-500 mt-0.5 line-clamp-2">{n.message}</div>}
+                      <div className="text-xs text-slate-400 mt-1">{relTime(n.created_at)}</div>
+                    </>
+                  );
+                  return (
+                    <li key={n.id} className="text-sm flex items-start gap-2">
+                      <span className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${n.read_at ? 'bg-slate-300' : 'bg-brand-500'}`} />
+                      {href ? (
+                        <Link href={href as never} className="flex-1 min-w-0 -m-1 p-1 rounded-lg hover:bg-slate-50 transition-colors active:scale-[0.99] touch-manipulation">{inner}</Link>
+                      ) : (
+                        <div className="flex-1 min-w-0">{inner}</div>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </section>
 
-      <DailyChallenges />
-
-      <RecommendedForYou />
-
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-        <Stat icon="📖" label={t('learn.stat_courses')} value={s.enrollments_total} accent="brand" href="#meus-cursos" />
-        <Stat icon="⏳" label={t('learn.stat_progress')} value={s.courses_in_progress} accent="amber" href="#meus-cursos" />
-        <Stat icon="✅" label={t('learn.stat_done')} value={s.courses_completed} accent="emerald" href="#meus-cursos" />
-        <Stat icon="🏆" label={t('learn.stat_certs')} value={certs.length} accent="purple" href="#certificados" />
-        <Stat icon="🔔" label={t('learn.stat_unread')} value={s.unread_notifications} accent="rose" href="#meus-cursos" />
-      </div>
-
-      <section id="meus-cursos" className="scroll-mt-24 bg-white rounded-xl border border-slate-200 p-5">
-        <h2 className="font-semibold text-slate-900 mb-4">{t('learn.my_courses')}</h2>
-        {dash.my_courses.length === 0 ? (
-          <p className="text-sm text-slate-500">{t('learn.no_courses')} <Link href={'/cursos' as any} className="text-brand-600 hover:underline">{t('learn.explore_catalog')}</Link></p>
-        ) : (
-          <div className="space-y-3">
-            {dash.my_courses.map((e) => (
-              <Link key={e.id} href={`/learn/curso/${e.course_id}/continuar` as any} className="flex items-center gap-3 p-3 rounded-lg border border-slate-100 hover:bg-slate-50 hover:border-brand-200 transition-all active:scale-[0.99] touch-manipulation">
-                <div className="text-3xl flex-shrink-0">{e.nl_courses?.emoji || '📚'}</div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium text-slate-900 truncate">{e.nl_courses?.title || t('learn.course_fallback')}</div>
-                  <div className="mt-1.5 flex items-center gap-2">
-                    <div className="flex-1 h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-brand-500 to-purple-500 transition-all" style={{ width: `${e.progress_pct || 0}%` }} />
+          <section id="certificados" className="scroll-mt-24 bg-white rounded-2xl border border-slate-200 p-5">
+            <h2 className="font-semibold text-slate-900 mb-4">{t('cert.my_certs_title')}</h2>
+            {certs.length === 0 ? (
+              <p className="text-sm text-slate-500">{t('cert.my_certs_empty')}</p>
+            ) : (
+              <ul className="space-y-3">
+                {certs.slice(0, 8).map((c) => (
+                  <li key={c.id} className="flex items-center justify-between gap-2 p-3 rounded-lg bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-100">
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium text-slate-900 truncate">{c.course_title}</div>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[10px] text-purple-700 font-mono">{c.certificate_number}</span>
+                        <span className="text-[10px] text-slate-400">·</span>
+                        <span className="text-[10px] text-slate-500">{relTime(c.issued_at)}</span>
+                      </div>
                     </div>
-                    <span className="text-xs text-slate-500 tabular-nums">{Math.round(e.progress_pct || 0)}%</span>
-                  </div>
-                </div>
-                <span className={`flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg ${e.completed_at ? 'bg-emerald-50 text-emerald-700' : (e.progress_pct || 0) > 0 ? 'bg-brand-600 text-white' : 'bg-slate-900 text-white'}`}>
-                  {e.completed_at ? t('learn.cta_review') : (e.progress_pct || 0) > 0 ? t('learn.cta_resume') : t('learn.cta_start')}
-                </span>
-              </Link>
-            ))}
-          </div>
-        )}
-      </section>
-
-      <div className="grid md:grid-cols-2 gap-6">
-        <section className="bg-white rounded-xl border border-slate-200 p-5">
-          <h2 className="font-semibold text-slate-900 mb-4">{t('learn.notifications')}</h2>
-          {dash.recent_notifications.length === 0 ? (
-            <p className="text-sm text-slate-500">{t('learn.no_notifications')}</p>
-          ) : (
-            <ul className="space-y-3">
-              {dash.recent_notifications.slice(0, 5).map((n) => {
-                const href = notificationHref(n);
-                const inner = (
-                  <>
-                    <div className={`break-words ${n.read_at ? 'text-slate-500' : 'text-slate-900 font-medium'}`}>{n.title}</div>
-                    {n.message && <div className="text-xs text-slate-500 mt-0.5 line-clamp-2">{n.message}</div>}
-                    <div className="text-xs text-slate-400 mt-1">{relTime(n.created_at)}</div>
-                  </>
-                );
-                return (
-                  <li key={n.id} className="text-sm flex items-start gap-2">
-                    <span className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${n.read_at ? 'bg-slate-300' : 'bg-brand-500'}`} />
-                    {href ? (
-                      <Link href={href as any} className="flex-1 min-w-0 -m-1 p-1 rounded-lg hover:bg-slate-50 transition-colors active:scale-[0.99] touch-manipulation">
-                        {inner}
-                      </Link>
-                    ) : (
-                      <div className="flex-1 min-w-0">{inner}</div>
-                    )}
+                    <Link href={`/certificate/${c.verification_code}` as never} className="text-xs bg-purple-600 text-white px-3 py-1.5 rounded-md hover:bg-purple-700 flex-shrink-0 font-medium">
+                      {t('cert.view')}
+                    </Link>
                   </li>
-                );
-              })}
-            </ul>
-          )}
-        </section>
-
-        <section id="certificados" className="scroll-mt-24 bg-white rounded-xl border border-slate-200 p-5">
-          <h2 className="font-semibold text-slate-900 mb-4">{t('cert.my_certs_title')}</h2>
-          {certs.length === 0 ? (
-            <p className="text-sm text-slate-500">{t('cert.my_certs_empty')}</p>
-          ) : (
-            <ul className="space-y-3">
-              {certs.slice(0, 8).map((c) => (
-                <li key={c.id} className="flex items-center justify-between gap-2 p-3 rounded-lg bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-100">
-                  <div className="min-w-0 flex-1">
-                    <div className="font-medium text-slate-900 truncate">{c.course_title}</div>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[10px] text-purple-700 font-mono">{c.certificate_number}</span>
-                      <span className="text-[10px] text-slate-400">·</span>
-                      <span className="text-[10px] text-slate-500">{relTime(c.issued_at)}</span>
-                    </div>
-                  </div>
-                  <Link
-                    href={`/certificate/${c.verification_code}` as any}
-                    className="text-xs bg-purple-600 text-white px-3 py-1.5 rounded-md hover:bg-purple-700 flex-shrink-0 font-medium"
-                  >
-                    {t('cert.view')}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+                ))}
+              </ul>
+            )}
+          </section>
+        </div>
       </div>
     </div>
   );
