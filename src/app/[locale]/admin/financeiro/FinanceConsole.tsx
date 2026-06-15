@@ -1,12 +1,13 @@
 'use client';
 
 import { useEffect, useState, useMemo, useCallback } from 'react';
+import type { ReactNode } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import {
   Loader2, TrendingUp, Wallet, AlertTriangle, Sliders, Table2,
   Sparkles, ChevronDown, ChevronUp, RefreshCw, Check, Flame, Target,
-  Pencil, GitCompare, BarChart3, X,
+  Pencil, GitCompare, BarChart3, X, Lightbulb,
 } from 'lucide-react';
 
 type Channel = { channel_key: string; label: string; enabled: boolean; params: Record<string, number>; sort: number };
@@ -61,6 +62,17 @@ const CHANNEL_PARAM_LABELS: Record<string, string> = {
 
 function fmtEur(n: number): string {
   return new Intl.NumberFormat('pt-PT', { maximumFractionDigits: 0 }).format(n) + ' €';
+}
+
+// Tip subtil para interpretar os dados — texto curto, tom neutro, derivado dos números.
+function Tip({ children }: { children: ReactNode }) {
+  if (!children) return null;
+  return (
+    <p className="flex items-start gap-1.5 text-[11px] leading-relaxed text-slate-400 px-1 pt-0.5">
+      <Lightbulb className="h-3 w-3 mt-0.5 shrink-0 text-slate-300" />
+      <span>{children}</span>
+    </p>
+  );
 }
 
 function LineChart({ series, height = 160 }: { series: { name: string; color: string; values: number[] }[]; height?: number }) {
@@ -261,6 +273,40 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
   const cumProfit = periods.reduce((s, p) => s + (totals[p]?.net ?? 0), 0);
   const palette = ['#6366f1', '#10b981', '#f59e0b', '#ec4899', '#06b6d4'];
 
+  // ---- tips derivadas dos dados (interpretacao subtil) ----
+  // mes de break-even mensal (primeiro net >= 0)
+  const breakEvenIdx = periods.findIndex((p) => (totals[p]?.net ?? 0) >= 0);
+  const breakEvenLabel = breakEvenIdx >= 0 ? periods[breakEvenIdx] : null;
+  // mix de receita no ultimo periodo
+  const revMix = (() => {
+    if (!data || !finalPeriod) return null;
+    const b2c = val('rev_b2c', finalPeriod, serie);
+    const b2b = val('rev_b2b', finalPeriod, serie);
+    const tal = val('rev_talent', finalPeriod, serie);
+    const tot = b2c + b2b + tal;
+    if (tot <= 0) return null;
+    return { b2c: Math.round((b2c / tot) * 100), b2b: Math.round((b2b / tot) * 100), tal: Math.round((tal / tot) * 100) };
+  })();
+
+  const tipResumo = (() => {
+    if (runway?.burn === 0) return 'Já estás com resultado mensal positivo no arranque — o foco passa a ser acelerar sem perder margem.';
+    if (breakEvenLabel) return `Com estes pressupostos, o resultado mensal fica positivo por volta de ${breakEvenLabel}. O lucro acumulado demora mais a virar — é o investimento inicial a ser recuperado.`;
+    if (runway?.months != null && runway.months < 6) return `Runway curto (${runway.months.toFixed(1)} meses): ou reduzes o ritmo de queima, ou garantes caixa, antes de escalar a equipa.`;
+    return 'O resultado mensal ainda é negativo em todo o horizonte — experimenta reduzir custos de equipa cedo ou subir a conversão nos Canais.';
+  })();
+
+  const tipPL = serie === 'actual'
+    ? 'Série Real: vem da plataforma. Compara-a com o Orçamento para veres onde estás a desviar-te do plano.'
+    : serie === 'budget'
+      ? 'O Orçamento é o teu plano congelado. Define aqui os limites por rubrica; o agente compara-os com o Real e avisa desvios.'
+      : serie === 'outlook'
+        ? 'O Outlook junta o que já aconteceu (Real) com a projeção do que falta — é a melhor estimativa de onde vais aterrar.'
+        : 'A Projeção é teórica (parâmetros dos Canais). Toca num valor para fixar um override quando souberes melhor.';
+
+  const tipCanais = revMix
+    ? `No fim do horizonte, a receita reparte-se ~${revMix.b2b}% B2B / ${revMix.b2c}% B2C / ${revMix.tal}% Talent. O canal dominante é onde pequenas melhorias de conversão ou churn têm mais impacto.`
+    : 'Ajusta um parâmetro de cada vez e recalcula — assim isolas o efeito de cada alavanca no resultado.';
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
@@ -330,6 +376,7 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
               </strong>.
             </p>
           </div>
+          <Tip>{tipResumo}</Tip>
         </div>
       )}
 
@@ -346,6 +393,7 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
               <span className="text-[11px] text-slate-400 inline-flex items-center gap-1 ml-1"><Pencil className="h-3 w-3" />toca num valor para editar</span>
             )}
           </div>
+          <Tip>{tipPL}</Tip>
           {SECTION_ORDER.map((sec) => {
             const lines = data.lines.filter((l) => l.section === sec);
             if (!lines.length) return null;
@@ -419,7 +467,7 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
               </div>
             </div>
           ))}
-          <p className="text-xs text-slate-400 px-1">Valores-base propostos automaticamente. Ajusta e usa "Recalcular" no topo para projetar o impacto.</p>
+          <Tip>{tipCanais}</Tip>
         </div>
       )}
 
@@ -471,6 +519,7 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
                   </tbody>
                 </table>
               </div>
+              <Tip>O cenário com maior lucro acumulado nem sempre é o melhor — cruza-o com o runway de cada um: crescer mais rápido costuma exigir mais caixa antes do retorno.</Tip>
             </>
           )}
         </div>
@@ -505,6 +554,7 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
               </div>
             )}
           </div>
+          <Tip>Liga "Sinais reais" no topo e recalcula para a projeção passar a usar estes dados em vez dos valores propostos — quanto mais histórico real, mais fiável fica.</Tip>
         </div>
       )}
 
