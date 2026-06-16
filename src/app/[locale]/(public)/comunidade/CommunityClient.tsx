@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 import { Heart, MessageCircle, Send, Loader2 } from 'lucide-react';
 
@@ -8,6 +9,7 @@ type Post = { id: string; author_name: string | null; content: string; course_id
 type Reply = { id: string; post_id: string; author_name: string | null; content: string; created_at: string | null };
 
 export function CommunityClient({ initialPosts, initialReplies, likedIds, isAuthed }: { initialPosts: Post[]; initialReplies: Reply[]; likedIds: string[]; isAuthed: boolean }) {
+  const t = useTranslations('community');
   const sb = createClient();
   const [posts, setPosts] = useState<Post[]>(initialPosts);
   const [replies, setReplies] = useState<Reply[]>(initialReplies);
@@ -29,7 +31,7 @@ export function CommunityClient({ initialPosts, initialReplies, likedIds, isAuth
     setBusy(true); setErr(null);
     const { data, error } = await sb.rpc('nl_community_post_create', { p_content: draft });
     if (error) { setErr(error.message); setBusy(false); return; }
-    setPosts((p) => [{ id: data as string, author_name: 'tu', content: draft.trim(), course_id: null, likes: 0, created_at: new Date().toISOString() }, ...p]);
+    setPosts((p) => [{ id: data as string, author_name: t('you'), content: draft.trim(), course_id: null, likes: 0, created_at: new Date().toISOString() }, ...p]);
     setDraft(''); setBusy(false);
   }
 
@@ -47,7 +49,7 @@ export function CommunityClient({ initialPosts, initialReplies, likedIds, isAuth
     setBusy(true); setErr(null);
     const { data, error } = await sb.rpc('nl_community_reply_create', { p_post_id: postId, p_content: replyDraft });
     if (error) { setErr(error.message); setBusy(false); return; }
-    setReplies((r) => [...r, { id: data as string, post_id: postId, author_name: 'tu', content: replyDraft.trim(), created_at: new Date().toISOString() }]);
+    setReplies((r) => [...r, { id: data as string, post_id: postId, author_name: t('you'), content: replyDraft.trim(), created_at: new Date().toISOString() }]);
     setReplyDraft(''); setBusy(false);
   }
 
@@ -56,15 +58,15 @@ export function CommunityClient({ initialPosts, initialReplies, likedIds, isAuth
       {err ? <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{err}</div> : null}
       {isAuthed ? (
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <textarea value={draft} onChange={(e) => setDraft(e.target.value)} rows={3} placeholder="Partilha algo com a comunidade..." className="w-full resize-none rounded-xl border border-slate-200 p-3 text-sm outline-none focus:border-violet-400" />
+          <textarea value={draft} onChange={(e) => setDraft(e.target.value)} rows={3} placeholder={t('compose_ph')} className="w-full resize-none rounded-xl border border-slate-200 p-3 text-sm outline-none focus:border-violet-400" />
           <div className="mt-2 flex justify-end">
             <button onClick={createPost} disabled={busy || !draft.trim()} className="inline-flex items-center gap-1.5 rounded-xl bg-violet-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-violet-700 disabled:opacity-50">
-              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />} Publicar
+              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />} {t('publish')}
             </button>
           </div>
         </div>
       ) : (
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 text-center text-sm text-slate-500">Inicia sessao para publicar.</div>
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 text-center text-sm text-slate-500">{t('signin_to_post')}</div>
       )}
 
       <div className="space-y-3">
@@ -99,8 +101,8 @@ export function CommunityClient({ initialPosts, initialReplies, likedIds, isAuth
                   ))}
                   {isAuthed ? (
                     <div className="flex gap-2">
-                      <input value={replyDraft} onChange={(e) => setReplyDraft(e.target.value)} placeholder="Responder..." className="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-violet-400" />
-                      <button onClick={() => createReply(post.id)} disabled={busy || !replyDraft.trim()} className="rounded-xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50">Enviar</button>
+                      <input value={replyDraft} onChange={(e) => setReplyDraft(e.target.value)} placeholder={t('reply_ph')} className="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-violet-400" />
+                      <button onClick={() => createReply(post.id)} disabled={busy || !replyDraft.trim()} className="rounded-xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50">{t('send')}</button>
                     </div>
                   ) : null}
                 </div>
@@ -108,7 +110,7 @@ export function CommunityClient({ initialPosts, initialReplies, likedIds, isAuth
             </div>
           );
         })}
-        {posts.length === 0 ? <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">Ainda sem publicacoes. Se o primeiro!</div> : null}
+        {posts.length === 0 ? <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">{t('empty')}</div> : null}
       </div>
     </div>
   );
