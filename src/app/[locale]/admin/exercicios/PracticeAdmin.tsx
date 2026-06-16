@@ -4,10 +4,12 @@ import { useEffect, useState, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { Loader2, Plus, Save, Code2, FileText, ListChecks, Users } from 'lucide-react';
+import { Loader2, Plus, Save, Code2, FileText, ListChecks, Users, Sparkles, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { generateCodeExerciseAction } from './actions';
+import { runWithTests } from '@/lib/codeRunner';
 
 type Check = { type: string; value?: string; weight?: number; message?: string };
-type Exercise = { id: string; course_id: string; kind: string; title_md: string; prompt_md: string; starter_code: string | null; auto_checks: Check[]; max_score: number; status: string; submissions: number };
+type Exercise = { id: string; course_id: string; kind: string; title_md: string; prompt_md: string; starter_code: string | null; auto_checks: Check[]; max_score: number; status: string; submissions: number; language?: string | null; tests?: string | null; solution_md?: string | null; source?: string | null };
 
 const KIND_ICON: Record<string, any> = { code: Code2, freeform: FileText, checklist: ListChecks };
 
@@ -19,6 +21,37 @@ export function PracticeAdmin() {
   const [creating, setCreating] = useState(false);
   const [saving, setSaving] = useState(false);
   const [draft, setDraft] = useState({ course_id: '', kind: 'code', title: '', prompt: '', starter: '', checks: '', max_score: '100', language: 'python', tests: '' });
+  const [gen, setGen] = useState({ course_id: '', topic: '', language: 'python', difficulty: 'intermédio' });
+  const [generating, setGenerating] = useState(false);
+  const [showGen, setShowGen] = useState(false);
+  const [verifying, setVerifying] = useState<string | null>(null);
+
+  async function generate() {
+    if (!gen.course_id.trim() || !gen.topic.trim()) { toast.error(t('practiceadmin.required')); return; }
+    setGenerating(true);
+    try {
+      const r = await generateCodeExerciseAction({ course_id: gen.course_id, topic: gen.topic, language: gen.language, difficulty: gen.difficulty });
+      if (!r.ok) { toast.error(r.error || t('practiceadmin.error')); return; }
+      toast.success('Rascunho gerado — verifica e publica.');
+      setGen({ course_id: '', topic: '', language: 'python', difficulty: 'intermédio' });
+      setShowGen(false);
+      await load();
+    } catch { toast.error(t('practiceadmin.error')); }
+    finally { setGenerating(false); }
+  }
+
+  async function verifyAndPublish(e: Exercise) {
+    setVerifying(e.id);
+    try {
+      const r = await runWithTests((e.language || 'python'), e.solution_md || '', e.tests || null);
+      if (!r.passed) { toast.error('A solução não passou os testes — não publicado. ' + (r.error || '')); return; }
+      const { data, error } = await supabase.rpc('nl_admin_practice_approve', { p_id: e.id, p_verified: true });
+      if (error || !(data as { ok?: boolean })?.ok) throw error || new Error('fail');
+      toast.success('Verificado e publicado.');
+      await load();
+    } catch { toast.error('Falha ao publicar.'); }
+    finally { setVerifying(null); }
+  }
 
   async function load() {
     setLoading(true);
@@ -57,6 +90,39 @@ export function PracticeAdmin() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 space-y-4">
+      <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-5 space-y-3">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-amber-600" />
+            <h3 className="font-semibold text-slate-900 text-sm">Gerar exercício de código (Premium)</h3>
+          </div>
+          <button onClick={() => setShowGen((v) => !v)} className="text-xs font-medium text-amber-700 hover:underline">{showGen ? 'Fechar' : 'Abrir'}</button>
+        </div>
+        {showGen && (
+          <div className="space-y-2">
+            <div className="grid grid-cols-2 gap-2">
+              <input value={gen.course_id} onChange={(ev) => setGen((g) => ({ ...g, course_id: ev.target.value }))} placeholder={t('practiceadmin.course_id')}
+                className="rounded-lg border border-amber-200 px-3 py-2 text-sm" />
+              <select value={gen.language} onChange={(ev) => setGen((g) => ({ ...g, language: ev.target.value }))}
+                className="rounded-lg border border-amber-200 px-3 py-2 text-sm">
+                <option value="python">Python</option><option value="javascript">JavaScript</option>
+              </select>
+            </div>
+            <input value={gen.topic} onChange={(ev) => setGen((g) => ({ ...g, topic: ev.target.value }))} placeholder="Tópico da aula (ex: listas e ciclos for)"
+              className="w-full rounded-lg border border-amber-200 px-3 py-2 text-sm" />
+            <select value={gen.difficulty} onChange={(ev) => setGen((g) => ({ ...g, difficulty: ev.target.value }))}
+              className="w-full rounded-lg border border-amber-200 px-3 py-2 text-sm">
+              <option value="iniciante">Iniciante</option><option value="intermédio">Intermédio</option><option value="avançado">Avançado</option>
+            </select>
+            <button onClick={generate} disabled={generating}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-amber-600 text-white text-sm font-medium disabled:opacity-50 hover:bg-amber-700">
+              {generating ? <><Loader2 className="h-4 w-4 animate-spin" /> A gerar…</> : <><Sparkles className="h-4 w-4" /> Gerar rascunho</>}
+            </button>
+            <p className="text-[11px] text-amber-700/80">Gera em rascunho. Só é publicado depois de a solução passar os próprios testes na sandbox.</p>
+          </div>
+        )}
+      </div>
+
       {!creating ? (
         <button onClick={() => setCreating(true)}
           className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-violet-600 text-white text-sm font-medium hover:bg-violet-700">
@@ -130,11 +196,23 @@ export function PracticeAdmin() {
                 <span className="text-xs font-mono text-slate-400">{e.course_id}</span>
               </div>
               <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">{e.prompt_md}</p>
-              <div className="flex items-center gap-3 mt-1.5 text-xs text-slate-400">
+              <div className="flex items-center gap-3 mt-1.5 text-xs text-slate-400 flex-wrap">
                 <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {e.submissions}</span>
                 <span>{(e.auto_checks?.length || 0)} checks</span>
                 <span>{e.max_score} pts</span>
+                {e.language && <span className="font-mono">{e.language}</span>}
+                {e.source === 'ai' && <span className="text-amber-600 font-medium">IA</span>}
+                <span className={e.status === 'approved' ? 'text-emerald-600 font-medium' : 'text-amber-600 font-medium'}>{e.status}</span>
               </div>
+              {e.status === 'draft' && e.kind === 'code' && (e.tests || e.solution_md) && (
+                <button onClick={() => verifyAndPublish(e)} disabled={verifying === e.id}
+                  className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-medium disabled:opacity-50 hover:bg-emerald-700">
+                  {verifying === e.id ? <><Loader2 className="h-3.5 w-3.5 animate-spin" /> A verificar…</> : <><ShieldCheck className="h-3.5 w-3.5" /> Verificar e publicar</>}
+                </button>
+              )}
+              {e.status === 'draft' && e.kind === 'code' && !e.tests && !e.solution_md && (
+                <p className="mt-2 inline-flex items-center gap-1 text-[11px] text-amber-600"><AlertTriangle className="h-3 w-3" /> Sem testes/solução para verificar</p>
+              )}
             </div>
           </div>
         );
