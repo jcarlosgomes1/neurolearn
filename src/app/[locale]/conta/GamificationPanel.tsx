@@ -53,6 +53,8 @@ export function GamificationPanel() {
   if (loading || !state) return null;
   const pct = state.xp_for_level > 0 ? Math.min(100, Math.round((state.xp_into_level / state.xp_for_level) * 100)) : 0;
   const toNext = Math.max(0, state.next_level_xp - state.xp_total);
+  const earned = badges.filter((b) => b.earned);
+  const lockedCount = badges.length - earned.length;
 
   return (
     <div className="bg-gradient-to-br from-violet-600 via-indigo-600 to-blue-600 rounded-3xl p-5 sm:p-6 text-white shadow-lg overflow-hidden relative">
@@ -93,13 +95,24 @@ export function GamificationPanel() {
         </div>
 
         {view === 'badges' ? (
-          <div className="grid grid-cols-5 sm:grid-cols-10 gap-2">
-            {badges.map((b) => (
-              <div key={b.code} title={`${t(b.name)} — ${t(b.desc)}`}
-                className={`aspect-square rounded-xl flex items-center justify-center text-lg ring-2 transition ${b.earned ? `${TIER_RING[b.tier] || TIER_RING.bronze} ring-offset-1 ring-offset-transparent` : 'bg-white/10 ring-white/10 grayscale opacity-50'}`}>
-                {b.earned ? <span>{b.icon}</span> : <Lock className="h-4 w-4 text-white/60" />}
+          <div>
+            {earned.length === 0 ? (
+              <p className="text-sm opacity-80 py-2">{t('gam.ui.no_badges_yet')}</p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {earned.map((b) => (
+                  <div key={b.code} title={`${t(b.name)} — ${t(b.desc)}`}
+                    className={`w-11 h-11 rounded-xl flex items-center justify-center text-lg ring-2 ring-offset-1 ring-offset-transparent ${TIER_RING[b.tier] || TIER_RING.bronze}`}>
+                    <span>{b.icon}</span>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
+            {lockedCount > 0 && (
+              <div className="mt-3 inline-flex items-center gap-1.5 text-xs bg-white/10 rounded-full px-3 py-1.5">
+                <Lock className="h-3.5 w-3.5 opacity-70" /> {lockedCount} {t('gam.ui.locked_remaining')}
+              </div>
+            )}
           </div>
         ) : (
           <div className="space-y-1.5">
