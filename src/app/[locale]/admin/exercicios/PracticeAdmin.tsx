@@ -18,7 +18,7 @@ export function PracticeAdmin() {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [draft, setDraft] = useState({ course_id: '', kind: 'code', title: '', prompt: '', starter: '', checks: '', max_score: '100' });
+  const [draft, setDraft] = useState({ course_id: '', kind: 'code', title: '', prompt: '', starter: '', checks: '', max_score: '100', language: 'python', tests: '' });
 
   async function load() {
     setLoading(true);
@@ -42,11 +42,12 @@ export function PracticeAdmin() {
       const { data, error } = await supabase.rpc('nl_admin_practice_upsert', {
         p_id: null, p_course_id: draft.course_id, p_kind: draft.kind, p_title: draft.title, p_prompt: draft.prompt,
         p_starter: draft.starter || null, p_auto_checks: checks, p_max_score: Number(draft.max_score) || 100, p_status: 'approved',
+        p_language: draft.kind === 'code' ? draft.language : 'python', p_tests: draft.kind === 'code' ? (draft.tests || null) : null,
       });
       if (error || !(data as { ok?: boolean })?.ok) throw error || new Error('fail');
       toast.success(t('practiceadmin.created'));
       setCreating(false);
-      setDraft({ course_id: '', kind: 'code', title: '', prompt: '', starter: '', checks: '', max_score: '100' });
+      setDraft({ course_id: '', kind: 'code', title: '', prompt: '', starter: '', checks: '', max_score: '100', language: 'python', tests: '' });
       await load();
     } catch { toast.error(t('practiceadmin.error')); }
     finally { setSaving(false); }
@@ -79,6 +80,24 @@ export function PracticeAdmin() {
             className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm resize-none" />
           <textarea value={draft.starter} onChange={(e) => setDraft((d) => ({ ...d, starter: e.target.value }))} placeholder={t('practiceadmin.starter_ph')} rows={2}
             className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-mono resize-none" />
+          {draft.kind === 'code' && (
+            <>
+              <div>
+                <label className="text-xs text-slate-500">Linguagem da sandbox</label>
+                <select value={draft.language} onChange={(e) => setDraft((d) => ({ ...d, language: e.target.value }))}
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm mt-1">
+                  <option value="python">Python</option>
+                  <option value="javascript">JavaScript</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs text-slate-500">Testes (corre após o código do aluno; falha = exceção/assert)</label>
+                <textarea value={draft.tests} onChange={(e) => setDraft((d) => ({ ...d, tests: e.target.value }))}
+                  placeholder={draft.language === 'python' ? 'assert soma(2,3) == 5' : 'if (soma(2,3) !== 5) throw new Error("falhou");'} rows={3}
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs font-mono resize-none mt-1" />
+              </div>
+            </>
+          )}
           <div>
             <label className="text-xs text-slate-500">{t('practiceadmin.checks_ph')}</label>
             <textarea value={draft.checks} onChange={(e) => setDraft((d) => ({ ...d, checks: e.target.value }))}
