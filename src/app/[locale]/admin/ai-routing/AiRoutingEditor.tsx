@@ -21,11 +21,13 @@ interface Route {
   updated_at: string;
 }
 
-const MODELS = [
-  { value: 'claude-haiku-4-5-20251001', label: 'Haiku 4.5', cost_in: 100, cost_out: 500, badge: 'bg-sky-100 text-sky-700' },
-  { value: 'claude-sonnet-4-6', label: 'Sonnet 4.6', cost_in: 300, cost_out: 1500, badge: 'bg-emerald-100 text-emerald-700' },
-  { value: 'claude-opus-4-8', label: 'Opus 4.8 (caro)', cost_in: 500, cost_out: 2500, badge: 'bg-violet-100 text-violet-700' },
-] as const;
+interface ModelOption { value: string; label: string; badge: string }
+const PROVIDER_BADGE: Record<string, string> = {
+  anthropic: 'bg-violet-100 text-violet-700',
+  openai: 'bg-emerald-100 text-emerald-700',
+  deepseek: 'bg-indigo-100 text-indigo-700',
+  voyage: 'bg-amber-100 text-amber-700',
+};
 
 const CATEGORY_COLORS: Record<string, string> = {
   content: 'border-emerald-200 bg-emerald-50/40',
@@ -41,6 +43,7 @@ export function AiRoutingEditor() {
   const supabase = useMemo(() => createClient(), []);
 
   const [routes, setRoutes] = useState<Route[]>([]);
+  const [models, setModels] = useState<ModelOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingOp, setSavingOp] = useState<string | null>(null);
   const [showRecentCalls, setShowRecentCalls] = useState(false);
@@ -61,7 +64,18 @@ export function AiRoutingEditor() {
     setRecentCalls((data as any[]) || []);
   }
 
-  useEffect(() => { load(); }, []);
+  async function loadModels() {
+    const { data } = await supabase.from('nl_ai_models')
+      .select('model,label,provider,kind,sort_order')
+      .eq('kind', 'chat').order('sort_order', { ascending: true });
+    setModels(((data as any[]) || []).map((m) => ({
+      value: m.model,
+      label: m.label || m.model,
+      badge: PROVIDER_BADGE[m.provider || ''] || 'bg-slate-100 text-slate-600',
+    })));
+  }
+
+  useEffect(() => { load(); loadModels(); }, []);
 
   async function updateRoute(operation: string, patch: Partial<Route>) {
     setSavingOp(operation);
@@ -74,7 +88,7 @@ export function AiRoutingEditor() {
   }
 
   function modelBadge(model: string) {
-    const m = MODELS.find((x) => x.value === model);
+    const m = models.find((x) => x.value === model);
     return m ? <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${m.badge}`}>{m.label}</span> : <span className="text-[10px] text-slate-500 font-mono">{model}</span>;
   }
 
@@ -160,7 +174,7 @@ export function AiRoutingEditor() {
                         <label className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">{t('ai_routing.primary')}</label>
                         <select value={r.model_primary} onChange={(e) => updateRoute(r.operation, { model_primary: e.target.value })}
                           disabled={savingOp === r.operation} className="input mt-1 text-sm">
-                          {MODELS.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
+                          {models.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
                         </select>
                       </div>
                       <div>
@@ -168,7 +182,7 @@ export function AiRoutingEditor() {
                         <select value={r.model_fallback || ''} onChange={(e) => updateRoute(r.operation, { model_fallback: e.target.value || null })}
                           disabled={savingOp === r.operation} className="input mt-1 text-sm">
                           <option value="">{t('ai_routing.none')}</option>
-                          {MODELS.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
+                          {models.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
                         </select>
                       </div>
                       <div>
