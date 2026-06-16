@@ -15,12 +15,13 @@ export default async function Page() {
   const t = await getTranslations();
   const { data: enabled } = await sb.rpc('nl_is_feature_enabled', { p_key: 'community' });
   const { data: { user } } = await sb.auth.getUser();
+  const { data: channels } = await sb.rpc('nl_community_channels');
 
   let posts: unknown[] = [];
   let replies: unknown[] = [];
   let likedIds: string[] = [];
   if (enabled) {
-    const p = await sb.from('nl_community_posts').select('id, author_name, content, course_id, likes, created_at').order('created_at', { ascending: false }).limit(50);
+    const p = await sb.from('nl_community_posts').select('id, author_name, content, course_id, likes, channel_key, created_at').order('created_at', { ascending: false }).limit(50);
     posts = p.data ?? [];
     const ids = (posts as { id: string }[]).map((x) => x.id);
     if (ids.length) {
@@ -48,7 +49,7 @@ export default async function Page() {
         {!enabled ? (
           <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-slate-500">{t('community.unavailable')}</div>
         ) : (
-          <CommunityClient initialPosts={posts as never} initialReplies={replies as never} likedIds={likedIds} isAuthed={!!user} />
+          <CommunityClient initialPosts={posts as never} initialReplies={replies as never} likedIds={likedIds} isAuthed={!!user} channels={(channels as never) ?? []} />
         )}
       </div>
     </main>

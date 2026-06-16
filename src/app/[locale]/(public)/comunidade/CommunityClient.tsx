@@ -5,12 +5,17 @@ import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 import { Heart, MessageCircle, Send, Loader2 } from 'lucide-react';
 
-type Post = { id: string; author_name: string | null; content: string; course_id: string | null; likes: number | null; created_at: string | null };
+type Channel = { key: string; sort: number };
+type Post = { id: string; author_name: string | null; content: string; course_id: string | null; likes: number | null; channel_key: string | null; created_at: string | null };
 type Reply = { id: string; post_id: string; author_name: string | null; content: string; created_at: string | null };
 
-export function CommunityClient({ initialPosts, initialReplies, likedIds, isAuthed }: { initialPosts: Post[]; initialReplies: Reply[]; likedIds: string[]; isAuthed: boolean }) {
+export function CommunityClient({ initialPosts, initialReplies, likedIds, isAuthed, channels }: { initialPosts: Post[]; initialReplies: Reply[]; likedIds: string[]; isAuthed: boolean; channels: Channel[] }) {
   const t = useTranslations('community');
   const sb = createClient();
+  const chLabel = (k: string) => t('channel.' + k);
+  const firstCh = channels[0]?.key ?? 'geral';
+  const [tab, setTab] = useState<string>('all');
+  const [composeCh, setComposeCh] = useState<string>(firstCh);
   const [posts, setPosts] = useState<Post[]>(initialPosts);
   const [replies, setReplies] = useState<Reply[]>(initialReplies);
   const [liked, setLiked] = useState<Set<string>>(new Set(likedIds));
@@ -29,9 +34,9 @@ export function CommunityClient({ initialPosts, initialReplies, likedIds, isAuth
   async function createPost() {
     if (!draft.trim()) return;
     setBusy(true); setErr(null);
-    const { data, error } = await sb.rpc('nl_community_post_create', { p_content: draft });
+    const { data, error } = await sb.rpc('nl_community_post_create', { p_content: draft, p_channel: composeCh });
     if (error) { setErr(error.message); setBusy(false); return; }
-    setPosts((p) => [{ id: data as string, author_name: t('you'), content: draft.trim(), course_id: null, likes: 0, created_at: new Date().toISOString() }, ...p]);
+    setPosts((p) => [{ id: data as string, author_name: t('you'), content: draft.trim(), course_id: null, likes: 0, channel_key: composeCh, created_at: new Date().toISOString() }, ...p]);
     setDraft(''); setBusy(false);
   }
 
@@ -55,9 +60,22 @@ export function CommunityClient({ initialPosts, initialReplies, likedIds, isAuth
 
   return (
     <div className="space-y-6">
+      {channels.length > 0 ? (
+        <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+          <button onClick={() => setTab('all')} className={'whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ' + (tab === 'all' ? 'bg-violet-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:border-violet-300')}>{t('channel.all')}</button>
+          {channels.map((c) => (
+            <button key={c.key} onClick={() => setTab(c.key)} className={'whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ' + (tab === c.key ? 'bg-violet-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:border-violet-300')}>{chLabel(c.key)}</button>
+          ))}
+        </div>
+      ) : null}
       {err ? <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{err}</div> : null}
       {isAuthed ? (
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          {channels.length > 0 ? (
+            <select value={composeCh} onChange={(e) => setComposeCh(e.target.value)} className="mb-2 rounded-lg border border-slate-200 px-2.5 py-1.5 text-sm text-slate-700 outline-none focus:border-violet-400">
+              {channels.map((c) => (<option key={c.key} value={c.key}>{chLabel(c.key)}</option>))}
+            </select>
+          ) : null}
           <textarea value={draft} onChange={(e) => setDraft(e.target.value)} rows={3} placeholder={t('compose_ph')} className="w-full resize-none rounded-xl border border-slate-200 p-3 text-sm outline-none focus:border-violet-400" />
           <div className="mt-2 flex justify-end">
             <button onClick={createPost} disabled={busy || !draft.trim()} className="inline-flex items-center gap-1.5 rounded-xl bg-violet-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-violet-700 disabled:opacity-50">
@@ -70,7 +88,7 @@ export function CommunityClient({ initialPosts, initialReplies, likedIds, isAuth
       )}
 
       <div className="space-y-3">
-        {posts.map((post) => {
+        {(tab === 'all' ? posts : posts.filter((p) => (p.channel_key ?? 'geral') === tab)).map((post) => {
           const prs = repliesByPost[post.id] ?? [];
           const isOpen = openReplies === post.id;
           const isLiked = liked.has(post.id);
@@ -110,7 +128,7 @@ export function CommunityClient({ initialPosts, initialReplies, likedIds, isAuth
             </div>
           );
         })}
-        {posts.length === 0 ? <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">{t('empty')}</div> : null}
+        {(tab === 'all' ? posts : posts.filter((p) => (p.channel_key ?? 'geral') === tab)).length === 0 ? <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">{t('empty')}</div> : null}
       </div>
     </div>
   );
