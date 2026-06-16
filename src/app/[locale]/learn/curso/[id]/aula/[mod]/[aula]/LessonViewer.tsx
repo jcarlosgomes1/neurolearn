@@ -129,6 +129,8 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
   const totalLessons = course.modules.reduce((s, m) => s + m.lessons.length, 0);
   const overallIdx = course.modules.slice(0, moduleIndex).reduce((s, m) => s + m.lessons.length, 0) + lessonIndex + 1;
   const progressPct = Math.round((overallIdx / totalLessons) * 100);
+  const completedCount = Object.values(progressMap).filter(Boolean).length;
+  const remainingToCert = Math.max(0, totalLessons - completedCount);
   const typeMeta = TYPE_META[lesson.type || 'reading'] || TYPE_META.reading;
   const isLive = !!lesson.stream_url;
   const hasVideo = !!(lesson.video_url || lesson.stream_url);
@@ -158,6 +160,20 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
           <span className="text-xs text-slate-500 tabular-nums flex-shrink-0">{overallIdx}/{totalLessons}</span>
         </div>
       </div>
+
+      {completed !== null && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3">
+          {remainingToCert > 0 ? (
+            <div className="inline-flex items-center gap-2 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium px-3 py-1.5">
+              🎓 {t('to_certificate', { n: remainingToCert })}
+            </div>
+          ) : (
+            <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium px-3 py-1.5">
+              🎓 {t('certificate_ready')}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
         <div className="flex gap-6 lg:gap-8">
