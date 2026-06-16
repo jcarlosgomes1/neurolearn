@@ -16,6 +16,8 @@ interface Model {
   active: boolean;
   notes: string | null;
   sort_order: number | null;
+  endpoint: string | null;
+  secret_key: string | null;
 }
 
 const PROVIDER_BADGE: Record<string, string> = {
@@ -23,13 +25,14 @@ const PROVIDER_BADGE: Record<string, string> = {
   openai: 'bg-emerald-100 text-emerald-700',
   deepseek: 'bg-indigo-100 text-indigo-700',
   voyage: 'bg-amber-100 text-amber-700',
+  google: 'bg-blue-100 text-blue-700',
 };
 
-const SAFE_COLS = 'model,label,provider,kind,input_price_per_mtok,output_price_per_mtok,active,notes,sort_order';
+const SAFE_COLS = 'model,label,provider,kind,input_price_per_mtok,output_price_per_mtok,active,notes,sort_order,endpoint,secret_key';
 
 const emptyDraft = (): Partial<Model> => ({
   model: '', label: '', provider: 'anthropic', kind: 'chat',
-  input_price_per_mtok: 0, output_price_per_mtok: 0, active: true, notes: '',
+  input_price_per_mtok: 0, output_price_per_mtok: 0, active: true, notes: '', endpoint: '', secret_key: '',
 });
 
 export function AiModelsClient() {
@@ -66,7 +69,7 @@ export function AiModelsClient() {
   function startEdit(m: Model) {
     setEditing(m.model);
     setDraft({ label: m.label, provider: m.provider, kind: m.kind,
-      input_price_per_mtok: m.input_price_per_mtok, output_price_per_mtok: m.output_price_per_mtok, notes: m.notes });
+      input_price_per_mtok: m.input_price_per_mtok, output_price_per_mtok: m.output_price_per_mtok, notes: m.notes, endpoint: m.endpoint, secret_key: m.secret_key });
   }
 
   async function saveEdit(model: string) {
@@ -78,6 +81,8 @@ export function AiModelsClient() {
       input_price_per_mtok: Number(draft.input_price_per_mtok) || 0,
       output_price_per_mtok: Number(draft.output_price_per_mtok) || 0,
       notes: draft.notes || null,
+      endpoint: (draft.endpoint || '').trim() || null,
+      secret_key: (draft.secret_key || '').trim() || null,
     }).eq('model', model);
     if (error) toast.error(error.message);
     else { toast.success(t('aimodels.saved')); setEditing(null); load(); }
@@ -97,6 +102,8 @@ export function AiModelsClient() {
       output_price_per_mtok: Number(newDraft.output_price_per_mtok) || 0,
       active: newDraft.active ?? true,
       notes: newDraft.notes || null,
+      endpoint: (newDraft.endpoint || '').trim() || null,
+      secret_key: (newDraft.secret_key || '').trim() || null,
       sort_order: 100,
     });
     if (error) toast.error(error.message);
@@ -150,7 +157,7 @@ export function AiModelsClient() {
                 <label className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">{t('aimodels.col.provider')}</label>
                 <input list="nl-providers" value={newDraft.provider || ''} onChange={(e) => setNewDraft({ ...newDraft, provider: e.target.value })}
                   className="input mt-1 text-sm" />
-                <datalist id="nl-providers"><option value="anthropic" /><option value="openai" /><option value="deepseek" /><option value="voyage" /></datalist>
+                <datalist id="nl-providers"><option value="anthropic" /><option value="openai" /><option value="google" /><option value="deepseek" /><option value="voyage" /></datalist>
               </div>
               <div>
                 <label className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">{t('aimodels.col.kind')}</label>
@@ -166,6 +173,19 @@ export function AiModelsClient() {
               <label className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">{t('aimodels.col.notes')}</label>
               <input value={newDraft.notes || ''} onChange={(e) => setNewDraft({ ...newDraft, notes: e.target.value })}
                 placeholder={t('aimodels.notes_ph')} className="input mt-1 text-sm" />
+            </div>
+            <div className="grid sm:grid-cols-2 gap-3">
+              <div>
+                <label className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Endpoint (URL da API)</label>
+                <input value={newDraft.endpoint || ''} onChange={(e) => setNewDraft({ ...newDraft, endpoint: e.target.value })}
+                  placeholder="https://api.openai.com/v1/chat/completions" className="input mt-1 text-sm font-mono" />
+              </div>
+              <div>
+                <label className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Segredo (chave em Integrações)</label>
+                <input list="nl-secret-keys" value={newDraft.secret_key || ''} onChange={(e) => setNewDraft({ ...newDraft, secret_key: e.target.value })}
+                  placeholder="OPENAI_API_KEY" className="input mt-1 text-sm font-mono" />
+                <datalist id="nl-secret-keys"><option value="ANTHROPIC_API_KEY" /><option value="OPENAI_API_KEY" /><option value="GEMINI_API_KEY" /><option value="DEEPSEEK_API_KEY" /><option value="VOYAGE_API_KEY" /></datalist>
+              </div>
             </div>
             <label className="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" checked={newDraft.active ?? true} onChange={(e) => setNewDraft({ ...newDraft, active: e.target.checked })} className="h-4 w-4 accent-violet-600" />
@@ -233,6 +253,16 @@ export function AiModelsClient() {
                       <div>
                         <label className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">{t('aimodels.col.notes')}</label>
                         <input value={draft.notes || ''} onChange={(e) => setDraft({ ...draft, notes: e.target.value })} className="input mt-1 text-sm" />
+                      </div>
+                      <div className="grid sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Endpoint (URL da API)</label>
+                          <input value={draft.endpoint || ''} onChange={(e) => setDraft({ ...draft, endpoint: e.target.value })} placeholder="https://…" className="input mt-1 text-sm font-mono" />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Segredo (chave em Integrações)</label>
+                          <input list="nl-secret-keys" value={draft.secret_key || ''} onChange={(e) => setDraft({ ...draft, secret_key: e.target.value })} placeholder="OPENAI_API_KEY" className="input mt-1 text-sm font-mono" />
+                        </div>
                       </div>
                       <button onClick={() => saveEdit(m.model)} disabled={saving === m.model}
                         className="inline-flex items-center gap-1.5 text-sm font-semibold bg-violet-600 hover:bg-violet-700 text-white px-3 py-1.5 rounded-lg disabled:opacity-50">
