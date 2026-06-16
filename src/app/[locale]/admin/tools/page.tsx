@@ -21,7 +21,7 @@ export default async function Page() {
 
   return (
     <>
-      <AdminPageHeader backHref="/admin" emoji="🧭" title="Todas as ferramentas" description="Tudo o que existe no admin, num só sítio. Pesquisa por nome ou secção." />
+      <AdminPageHeader emoji="🧭" title="Todas as ferramentas" description="Tudo o que existe no admin, num só sítio. Pesquisa por nome ou secção." />
       <ToolsClient items={(items ?? []) as never} />
     </>
   );

@@ -18,7 +18,6 @@ export default async function Page() {
   return (
     <div className="">
       <AdminPageHeader
-        backHref="/admin"
         emoji="⚙️"
         eyebrow="Sistema · Configuração da plataforma"
         title="Configuração da plataforma"

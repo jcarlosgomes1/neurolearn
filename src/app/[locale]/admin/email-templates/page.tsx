@@ -11,7 +11,6 @@ export default async function AdminEmailTemplatesPage() {
   return (
     <div className="">
       <AdminPageHeader
-        backHref="/admin"
         emoji="✉️"
         eyebrow="Comunicação"
         title="Templates de email"

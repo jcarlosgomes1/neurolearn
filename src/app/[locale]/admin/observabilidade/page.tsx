@@ -34,7 +34,6 @@ export default async function ObservabilityPage({ searchParams }: { searchParams
   return (
     <div className="">
       <AdminPageHeader
-        backHref="/admin"
         emoji="📈"
         eyebrow={safeT('admin.observability.eyebrow', 'Admin · Observabilidade')}
         title={safeT('admin.observability.title', 'Observabilidade da plataforma')}

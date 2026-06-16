@@ -41,7 +41,6 @@ export function AddonsClient({ initial }: { initial: any[] }) {
   return (
     <div className="px-4 sm:px-6 py-6 max-w-5xl mx-auto">
       <AdminPageHeader
-        backHref="/admin"
         emoji="🧩"
         title="Add-ons"
         description="Produtos extra que orgs e instrutores podem comprar (AI credits, seats, white-label, SSO, etc)."

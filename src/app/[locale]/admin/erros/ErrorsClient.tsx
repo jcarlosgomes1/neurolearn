@@ -66,7 +66,6 @@ export function ErrorsClient({ initialList, initialSummary }: { initialList: Err
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       <AdminPageHeader
-        backHref="/admin"
         emoji="🐛"
         title="Erros do cliente"
         description="Erros JavaScript capturados pelos ErrorBoundaries da app. Logados automaticamente sem necessitar de Sentry."

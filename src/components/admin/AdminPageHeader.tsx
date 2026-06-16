@@ -19,7 +19,7 @@ interface Props {
   related?: RelatedLink[];
 }
 
-export function AdminPageHeader({ backHref, backLabel, eyebrow, eyebrowIcon: EyeIcon, eyebrowAccent = 'text-violet-600', title, description, emoji, icon: TileIcon, iconGradient = 'from-violet-500 to-indigo-600', actions, related }: Props) {
+export function AdminPageHeader({ backHref, backLabel, eyebrow, eyebrowIcon: EyeIcon, eyebrowAccent = 'text-violet-600', title, description, emoji, icon: TileIcon, actions, related }: Props) {
   const TileGlyph = TileIcon || EyeIcon;
   const showTile = Boolean(emoji || TileGlyph);
   const resolvedBack = backHref === '/admin' ? '/admin/overview' : backHref;
@@ -42,8 +42,8 @@ export function AdminPageHeader({ backHref, backLabel, eyebrow, eyebrowIcon: Eye
       <div className="flex items-start gap-3 sm:gap-3.5">
         {/* Tile/ícone grande: escondido em mobile (poupa ecrã), visível a partir de sm */}
         {showTile && (
-          <div className={`hidden sm:inline-flex flex-shrink-0 h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${iconGradient} text-white shadow-md`}>
-            {emoji ? <span className="text-2xl leading-none">{emoji}</span> : (TileGlyph ? <TileGlyph className="h-6 w-6" /> : null)}
+          <div className="hidden sm:inline-flex flex-shrink-0 h-10 w-10 items-center justify-center rounded-xl bg-slate-50 border border-slate-200/70 text-slate-700">
+            {emoji ? <span className="text-xl leading-none">{emoji}</span> : (TileGlyph ? <TileGlyph className="h-5 w-5 text-slate-500" /> : null)}
           </div>
         )}
         <div className="flex-1 min-w-0">

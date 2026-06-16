@@ -14,7 +14,6 @@ export default async function AdminSsoPage() {
   return (
     <div className="">
       <AdminPageHeader
-        backHref="/admin"
         emoji="🔐"
         eyebrow="Enterprise · Single Sign-On"
         title="Configurações SSO"

@@ -9,7 +9,7 @@ export default function Page() {
     <>
 
         <div className="">
-          <AdminPageHeader backHref="/admin" emoji="🤖" title="AI Features dos Instrutores" description="Activa funcionalidades AI para cada instrutor aprovado. Por defeito, ninguém tem acesso." />
+          <AdminPageHeader emoji="🤖" title="AI Features dos Instrutores" description="Activa funcionalidades AI para cada instrutor aprovado. Por defeito, ninguém tem acesso." />
           <AIFeaturesList />
         </div>
       

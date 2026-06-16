@@ -64,7 +64,6 @@ export function MonetizacaoClient({ initial }: { initial: any[] }) {
   return (
     <div className="px-4 sm:px-6 py-6 max-w-5xl mx-auto">
       <AdminPageHeader
-        backHref="/admin"
         emoji="💰"
         title="Monetização"
         description="Todas as configurações financeiras da plataforma. Mudanças aplicam-se imediatamente a todas as transações futuras."

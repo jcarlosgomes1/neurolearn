@@ -14,7 +14,6 @@ export default async function AdminDripSchedulesPage() {
   return (
     <div className="">
       <AdminPageHeader
-        backHref="/admin"
         emoji="📅"
         eyebrow="Drip content"
         title="Calendarização de aulas"

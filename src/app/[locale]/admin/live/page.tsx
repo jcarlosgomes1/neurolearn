@@ -56,7 +56,6 @@ export default async function Page() {
   return (
     <div>
       <AdminPageHeader
-        backHref="/admin"
         emoji="🔴"
         eyebrow="Aprendizagem · Sessões ao vivo"
         title="Sessões ao Vivo"

@@ -42,7 +42,7 @@ export function VideoSetupView() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-      <AdminPageHeader backHref="/admin" emoji="🎬" title={t('title')} description={t('subtitle')} />
+      <AdminPageHeader emoji="🎬" title={t('title')} description={t('subtitle')} />
 
       <div className={`mt-6 rounded-2xl p-5 border-2 ${muxConfigured ? 'bg-emerald-50 border-emerald-200' : 'bg-blue-50 border-blue-200'}`}>
         <h2 className="font-bold text-slate-900 text-lg">

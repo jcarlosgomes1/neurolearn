@@ -14,7 +14,6 @@ export default async function AdminScimPage() {
   return (
     <div className="">
       <AdminPageHeader
-        backHref="/admin"
         emoji="🔑"
         eyebrow="Enterprise · SCIM 2.0"
         title="SCIM provisioning tokens"

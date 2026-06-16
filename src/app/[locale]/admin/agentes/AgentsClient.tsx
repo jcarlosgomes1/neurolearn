@@ -19,7 +19,6 @@ export function AgentsClient() {
       accentGradient="from-fuchsia-600 to-pink-600"
       action="list_agents"
       dataKey="agents"
-      backHref="/admin"
       columns={[
         { key: 'name', label: safeT('agts.col_name', 'Nome'), primary: true },
         { key: 'status', label: safeT('agts.col_status', 'Estado'), kind: 'badge' },

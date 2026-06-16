@@ -34,7 +34,6 @@ export function ContactosClient({ initial }: { initial: Msg[] }) {
   return (
     <div className="px-4 sm:px-6 py-6 max-w-4xl mx-auto">
       <AdminPageHeader
-        backHref="/admin"
         emoji="📨"
         title={t('admin.contacts.title')}
         description={t('admin.contacts.desc')}

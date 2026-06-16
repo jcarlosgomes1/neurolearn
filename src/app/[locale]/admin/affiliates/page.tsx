@@ -28,7 +28,6 @@ export default async function Page() {
   return (
     <div className="">
       <AdminPageHeader
-        backHref="/admin"
         emoji="🤝"
         eyebrow={safeT('admin.affiliates.eyebrow', 'Administração · Afiliados')}
         title={safeT('admin.affiliates.title', 'Programa de afiliados')}

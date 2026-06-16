@@ -11,7 +11,6 @@ export default async function AdminCmsPagesPage() {
   return (
     <div className="">
       <AdminPageHeader
-        backHref="/admin"
         emoji="📄"
         eyebrow="CMS · Páginas"
         title="Páginas do site"

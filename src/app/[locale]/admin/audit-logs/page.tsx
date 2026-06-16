@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 export default function AdminAuditLogsPage() {
   return (
     <div className="">
-      <AdminPageHeader backHref="/admin" emoji="📜" title="Audit logs" description="Histórico de acções da plataforma. Filtra por actor, action ou recurso." />
+      <AdminPageHeader emoji="📜" title="Audit logs" description="Histórico de acções da plataforma. Filtra por actor, action ou recurso." />
       <Suspense fallback={<div className="text-slate-400 text-sm">A carregar...</div>}>
         <AuditLogsClient />
       </Suspense>

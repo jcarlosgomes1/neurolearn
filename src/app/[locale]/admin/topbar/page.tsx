@@ -25,7 +25,6 @@ export default async function Page() {
   return (
     <div className="">
       <AdminPageHeader
-        backHref="/admin"
         emoji="🔔"
         eyebrow={safeT('admin.topbar.eyebrow', 'CMS · Top-bar')}
         title={safeT('admin.topbar.title', 'Banner do topo')}

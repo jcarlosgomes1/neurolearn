@@ -35,7 +35,6 @@ export function RefundsClient({ initial }: { initial: any[] }) {
   return (
     <div className="px-4 sm:px-6 py-6 max-w-5xl mx-auto">
       <AdminPageHeader
-        backHref="/admin"
         emoji="💸"
         title="Refunds"
         description="Pedidos de reembolso. Janela definida em /admin/monetizacao."

@@ -28,7 +28,6 @@ export function InvoicesClient({ initial }: { initial: any[] }) {
   return (
     <div className="px-4 sm:px-6 py-6 max-w-6xl mx-auto">
       <AdminPageHeader
-        backHref="/admin"
         emoji="🧾"
         title="Invoices"
         description="Facturas emitidas pela plataforma. VAT calculado por país automaticamente."

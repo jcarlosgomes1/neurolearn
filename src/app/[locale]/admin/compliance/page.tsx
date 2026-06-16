@@ -27,7 +27,6 @@ export default async function CompliancePage() {
   return (
     <div className="">
       <AdminPageHeader
-        backHref="/admin"
         emoji="🛡️"
         eyebrow={safeT('admin.compliance.eyebrow', 'Admin · Compliance')}
         title={safeT('admin.compliance.title', 'Issues de compliance')}

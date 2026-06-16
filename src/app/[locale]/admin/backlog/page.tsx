@@ -14,7 +14,7 @@ export default async function Page() {
 
   return (
     <>
-      <AdminPageHeader backHref="/admin" emoji="🗂️" title="Backlog" description="Mantido automaticamente. A tua única ação: marcar Testado nos itens concluídos que já verificaste." />
+      <AdminPageHeader emoji="🗂️" title="Backlog" description="Mantido automaticamente. A tua única ação: marcar Testado nos itens concluídos que já verificaste." />
       <BacklogKanban />
     </>
   );

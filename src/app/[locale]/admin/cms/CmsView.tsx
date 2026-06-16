@@ -137,7 +137,7 @@ export function CmsView() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-      <AdminPageHeader backHref="/admin" emoji="🧱" title={t('title')} description={t('subtitle')} />
+      <AdminPageHeader emoji="🧱" title={t('title')} description={t('subtitle')} />
 
       {loading ? (
         <div className="mt-8 text-center text-slate-400 py-10">{t('loading')}</div>

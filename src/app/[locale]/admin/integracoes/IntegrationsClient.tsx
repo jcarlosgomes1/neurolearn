@@ -63,7 +63,7 @@ export function IntegrationsClient({ initial }: { initial: Integration[] }) {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-      <AdminPageHeader backHref="/admin" emoji="🔌" title={t('integrations.title')} description={t('integrations.subtitle')} />
+      <AdminPageHeader emoji="🔌" title={t('integrations.title')} description={t('integrations.subtitle')} />
       <p className="text-xs text-slate-400 mt-2">
         🔐 Chaves OAuth (Google/GitHub/Microsoft) são automaticamente activadas no Supabase Auth quando guardadas — desde que <code className="bg-slate-100 px-1 rounded">SUPABASE_MANAGEMENT_TOKEN</code> esteja configurado.
       </p>

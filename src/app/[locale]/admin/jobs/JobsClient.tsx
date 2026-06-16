@@ -19,7 +19,6 @@ export function JobsClient() {
       accentGradient="from-blue-600 to-cyan-600"
       action="list_jobs"
       dataKey="jobs"
-      backHref="/admin"
       columns={[
         { key: 'kind', label: safeT('jobs.col_kind', 'Tipo'), primary: true },
         { key: 'status', label: safeT('jobs.col_status', 'Estado'), kind: 'badge' },

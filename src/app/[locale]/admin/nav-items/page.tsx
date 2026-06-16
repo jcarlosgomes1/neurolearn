@@ -10,7 +10,6 @@ export default async function NavItemsPage() {
   return (
     <div className="">
       <AdminPageHeader
-        backHref="/admin"
         emoji="🔗"
         eyebrow="Navegação"
         title="Menus & Footer"

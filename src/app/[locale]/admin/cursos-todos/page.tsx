@@ -16,7 +16,7 @@ export default async function Page() {
 
   return (
     <>
-      <AdminPageHeader backHref="/admin" emoji="👁️" title="Todos os cursos" description="Todos os cursos da plataforma e de tenants. Acesso de superadmin — vês tudo por defeito." />
+      <AdminPageHeader emoji="👁️" title="Todos os cursos" description="Todos os cursos da plataforma e de tenants. Acesso de superadmin — vês tudo por defeito." />
       <CursosTodosClient rows={(rows ?? []) as never} />
     </>
   );

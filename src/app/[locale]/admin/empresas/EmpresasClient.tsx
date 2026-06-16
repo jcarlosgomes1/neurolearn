@@ -74,7 +74,6 @@ export function EmpresasClient({ locale, initial }: Props) {
   return (
     <div className="px-4 sm:px-6 py-6 max-w-7xl mx-auto">
       <AdminPageHeader
-        backHref="/admin"
         emoji="🏢"
         title="Empresas"
         description={`${total} ${total === 1 ? 'tenant' : 'tenants'} no total`}

@@ -68,7 +68,6 @@ export function PromptsView() {
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <AdminPageHeader
-        backHref="/admin"
         emoji="📝"
         title={t('prompts_admin.title')}
         description={t('prompts_admin.subtitle')}

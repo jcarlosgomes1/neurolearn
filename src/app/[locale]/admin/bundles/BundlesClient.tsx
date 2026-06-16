@@ -38,7 +38,6 @@ export function BundlesClient({ initial, courses }: { initial: any[]; courses: a
   return (
     <div className="px-4 sm:px-6 py-6 max-w-5xl mx-auto">
       <AdminPageHeader
-        backHref="/admin"
         emoji="📦"
         title="Bundles"
         description="Empacotamento de cursos com desconto. Aumenta basket size 30-50%."

@@ -13,7 +13,6 @@ export default async function Page() {
       title={t('jobs.title')}
       action="list_jobs"
       dataKey="rows"
-      backHref="/admin"
       columns={[
         { key: 'job_type', label: t('jobs.col_type'), primary: true },
         { key: 'status', label: t('jobs.col_status'), kind: 'badge' },

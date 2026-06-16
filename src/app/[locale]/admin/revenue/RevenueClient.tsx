@@ -29,7 +29,6 @@ export function RevenueClient({ initial }: { initial: any }) {
   return (
     <div className="px-4 sm:px-6 py-6 max-w-7xl mx-auto">
       <AdminPageHeader
-        backHref="/admin"
         emoji="📈"
         title="Revenue Intelligence"
         description="MRR, ARR, GMV, churn, top customers — atualizado a cada request."

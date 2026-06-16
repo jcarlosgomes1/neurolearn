@@ -21,7 +21,7 @@ export default async function Page() {
   const t = await getTranslations();
   return (
     <>
-      <AdminPageHeader backHref="/admin" emoji="💸" title={t('aicost.title')} description={t('aicost.subtitle')} />
+      <AdminPageHeader emoji="💸" title={t('aicost.title')} description={t('aicost.subtitle')} />
       <AiCostClient />
     </>
   );

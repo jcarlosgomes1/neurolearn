@@ -103,7 +103,6 @@ export function AutopilotsClient({ initial }: { initial: AutopilotRow[] }) {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       <AdminPageHeader
-        backHref="/admin"
         emoji="🛸"
         title="Autopilots"
         description="Tarefas que correm automaticamente em horários definidos. Liga/desliga ou ajusta o horário sem ter de mexer em código."

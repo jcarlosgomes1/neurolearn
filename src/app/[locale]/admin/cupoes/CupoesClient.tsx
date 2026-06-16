@@ -28,7 +28,6 @@ export function CupoesClient({ initial }: { initial: any[] }) {
   return (
     <div className="px-4 sm:px-6 py-6 max-w-5xl mx-auto">
       <AdminPageHeader
-        backHref="/admin"
         emoji="🎟️"
         title="Cupões"
         description="Códigos promocionais de desconto, extensões de trial, etc."

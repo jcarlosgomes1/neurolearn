@@ -15,7 +15,6 @@ export default async function Page() {
   return (
     <div>
       <AdminPageHeader
-        backHref="/admin"
         emoji="📋"
         eyebrow="Pessoas · Contratação"
         title="Termos por curso"

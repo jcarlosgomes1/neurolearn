@@ -22,7 +22,6 @@ export default async function Page() {
   return (
     <div>
       <AdminPageHeader
-        backHref="/admin"
         emoji="🧪"
         eyebrow="Aprendizagem · Quizzes"
         title="Correção de Quizzes"

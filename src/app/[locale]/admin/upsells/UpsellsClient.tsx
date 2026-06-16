@@ -34,7 +34,6 @@ export function UpsellsClient({ initial }: { initial: any[] }) {
   return (
     <div className="px-4 sm:px-6 py-6 max-w-5xl mx-auto">
       <AdminPageHeader
-        backHref="/admin"
         emoji="✨"
         title="Upsell Signals"
         description="Empresas detectadas com 3+ users B2C — candidatos para plano B2B."

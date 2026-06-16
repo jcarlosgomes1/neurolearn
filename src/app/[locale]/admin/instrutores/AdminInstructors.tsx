@@ -34,7 +34,6 @@ export function AdminInstructors() {
   return (
     <div className="max-w-7xl mx-auto px-6 lg:px-8 py-8 space-y-6 animate-fade-in">
       <AdminPageHeader
-        backHref="/admin"
         emoji="🎓"
         title={t('admin_instr.title')}
         description={t('admin_instr.subtitle', { n: list.length })}
