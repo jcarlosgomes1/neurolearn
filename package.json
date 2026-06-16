@@ -19,6 +19,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.0.4",
     "framer-motion": "^11.11.17",
+    "highlight.js": "^11.10.0",
     "lucide-react": "^0.460.0",
     "mermaid": "^11.4.1",
     "next": "^14.2.18",
@@ -30,10 +31,10 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@tailwindcss/typography": "^0.5.15",
     "@types/node": "^22.10.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
-    "@tailwindcss/typography": "^0.5.15",
     "autoprefixer": "^10.4.20",
     "eslint": "^8.57.1",
     "eslint-config-next": "^14.2.18",

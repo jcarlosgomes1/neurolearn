@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { CodeBlock } from '@/components/lesson/CodeBlock';
 import { Link, useRouter } from '@/i18n/routing';
 import { callAgentOps } from '@/lib/api/client';
 import { createClient } from '@/lib/supabase/client';
@@ -273,7 +274,7 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
                         <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
                         <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
                       </div>
-                      <pre className="text-slate-100 p-4 sm:p-5 text-xs sm:text-sm overflow-x-auto"><code>{c.code}</code></pre>
+                      <CodeBlock code={c.code} />
                     </div>
                   </section>
                 )}
