@@ -29,7 +29,7 @@ interface Course {
 
 interface Props {
   courseId: string;
-  backHref: string;
+  backHref?: string;
   mode?: 'instructor' | 'admin';
 }
 

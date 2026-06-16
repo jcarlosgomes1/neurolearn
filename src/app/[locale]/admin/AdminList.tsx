@@ -15,7 +15,7 @@ interface Props {
   title: string;
   action: string;
   dataKey: string;
-  backHref: string;
+  backHref?: string;
   columns: Column[];
   linkPrefix?: string;
   linkSuffix?: string;
