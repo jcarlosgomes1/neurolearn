@@ -40,6 +40,7 @@ export function LessonStudioRecorder({ onUploaded, currentUrl, lessonTitle, cont
   const [seconds, setSeconds] = useState(0);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [withCam, setWithCam] = useState(true);
+  const [paused, setPaused] = useState(false);
   const [slides, setSlides] = useState<Slide[]>([]);
   const [slideIdx, setSlideIdx] = useState(0);
 
@@ -270,19 +271,38 @@ export function LessonStudioRecorder({ onUploaded, currentUrl, lessonTitle, cont
     rec.start(1000);
     recorder.current = rec;
     setSeconds(0);
+    setPaused(false);
     timerId.current = setInterval(() => setSeconds((s) => s + 1), 1000);
     setPhase('recording');
+  }
+
+  function pauseRecording() {
+    if (recorder.current && recorder.current.state === 'recording') {
+      recorder.current.pause();
+      if (timerId.current) clearInterval(timerId.current);
+      setPaused(true);
+    }
+  }
+
+  function resumeRecording() {
+    if (recorder.current && recorder.current.state === 'paused') {
+      recorder.current.resume();
+      timerId.current = setInterval(() => setSeconds((s) => s + 1), 1000);
+      setPaused(false);
+    }
   }
 
   function stopRecording() {
     if (recorder.current && recorder.current.state !== 'inactive') recorder.current.stop();
     if (timerId.current) clearInterval(timerId.current);
     if (rafId.current) cancelAnimationFrame(rafId.current);
+    setPaused(false);
     [screenStream, camStream].forEach((s) => s.current?.getTracks().forEach((tr) => tr.stop()));
   }
 
   function discard() {
     if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPaused(false);
     recordedBlob.current = null; setPreviewUrl(null); setSeconds(0); setPhase('idle');
   }
 
@@ -317,8 +337,8 @@ export function LessonStudioRecorder({ onUploaded, currentUrl, lessonTitle, cont
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <h3 className="font-semibold text-slate-900 text-base">{t('title')}</h3>
         {phase === 'recording' && (
-          <span className="inline-flex items-center gap-2 text-sm font-medium text-rose-600">
-            <span className="w-2.5 h-2.5 rounded-full bg-rose-600 animate-pulse" /> {mmss}
+          <span className={`inline-flex items-center gap-2 text-sm font-medium ${paused ? 'text-amber-600' : 'text-rose-600'}`}>
+            <span className={`w-2.5 h-2.5 rounded-full ${paused ? 'bg-amber-500' : 'bg-rose-600 animate-pulse'}`} /> {paused ? `${t('paused')} ${mmss}` : mmss}
           </span>
         )}
       </div>
@@ -396,6 +416,8 @@ export function LessonStudioRecorder({ onUploaded, currentUrl, lessonTitle, cont
         )}
         <div className="flex gap-2">
           {phase === 'preview' && <button onClick={startRecording} className="btn-primary flex-1">⏺ {t('start')}</button>}
+          {phase === 'recording' && !paused && <button onClick={pauseRecording} className="px-4 py-2.5 rounded-lg border border-amber-300 bg-amber-50 text-amber-700 font-semibold text-sm">⏸ {t('pause')}</button>}
+          {phase === 'recording' && paused && <button onClick={resumeRecording} className="px-4 py-2.5 rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-700 font-semibold text-sm">⏵ {t('resume')}</button>}
           {phase === 'recording' && <button onClick={stopRecording} className="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-lg py-2.5">⏹ {t('stop')}</button>}
           {phase === 'preview' && <button onClick={() => { stopAll(); setPhase('idle'); }} className="px-4 py-2.5 rounded-lg border border-slate-200 text-slate-600 text-sm">{t('cancel')}</button>}
         </div>
