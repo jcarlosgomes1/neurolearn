@@ -133,7 +133,7 @@ export function LearnerJourney({
           <div className="space-y-2.5">
             {data.courses.map((c) => (
               <Link key={c.course_id}
-                href={(c.completed ? `/curso/${c.course_id}` : `/learn/curso/${c.course_id}/continuar`) as never}
+                href={`/learn/curso/${c.course_id}/continuar` as never}
                 className="group flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3.5 hover:border-indigo-300 hover:shadow-sm transition-all">
                 <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-lg shrink-0">{c.emoji || '📘'}</div>
                 <div className="flex-1 min-w-0">

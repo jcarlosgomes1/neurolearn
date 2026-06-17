@@ -70,6 +70,12 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
     isInstructor = prof?.instructor_id === course.instructor_id;
   }
 
+  let enrolled = false;
+  if (user) {
+    const { data: enr } = await sb.from('nl_enrollments_v2').select('id').eq('user_id', user.id).eq('course_id', id).maybeSingle();
+    enrolled = !!enr;
+  }
+
   let instructor = null;
   if (course.instructor_id) {
     const { data } = await sb.from('nl_instructors').select('id, display_name, bio, avatar_url').eq('id', course.instructor_id).maybeSingle();
@@ -128,11 +134,20 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
               </div>
               <aside className="lg:sticky lg:top-20 self-start">
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-lg p-6">
-                  <div className="mb-4">
-                    <div className="text-3xl font-bold text-slate-900">{fmtCents(course.price_cents, course.currency || 'EUR')}</div>
-                    <p className="text-xs text-slate-500 mt-1">{t('cdp.price_note')}</p>
-                  </div>
-                  <EnrollButton courseId={course.id} priceLabel={fmtCents(course.price_cents, course.currency || 'EUR')} courseTitle={course.title} />
+                  {enrolled ? (
+                    <Link href={`/learn/curso/${course.id}/continuar` as any}
+                      className="btn-primary w-full inline-flex items-center justify-center gap-2 py-3 text-base font-semibold">
+                      {t('cdp.go_to_course')}
+                    </Link>
+                  ) : (
+                    <>
+                      <div className="mb-4">
+                        <div className="text-3xl font-bold text-slate-900">{fmtCents(course.price_cents, course.currency || 'EUR')}</div>
+                        <p className="text-xs text-slate-500 mt-1">{t('cdp.price_note')}</p>
+                      </div>
+                      <EnrollButton courseId={course.id} priceLabel={fmtCents(course.price_cents, course.currency || 'EUR')} courseTitle={course.title} />
+                    </>
+                  )}
                   <ul className="mt-6 space-y-2 text-sm text-slate-700">
                     <li className="flex items-start gap-2"><CheckCircle className="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0" /><span>{t('cdp.benefit_lifetime')}</span></li>
                     <li className="flex items-start gap-2"><Award className="h-4 w-4 text-purple-500 mt-0.5 flex-shrink-0" /><span>{t('cdp.benefit_certificate')}</span></li>
