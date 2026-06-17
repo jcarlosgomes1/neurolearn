@@ -39,7 +39,21 @@ export default getRequestConfig(async ({ requestLocale }) => {
     nestedFromFlat
   );
 
-  return { locale, messages };
+  return {
+    locale,
+    messages,
+    // Resiliência: uma tradução em falta NUNCA deve derrubar a página inteira
+    // (boundary "Algo correu mal"). Degrada graciosamente — regista apenas erros
+    // reais e devolve a própria chave como texto de último recurso.
+    onError(error) {
+      if ((error as any)?.code !== 'MISSING_MESSAGE') {
+        console.error('[i18n]', error);
+      }
+    },
+    getMessageFallback({ namespace, key }) {
+      return namespace ? `${namespace}.${key}` : key;
+    },
+  };
 });
 
 function flattenToNamespaced(flat: Record<string, string>): AbstractIntlMessages {
