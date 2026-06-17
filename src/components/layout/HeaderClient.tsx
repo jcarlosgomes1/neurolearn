@@ -8,12 +8,12 @@ import { CurrencySwitcher } from '@/components/currency/CurrencySwitcher';
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
-import { BookOpen, Route, Sparkles, Building2, Newspaper, Star, Gem, BookMarked } from 'lucide-react';
+import { BookOpen, Route, Sparkles, Building2, Newspaper, Star, Gem, BookMarked, Milestone } from 'lucide-react';
 import type { NavItem } from '@/lib/api/nav-items';
 
 interface Session { email: string; area: 'student' | 'instructor' | 'admin'; areas: Array<'student' | 'instructor' | 'admin'> }
 
-const ICONS: Record<string, typeof BookOpen> = { BookOpen, Route, Sparkles, Building2, Newspaper, Star, Gem, BookMarked };
+const ICONS: Record<string, typeof BookOpen> = { BookOpen, Route, Sparkles, Building2, Newspaper, Star, Gem, BookMarked, Milestone };
 
 export function HeaderClient({ session, nav }: { session: Session | null; nav: NavItem[] }) {
   const t = useTranslations();
