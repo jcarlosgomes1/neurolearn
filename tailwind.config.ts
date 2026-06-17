@@ -7,12 +7,16 @@ const config: Config = {
     extend: {
       colors: {
         brand: {
-          50: '#eef4ff', 100: '#dbe5ff', 200: '#bccfff',
-          500: '#5b6cff', 600: '#4753f0', 700: '#3a3fd6',
-          800: '#3236aa', 900: '#2c2e85',
+          50: '#e7f3f1', 100: '#c3e5e0', 200: '#8fccc4',
+          500: '#16a294', 600: '#138e83', 700: '#0f6b63',
+          800: '#0c544e', 900: '#0a423d',
         },
       },
-      fontFamily: { sans: ['var(--font-inter)', 'system-ui', 'sans-serif'] },
+      fontFamily: {
+        sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
+        display: ['var(--font-fraunces)', 'Georgia', 'serif'],
+        mono: ['var(--font-mono)', 'ui-monospace', 'monospace'],
+      },
       animation: {
         'fade-in': 'fade-in 0.4s ease-out',
         'slide-up': 'slide-up 0.5s ease-out',
@@ -25,11 +29,11 @@ const config: Config = {
         DEFAULT: {
           css: {
             maxWidth: 'none',
-            color: '#334155',
-            '--tw-prose-headings': '#0f172a',
-            '--tw-prose-bold': '#0f172a',
-            '--tw-prose-links': '#4753f0',
-            '--tw-prose-quote-borders': '#4753f0',
+            color: '#4b463d',
+            '--tw-prose-headings': '#23211c',
+            '--tw-prose-bold': '#23211c',
+            '--tw-prose-links': '#0f6b63',
+            '--tw-prose-quote-borders': '#0f6b63',
             fontSize: '1.0625rem',
             lineHeight: '1.7',
             h2: { fontWeight: '700', marginTop: '2.5em', marginBottom: '0.75em' },
