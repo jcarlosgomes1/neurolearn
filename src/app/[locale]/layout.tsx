@@ -1,4 +1,4 @@
-import { NextIntlClientProvider } from 'next-intl';
+import { ClientIntlProvider } from '@/components/i18n/ClientIntlProvider';
 import { getMessages, getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { Toaster } from 'sonner';
@@ -51,7 +51,7 @@ export default async function LocaleLayout({
   return (
     <html lang={locale}>
       <body className="min-h-screen bg-slate-50 font-sans antialiased [overflow-x:clip]">
-        <NextIntlClientProvider locale={locale} messages={messages}>
+        <ClientIntlProvider locale={locale} messages={messages}>
           <TopBar locale={locale} />
           <PeekBanner />
           <OnboardingGate />
@@ -60,7 +60,7 @@ export default async function LocaleLayout({
           <CookieBanner />
           <Telemetry />
           <MobileBottomNav />
-        </NextIntlClientProvider>
+        </ClientIntlProvider>
         <Analytics />
         <SpeedInsights />
       </body>
