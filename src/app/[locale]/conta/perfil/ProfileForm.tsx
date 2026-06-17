@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter, usePathname } from '@/i18n/routing';
 import { createClient } from '@/lib/supabase/client';
 import { assertNotPeekClient } from '@/lib/peek-client';
 import { useTranslations } from 'next-intl';
@@ -38,6 +39,8 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
 
 export function ProfileForm({ email, handle, initial }: { email: string; handle: string; initial: Initial }) {
   const t = useTranslations();
+  const router = useRouter();
+  const pathname = usePathname();
   const [form, setForm] = useState<Initial>(initial);
   const [busy, setBusy] = useState(false);
   const set = (k: keyof Initial, v: string) => setForm((f) => ({ ...f, [k]: v }));
@@ -57,6 +60,9 @@ export function ProfileForm({ email, handle, initial }: { email: string; handle:
       });
       if (error) throw error;
       toast.success(t('profile.saved'));
+      if (form.preferred_lang && form.preferred_lang !== initial.preferred_lang) {
+        router.replace(pathname, { locale: form.preferred_lang as any });
+      }
     } catch (e: any) {
       toast.error(e?.message || t('profile.save_error'));
     } finally {

@@ -4,7 +4,6 @@ import { Link } from '@/i18n/routing';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { UserMenu } from './UserMenu';
 import { NotificationsDropdown } from '@/components/notifications/NotificationsDropdown';
-import { CurrencySwitcher } from '@/components/currency/CurrencySwitcher';
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
@@ -90,8 +89,6 @@ export function HeaderClient({ session, nav }: { session: Session | null; nav: N
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
             </Link>
 
-            <div className="hidden sm:block"><CurrencySwitcher /></div>
-
             {session && <div className="hidden md:block"><NotificationsDropdown locale={locale} /></div>}
 
             {(!session || session.area === 'student') && (
@@ -170,10 +167,6 @@ export function HeaderClient({ session, nav }: { session: Session | null; nav: N
             </nav>
 
             <div className="px-5 py-4 border-t border-slate-100 space-y-3">
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-xs text-slate-500">{t('header.currency')}</span>
-                <CurrencySwitcher />
-              </div>
               <div className="flex items-center justify-between gap-3">
                 <span className="text-xs text-slate-500">{t('nav.language')}</span>
                 <LanguageSwitcher />
