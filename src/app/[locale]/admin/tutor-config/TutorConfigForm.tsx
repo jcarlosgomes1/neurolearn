@@ -13,6 +13,7 @@ export function TutorConfigForm() {
   const t = useTranslations();
   const [enabled, setEnabled] = useState(true);
   const [limit, setLimit] = useState(20);
+  const [scope, setScope] = useState<'lesson' | 'course' | 'open'>('lesson');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
@@ -23,6 +24,8 @@ export function TutorConfigForm() {
         const map = new Map(r.settings.map((s) => [s.key, s.value]));
         setEnabled(map.get('student_tutor_enabled') !== false);
         setLimit(Number(map.get('student_tutor_daily_limit')) || 20);
+        const sc = map.get('student_tutor_scope');
+        setScope(sc === 'course' || sc === 'open' ? sc : 'lesson');
         setLoading(false);
       })
       .catch((e) => { toast.error(e.message); setLoading(false); });
@@ -33,6 +36,7 @@ export function TutorConfigForm() {
     try {
       await callAgentOps('update_setting', { key: 'student_tutor_enabled', value: enabled });
       await callAgentOps('update_setting', { key: 'student_tutor_daily_limit', value: limit });
+      await callAgentOps('update_setting', { key: 'student_tutor_scope', value: scope });
       toast.success(t('tutor.toast_saved'));
       setDirty(false);
     } catch (e: any) { toast.error(e.message); } finally { setSaving(false); }
@@ -64,6 +68,26 @@ export function TutorConfigForm() {
             ))}
           </div>
           <input id="limit" type="number" min="1" max="500" className="input mt-3" value={limit} onChange={(e) => { setLimit(Math.max(1, parseInt(e.target.value) || 1)); setDirty(true); }} />
+        </div>
+
+        <div>
+          <label className="label">{t('tutor.scope_label')}</label>
+          <p className="text-xs text-slate-500 mb-2">{t('tutor.scope_hint')}</p>
+          <div className="space-y-2">
+            {([
+              { v: 'lesson', label: t('tutor.scope_lesson'), desc: t('tutor.scope_lesson_desc') },
+              { v: 'course', label: t('tutor.scope_course'), desc: t('tutor.scope_course_desc') },
+              { v: 'open', label: t('tutor.scope_open'), desc: t('tutor.scope_open_desc') },
+            ] as const).map((opt) => (
+              <label key={opt.v} className={`flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-all ${scope === opt.v ? 'border-brand-300 bg-brand-50/40' : 'border-slate-200 hover:border-slate-300'}`}>
+                <input type="radio" name="tutor-scope" checked={scope === opt.v} onChange={() => { setScope(opt.v); setDirty(true); }} className="mt-1 w-5 h-5 accent-brand-600 flex-shrink-0" />
+                <div>
+                  <div className="font-semibold text-slate-900">{opt.label}</div>
+                  <p className="text-sm text-slate-600 mt-1">{opt.desc}</p>
+                </div>
+              </label>
+            ))}
+          </div>
         </div>
       </section>
 
