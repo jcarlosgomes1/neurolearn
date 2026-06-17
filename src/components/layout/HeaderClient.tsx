@@ -9,6 +9,7 @@ import { usePathname } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { BookOpen, Route, Sparkles, Building2, Newspaper, Star, Gem, BookMarked, Milestone } from 'lucide-react';
 import type { NavItem } from '@/lib/api/nav-items';
+import { BrandLogo } from '@/components/shared/BrandLogo';
 
 interface Session { email: string; area: 'student' | 'instructor' | 'admin'; areas: Array<'student' | 'instructor' | 'admin'> }
 
@@ -64,9 +65,8 @@ export function HeaderClient({ session, nav }: { session: Session | null; nav: N
     <>
       <header className={`sticky top-0 z-40 bg-white border-b border-slate-200 transition-transform duration-300 will-change-transform ${(hidden && !open) ? 'max-md:-translate-y-full' : 'translate-y-0'}`}>
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-3">
-          <Link href="/" className="flex items-center gap-2 font-bold text-slate-900 group shrink-0">
-            <span className="text-2xl transition-transform group-hover:scale-110">🧠</span>
-            <span className="text-lg tracking-tight">{t('brand.name')}</span>
+          <Link href="/" className="flex items-center gap-2 text-slate-900 group shrink-0">
+            <BrandLogo iconClassName="transition-transform group-hover:scale-110" textClassName="text-lg tracking-tight" />
           </Link>
 
           <nav className="hidden md:flex items-stretch h-full">

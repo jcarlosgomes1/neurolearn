@@ -2,6 +2,7 @@
 import { Link } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import type { NavItem } from '@/lib/api/nav-items';
+import { BrandLogo } from '@/components/shared/BrandLogo';
 
 interface FooterData { brand?: string }
 
@@ -47,10 +48,7 @@ export default function FooterClient({ data, platform, solutions, company, legal
       <div className="max-w-6xl mx-auto px-4 py-14">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-6">
           <div className="lg:col-span-2">
-            <div className="flex items-center gap-2 font-bold text-white text-lg">
-              <span className="text-2xl">🧠</span>
-              <span>{t('brand.name')}</span>
-            </div>
+            <BrandLogo className="text-white text-lg" />
             <p className="mt-3 text-sm max-w-xs leading-relaxed">
               {data?.brand || t('footer.brand_tagline')}
             </p>
