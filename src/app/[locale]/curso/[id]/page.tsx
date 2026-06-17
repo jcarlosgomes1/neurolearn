@@ -105,6 +105,7 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
   const topics = Array.isArray(course.topics) ? course.topics : [];
   const { data: pathsData } = await sb.rpc('nl_course_learning_paths', { p_course_id: id });
   const coursePaths = ((pathsData as { paths?: any[] })?.paths) || [];
+  const lessonCount = modules.reduce((s: number, m: any) => s + (Array.isArray(m?.lessons) ? m.lessons.length : 0), 0);
 
   return (
     <>
@@ -156,7 +157,9 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
               </div>
               <aside className="lg:sticky lg:top-20 self-start">
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-lg p-6">
-                  {enrolled ? (
+                  {lessonCount === 0 ? (
+                    <div className="rounded-xl bg-amber-50 border border-amber-200 p-4 text-sm text-amber-800 font-medium text-center">{t('cdp.coming_soon')}</div>
+                  ) : enrolled ? (
                     <Link href={`/learn/curso/${course.id}/continuar` as any}
                       className="btn-primary w-full inline-flex items-center justify-center gap-2 py-3 text-base font-semibold">
                       {t('cdp.go_to_course')}
