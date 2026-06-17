@@ -11,7 +11,7 @@ export default async function CourseResourcesPage({ params }: { params: Promise<
   const { id, locale } = await params;
   const sb = await createClient();
   const t = await getTranslations();
-  const { data: course } = await sb.from('nl_courses').select('id, slug, title, modules').eq('id', id).maybeSingle();
+  const { data: course } = await sb.from('nl_courses').select('id, title, modules').eq('id', id).maybeSingle();
   if (!course) notFound();
   const { data: resources } = await sb.rpc('nl_admin_course_resources_grouped', { p_course_id: id });
 
