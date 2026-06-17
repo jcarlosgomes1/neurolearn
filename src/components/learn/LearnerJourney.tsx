@@ -97,7 +97,7 @@ export function LearnerJourney({
 
       {/* Continuar */}
       {data.continue ? (
-        <Link href={{ pathname: '/learn/curso/[id]/continuar', params: { id: data.continue.course_id } } as never}
+        <Link href={`/learn/curso/${data.continue.course_id}/continuar` as never}
           className="group flex items-center gap-4 rounded-2xl p-5 text-white shadow-md hover:shadow-lg transition-all" style={{ background: `linear-gradient(135deg, ${brand}, #6366f1)` }}>
           <Ring pct={data.continue.progress_pct || 0} />
           <div className="flex-1 min-w-0">
@@ -108,7 +108,7 @@ export function LearnerJourney({
           <ChevronRight className="h-5 w-5 text-white/70 group-hover:translate-x-0.5 transition-transform shrink-0" />
         </Link>
       ) : data.discover.length > 0 ? (
-        <Link href={{ pathname: '/curso/[id]', params: { id: data.discover[0].course_id } } as never}
+        <Link href={`/curso/${data.discover[0].course_id}` as never}
           className="group flex items-center gap-4 rounded-2xl p-5 text-white shadow-md hover:shadow-lg transition-all" style={{ background: `linear-gradient(135deg, ${brand}, #6366f1)` }}>
           <div className="h-12 w-12 rounded-2xl bg-white/15 flex items-center justify-center"><Sparkles className="h-6 w-6" /></div>
           <div className="flex-1 min-w-0">
@@ -133,7 +133,7 @@ export function LearnerJourney({
           <div className="space-y-2.5">
             {data.courses.map((c) => (
               <Link key={c.course_id}
-                href={(c.completed ? { pathname: '/curso/[id]', params: { id: c.course_id } } : { pathname: '/learn/curso/[id]/continuar', params: { id: c.course_id } }) as never}
+                href={(c.completed ? `/curso/${c.course_id}` : `/learn/curso/${c.course_id}/continuar`) as never}
                 className="group flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3.5 hover:border-indigo-300 hover:shadow-sm transition-all">
                 <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-lg shrink-0">{c.emoji || '📘'}</div>
                 <div className="flex-1 min-w-0">
@@ -229,7 +229,7 @@ export function LearnerJourney({
           <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-1.5"><Sparkles className="h-4 w-4 text-violet-500" />{safeT('academy.learn.discover', 'Descobrir na Academia')}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {data.discover.slice(0, 6).map((c) => (
-              <Link key={c.course_id} href={{ pathname: '/curso/[id]', params: { id: c.course_id } } as never}
+              <Link key={c.course_id} href={`/curso/${c.course_id}` as never}
                 className="group flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3.5 hover:border-violet-300 hover:shadow-sm transition-all">
                 <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-100 to-fuchsia-100 flex items-center justify-center text-lg shrink-0">{c.emoji || '✨'}</div>
                 <div className="flex-1 min-w-0">
