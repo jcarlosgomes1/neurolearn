@@ -9,6 +9,7 @@ import { DashboardSkeleton } from '@/components/shared/DashboardSkeleton';
 import { fmtCents } from '@/lib/utils/cn';
 import { toast } from 'sonner';
 import { ModulesEditor, type Module } from './ModulesEditor';
+import { CourseTranslationManager } from './CourseTranslationManager';
 
 interface Course {
   id: string;
@@ -226,6 +227,7 @@ export function CourseEditor({ courseId, backHref, mode = 'instructor' }: Props)
               </button>
             </div>
           )}
+          <CourseTranslationManager courseId={course.id} />
         </div>
       )}
     </div>
