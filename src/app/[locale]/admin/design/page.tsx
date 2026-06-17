@@ -24,7 +24,7 @@ export default async function Page() {
         emoji="🎨"
         eyebrow="Sistema · Aparência"
         title="Direção de design"
-        description="Escolhe entre as 4 direções exploradas. Pré-visualiza qualquer uma e define a ativa. A escolha fica guardada e passará a controlar o tema do site quando a integração estiver concluída."
+        description="Escolhe entre as 4 direções. Pré-visualiza qualquer uma e define a ativa — a escolha re-tematiza o site inteiro (público incluído): cor de acento, tipografia e superfície mudam em todas as páginas."
       />
       <DesignClient initialActive={active} directions={directions} />
     </div>

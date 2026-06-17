@@ -11,6 +11,7 @@ import { Telemetry } from '@/components/telemetry/Telemetry';
 import { MobileBottomNav } from '@/components/MobileBottomNav';
 import { TopBar } from '@/components/layout/TopBar';
 import { PeekBanner } from '@/components/peek/PeekBanner';
+import { createClient } from '@/lib/supabase/server';
 import '@/app/globals.css';
 
 export async function generateMetadata() {
@@ -48,9 +49,18 @@ export default async function LocaleLayout({
 
   const messages = await getMessages();
 
+  let theme = 'dir4';
+  try {
+    const sb = await createClient();
+    const { data } = await sb.rpc('nl_design_active');
+    if (typeof data === 'string' && data) theme = data;
+  } catch {
+    // fallback: dir4 (Atelier)
+  }
+
   return (
-    <html lang={locale}>
-      <body className="min-h-screen bg-[#f2f1ec] font-sans antialiased [overflow-x:clip]">
+    <html lang={locale} data-theme={theme}>
+      <body className="min-h-screen font-sans antialiased [overflow-x:clip]">
         <ClientIntlProvider locale={locale} messages={messages}>
           <TopBar locale={locale} />
           <PeekBanner />

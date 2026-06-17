@@ -7,15 +7,24 @@ const config: Config = {
     extend: {
       colors: {
         brand: {
-          50: '#e7f3f1', 100: '#c3e5e0', 200: '#8fccc4',
-          500: '#16a294', 600: '#138e83', 700: '#0f6b63',
-          800: '#0c544e', 900: '#0a423d',
+          50: 'rgb(var(--brand-50) / <alpha-value>)',
+          100: 'rgb(var(--brand-100) / <alpha-value>)',
+          200: 'rgb(var(--brand-200) / <alpha-value>)',
+          300: 'rgb(var(--brand-300) / <alpha-value>)',
+          400: 'rgb(var(--brand-400) / <alpha-value>)',
+          500: 'rgb(var(--brand-500) / <alpha-value>)',
+          600: 'rgb(var(--brand-600) / <alpha-value>)',
+          700: 'rgb(var(--brand-700) / <alpha-value>)',
+          800: 'rgb(var(--brand-800) / <alpha-value>)',
+          900: 'rgb(var(--brand-900) / <alpha-value>)',
         },
+        accent: 'var(--accent)',
+        'accent-bright': 'var(--accent-bright)',
       },
       fontFamily: {
-        sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
-        display: ['var(--font-fraunces)', 'Georgia', 'serif'],
-        mono: ['var(--font-mono)', 'ui-monospace', 'monospace'],
+        sans: ['var(--font-body)', 'system-ui', 'sans-serif'],
+        display: ['var(--font-display)', 'Georgia', 'serif'],
+        mono: ['var(--font-num)', 'ui-monospace', 'monospace'],
       },
       animation: {
         'fade-in': 'fade-in 0.4s ease-out',

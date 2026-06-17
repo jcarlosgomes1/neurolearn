@@ -1,6 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..500&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -25,22 +27,7 @@ html, body {
 @layer base {
   :root {
     color-scheme: light;
-    --font-inter: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    --font-fraunces: 'Fraunces', Georgia, 'Times New Roman', serif;
-    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
-
-    /* Atelier — superfície de baixo brilho + acento teal conquistado */
-    --paper: #f2f1ec;
-    --card: #faf9f5;
-    --ink: #23211c;
-    --ink-2: #5c584e;
-    --ink-3: #928d81;
-    --line: rgba(35, 33, 28, .12);
-    --teal: #0c6b63;
-    --teal-bright: #138e83;
-    --teal-tint: rgba(19, 142, 131, .10);
-
-    /* escala tipográfica fluida (clamp 360→1240) */
+    /* escala tipográfica fluida — comum a todos os temas */
     --t-eyebrow: .6875rem;
     --t-caption: clamp(.75rem, .72rem + .13vw, .8125rem);
     --t-h3: clamp(1.0625rem, 1rem + .3vw, 1.3125rem);
@@ -48,19 +35,62 @@ html, body {
     --t-h1: clamp(1.875rem, 1.5rem + 1.6vw, 2.75rem);
     --t-display: clamp(2.5rem, 1.7rem + 3.7vw, 4.25rem);
   }
+
+  /* ===== Temas (config: design_active_direction) — trocados via data-theme no <html> ===== */
+  /* dir4 — Atelier (default) */
+  :root, [data-theme="dir4"] {
+    --font-body:'Inter',-apple-system,system-ui,sans-serif;
+    --font-display:'Fraunces',Georgia,'Times New Roman',serif;
+    --font-num:'JetBrains Mono',ui-monospace,SFMono-Regular,monospace;
+    --paper:#f2f1ec; --card:#faf9f5; --ink:#23211c; --ink-2:#5c584e; --ink-3:#928d81; --line:rgba(35,33,28,.12);
+    --accent:#0c6b63; --accent-bright:#138e83; --accent-tint:rgba(19,142,131,.10);
+    --brand-50:231 243 241; --brand-100:195 229 224; --brand-200:143 204 196; --brand-300:95 184 172; --brand-400:46 169 154;
+    --brand-500:22 162 148; --brand-600:19 142 131; --brand-700:15 107 99; --brand-800:12 84 78; --brand-900:10 66 61;
+  }
+  /* dir1 — Produto moderno (grotesca + mono, violeta/índigo) */
+  [data-theme="dir1"] {
+    --font-body:'Inter',-apple-system,system-ui,sans-serif;
+    --font-display:'Bricolage Grotesque','Inter',sans-serif;
+    --font-num:'JetBrains Mono',ui-monospace,monospace;
+    --paper:#fbfbfd; --card:#ffffff; --ink:#14161d; --ink-2:#4b5563; --ink-3:#9aa1ad; --line:rgba(20,22,29,.10);
+    --accent:#6d28d9; --accent-bright:#7c4dff; --accent-tint:rgba(124,77,255,.12);
+    --brand-50:241 238 254; --brand-100:224 216 253; --brand-200:196 179 251; --brand-300:169 140 249; --brand-400:143 102 255;
+    --brand-500:124 77 255; --brand-600:109 40 217; --brand-700:91 33 182; --brand-800:76 29 149; --brand-900:59 22 118;
+  }
+  /* dir2 — Academia editorial (serifa + serifa, esmeralda) */
+  [data-theme="dir2"] {
+    --font-body:'Hanken Grotesk','Inter',sans-serif;
+    --font-display:'Fraunces',Georgia,serif;
+    --font-num:'Fraunces',Georgia,serif;
+    --paper:#f8f6f1; --card:#fffdf9; --ink:#181613; --ink-2:#5b554c; --ink-3:#938a7c; --line:rgba(24,22,19,.12);
+    --accent:#0f6b4d; --accent-bright:#1a8f66; --accent-tint:rgba(26,143,102,.12);
+    --brand-50:232 243 238; --brand-100:199 227 214; --brand-200:147 201 177; --brand-300:92 180 145; --brand-400:47 159 118;
+    --brand-500:26 143 102; --brand-600:15 107 77; --brand-700:11 84 64; --brand-800:9 63 49; --brand-900:7 50 39;
+  }
+  /* dir3 — Híbrido (serifa títulos + mono dados, índigo) */
+  [data-theme="dir3"] {
+    --font-body:'Inter',-apple-system,system-ui,sans-serif;
+    --font-display:'Fraunces',Georgia,serif;
+    --font-num:'JetBrains Mono',ui-monospace,monospace;
+    --paper:#faf9f7; --card:#ffffff; --ink:#14161d; --ink-2:#4b5563; --ink-3:#9aa1ad; --line:rgba(20,22,29,.10);
+    --accent:#4338ca; --accent-bright:#5a52e0; --accent-tint:rgba(67,56,202,.12);
+    --brand-50:238 240 251; --brand-100:220 223 247; --brand-200:188 193 240; --brand-300:150 155 234; --brand-400:111 106 227;
+    --brand-500:90 82 224; --brand-600:67 56 202; --brand-700:54 46 168; --brand-800:44 38 134; --brand-900:36 31 107;
+  }
+
   html {
     -webkit-tap-highlight-color: transparent;
-    font-family: var(--font-inter);
+    font-family: var(--font-body);
   }
   body {
-    @apply text-slate-900 antialiased;
+    @apply antialiased;
     background-color: var(--paper);
-    font-family: var(--font-inter);
+    color: var(--ink);
+    font-family: var(--font-body);
     font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1;
   }
-  /* Atelier: títulos em serifa óptica para autoridade editorial */
   h1, h2, h3 {
-    font-family: var(--font-fraunces);
+    font-family: var(--font-display);
     letter-spacing: -0.012em;
     font-optical-sizing: auto;
   }
@@ -104,19 +134,17 @@ html, body {
   .text-balance { text-wrap: balance; }
   .text-pretty { text-wrap: pretty; }
 
-  /* Atelier — tokens tipográficos semânticos */
-  .t-display { font-family: var(--font-fraunces); font-size: var(--t-display); font-weight: 520; line-height: 1.04; letter-spacing: -.02em; font-optical-sizing: auto; }
-  .t-h1 { font-family: var(--font-fraunces); font-size: var(--t-h1); font-weight: 560; line-height: 1.07; letter-spacing: -.015em; }
-  .t-h2 { font-family: var(--font-fraunces); font-size: var(--t-h2); font-weight: 540; line-height: 1.16; letter-spacing: -.01em; }
-  .t-h3 { font-family: var(--font-fraunces); font-size: var(--t-h3); font-weight: 560; line-height: 1.28; }
+  /* Tokens tipográficos semânticos (seguem o tema ativo) */
+  .t-display { font-family: var(--font-display); font-size: var(--t-display); font-weight: 520; line-height: 1.04; letter-spacing: -.02em; font-optical-sizing: auto; }
+  .t-h1 { font-family: var(--font-display); font-size: var(--t-h1); font-weight: 560; line-height: 1.07; letter-spacing: -.015em; }
+  .t-h2 { font-family: var(--font-display); font-size: var(--t-h2); font-weight: 540; line-height: 1.16; letter-spacing: -.01em; }
+  .t-h3 { font-family: var(--font-display); font-size: var(--t-h3); font-weight: 560; line-height: 1.28; }
   .t-eyebrow { font-size: var(--t-eyebrow); font-weight: 600; text-transform: uppercase; letter-spacing: .11em; color: var(--ink-3); }
-  .t-num { font-family: var(--font-mono); font-weight: 500; font-feature-settings: "tnum" 1; letter-spacing: -.01em; }
-  .font-display { font-family: var(--font-fraunces); }
-  .font-mono-num { font-family: var(--font-mono); font-feature-settings: "tnum" 1; }
+  .t-num { font-family: var(--font-num); font-weight: 500; font-feature-settings: "tnum" 1; letter-spacing: -.01em; }
 
-  /* Assinatura: espinha de mestria (fio que enche de teal) */
+  /* Assinatura: espinha de mestria (fio que enche do acento do tema) */
   .spine { position: relative; height: 3px; border-radius: 3px; background: var(--line); overflow: visible; }
-  .spine > .fill { position: absolute; left: 0; top: 0; height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--teal), var(--teal-bright)); transition: width 1s cubic-bezier(.2,.7,.2,1); }
-  .spine > .node { position: absolute; top: 50%; width: 11px; height: 11px; border-radius: 50%; background: var(--teal-bright); transform: translate(-50%, -50%); box-shadow: 0 0 0 4px var(--teal-tint), 0 0 14px 1px rgba(19,142,131,.45); transition: left 1s cubic-bezier(.2,.7,.2,1); }
+  .spine > .fill { position: absolute; left: 0; top: 0; height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--accent), var(--accent-bright)); transition: width 1s cubic-bezier(.2,.7,.2,1); }
+  .spine > .node { position: absolute; top: 50%; width: 11px; height: 11px; border-radius: 50%; background: var(--accent-bright); transform: translate(-50%, -50%); box-shadow: 0 0 0 4px var(--accent-tint), 0 0 14px 1px var(--accent-tint); transition: left 1s cubic-bezier(.2,.7,.2,1); }
   @media (prefers-reduced-motion: reduce) { .spine > .fill, .spine > .node { transition: none; } }
 }
