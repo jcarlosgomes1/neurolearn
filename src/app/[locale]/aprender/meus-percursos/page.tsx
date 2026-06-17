@@ -28,6 +28,11 @@ export default async function MyLearningPathsPage({ params }: { params: Promise<
   const { data: orgRes } = await sb.rpc('nl_my_org_paths');
   const orgPaths = ((orgRes as { paths?: any[] })?.paths) || [];
 
+  // Entrada única "Percursos": sem percursos próprios → catálogo público
+  if (paths.length === 0 && orgPaths.length === 0) {
+    redirect({ href: '/aprender/percursos', locale });
+  }
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
       <header className="mb-8 flex items-start justify-between flex-wrap gap-4">
