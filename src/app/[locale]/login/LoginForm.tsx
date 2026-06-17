@@ -27,6 +27,13 @@ export function LoginForm() {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) { toast.error(error.message); setLoading(false); return; }
     toast.success(t('login.welcome'));
+    // #168: honrar lingua preferida no destino pos-login (semeia NEXT_LOCALE via router locale)
+    let destLocale = locale;
+    try {
+      const { data: prof } = await supabase.from('nl_profiles').select('preferred_lang').eq('id', data.user!.id).maybeSingle();
+      const pl = (prof as any)?.preferred_lang;
+      if (pl && ['pt', 'en', 'es', 'fr'].includes(pl)) destLocale = pl;
+    } catch {}
     const redirect = params.get('redirect_to') || params.get('next');
     if (redirect) { router.push(redirect as any); router.refresh(); return; }
     try {
@@ -36,8 +43,8 @@ export function LoginForm() {
       const me = await r.json();
       const area = me?.area;
       const dest = area === 'admin' ? '/admin' : area === 'instructor' ? '/teach' : '/learn';
-      router.push(dest as any);
-    } catch { router.push('/learn' as any); }
+      router.push(dest as any, { locale: destLocale });
+    } catch { router.push('/learn' as any, { locale: destLocale }); }
     router.refresh();
   }
 
