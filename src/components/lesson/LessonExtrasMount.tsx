@@ -2,13 +2,9 @@
 
 import dynamic from 'next/dynamic';
 import { useState, useMemo } from 'react';
-import { BookMarked, Sparkles, FileQuestion } from 'lucide-react';
+import { FileQuestion } from 'lucide-react';
 
 // Lazy load: componentes pesados só montam quando o utilizador abre o painel
-const AITutorPanel = dynamic(
-  () => import('./AITutorPanel').then((m) => ({ default: m.AITutorPanel })),
-  { ssr: false }
-);
 const LessonNotesPanel = dynamic(
   () => import('./LessonNotesPanel').then((m) => ({ default: m.LessonNotesPanel })),
   { ssr: false }
@@ -66,14 +62,6 @@ export function LessonExtrasMount({
         courseId={courseId}
         moduleIndex={moduleIndex}
         lessonIndex={lessonIndex}
-        collapsed={true}
-      />
-      <AITutorPanel
-        courseId={courseId}
-        moduleIndex={moduleIndex}
-        lessonIndex={lessonIndex}
-        lessonTitle={lessonTitle}
-        lessonContent={lessonContent || ''}
         collapsed={true}
       />
       <LessonQuestions

@@ -6,6 +6,7 @@ import { SUPABASE_URL } from '@/lib/supabase/config';
 import { createClient } from '@/lib/supabase/client';
 import { Markdown } from '@/components/shared/Markdown';
 import { toast } from 'sonner';
+import { GraduationCap } from 'lucide-react';
 
 interface Msg { role: 'user' | 'assistant'; content: string }
 
@@ -128,7 +129,7 @@ export function LessonTutor({ context, onClose }: { context: LessonContext; onCl
     <div className="flex flex-col h-full bg-white">
       <div className="flex items-center justify-between gap-3 p-4 border-b border-slate-100 flex-shrink-0">
         <div className="flex items-center gap-2 min-w-0">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-500 to-purple-500 flex items-center justify-center text-white text-sm">🧠</div>
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-500 to-purple-500 flex items-center justify-center text-white"><GraduationCap className="h-4 w-4" /></div>
           <div className="min-w-0">
             <div className="text-sm font-semibold text-slate-900">{t('title')}</div>
             <div className="text-[11px] text-slate-500 truncate">

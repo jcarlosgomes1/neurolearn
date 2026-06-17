@@ -17,6 +17,7 @@ import { LessonPractice } from '@/components/lesson/LessonPractice';
 import { CourseFeedbackPanel } from '@/app/[locale]/aprender/CourseFeedbackPanel';
 import { CourseCurriculumNav } from '@/components/lesson/CourseCurriculumNav';
 import { LessonRewardBurst } from '@/components/lesson/LessonRewardBurst';
+import { GraduationCap } from 'lucide-react';
 
 interface Lesson {
   id?: string;
@@ -357,7 +358,7 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
             {!nextLesson && <div className="mt-4"><CourseFeedbackPanel courseId={courseId} courseTitle={course.title} /></div>}
           </div>
 
-          <aside className="hidden lg:flex w-[360px] xl:w-[400px] flex-shrink-0 sticky top-28 self-start h-[calc(100vh-8rem)]">
+          <aside className="hidden 2xl:flex w-[380px] flex-shrink-0 sticky top-28 self-start h-[calc(100vh-8rem)]">
             <div className="w-full rounded-2xl border border-slate-200 shadow-sm overflow-hidden bg-white">
               <LessonTutor context={tutorContext} />
             </div>
@@ -366,12 +367,12 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
       </div>
 
       <button onClick={() => setTutorOpen(true)} aria-label={t('open_tutor_aria')}
-        className="lg:hidden fixed bottom-5 right-5 z-30 w-14 h-14 rounded-full bg-gradient-to-br from-brand-500 to-purple-500 text-white text-2xl shadow-lg active:scale-95 transition-transform">
-        🧠
+        className="2xl:hidden fixed bottom-5 right-5 z-30 w-14 h-14 rounded-full bg-gradient-to-br from-brand-500 to-purple-500 text-white shadow-lg active:scale-95 transition-transform flex items-center justify-center">
+        <GraduationCap className="h-6 w-6" />
       </button>
       {tutorOpen && (
-        <div className="lg:hidden fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm flex items-end" onClick={() => setTutorOpen(false)}>
-          <div className="bg-white w-full rounded-t-2xl shadow-2xl h-[85vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+        <div className="2xl:hidden fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm flex items-end sm:items-stretch sm:justify-end" onClick={() => setTutorOpen(false)}>
+          <div className="bg-white w-full sm:w-[440px] rounded-t-2xl sm:rounded-none shadow-2xl h-[85vh] sm:h-full flex flex-col" onClick={(e) => e.stopPropagation()}>
             <LessonTutor context={tutorContext} onClose={() => setTutorOpen(false)} />
           </div>
         </div>
