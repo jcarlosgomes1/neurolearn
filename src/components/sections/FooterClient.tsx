@@ -19,10 +19,11 @@ export default function FooterClient({ data, platform, solutions, company, legal
         if (v && v !== item.i18n_key) return v;
       } catch {}
     }
-    return item.href.split('/').filter(Boolean).pop() || item.href;
+    return (item.href || '').split('/').filter(Boolean).pop() || item.href || '';
   }
 
   function renderItem(item: NavItem) {
+    if (!item.href) return null;
     const lbl = label(item);
     if (item.external || item.href.startsWith('http') || item.href.startsWith('mailto:')) {
       return (

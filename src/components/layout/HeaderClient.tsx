@@ -49,9 +49,9 @@ export function HeaderClient({ session, nav }: { session: Session | null; nav: N
   function navLabel(it: NavItem): string {
     if (it.label_override) return it.label_override;
     if (it.i18n_key) { try { const v = t(it.i18n_key as any); if (v && v !== it.i18n_key) return v; } catch {} }
-    return it.href.split('/').filter(Boolean).pop() || it.href;
+    return (it.href || '').split('/').filter(Boolean).pop() || it.href || '';
   }
-  const NAV: Array<{ href: string; label: string; Icon: typeof BookOpen }> = nav.map((it) => ({
+  const NAV: Array<{ href: string; label: string; Icon: typeof BookOpen }> = nav.filter((it) => !!it.href).map((it) => ({
     href: it.href,
     label: navLabel(it),
     Icon: ICONS[it.icon || ''] || Sparkles,
