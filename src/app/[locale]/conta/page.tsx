@@ -40,11 +40,12 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
         )}
       </div>
 
-      <form action={`/${locale}/logout`} method="POST" className="pt-2">
-        <button type="submit" className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-medium">
+      <div className="pt-2">
+        <a href="/api/auth/logout"
+          className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-medium">
           <LogOut className="h-4 w-4" /> {t('user_menu.signout')}
-        </button>
-      </form>
+        </a>
+      </div>
     </div>
   );
 }
