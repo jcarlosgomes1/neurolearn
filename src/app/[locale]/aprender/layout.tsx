@@ -1,12 +1,15 @@
-import { Header } from '@/components/layout/Header';
-import { Footer } from '@/components/sections/Footer';
+import { AppShell } from '@/components/layout/AppShell';
+import { createClient } from '@/lib/supabase/server';
+import { redirect } from '@/i18n/routing';
 
-export default function ChromeLayout({ children }: { children: React.ReactNode }) {
+export default async function AprenderLayout({ children, params }: { children: React.ReactNode; params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const sb = await createClient();
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) redirect({ href: '/login', locale });
   return (
-    <div className="flex flex-col min-h-screen">
-      <Header />
-      <div className="flex-1">{children}</div>
-      <Footer data={{}} />
-    </div>
+    <AppShell role="student">
+      {children}
+    </AppShell>
   );
 }
