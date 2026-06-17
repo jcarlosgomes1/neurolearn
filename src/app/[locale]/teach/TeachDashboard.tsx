@@ -8,6 +8,7 @@ import { DashboardSkeleton } from '@/components/shared/DashboardSkeleton';
 import { fmtCents, relTime } from '@/lib/utils/cn';
 import { useTranslations } from 'next-intl';
 import { Plus, Briefcase, Inbox, TrendingUp } from 'lucide-react';
+import { InstructorQuestions } from '@/components/teach/InstructorQuestions';
 
 export function TeachDashboard() {
   const t = useTranslations();
@@ -93,6 +94,8 @@ export function TeachDashboard() {
           </div>
         )}
       </section>
+
+      <InstructorQuestions />
 
       <div className="grid md:grid-cols-2 gap-6">
         <section className="bg-white rounded-xl border border-slate-200 p-5">
