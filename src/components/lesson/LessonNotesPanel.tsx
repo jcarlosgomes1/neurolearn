@@ -5,8 +5,8 @@ import { createClient } from '@/lib/supabase/client';
 import { StickyNote, Plus, Trash2, X, Highlighter, Loader2 } from 'lucide-react';
 import { assertNotPeekClient } from '@/lib/peek-client';
 
-export function LessonNotesPanel({ courseId, moduleIndex, lessonIndex, collapsed: defaultCollapsed = true }: {
-  courseId: string; moduleIndex: number; lessonIndex: number; collapsed?: boolean;
+export function LessonNotesPanel({ courseId, moduleIndex, lessonIndex, collapsed: defaultCollapsed = true, controlled = false, onClose }: {
+  courseId: string; moduleIndex: number; lessonIndex: number; collapsed?: boolean; controlled?: boolean; onClose?: () => void;
 }) {
   const [collapsed, setCollapsed] = useState(defaultCollapsed);
   const [tab, setTab] = useState<'notes' | 'highlights'>('notes');
@@ -55,6 +55,7 @@ export function LessonNotesPanel({ courseId, moduleIndex, lessonIndex, collapsed
   }
 
   if (collapsed) {
+    if (controlled) return null;
     return (
       <button onClick={() => setCollapsed(false)}
         className="fixed bottom-6 right-32 z-40 inline-flex items-center gap-2 px-4 py-3 bg-white text-slate-700 shadow-xl border border-slate-200 rounded-full hover:scale-105 transition-transform">
@@ -72,7 +73,7 @@ export function LessonNotesPanel({ courseId, moduleIndex, lessonIndex, collapsed
           <StickyNote className="h-4 w-4 text-amber-600" />
           <h3 className="font-semibold text-sm text-amber-900">Notas & Highlights</h3>
         </div>
-        <button onClick={() => setCollapsed(true)} className="p-1 hover:bg-amber-100 rounded"><X className="h-4 w-4" /></button>
+        <button onClick={() => { setCollapsed(true); onClose?.(); }} className="p-1 hover:bg-amber-100 rounded"><X className="h-4 w-4" /></button>
       </div>
       <div className="flex border-b border-slate-200">
         <button onClick={() => setTab('notes')}

@@ -5,14 +5,8 @@ import { useState, useMemo } from 'react';
 import { FileQuestion } from 'lucide-react';
 
 // Lazy load: componentes pesados só montam quando o utilizador abre o painel
-const LessonNotesPanel = dynamic(
-  () => import('./LessonNotesPanel').then((m) => ({ default: m.LessonNotesPanel })),
-  { ssr: false }
-);
-const LessonQuestions = dynamic(
-  () => import('./LessonQuestions').then((m) => ({ default: m.LessonQuestions })),
-  { ssr: false }
-);
+import { LessonActionDock } from './LessonActionDock';
+
 const QuizPlayer = dynamic(
   () => import('@/components/quiz/QuizPlayer').then((m) => ({ default: m.QuizPlayer })),
   { ssr: false }
@@ -47,7 +41,7 @@ export function LessonExtrasMount({
   return (
     <>
       {/* Floating buttons stack — bottom right */}
-      <div className="fixed right-4 bottom-20 md:bottom-6 z-30 flex flex-col gap-2 items-end pointer-events-none">
+      <div className="fixed right-4 bottom-36 md:bottom-24 z-40 flex flex-col gap-2 items-end pointer-events-none">
         {hasQuiz && !showQuiz && (
           <button
             onClick={() => setShowQuiz(true)}
@@ -57,19 +51,8 @@ export function LessonExtrasMount({
         )}
       </div>
 
-      {/* Painéis colapsados (cada um gere o próprio toggle) */}
-      <LessonNotesPanel
-        courseId={courseId}
-        moduleIndex={moduleIndex}
-        lessonIndex={lessonIndex}
-        collapsed={true}
-      />
-      <LessonQuestions
-        courseId={courseId}
-        moduleIndex={moduleIndex}
-        lessonIndex={lessonIndex}
-        collapsed={true}
-      />
+      {/* Acções da aula num único botão flutuante */}
+      <LessonActionDock courseId={courseId} moduleIndex={moduleIndex} lessonIndex={lessonIndex} />
 
       {/* Quiz overlay quando aberto */}
       {hasQuiz && showQuiz && (

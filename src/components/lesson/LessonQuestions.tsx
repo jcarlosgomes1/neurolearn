@@ -26,8 +26,8 @@ interface Answer {
   created_at: string | null;
 }
 
-export function LessonQuestions({ courseId, moduleIndex, lessonIndex, collapsed = true }: {
-  courseId: string; moduleIndex: number; lessonIndex: number; collapsed?: boolean;
+export function LessonQuestions({ courseId, moduleIndex, lessonIndex, collapsed = true, controlled = false, onClose }: {
+  courseId: string; moduleIndex: number; lessonIndex: number; collapsed?: boolean; controlled?: boolean; onClose?: () => void;
 }) {
   const locale = useLocale();
   const sb = createClient();
@@ -127,14 +127,14 @@ export function LessonQuestions({ courseId, moduleIndex, lessonIndex, collapsed 
 
   return (
     <>
-      {!open && (
+      {!open && !controlled && (
         <button onClick={() => setOpen(true)} className="fixed right-4 bottom-36 md:bottom-20 z-30 bg-gradient-to-br from-violet-500 to-indigo-600 text-white px-4 py-2.5 rounded-full shadow-xl hover:scale-[1.04] active:scale-[0.98] transition-transform flex items-center gap-2 font-semibold text-sm">
           <MessageCircleQuestion className="h-4 w-4" /> Perguntas
         </button>
       )}
       {open && (
         <div className="fixed inset-0 z-40 flex justify-end">
-          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setOpen(false)} />
+          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => { setOpen(false); onClose?.(); }} />
           <div className="relative w-full max-w-md bg-white h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-200">
             <div className="flex items-center justify-between p-4 border-b border-slate-100 bg-gradient-to-r from-violet-50 to-indigo-50">
               <h2 className="font-bold text-slate-900 flex items-center gap-2"><MessageCircleQuestion className="h-5 w-5 text-violet-600" /> Perguntas e Respostas</h2>
@@ -142,7 +142,7 @@ export function LessonQuestions({ courseId, moduleIndex, lessonIndex, collapsed 
                 <button onClick={toggleTranslate} disabled={translating} title="Traduzir" className={`p-1.5 rounded-lg ${translated ? 'bg-violet-600 text-white' : 'hover:bg-white text-slate-500'}`}>
                   {translating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Globe className="h-4 w-4" />}
                 </button>
-                <button onClick={() => setOpen(false)} className="p-1.5 hover:bg-white rounded-lg text-slate-500"><X className="h-4 w-4" /></button>
+                <button onClick={() => { setOpen(false); onClose?.(); }} className="p-1.5 hover:bg-white rounded-lg text-slate-500"><X className="h-4 w-4" /></button>
               </div>
             </div>
 

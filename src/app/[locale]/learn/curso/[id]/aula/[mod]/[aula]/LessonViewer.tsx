@@ -17,7 +17,6 @@ import { LessonPractice } from '@/components/lesson/LessonPractice';
 import { CourseFeedbackPanel } from '@/app/[locale]/aprender/CourseFeedbackPanel';
 import { CourseCurriculumNav } from '@/components/lesson/CourseCurriculumNav';
 import { LessonRewardBurst } from '@/components/lesson/LessonRewardBurst';
-import { GraduationCap } from 'lucide-react';
 
 interface Lesson {
   id?: string;
@@ -51,6 +50,12 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
   const [quizReveal, setQuizReveal] = useState(false);
   const [completing, setCompleting] = useState(false);
   const [completed, setCompleted] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const open = () => setTutorOpen(true);
+    window.addEventListener('nl-open-tutor', open);
+    return () => window.removeEventListener('nl-open-tutor', open);
+  }, []);
 
   const TYPE_META: Record<string, { emoji: string; label: string; color: string }> = {
     video: { emoji: '🎬', label: t('type.video'), color: 'text-rose-700 bg-rose-50' },
@@ -366,10 +371,6 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
         </div>
       </div>
 
-      <button onClick={() => setTutorOpen(true)} aria-label={t('open_tutor_aria')}
-        className="2xl:hidden fixed bottom-5 right-5 z-30 w-14 h-14 rounded-full bg-gradient-to-br from-brand-500 to-purple-500 text-white shadow-lg active:scale-95 transition-transform flex items-center justify-center">
-        <GraduationCap className="h-6 w-6" />
-      </button>
       {tutorOpen && (
         <div className="2xl:hidden fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm flex items-end sm:items-stretch sm:justify-end" onClick={() => setTutorOpen(false)}>
           <div className="bg-white w-full sm:w-[440px] rounded-t-2xl sm:rounded-none shadow-2xl h-[85vh] sm:h-full flex flex-col" onClick={(e) => e.stopPropagation()}>
