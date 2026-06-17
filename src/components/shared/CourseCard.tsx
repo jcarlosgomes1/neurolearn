@@ -1,6 +1,8 @@
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import { fmtCents } from '@/lib/utils/cn';
+
+const LANG_NAMES: Record<string, string> = { pt: 'Português', en: 'English', es: 'Español', fr: 'Français' };
 
 export interface CourseCardData {
   id: string;
@@ -13,10 +15,15 @@ export interface CourseCardData {
   enrollments_count?: number | null;
   level?: string | null;
   course_type?: string | null;
+  available_langs?: string[] | null;
+  is_fallback?: boolean | null;
 }
 
 export function CourseCard({ course }: { course: CourseCardData }) {
   const t = useTranslations('course_card');
+  const locale = useLocale();
+  const langs = (course.available_langs || []).filter(Boolean);
+  const notInMyLang = !!course.is_fallback && langs.length > 0 && !langs.includes(locale);
   return (
     <Link
       href={`/curso/${course.id}` as any}
@@ -29,7 +36,16 @@ export function CourseCard({ course }: { course: CourseCardData }) {
       {course.subtitle && (
         <p className="mt-1 text-sm text-slate-600 line-clamp-2">{course.subtitle}</p>
       )}
-      <div className="mt-3 flex items-center gap-2 text-xs text-slate-500">
+      <div className="mt-3 flex items-center gap-2 text-xs text-slate-500 flex-wrap">
+        {notInMyLang && (
+          <span
+            title={langs.map((l) => LANG_NAMES[l] || l).join(', ')}
+            className="px-2 py-0.5 rounded-full font-medium inline-flex items-center gap-1"
+            style={{ background: 'var(--accent-tint)', color: 'var(--accent)' }}
+          >
+            🌐 {langs.map((l) => l.toUpperCase()).join(' · ')}
+          </span>
+        )}
         {course.level && (
           <span className="px-2 py-0.5 rounded-full bg-slate-100">{course.level}</span>
         )}
