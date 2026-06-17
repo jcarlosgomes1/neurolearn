@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
 import { getTranslations } from 'next-intl/server';
-import { Link } from '@/i18n/routing';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { notFound, redirect } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
@@ -31,10 +30,10 @@ export default async function Page({ params }: { params: Promise<{ id: string; l
 
   return (
     <div className="">
-      <Link href={{ pathname: '/admin/curso/[id]/editar', params: { id } } as any}
+      <a href={`/${locale}/admin/curso/${id}/editar`}
         className="group inline-flex items-center gap-1.5 mb-5 text-sm text-slate-500 hover:text-slate-900 font-medium">
         <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" /> {result.course.emoji || ''} {result.course.title}
-      </Link>
+      </a>
       <AdminPageHeader
         eyebrow={safeT('admin.course_landing.eyebrow', 'Curso · Landing page')}
         title={safeT('admin.course_landing.title', 'Landing page do curso')}

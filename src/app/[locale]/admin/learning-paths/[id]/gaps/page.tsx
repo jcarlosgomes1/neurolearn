@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
-import { Link } from '@/i18n/routing';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { ArrowLeft } from 'lucide-react';
 import { GapsClient } from './GapsClient';
@@ -8,7 +7,7 @@ import { GapsClient } from './GapsClient';
 export const dynamic = 'force-dynamic';
 
 export default async function PathGapsPage({ params }: { params: Promise<{ id: string; locale: string }> }) {
-  const { id } = await params;
+  const { id, locale } = await params;
   const sb = await createClient();
   const { data: path } = await sb.from('nl_learning_paths').select('id, slug, title').eq('id', id).maybeSingle();
   if (!path) notFound();
@@ -18,11 +17,11 @@ export default async function PathGapsPage({ params }: { params: Promise<{ id: s
 
   return (
     <div className="">
-      <Link
-        href={{ pathname: '/admin/learning-paths/[id]', params: { id } } as any}
+      <a
+        href={`/${locale}/admin/learning-paths/${id}`}
         className="group inline-flex items-center gap-1.5 mb-5 text-sm text-slate-500 hover:text-slate-900 font-medium">
         <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" /> Voltar ao percurso
-      </Link>
+      </a>
       <AdminPageHeader
         eyebrow="Cursos em falta"
         title={(path as any).title}

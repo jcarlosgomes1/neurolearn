@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { PeekLauncher } from '@/components/peek/PeekLauncher';
 import { Link } from '@/i18n/routing';
+import { getLocale } from 'next-intl/server';
 import { Users, BookOpen, Building2, GraduationCap, TrendingUp, AlertCircle, MessageSquare, Award } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
@@ -33,6 +34,8 @@ export default async function Page() {
     { label: 'Q&A pendentes', value: k.pending.open_questions.toLocaleString('pt-PT'), sub: 'A aguardar resposta', icon: MessageSquare, cls: 'from-slate-600 to-slate-800', href: '/admin/cursos' },
     { label: 'Erros não resolvidos', value: k.pending.unresolved_errors.toLocaleString('pt-PT'), sub: k.pending.unresolved_errors > 0 ? 'Requer atenção' : 'Tudo OK', icon: AlertCircle, cls: k.pending.unresolved_errors > 0 ? 'from-red-500 to-rose-600' : 'from-emerald-500 to-teal-600', href: '/admin/erros' },
   ] : [];
+
+  const locale = await getLocale();
 
   return (
     <div className="">
@@ -76,7 +79,7 @@ export default async function Page() {
           </header>
           <div className="space-y-1.5">
             {k.top_courses.map((c, i) => (
-              <Link key={c.id} href={{ pathname: '/admin/cursos/[id]', params: { id: c.id } } as any}
+              <a key={c.id} href={`/${locale}/admin/cursos/${c.id}`}
                 className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-slate-50 transition-colors group">
                 <div className="flex-shrink-0 w-7 h-7 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 text-slate-700 text-xs font-bold flex items-center justify-center">{i + 1}</div>
                 {c.emoji && <span className="text-xl">{c.emoji}</span>}
@@ -86,7 +89,7 @@ export default async function Page() {
                 <div className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
                   {c.enrolls} inscrições
                 </div>
-              </Link>
+              </a>
             ))}
           </div>
         </section>
