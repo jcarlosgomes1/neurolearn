@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export const dynamic = 'force-static';
+export const dynamic = 'force-dynamic';
 
 // Rota de teste isolada: serve o preview da direção "Atelier" dentro do site,
 // sem tocar em nenhuma página existente. O design real será integrado por fatias
