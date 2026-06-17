@@ -28,7 +28,7 @@ interface Instructor {
 const FEATURE_OPTIONS = [
   { key: 'can_generate_lessons' as const, emoji: '📝', titleKey: 'f1.title', descKey: 'f1.desc', credits: 1 },
   { key: 'can_generate_full_courses' as const, emoji: '🚀', titleKey: 'f2.title', descKey: 'f2.desc', credits: 30 },
-  { key: 'can_use_ai_tutor' as const, emoji: '🧠', titleKey: 'f3.title', descKey: 'f3.desc', credits: 1 },
+  { key: 'can_use_ai_tutor' as const, emoji: '💬', titleKey: 'f3.title', descKey: 'f3.desc', credits: 1 },
   { key: 'can_use_pricing_advisor' as const, emoji: '💰', titleKey: 'f4.title', descKey: 'f4.desc', credits: 5 },
 ];
 
@@ -114,8 +114,8 @@ export function AIFeaturesForm({ instructorId }: { instructorId: string }) {
         <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" /> {t('back')}
       </Link>
       <div className="flex flex-wrap items-center gap-2">
-        <Link href={'/admin/instrutores-ai' as any} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-violet-100 hover:text-violet-700 hover:ring-violet-200 transition-colors"><span className="text-sm leading-none">🧠</span> Funcionalidades IA</Link>
-        <Link href={'/admin/ai-routing' as any} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-violet-100 hover:text-violet-700 hover:ring-violet-200 transition-colors"><span className="text-sm leading-none">🎚️</span> AI Routing</Link>
+        <Link href={'/admin/instrutores-ai' as any} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-violet-100 hover:text-violet-700 hover:ring-violet-200 transition-colors">Funcionalidades</Link>
+        <Link href={'/admin/ai-routing' as any} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-violet-100 hover:text-violet-700 hover:ring-violet-200 transition-colors"><span className="text-sm leading-none">🎚️</span> Modelos</Link>
         <Link href={'/admin/prompts' as any} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-violet-100 hover:text-violet-700 hover:ring-violet-200 transition-colors"><span className="text-sm leading-none">💬</span> Prompts</Link>
       </div>
 

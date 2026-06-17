@@ -26,7 +26,7 @@ interface Row {
 const FEATURE_BADGES: { key: string; labelKey: string; emoji: string }[] = [
   { key: 'can_generate_lessons', labelKey: 'ai_feat.feat_lessons', emoji: '📝' },
   { key: 'can_generate_full_courses', labelKey: 'ai_feat.feat_courses', emoji: '🚀' },
-  { key: 'can_use_ai_tutor', labelKey: 'ai_feat.feat_tutor', emoji: '🧠' },
+  { key: 'can_use_ai_tutor', labelKey: 'ai_feat.feat_tutor', emoji: '💬' },
   { key: 'can_use_pricing_advisor', labelKey: 'ai_feat.feat_price', emoji: '💰' },
 ];
 
