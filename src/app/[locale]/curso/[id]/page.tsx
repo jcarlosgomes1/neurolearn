@@ -23,14 +23,14 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id, locale } = await params;
   const sb = await createClient();
   const { data: course } = await sb.from('nl_courses')
-    .select('title, subtitle, description, emoji, cover_url, slug')
+    .select('title, subtitle, description, emoji, hero_image_url')
     .eq('id', id).eq('published', true).maybeSingle();
 
   if (!course) return { title: 'Curso não encontrado' };
 
   const title = course.title as string;
   const desc = (course.subtitle || course.description || `${title} no NeuroLearn`).toString().slice(0, 160);
-  const ogImage = course.cover_url || `${SITE_URL}/${locale}/opengraph-image`;
+  const ogImage = course.hero_image_url || `${SITE_URL}/${locale}/opengraph-image`;
 
   return {
     title,
@@ -66,8 +66,7 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
   const { data: { user } } = await sb.auth.getUser();
   let isInstructor = false;
   if (user && course.instructor_id) {
-    const { data: prof } = await sb.from('nl_profiles').select('instructor_id').eq('id', user.id).maybeSingle();
-    isInstructor = prof?.instructor_id === course.instructor_id;
+    isInstructor = course.instructor_id === user.id;
   }
 
   let enrolled = false;

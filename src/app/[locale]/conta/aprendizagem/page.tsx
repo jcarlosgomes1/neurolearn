@@ -22,11 +22,11 @@ export default async function MeuAprendizagemPage({ params }: { params: Promise<
   const { data: { user } } = await sb.auth.getUser();
   if (!user) redirect({ href: '/login', locale });
 
-  const { data: profile } = await sb.from('nl_profiles').select('full_name, avatar_url').eq('id', user!.id).maybeSingle();
+  const { data: profile } = await sb.from('nl_profiles').select('name, avatar_url').eq('id', user!.id).maybeSingle();
   const { data, error } = await sb.rpc('nl_my_learning_dashboard');
   const d = (data || {}) as any;
   const stats = d.stats || {};
-  const firstName = (profile?.full_name || user!.email || '').split(' ')[0] || t('learn.hello_fallback');
+  const firstName = (profile?.name || user!.email || '').split(' ')[0] || t('learn.hello_fallback');
 
   return (
     <div>

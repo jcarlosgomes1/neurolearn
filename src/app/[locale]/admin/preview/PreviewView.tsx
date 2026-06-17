@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import { createClient } from '@/lib/supabase/client';
 
-interface Course { id: string; title: string; instructor_id: string | null; is_published: boolean | null; created_at: string }
+interface Course { id: string; title: string; instructor_id: string | null; published: boolean | null; created_at: string }
 
 export function PreviewView() {
   const t = useTranslations('prev');
@@ -17,14 +17,14 @@ export function PreviewView() {
   useEffect(() => {
     async function load() {
       const sb = createClient();
-      const { data } = await sb.from('nl_courses').select('id, title, instructor_id, is_published, created_at').order('created_at', { ascending: false }).limit(100);
+      const { data } = await sb.from('nl_courses').select('id, title, instructor_id, published, created_at').order('created_at', { ascending: false }).limit(100);
       setCourses((data as Course[]) || []);
       setLoading(false);
     }
     load();
   }, []);
 
-  const filtered = courses.filter(c => filter === 'all' ? true : filter === 'published' ? c.is_published : !c.is_published);
+  const filtered = courses.filter(c => filter === 'all' ? true : filter === 'published' ? c.published : !c.published);
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
@@ -37,7 +37,7 @@ export function PreviewView() {
       <div className="mt-6 flex gap-2 flex-wrap">
         {(['all', 'published', 'draft'] as const).map(f => (
           <button key={f} onClick={() => setFilter(f)} className={`text-xs font-medium px-3 py-1.5 rounded-md ${filter === f ? 'bg-slate-900 text-white' : 'bg-white border border-slate-200 text-slate-700 hover:border-slate-300'}`}>
-            {f === 'all' ? t('f.all') : f === 'published' ? t('f.pub') : t('f.draft')} {f === 'all' ? courses.length : f === 'published' ? courses.filter(c => c.is_published).length : courses.filter(c => !c.is_published).length}
+            {f === 'all' ? t('f.all') : f === 'published' ? t('f.pub') : t('f.draft')} {f === 'all' ? courses.length : f === 'published' ? courses.filter(c => c.published).length : courses.filter(c => !c.published).length}
           </button>
         ))}
       </div>
@@ -52,8 +52,8 @@ export function PreviewView() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-semibold text-slate-900 truncate">{c.title}</span>
-                <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full ${c.is_published ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
-                  {c.is_published ? t('st.pub') : t('st.draft')}
+                <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full ${c.published ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
+                  {c.published ? t('st.pub') : t('st.draft')}
                 </span>
               </div>
               <div className="text-xs text-slate-500 font-mono mt-0.5 truncate">{c.id}</div>
