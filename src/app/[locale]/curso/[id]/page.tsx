@@ -8,6 +8,7 @@ import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { Clock, Award, Users, Star, CheckCircle, BookOpen, ArrowLeft, MessageCircle, ShieldCheck } from 'lucide-react';
 import { EnrollButton } from '@/components/shared/EnrollButton';
+import { CourseTranslationRequest } from '@/components/shared/CourseTranslationRequest';
 import { CourseStructuredData, BreadcrumbStructuredData } from '@/components/seo/StructuredData';
 import { CourseReviews } from '@/components/course/CourseReviews';
 import { CourseQA } from '@/components/course/CourseQA';
@@ -144,9 +145,7 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
                 <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight text-balance">{course.title}</h1>
                 {course.subtitle && <p className="mt-4 text-lg text-slate-600 text-pretty">{course.subtitle}</p>}
                 {isFallback && (
-                  <p className="mt-4 inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium" style={{ background: 'var(--accent-tint)', color: 'var(--accent)' }}>
-                    🌐 {t('cdp.lang_fallback', { lang: usedLangName })}
-                  </p>
+                  <CourseTranslationRequest courseId={id} locale={locale} sourceLangName={usedLangName} />
                 )}
                 <div className="mt-6 flex flex-wrap gap-4 text-sm text-slate-600">
                   {course.duration && <span className="flex items-center gap-1.5"><Clock className="h-4 w-4" /> {course.duration}</span>}
