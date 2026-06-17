@@ -74,7 +74,7 @@ export function AITutorPanel({ courseId, moduleIndex, lessonIndex, lessonTitle, 
       <button onClick={() => setCollapsed(false)}
         className="fixed bottom-6 right-6 z-40 inline-flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-violet-600 to-brand-600 text-white shadow-xl rounded-full hover:scale-105 transition-transform">
         <Sparkles className="h-5 w-5" />
-        <span className="font-semibold">Tutor IA</span>
+        <span className="font-semibold">Tutor</span>
       </button>
     );
   }
@@ -84,7 +84,7 @@ export function AITutorPanel({ courseId, moduleIndex, lessonIndex, lessonTitle, 
       <div className="bg-gradient-to-r from-violet-600 to-brand-600 text-white p-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Sparkles className="h-4 w-4" />
-          <h3 className="font-semibold text-sm">Tutor IA</h3>
+          <h3 className="font-semibold text-sm">Tutor</h3>
         </div>
         <button onClick={() => setCollapsed(true)} className="p-1 hover:bg-white/10 rounded">
           <X className="h-4 w-4" />
