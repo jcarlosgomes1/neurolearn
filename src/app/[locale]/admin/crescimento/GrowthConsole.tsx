@@ -142,7 +142,7 @@ export function GrowthConsole() {
         {d.agent?.tasks && (
           <div className="mt-3 flex flex-wrap gap-2">
             {d.agent.tasks.map((x: any) => (
-              <span key={x.key} className="text-xs bg-violet-50 text-violet-700 px-2.5 py-1 rounded-lg">🤖 {x.key} · {x.mode}{x.enabled ? '' : ' (off)'}</span>
+              <span key={x.key} className="text-xs bg-violet-50 text-violet-700 px-2.5 py-1 rounded-lg">{x.key} · {x.mode}{x.enabled ? '' : ' (off)'}</span>
             ))}
           </div>
         )}

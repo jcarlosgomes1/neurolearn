@@ -29,7 +29,7 @@ export function CourseGenerationProgress({ jobId }: { jobId: string }) {
 
   const STATUS_META: Record<string, { emoji: string; label: string; color: string }> = {
     pending: { emoji: '⏳', label: t('status.pending'), color: 'bg-slate-100 text-slate-700' },
-    generating_outline: { emoji: '🧠', label: t('status.outline'), color: 'bg-amber-100 text-amber-700' },
+    generating_outline: { emoji: '⚙️', label: t('status.outline'), color: 'bg-amber-100 text-amber-700' },
     generating_lessons: { emoji: '✍️', label: t('status.lessons'), color: 'bg-brand-100 text-brand-700' },
     completed: { emoji: '✅', label: t('status.completed'), color: 'bg-emerald-100 text-emerald-700' },
     failed: { emoji: '❌', label: t('status.failed'), color: 'bg-rose-100 text-rose-700' },
