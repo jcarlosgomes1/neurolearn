@@ -8,7 +8,7 @@ import { CurrencySwitcher } from '@/components/currency/CurrencySwitcher';
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
-import { LogOut, LayoutDashboard, BookOpen, Route, Sparkles, Building2, Newspaper } from 'lucide-react';
+import { BookOpen, Route, Sparkles, Building2, Newspaper } from 'lucide-react';
 import type { NavItem } from '@/lib/api/nav-items';
 
 interface Session { email: string; area: 'student' | 'instructor' | 'admin'; areas: Array<'student' | 'instructor' | 'admin'> }
@@ -103,7 +103,7 @@ export function HeaderClient({ session, nav }: { session: Session | null; nav: N
 
             {!session && <div className="hidden sm:block"><LanguageSwitcher /></div>}
             {session ? (
-              <div className="hidden sm:block"><UserMenu email={session.email} area={session.area} areas={session.areas} /></div>
+              <div className="block"><UserMenu email={session.email} area={session.area} areas={session.areas} /></div>
             ) : (
               <Link href={'/login' as any} className="hidden sm:inline-flex btn-primary text-sm py-2 px-4">{t('nav.signin')}</Link>
             )}
@@ -132,39 +132,6 @@ export function HeaderClient({ session, nav }: { session: Session | null; nav: N
               </button>
             </div>
 
-            {session ? (
-              <div className="px-5 py-4 bg-slate-50 border-b border-slate-100">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-brand-600 text-white font-bold flex items-center justify-center">
-                    {session.email[0]?.toUpperCase()}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-xs text-slate-500 capitalize">{session.area}</div>
-                    <div className="text-sm font-medium text-slate-900 truncate">{session.email}</div>
-                  </div>
-                </div>
-                <div className="mt-3 grid grid-cols-2 gap-2">
-                  <Link href={'/conta' as any} className="text-sm bg-white border border-slate-200 hover:border-slate-300 rounded-lg py-2 text-center font-medium text-slate-700">
-                    {t('user_menu.account')}
-                  </Link>
-                  <Link href={'/learn' as any} className="text-sm bg-white border border-slate-200 hover:border-slate-300 rounded-lg py-2 text-center font-medium text-slate-700">
-                    {t('user_menu.learning')}
-                  </Link>
-                </div>
-                {session.area === 'admin' && (
-                  <a href={`/${locale}/admin`}
-                    className="mt-2 inline-flex w-full items-center justify-center gap-2 px-3 py-2.5 bg-gradient-to-br from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white text-sm font-semibold rounded-lg shadow">
-                    <LayoutDashboard className="h-4 w-4" /> {t('user_menu.admin_dashboard')}
-                  </a>
-                )}
-                {session.area === 'instructor' && (
-                  <a href={`/${locale}/teach`}
-                    className="mt-2 inline-flex w-full items-center justify-center gap-2 px-3 py-2.5 bg-gradient-to-br from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-sm font-semibold rounded-lg shadow">
-                    <LayoutDashboard className="h-4 w-4" /> {t('user_menu.instructor_dashboard')}
-                  </a>
-                )}
-              </div>
-            ) : null}
 
             <nav className="flex-1 overflow-y-auto px-3 py-4">
               {NAV.map((item) => (
@@ -211,15 +178,10 @@ export function HeaderClient({ session, nav }: { session: Session | null; nav: N
                 <span className="text-xs text-slate-500">{t('nav.language')}</span>
                 <LanguageSwitcher />
               </div>
-              {!session ? (
+              {!session && (
                 <Link href={'/login' as any} className="btn-primary w-full text-center text-sm py-3 block">
                   {t('nav.signin')}
                 </Link>
-              ) : (
-                <a href="/api/auth/logout"
-                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-lg shadow transition-colors">
-                  <LogOut className="h-4 w-4" /> {t('user_menu.signout')}
-                </a>
               )}
             </div>
           </div>
