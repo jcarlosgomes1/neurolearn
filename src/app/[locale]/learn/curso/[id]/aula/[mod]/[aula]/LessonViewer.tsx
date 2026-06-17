@@ -182,7 +182,7 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 pb-28 sm:pb-12">
         <div className="flex gap-6 lg:gap-8">
           <aside className="hidden lg:flex w-[300px] xl:w-[340px] flex-shrink-0 sticky top-28 self-start h-[calc(100vh-8rem)]">
             <div className="w-full rounded-2xl border border-slate-200 shadow-sm overflow-hidden bg-white">
@@ -200,7 +200,7 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
                 <span>›</span>
                 <span className="text-slate-500">{mod.title}</span>
               </div>
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 mt-2 leading-[1.15] tracking-tight text-balance">{lesson.title}</h1>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 mt-2 leading-[1.15] tracking-tight text-balance">{lesson.title}</h1>
               <div className="mt-4 flex items-center gap-2 flex-wrap text-sm">
                 <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${typeMeta.color}`}>{typeMeta.emoji} {typeMeta.label}</span>
                 {lesson.duration_minutes && <span className="text-slate-500">⏱ {t('minutes', { n: lesson.duration_minutes })}</span>}
