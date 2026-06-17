@@ -26,7 +26,7 @@ export function EmpresaCursosClient({ items }: { items: OrgMarketplaceCourse[] }
       const { error } = await sb.rpc('nl_my_org_marketplace_enroll', { p_org_course_id: item.org_course_id });
       if (error) throw error;
       toast.success(t('org.ec.enrolled', { title: item.title }));
-      router.push({ pathname: '/curso/[id]', params: { id: item.course_id } } as any);
+      router.push(`/curso/${item.course_id}`);
     } catch (e: any) {
       const msg = e?.message || t('tea.error');
       if (msg.includes('seats_full')) toast.error(t('org.ec.no_seats'));
@@ -69,7 +69,7 @@ export function EmpresaCursosClient({ items }: { items: OrgMarketplaceCourse[] }
                 <Users className="h-3 w-3" /> {it.seats_available > 0 ? t('org.ec.seats', { count: it.seats_available }) : t('org.ec.no_seats_badge')}
               </span>
               {it.enrolled ? (
-                <Link href={{ pathname: '/curso/[id]', params: { id: it.course_id } } as any}
+                <Link href={`/curso/${it.course_id}`}
                   className="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-lg hover:bg-emerald-200">
                   <Check className="h-3 w-3" /> {t('org.ec.enrolled_continue')} <ArrowRight className="h-3 w-3" />
                 </Link>

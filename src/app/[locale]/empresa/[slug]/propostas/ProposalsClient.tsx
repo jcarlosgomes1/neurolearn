@@ -81,7 +81,7 @@ export function ProposalsClient({ orgId, orgSlug, isOrgAdmin, proposals: initial
         <Sparkles className="h-10 w-10 text-violet-300 mx-auto mb-2" />
         <p className="text-sm text-slate-600 font-medium">{t('org.pc.empty_h')}</p>
         <p className="text-xs text-slate-500 mt-1 mb-4">{t('org.pc.empty_p')}</p>
-        <Link href={{ pathname: '/empresa/[slug]/conteudo', params: { slug: orgSlug } } as any}
+        <Link href={`/empresa/${orgSlug}/conteudo`}
           className="inline-flex items-center gap-1.5 px-4 py-2 bg-gradient-to-br from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm">
           <FileText className="h-4 w-4" /> {t('org.pc.go_docs')}
         </Link>
@@ -155,7 +155,7 @@ export function ProposalsClient({ orgId, orgSlug, isOrgAdmin, proposals: initial
                 )}
 
                 {p.status === 'approved' && p.generated_course_id && (
-                  <Link href={{ pathname: '/curso/[id]', params: { id: p.generated_course_id } } as any}
+                  <Link href={`/curso/${p.generated_course_id}`}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-xs font-semibold rounded-lg">
                     <BookOpen className="h-3.5 w-3.5" /> {t('org.pc.view_course')}
                   </Link>

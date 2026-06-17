@@ -31,7 +31,7 @@ export function DefinicoesClient({ org }: { org: Org }) {
   const label = 'block text-xs font-semibold text-slate-600 mb-1';
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8">
-      <Link href={{ pathname: '/empresa/[slug]', params: { slug: org.slug } } as any}
+      <Link href={`/empresa/${org.slug}`}
         className="group inline-flex items-center gap-1.5 mb-5 text-sm text-slate-500 hover:text-slate-900 font-medium">
         <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" /> {org.name}
       </Link>

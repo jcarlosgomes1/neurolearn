@@ -60,7 +60,7 @@ export default async function MeuAprendizagemPage({ params }: { params: Promise<
 
           {d.next_lesson && (
             <Link
-              href={{ pathname: '/curso/[id]', params: { id: d.next_lesson.course_id } } as any}
+              href={`/curso/${d.next_lesson.course_id}`}
               className="mt-7 inline-flex items-center gap-2 bg-white text-violet-700 hover:bg-white/95 px-5 py-2.5 rounded-xl font-semibold text-sm shadow-xl shadow-violet-900/20 hover:scale-[1.02] active:scale-[0.99] transition-transform">
               <PlayCircle className="h-4 w-4" /> {t('learn.continue_course')}
               <ArrowRight className="h-4 w-4" />
@@ -89,7 +89,7 @@ export default async function MeuAprendizagemPage({ params }: { params: Promise<
               {d.in_progress.map((c: any) => (
                 <Link
                   key={c.id}
-                  href={{ pathname: '/curso/[id]', params: { id: c.id } } as any}
+                  href={`/curso/${c.id}`}
                   className="group bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-xl hover:border-violet-200 transition-all hover:-translate-y-0.5">
                   <div className="h-32 bg-gradient-to-br from-violet-500 to-indigo-600 relative overflow-hidden">
                     {c.cover_url && (
@@ -138,7 +138,7 @@ export default async function MeuAprendizagemPage({ params }: { params: Promise<
               {d.paths.map((p: any) => (
                 <Link
                   key={p.id}
-                  href={{ pathname: '/aprender/percursos/[slug]', params: { slug: p.slug } } as any}
+                  href={`/aprender/percursos/${p.slug}`}
                   className="flex items-center gap-4 bg-white border border-slate-200 hover:border-indigo-200 rounded-xl p-4 group transition-all">
                   <div className="text-3xl bg-gradient-to-br from-indigo-100 to-violet-100 h-14 w-14 rounded-xl flex items-center justify-center flex-shrink-0">
                     {p.emoji || '🎓'}

@@ -2,12 +2,14 @@
 
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { Link, useRouter } from '@/i18n/routing';
+import { useRouter } from '@/i18n/routing';
+import { useLocale } from 'next-intl';
 import { toast } from 'sonner';
 import { Plus, Edit3, Trash2, ExternalLink, FileEdit, Globe, Lock, Eye, EyeOff } from 'lucide-react';
 
 export function CmsPagesClient({ pages }: { pages: any[] }) {
   const router = useRouter();
+  const locale = useLocale();
   const [creating, setCreating] = useState(false);
   const [newSlug, setNewSlug] = useState('');
   const [newTitle, setNewTitle] = useState('');
@@ -31,7 +33,7 @@ export function CmsPagesClient({ pages }: { pages: any[] }) {
       toast.success('Página criada');
       setCreating(false);
       setNewSlug(''); setNewTitle('');
-      router.push({ pathname: '/admin/cms-pages/[id]/edit', params: { id: pageId } } as any);
+      router.push(`/admin/cms-pages/${pageId}/edit`);
     } catch (e: any) {
       toast.error(e?.message || 'Erro');
     } finally {
@@ -109,19 +111,19 @@ export function CmsPagesClient({ pages }: { pages: any[] }) {
                 </div>
                 <div className="flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
                   {p.status === 'published' && (
-                    <Link
-                      href={{ pathname: '/p/[slug]', params: { slug: p.slug } } as any}
+                    <a
+                      href={`/${locale}/p/${p.slug}`}
                       target="_blank"
                       className="p-2 hover:bg-white rounded-lg text-slate-500 hover:text-fuchsia-600"
                       title="Abrir página">
                       <ExternalLink className="h-4 w-4" />
-                    </Link>
+                    </a>
                   )}
-                  <Link
-                    href={{ pathname: '/admin/cms-pages/[id]/edit', params: { id: p.id } } as any}
+                  <a
+                    href={`/${locale}/admin/cms-pages/${p.id}/edit`}
                     className="p-2 hover:bg-white rounded-lg text-slate-500 hover:text-fuchsia-600">
                     <Edit3 className="h-4 w-4" />
-                  </Link>
+                  </a>
                   <button onClick={() => del(p.id, p.title || p.slug)} className="p-2 hover:bg-white rounded-lg text-slate-500 hover:text-rose-600">
                     <Trash2 className="h-4 w-4" />
                   </button>

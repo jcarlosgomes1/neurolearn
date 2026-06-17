@@ -174,7 +174,7 @@ export function ContentClient({ orgId, orgSlug, userId, items }: {
       if (error) throw error;
       toast.success(t('org.cnt.proposal_created'));
       setSelected(new Set());
-      router.push({ pathname: '/empresa/[slug]/propostas', params: { slug: orgSlug } } as never);
+      router.push(`/empresa/${orgSlug}/propostas`);
     } catch (e) { toast.error(e instanceof Error ? e.message : t('tea.error')); }
     finally { setBusy(false); }
   }

@@ -246,7 +246,7 @@ export function ConteudoClient({ orgs, activeOrgId, content, proposals }: {
                     <div className="mt-2 text-[10px] text-slate-400">{t('org.cc.mod_les', { mods: proposal.modules.length, lessons: (proposal.lessons_count || proposal.modules.reduce((a: number, m: any) => a + (m.lessons?.length || 0), 0)) })}</div>
                   )}
                   {p.generated_course_id && (
-                    <Link href={{ pathname: '/curso/[id]', params: { id: p.generated_course_id } } as any} className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 hover:text-emerald-900">
+                    <Link href={`/curso/${p.generated_course_id}`} className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 hover:text-emerald-900">
                       {t('org.cc.open_course')}
                     </Link>
                   )}

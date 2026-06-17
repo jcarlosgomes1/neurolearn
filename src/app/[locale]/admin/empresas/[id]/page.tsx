@@ -1,5 +1,4 @@
 import { redirect, notFound } from 'next/navigation';
-import { Link } from '@/i18n/routing';
 import { createClient } from '@/lib/supabase/server';
 import { getOrgDetailsAction } from '../actions';
 import { ArrowLeft, Building2, Edit3, ExternalLink, Users, CreditCard, Activity, Settings2, Palette, ShoppingBag, UsersRound } from 'lucide-react';
@@ -25,9 +24,9 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   
   return (
     <div className="">
-      <Link href={'/admin/empresas' as any} className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-brand-700 mb-4">
+      <a href={`/${locale}/admin/empresas`} className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-brand-700 mb-4">
         <ArrowLeft className="h-4 w-4" /> Voltar
-      </Link>
+      </a>
       
       <div className="flex items-start justify-between gap-4 flex-wrap mb-6">
         <div className="flex items-center gap-4">
@@ -50,20 +49,20 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
           </div>
         </div>
         <div className="flex gap-2">
-          <Link href={`/empresa/${org.slug}` as any} target="_blank"
+          <a href={`/${locale}/empresa/${org.slug}`} target="_blank"
             className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-medium rounded-lg">
             <ExternalLink className="h-4 w-4" /> Workspace
-          </Link>
-          <Link href={`/admin/empresas/${org.id}/editar` as any}
+          </a>
+          <a href={`/${locale}/admin/empresas/${org.id}/editar`}
             className="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-lg">
             <Edit3 className="h-4 w-4" /> Editar
-          </Link>
+          </a>
         </div>
       </div>
 
       {/* Quick actions — sub-páginas administrativas */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-6">
-        <Link href={{ pathname: '/admin/empresas/[id]/features', params: { id: org.id } } as any}
+        <a href={`/${locale}/admin/empresas/${org.id}/features`}
           className="group flex items-center gap-3 bg-white border border-slate-200 hover:border-violet-300 hover:shadow-md transition-all rounded-xl p-3">
           <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 text-white flex items-center justify-center flex-shrink-0 shadow-sm group-hover:scale-105 transition-transform">
             <Settings2 className="h-5 w-5" />
@@ -72,8 +71,8 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
             <div className="font-semibold text-sm text-slate-900">Funcionalidades</div>
             <div className="text-[10px] text-slate-500">Toggles & limites</div>
           </div>
-        </Link>
-        <Link href={{ pathname: '/admin/empresas/[id]/branding', params: { id: org.id } } as any}
+        </a>
+        <a href={`/${locale}/admin/empresas/${org.id}/branding`}
           className="group flex items-center gap-3 bg-white border border-slate-200 hover:border-purple-300 hover:shadow-md transition-all rounded-xl p-3">
           <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-purple-500 to-fuchsia-600 text-white flex items-center justify-center flex-shrink-0 shadow-sm group-hover:scale-105 transition-transform">
             <Palette className="h-5 w-5" />
@@ -82,8 +81,8 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
             <div className="font-semibold text-sm text-slate-900">Branding</div>
             <div className="text-[10px] text-slate-500">Logo, cores, domínio</div>
           </div>
-        </Link>
-        <Link href={{ pathname: '/admin/empresas/[id]/marketplace', params: { id: org.id } } as any}
+        </a>
+        <a href={`/${locale}/admin/empresas/${org.id}/marketplace`}
           className="group flex items-center gap-3 bg-white border border-slate-200 hover:border-emerald-300 hover:shadow-md transition-all rounded-xl p-3">
           <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center flex-shrink-0 shadow-sm group-hover:scale-105 transition-transform">
             <ShoppingBag className="h-5 w-5" />
@@ -92,8 +91,8 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
             <div className="font-semibold text-sm text-slate-900">Marketplace</div>
             <div className="text-[10px] text-slate-500">Cursos para colab.</div>
           </div>
-        </Link>
-        <Link href={{ pathname: '/empresa/[slug]/membros', params: { slug: org.slug } } as any} target="_blank"
+        </a>
+        <a href={`/${locale}/empresa/${org.slug}/membros`} target="_blank"
           className="group flex items-center gap-3 bg-white border border-slate-200 hover:border-blue-300 hover:shadow-md transition-all rounded-xl p-3">
           <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-600 text-white flex items-center justify-center flex-shrink-0 shadow-sm group-hover:scale-105 transition-transform">
             <UsersRound className="h-5 w-5" />
@@ -102,7 +101,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
             <div className="font-semibold text-sm text-slate-900">Membros</div>
             <div className="text-[10px] text-slate-500">Convites & gestão</div>
           </div>
-        </Link>
+        </a>
       </div>
       
       {/* KPIs */}
@@ -135,7 +134,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
           <Activity className="h-5 w-5 text-brand-600" /> Módulos Activos
         </h2>
         {enabledFeatures.length === 0 ? (
-          <p className="text-sm text-slate-500">Nenhum módulo activo. <Link href={{ pathname: '/admin/empresas/[id]/features', params: { id: org.id } } as any} className="text-brand-600 hover:underline">Configurar →</Link></p>
+          <p className="text-sm text-slate-500">Nenhum módulo activo. <a href={`/${locale}/admin/empresas/${org.id}/features`} className="text-brand-600 hover:underline">Configurar →</a></p>
         ) : (
           <div className="flex flex-wrap gap-2">
             {enabledFeatures.map((f) => (
@@ -162,10 +161,10 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
         </div>
 
         <div className="mt-4 pt-4 border-t border-slate-100">
-          <Link href={{ pathname: '/admin/empresas/[id]/features', params: { id: org.id } } as any}
+          <a href={`/${locale}/admin/empresas/${org.id}/features`}
             className="inline-flex items-center gap-1 text-xs text-violet-700 hover:text-violet-900 font-semibold">
             <Settings2 className="h-3 w-3" /> Configurar funcionalidades e limites →
-          </Link>
+          </a>
         </div>
       </div>
 
