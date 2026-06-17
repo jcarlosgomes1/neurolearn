@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { CourseCard } from '@/components/shared/CourseCard';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { SlidersHorizontal, X } from 'lucide-react';
 
 interface Course {
@@ -18,6 +18,7 @@ interface Course {
   course_type: string | null;
   category: string | null;
   topics: string[] | null;
+  available_langs?: string[] | null;
 }
 
 interface Props { courses: Course[] }
@@ -26,11 +27,13 @@ type PriceFilter = 'all' | 'free' | 'paid';
 
 export function CatalogClient({ courses }: Props) {
   const t = useTranslations();
+  const locale = useLocale();
   const [search, setSearch] = useState('');
   const [cat, setCat] = useState<string>('all');
   const [lvl, setLvl] = useState<string>('all');
   const [typ, setTyp] = useState<string>('all');
   const [price, setPrice] = useState<PriceFilter>('all');
+  const [onlyMyLang, setOnlyMyLang] = useState(false);
   const [open, setOpen] = useState(false);
 
   const categories = useMemo(() => {
@@ -57,18 +60,19 @@ export function CatalogClient({ courses }: Props) {
       if (typ !== 'all' && c.course_type !== typ) return false;
       if (price === 'free' && (c.price_cents ?? 0) > 0) return false;
       if (price === 'paid' && (c.price_cents ?? 0) === 0) return false;
+      if (onlyMyLang && !(c.available_langs || []).includes(locale)) return false;
       if (q) {
         const hay = `${c.title} ${c.subtitle || ''} ${(c.topics || []).join(' ')}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;
     });
-  }, [courses, search, cat, lvl, typ, price]);
+  }, [courses, search, cat, lvl, typ, price, onlyMyLang, locale]);
 
-  const activeFilters = (cat !== 'all' ? 1 : 0) + (lvl !== 'all' ? 1 : 0) + (typ !== 'all' ? 1 : 0) + (price !== 'all' ? 1 : 0);
+  const activeFilters = (cat !== 'all' ? 1 : 0) + (lvl !== 'all' ? 1 : 0) + (typ !== 'all' ? 1 : 0) + (price !== 'all' ? 1 : 0) + (onlyMyLang ? 1 : 0);
 
   function clearFilters() {
-    setCat('all'); setLvl('all'); setTyp('all'); setPrice('all');
+    setCat('all'); setLvl('all'); setTyp('all'); setPrice('all'); setOnlyMyLang(false);
   }
 
   if (!courses || courses.length === 0) {
@@ -108,6 +112,10 @@ export function CatalogClient({ courses }: Props) {
         <option value="free">{t('catalog.f_price_free')}</option>
         <option value="paid">{t('catalog.f_price_paid')}</option>
       </select>
+      <label className="inline-flex items-center gap-2 cursor-pointer select-none rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 hover:border-slate-300 transition-colors">
+        <input type="checkbox" checked={onlyMyLang} onChange={(e) => setOnlyMyLang(e.target.checked)} className="accent-brand-600 h-4 w-4" />
+        🌐 {t('catalog.only_my_lang')}
+      </label>
     </>
   );
 

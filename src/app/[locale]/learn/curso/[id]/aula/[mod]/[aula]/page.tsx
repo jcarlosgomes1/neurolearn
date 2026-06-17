@@ -27,6 +27,18 @@ export default async function Page({ params }: { params: Promise<{ id: string; m
     .select('id').eq('user_id', user.id).eq('course_id', id).maybeSingle();
   if (!enrollment) redirect(`/${locale}/curso/${id}`);
 
+  // i18n: servir título/subtítulo/módulos na língua escolhida (fallback à origem)
+  try {
+    const { data: i18n } = await sb.rpc('nl_course_i18n', { p_id: id, p_lang: locale });
+    if (i18n) {
+      if (i18n.title) course.title = i18n.title;
+      if (i18n.subtitle) course.subtitle = i18n.subtitle;
+      if (Array.isArray(i18n.modules)) course.modules = i18n.modules;
+    }
+  } catch {
+    // fallback: conteúdo de origem
+  }
+
   const modules = Array.isArray(course.modules) ? course.modules : [];
 
   // Progressão sequencial (gating): impede aceder por URL a aulas ainda trancadas.
