@@ -62,6 +62,25 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
   const { data: course } = await sb.from('nl_courses').select('*').eq('id', id).eq('published', true).maybeSingle();
   if (!course) notFound();
 
+  // i18n: usar a tradução do locale (publicada) com fallback à língua de origem
+  const langNames: Record<string, string> = { pt: 'Português', en: 'English', es: 'Español', fr: 'Français' };
+  let isFallback = false;
+  let usedLangName = langNames[locale] || locale.toUpperCase();
+  try {
+    const { data: i18n } = await sb.rpc('nl_course_i18n', { p_id: id, p_lang: locale });
+    if (i18n) {
+      if (i18n.title) course.title = i18n.title;
+      if (i18n.subtitle) course.subtitle = i18n.subtitle;
+      if (i18n.description) course.description = i18n.description;
+      if (i18n.modules != null) course.modules = i18n.modules;
+      if (i18n.topics != null) course.topics = i18n.topics;
+      isFallback = !!i18n.is_fallback;
+      usedLangName = langNames[i18n.used_lang] || (i18n.used_lang || locale).toUpperCase();
+    }
+  } catch {
+    // fallback: mantém conteúdo de origem já carregado
+  }
+
   // Verificar se user está logged + se é instrutor deste curso
   const { data: { user } } = await sb.auth.getUser();
   let isInstructor = false;
@@ -124,6 +143,11 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
                 </div>
                 <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight text-balance">{course.title}</h1>
                 {course.subtitle && <p className="mt-4 text-lg text-slate-600 text-pretty">{course.subtitle}</p>}
+                {isFallback && (
+                  <p className="mt-4 inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium" style={{ background: 'var(--accent-tint)', color: 'var(--accent)' }}>
+                    🌐 {t('cdp.lang_fallback', { lang: usedLangName })}
+                  </p>
+                )}
                 <div className="mt-6 flex flex-wrap gap-4 text-sm text-slate-600">
                   {course.duration && <span className="flex items-center gap-1.5"><Clock className="h-4 w-4" /> {course.duration}</span>}
                   {modules.length > 0 && <span className="flex items-center gap-1.5"><BookOpen className="h-4 w-4" /> {t('cdp.modules', { n: modules.length })}</span>}

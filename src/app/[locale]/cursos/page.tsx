@@ -56,14 +56,7 @@ export default async function CoursesPage({ params }: { params: Promise<{ locale
   const { locale } = await params;
   const t = await getTranslations();
   const sb = await createClient();
-  const { data: courses } = await sb
-    .from('nl_courses')
-    .select('id, title, subtitle, emoji, price_cents, currency, rating_avg, enrollments_count, level, course_type, category, topics')
-    .eq('published', true)
-    .eq('archived', false)
-    .order('featured', { ascending: false })
-    .order('rating_avg', { ascending: false, nullsFirst: false })
-    .limit(96);
+  const { data: courses } = await sb.rpc('nl_courses_catalog', { p_lang: locale });
   const blocks = await getHomeBlocks(locale);
   const courseList = courses || [];
 
