@@ -3,12 +3,13 @@
 import { useRouter, usePathname } from '@/i18n/routing';
 import { useLocale } from 'next-intl';
 import { useTransition } from 'react';
+import { createClient } from '@/lib/supabase/client';
 
 const LANGS = [
-  { code: 'pt', flag: '🇵🇹', label: 'Português' },
-  { code: 'en', flag: '🇬🇧', label: 'English' },
-  { code: 'es', flag: '🇪🇸', label: 'Español' },
-  { code: 'fr', flag: '🇫🇷', label: 'Français' },
+  { code: 'pt', label: 'Português' },
+  { code: 'en', label: 'English' },
+  { code: 'es', label: 'Español' },
+  { code: 'fr', label: 'Français' },
 ] as const;
 
 export function LanguageSwitcher() {
@@ -22,7 +23,14 @@ export function LanguageSwitcher() {
       value={locale}
       onChange={(e) => {
         const newLocale = e.target.value;
-        startTransition(() => {
+        startTransition(async () => {
+          // Persistir na conta (se logado). Para anónimos é no-op seguro.
+          try {
+            const sb = createClient();
+            await sb.rpc('nl_set_my_preferred_lang', { p_lang: newLocale });
+          } catch {
+            // ignora — a troca de sessão acontece de qualquer forma
+          }
           router.replace(pathname, { locale: newLocale });
         });
       }}
@@ -32,7 +40,7 @@ export function LanguageSwitcher() {
     >
       {LANGS.map((l) => (
         <option key={l.code} value={l.code}>
-          {l.flag} {l.code.toUpperCase()}
+          {l.code.toUpperCase()}
         </option>
       ))}
     </select>
