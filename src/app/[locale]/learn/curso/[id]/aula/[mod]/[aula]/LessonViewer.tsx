@@ -39,7 +39,7 @@ interface Lesson {
 interface Module { id?: string; title: string; description?: string; lessons: Lesson[] }
 interface Course { id: string; title: string; subtitle: string | null; emoji: string | null; level: string | null; modules: Module[] }
 
-export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, locale }: { courseId: string; course: Course; moduleIndex: number; lessonIndex: number; locale: string }) {
+export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, locale, progressionMode }: { courseId: string; course: Course; moduleIndex: number; lessonIndex: number; locale: string; progressionMode?: string }) {
   const t = useTranslations('lesson_viewer');
   const router = useRouter();
   const [tutorOpen, setTutorOpen] = useState(false);
@@ -180,7 +180,7 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
         <div className="flex gap-6 lg:gap-8">
           <aside className="hidden lg:flex w-[300px] xl:w-[340px] flex-shrink-0 sticky top-28 self-start h-[calc(100vh-8rem)]">
             <div className="w-full rounded-2xl border border-slate-200 shadow-sm overflow-hidden bg-white">
-              <CourseCurriculumNav courseId={courseId} modules={course.modules} moduleIndex={moduleIndex} lessonIndex={lessonIndex} progress={progressMap} locale={locale} />
+              <CourseCurriculumNav courseId={courseId} modules={course.modules} moduleIndex={moduleIndex} lessonIndex={lessonIndex} progress={progressMap} locale={locale} mode={progressionMode} />
             </div>
           </aside>
 
@@ -395,7 +395,7 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
               <button onClick={() => setNavOpen(false)} className="text-slate-400 text-xl leading-none">×</button>
             </div>
             <div className="flex-1 overflow-hidden">
-              <CourseCurriculumNav courseId={courseId} modules={course.modules} moduleIndex={moduleIndex} lessonIndex={lessonIndex} progress={progressMap} locale={locale} />
+              <CourseCurriculumNav courseId={courseId} modules={course.modules} moduleIndex={moduleIndex} lessonIndex={lessonIndex} progress={progressMap} locale={locale} mode={progressionMode} />
             </div>
           </div>
         </div>

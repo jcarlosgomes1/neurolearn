@@ -19,7 +19,7 @@ export default async function Page({ params }: { params: Promise<{ id: string; m
   if (!user) redirect(`/${locale}/login?redirect_to=/learn/curso/${id}/aula/${mod}/${aula}`);
 
   const { data: course } = await sb.from('nl_courses')
-    .select('id, title, subtitle, emoji, level, modules, published')
+    .select('id, title, subtitle, emoji, level, modules, published, progression')
     .eq('id', id).maybeSingle();
   if (!course || !course.published) redirect(`/${locale}/learn`);
 
@@ -27,8 +27,30 @@ export default async function Page({ params }: { params: Promise<{ id: string; m
     .select('id').eq('user_id', user.id).eq('course_id', id).maybeSingle();
   if (!enrollment) redirect(`/${locale}/curso/${id}`);
 
-  // Extrair dados da lição actual para os panels extras
   const modules = Array.isArray(course.modules) ? course.modules : [];
+
+  // Progressão sequencial (gating): impede aceder por URL a aulas ainda trancadas.
+  const { data: progRows } = await sb.from('nl_lesson_progress')
+    .select('module_index, lesson_index, completed')
+    .eq('user_id', user.id).eq('course_id', id);
+  const done = new Set((progRows || []).filter((r) => r.completed).map((r) => `${r.module_index}_${r.lesson_index}`));
+  const { data: progSetting } = await sb.from('nl_agent_settings')
+    .select('value').eq('key', 'course_progression').maybeSingle();
+  const globalMode = progSetting?.value === 'free' ? 'free' : 'sequential';
+  const effectiveMode = course.progression && course.progression !== 'inherit' ? course.progression : globalMode;
+  if (effectiveMode === 'sequential') {
+    const linear: Array<{ m: number; l: number }> = [];
+    modules.forEach((mm: any, mi: number) => (Array.isArray(mm?.lessons) ? mm.lessons : []).forEach((_: any, li: number) => linear.push({ m: mi, l: li })));
+    const isDone = (p: { m: number; l: number }) => done.has(`${p.m}_${p.l}`);
+    const reqPos = linear.findIndex((p) => p.m === modIdx && p.l === aulaIdx);
+    const unlocked = reqPos < 0 || done.has(`${modIdx}_${aulaIdx}`) || linear.slice(0, reqPos).every(isDone);
+    if (!unlocked) {
+      const firstIncomplete = linear.find((p) => !isDone(p));
+      if (firstIncomplete) redirect(`/${locale}/learn/curso/${id}/aula/${firstIncomplete.m}/${firstIncomplete.l}`);
+    }
+  }
+
+  // Extrair dados da lição actual para os panels extras
   const lessonRaw = modules?.[modIdx]?.lessons?.[aulaIdx] || {};
   const lessonTitle: string = lessonRaw?.title || `Aula ${aulaIdx + 1}`;
   const lessonContent: string = [
@@ -58,6 +80,7 @@ export default async function Page({ params }: { params: Promise<{ id: string; m
         moduleIndex={modIdx}
         lessonIndex={aulaIdx}
         locale={locale}
+        progressionMode={effectiveMode}
       />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <LessonResourcesList

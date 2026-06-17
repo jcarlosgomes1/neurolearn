@@ -11,9 +11,9 @@ type ProgressMap = Record<string, boolean>; // `${mod}_${les}` -> completed
 const TYPE_EMOJI: Record<string, string> = { video: '🎬', exercise: '✍️', reading: '📖', live: '🔴' };
 
 export function CourseCurriculumNav({
-  courseId, modules, moduleIndex, lessonIndex, progress, locale,
+  courseId, modules, moduleIndex, lessonIndex, progress, locale, mode,
 }: {
-  courseId: string; modules: Module[]; moduleIndex: number; lessonIndex: number; progress: ProgressMap; locale: string;
+  courseId: string; modules: Module[]; moduleIndex: number; lessonIndex: number; progress: ProgressMap; locale: string; mode?: string;
 }) {
   const t = useTranslations('curriculum');
   const [openMods, setOpenMods] = useState<Set<number>>(new Set([moduleIndex]));
@@ -23,6 +23,16 @@ export function CourseCurriculumNav({
   const totalLessons = modules.reduce((s, m) => s + m.lessons.length, 0);
   const doneLessons = Object.values(progress).filter(Boolean).length;
   const overallPct = totalLessons ? Math.round((doneLessons / totalLessons) * 100) : 0;
+
+  const seq = mode === 'sequential';
+  const linear: Array<{ m: number; l: number }> = [];
+  modules.forEach((mm, mi) => mm.lessons.forEach((_, li) => linear.push({ m: mi, l: li })));
+  function isLocked(mi: number, li: number) {
+    if (!seq) return false;
+    if (progress[`${mi}_${li}`]) return false; // concluída é sempre reabrível
+    const pos = linear.findIndex((p) => p.m === mi && p.l === li);
+    return pos > 0 && !linear.slice(0, pos).every((p) => progress[`${p.m}_${p.l}`]);
+  }
 
   return (
     <div className="flex flex-col h-full">
@@ -62,16 +72,28 @@ export function CourseCurriculumNav({
                   {mod.lessons.map((les, li) => {
                     const done = !!progress[`${mi}_${li}`];
                     const isCurrent = mi === moduleIndex && li === lessonIndex;
+                    const locked = isLocked(mi, li);
+                    const inner = (
+                      <>
+                        <span className={`flex-shrink-0 w-4 h-4 rounded-full border flex items-center justify-center text-[9px] ${done ? 'bg-emerald-500 border-emerald-500 text-white' : isCurrent ? 'border-brand-500' : 'border-slate-300'}`}>
+                          {done ? '✓' : ''}
+                        </span>
+                        <span className="flex-1 min-w-0 truncate leading-snug">{les.title}</span>
+                        {locked ? <span className="flex-shrink-0 text-[11px] text-slate-300">🔒</span> : les.duration_minutes ? <span className="flex-shrink-0 text-[10px] text-slate-400 tabular-nums">{les.duration_minutes}m</span> : null}
+                      </>
+                    );
                     return (
                       <li key={li}>
-                        <Link href={`/learn/curso/${courseId}/aula/${mi}/${li}` as any}
-                          className={`flex items-center gap-2.5 pl-12 pr-3 py-2 text-sm transition-colors ${isCurrent ? 'bg-brand-100/70 text-brand-900 font-semibold' : 'text-slate-600 hover:bg-slate-50'}`}>
-                          <span className={`flex-shrink-0 w-4 h-4 rounded-full border flex items-center justify-center text-[9px] ${done ? 'bg-emerald-500 border-emerald-500 text-white' : isCurrent ? 'border-brand-500' : 'border-slate-300'}`}>
-                            {done ? '✓' : ''}
-                          </span>
-                          <span className="flex-1 min-w-0 truncate leading-snug">{les.title}</span>
-                          {les.duration_minutes ? <span className="flex-shrink-0 text-[10px] text-slate-400 tabular-nums">{les.duration_minutes}m</span> : null}
-                        </Link>
+                        {locked ? (
+                          <div className="flex items-center gap-2.5 pl-12 pr-3 py-2 text-sm text-slate-400 cursor-not-allowed select-none" title={t('locked')} aria-disabled="true">
+                            {inner}
+                          </div>
+                        ) : (
+                          <Link href={`/learn/curso/${courseId}/aula/${mi}/${li}` as any}
+                            className={`flex items-center gap-2.5 pl-12 pr-3 py-2 text-sm transition-colors ${isCurrent ? 'bg-brand-100/70 text-brand-900 font-semibold' : 'text-slate-600 hover:bg-slate-50'}`}>
+                            {inner}
+                          </Link>
+                        )}
                       </li>
                     );
                   })}
