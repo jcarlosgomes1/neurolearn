@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { Link } from '@/i18n/routing';
 import { redirect } from '@/i18n/routing';
 import { getTranslations } from 'next-intl/server';
-import { GraduationCap, CheckCircle2, Clock, BookOpen, ChevronRight, Sparkles, Building2 } from 'lucide-react';
+import { GraduationCap, CheckCircle2, Clock, BookOpen, ChevronRight, Route, Building2 } from 'lucide-react';
 import { RecommendationsPanel } from '../RecommendationsPanel';
 
 export const dynamic = 'force-dynamic';
@@ -45,7 +45,7 @@ export default async function MyLearningPathsPage({ params }: { params: Promise<
         </div>
         <Link href={'/aprender/percursos' as any}
           className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-sm font-medium">
-          <Sparkles className="h-4 w-4" /> {t('path.explore')}
+          <Route className="h-4 w-4" /> {t('path.explore')}
         </Link>
       </header>
 
