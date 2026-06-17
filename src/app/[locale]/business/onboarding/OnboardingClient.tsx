@@ -39,7 +39,7 @@ export function OnboardingClient({ locale, plans, selectedPlanId, selectedCycle,
     if (!planId) { toast.error(t('bo.err_plan')); return; }
     startTransition(async () => {
       const sb = createClient();
-      const { data: orgData, error: orgErr } = await sb.rpc('nl_org_create', {
+      const { data: orgData, error: orgErr } = await sb.rpc('nl_create_organization', {
         p_name: orgName, p_legal_name: legalName || null, p_country_code: country,
       });
       if (orgErr || !(orgData as any)?.ok) { toast.error(orgErr?.message || (orgData as any)?.error || t('bo.err_create')); return; }
