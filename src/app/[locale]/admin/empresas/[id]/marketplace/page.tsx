@@ -14,7 +14,7 @@ export default async function OrgMarketplacePage({ params }: { params: Promise<{
   const { data: org } = await sb.from('nl_organizations').select('id, name, slug').eq('id', id).maybeSingle();
   if (!org) notFound();
   const { data: courses } = await sb.rpc('nl_admin_org_marketplace_list', { p_org_id: id });
-  const { data: catalog } = await sb.from('nl_courses').select('id, title, hero_image_url, level').eq('published', true).order('title');
+  const { data: catalog } = await sb.from('nl_courses').select('id, title, cover_url:hero_image_url, level').eq('published', true).order('title');
 
   function safeT(key: string, fb: string): string {
     try { const v = t(key as any); if (v && typeof v === 'string' && v !== key) return v; } catch {}
