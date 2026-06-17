@@ -13,33 +13,60 @@ interface HeroData {
 export function Hero({ data }: { data: HeroData }) {
   const t = useTranslations();
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-brand-50 via-white to-brand-50/50">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(91,108,255,0.15),transparent_50%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_60%,rgba(91,108,255,0.08),transparent_60%)]" />
-
+    <section className="relative overflow-hidden" style={{ background: 'var(--paper)' }}>
+      {/* halos do acento — seguem o tema ativo */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        aria-hidden
+        style={{
+          background:
+            'radial-gradient(circle at 28% 18%, var(--accent-tint), transparent 55%), radial-gradient(circle at 78% 62%, var(--accent-tint), transparent 60%)',
+        }}
+      />
       <div className="relative max-w-6xl mx-auto px-4 py-20 sm:py-28 lg:py-32">
         {data.badge && (
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-brand-200 text-xs font-medium text-brand-700 mb-6 shadow-sm animate-fade-in">
-            {data.badge}
+          <div
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-6 shadow-sm animate-fade-in"
+            style={{
+              background: 'color-mix(in srgb, var(--card) 78%, transparent)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              border: '1px solid var(--line)',
+            }}
+          >
+            <span className="h-1.5 w-1.5 rounded-full" style={{ background: 'var(--accent-bright)' }} />
+            <span className="t-eyebrow" style={{ color: 'var(--accent)' }}>{data.badge}</span>
           </div>
         )}
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 max-w-3xl tracking-tight text-balance leading-[1.1] animate-slide-up">
+        <h1 className="t-display max-w-3xl text-balance animate-slide-up" style={{ color: 'var(--ink)' }}>
           {data.title}
         </h1>
-        <p className="mt-6 text-lg sm:text-xl text-slate-600 max-w-2xl text-pretty leading-relaxed animate-slide-up [animation-delay:0.1s]">
+        <p
+          className="mt-6 text-lg sm:text-xl max-w-2xl text-pretty leading-relaxed animate-slide-up [animation-delay:0.1s]"
+          style={{ color: 'var(--ink-2)' }}
+        >
           {data.subtitle}
         </p>
         <div className="mt-10 flex flex-wrap gap-3 animate-slide-up [animation-delay:0.2s]">
-          <Link href={'/register' as any} className="btn-primary text-base px-6 py-3">
+          <Link
+            href={'/register' as any}
+            className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-base font-semibold text-white shadow-lg transition-transform hover:-translate-y-0.5"
+            style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent-bright))' }}
+          >
             {data.btn_primary || t('cms.fallback.start_free')}
           </Link>
-          <Link href={'/cursos' as any} className="btn-secondary text-base px-6 py-3">
+          <Link
+            href={'/cursos' as any}
+            className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-base font-semibold transition-colors"
+            style={{ border: '1px solid var(--line)', color: 'var(--ink)', background: 'var(--card)' }}
+          >
             {data.btn_secondary || t('coming_soon.see_courses')}
           </Link>
         </div>
         {data.trust && (
-          <p className="mt-8 text-sm text-slate-500 animate-fade-in [animation-delay:0.4s]">
-            ⭐⭐⭐⭐⭐ {data.trust}
+          <p className="mt-8 text-sm animate-fade-in [animation-delay:0.4s] flex items-center gap-2" style={{ color: 'var(--ink-3)' }}>
+            <span style={{ color: 'var(--accent)' }}>★★★★★</span>
+            <span>{data.trust}</span>
           </p>
         )}
       </div>
