@@ -8,7 +8,7 @@ import { useTranslations } from 'next-intl';
 
 interface Session { email: string; area: 'student' | 'instructor' | 'admin'; areas: Array<'student' | 'instructor' | 'admin'> }
 interface NavItem { href: string; labelKey: string; emoji: string; groupKey: string; badge?: string }
-interface Props { role: 'admin' | 'instructor' | 'student'; pageTitle?: string; session: Session | null; nav: NavItem[]; children: React.ReactNode; }
+interface Props { role: 'admin' | 'instructor' | 'student'; pageTitle?: string; session: Session | null; nav: NavItem[]; collapsedPref?: boolean | null; children: React.ReactNode; }
 
 const FREQUENT: Record<string, string[]> = {
   admin: ['/admin/overview', '/admin/tools', '/admin/cursos', '/admin/users', '/admin/payments', '/admin/i18n', '/admin/backlog', '/admin/ai-custos'],
@@ -108,11 +108,21 @@ function CommandPalette({ open, onClose, items, t }: { open: boolean; onClose: (
   );
 }
 
-export function AppShellClient({ role, pageTitle, session, nav, children }: Props) {
+export function AppShellClient({ role, pageTitle, session, nav, collapsedPref, children }: Props) {
   const t = useTranslations();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const pathname = usePathname();
+
+  const isLessonRoute = /\/learn\/curso\/[^/]+\/aula(\/|$)/.test(pathname);
+  const [collapsed, setCollapsed] = useState<boolean>(collapsedPref ?? isLessonRoute);
+  function toggleCollapsed() {
+    setCollapsed((c) => {
+      const next = !c;
+      try { document.cookie = `nl_sb=${next ? '1' : '0'};path=/;max-age=31536000;samesite=lax`; } catch {}
+      return next;
+    });
+  }
 
   useEffect(() => { setSidebarOpen(false); }, [pathname]);
   useEffect(() => {
@@ -179,10 +189,40 @@ export function AppShellClient({ role, pageTitle, session, nav, children }: Prop
         {session && <UserMenu email={session.email} area={session.area} areas={session.areas} />}
       </header>
       <div className="flex">
-        <aside className="hidden lg:flex w-60 flex-shrink-0 sticky top-14 h-[calc(100vh-3.5rem)] border-r border-slate-200 bg-white flex-col overflow-y-auto">
-          <div className="px-3 pt-4 pb-1"><SearchTrigger onClick={openPalette} t={t} /></div>
-          <SidebarContent groups={allGroups} isActive={isActive} t={t} />
-        </aside>
+        {collapsed ? (
+          <aside className="hidden lg:flex w-16 flex-shrink-0 sticky top-14 h-[calc(100vh-3.5rem)] border-r border-slate-200 bg-white flex-col items-center py-3 gap-1 overflow-y-auto">
+            <button onClick={toggleCollapsed} title={safeT(t, 'shell.expand', 'Expandir menu')} aria-label={safeT(t, 'shell.expand', 'Expandir menu')}
+              className="w-10 h-10 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-500">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+            </button>
+            <button onClick={openPalette} title={safeT(t, 'shell.search.placeholder', 'Pesquisar…')} aria-label={safeT(t, 'shell.search.placeholder', 'Pesquisar…')}
+              className="w-10 h-10 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-600">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
+            </button>
+            <div className="w-8 h-px bg-slate-100 my-1.5" />
+            {nav.map((item) => {
+              const active = isActive(item.href);
+              const ilabel = safeT(t, item.labelKey || item.href || '', keyTail(item.labelKey) || item.href || '');
+              return (
+                <Link key={item.href} href={item.href as any} title={ilabel} aria-label={ilabel}
+                  className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl transition-colors ${active ? 'bg-brand-50 ring-1 ring-brand-200' : 'hover:bg-slate-50'}`}>
+                  <span>{item.emoji}</span>
+                </Link>
+              );
+            })}
+          </aside>
+        ) : (
+          <aside className="hidden lg:flex w-60 flex-shrink-0 sticky top-14 h-[calc(100vh-3.5rem)] border-r border-slate-200 bg-white flex-col overflow-y-auto">
+            <div className="px-3 pt-4 pb-1 flex items-center gap-1.5">
+              <div className="flex-1 min-w-0"><SearchTrigger onClick={openPalette} t={t} /></div>
+              <button onClick={toggleCollapsed} title={safeT(t, 'shell.collapse', 'Colapsar menu')} aria-label={safeT(t, 'shell.collapse', 'Colapsar menu')}
+                className="w-9 h-9 flex-shrink-0 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-500">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+              </button>
+            </div>
+            <SidebarContent groups={allGroups} isActive={isActive} t={t} />
+          </aside>
+        )}
         {sidebarOpen && (
           <div className="lg:hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm" onClick={() => setSidebarOpen(false)}>
             <aside className="absolute top-0 left-0 bottom-0 w-72 max-w-[85%] bg-white shadow-2xl overflow-y-auto" onClick={(e) => e.stopPropagation()}>

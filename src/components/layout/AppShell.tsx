@@ -1,7 +1,7 @@
 import { getSessionWithArea, createClient } from '@/lib/supabase/server';
 import { AppShellClient } from './AppShellClient';
 import { redirect } from '@/i18n/routing';
-import { headers } from 'next/headers';
+import { headers, cookies } from 'next/headers';
 
 export interface AppShellProps {
   role: 'admin' | 'instructor' | 'student';
@@ -83,11 +83,19 @@ export async function AppShell({ role, pageTitle, children }: AppShellProps) {
 
   const nav = await readNav(role);
 
+  let collapsedPref: boolean | null = null;
+  try {
+    const c = (await cookies()).get('nl_sb')?.value;
+    if (c === '1') collapsedPref = true;
+    else if (c === '0') collapsedPref = false;
+  } catch {}
+
   return (
     <AppShellClient
       role={role}
       pageTitle={pageTitle}
       nav={nav}
+      collapsedPref={collapsedPref}
       session={session ? { email: session.user.email!, area: session.area, areas: session.areas } : null}
     >
       {children}
