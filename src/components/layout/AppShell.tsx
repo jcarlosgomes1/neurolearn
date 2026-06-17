@@ -47,11 +47,13 @@ async function readNav(role: 'admin' | 'instructor' | 'student'): Promise<NavIte
       .eq('location', location)
       .eq('enabled', true)
       .order('sort_order', { ascending: true });
-    return (data || []).map((r: any) => ({
+    return (data || [])
+      .filter((r: any) => typeof r?.href === 'string' && r.href.length > 0)
+      .map((r: any) => ({
       href: r.href as string,
-      labelKey: r.i18n_key as string,
+      labelKey: (typeof r.i18n_key === 'string' && r.i18n_key.length > 0) ? r.i18n_key : r.href,
       emoji: (r.icon as string) || '\u2022',
-      groupKey: (r.group_key as string) || '',
+      groupKey: (typeof r.group_key === 'string' && r.group_key.length > 0) ? r.group_key : 'shell.group.more',
       badge: (r.badge as string) || undefined,
     }));
   } catch {

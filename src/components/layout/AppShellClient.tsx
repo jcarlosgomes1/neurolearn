@@ -22,6 +22,10 @@ function safeT(t: any, key: string, fb: string): string {
   return fb;
 }
 
+function keyTail(k: string | null | undefined): string {
+  return (typeof k === 'string' ? k : '').split('.').pop() || '';
+}
+
 function scoreMatch(term: string, label: string, href: string): number {
   if (!term) return 1;
   if (label.startsWith(term)) return 100;
@@ -55,7 +59,7 @@ function CommandPalette({ open, onClose, items, t }: { open: boolean; onClose: (
   }, [open]);
 
   const results = useMemo(() => {
-    const labelled = items.map((it) => ({ it, label: safeT(t, it.labelKey, it.labelKey.split('.').pop() || it.href), group: safeT(t, it.groupKey, '') }));
+    const labelled = items.map((it) => ({ it, label: safeT(t, it.labelKey || it.href || '', keyTail(it.labelKey) || it.href || ''), group: safeT(t, it.groupKey || '', '') }));
     const term = q.trim().toLowerCase();
     if (!term) return labelled.slice(0, 60);
     return labelled
@@ -231,7 +235,7 @@ function SidebarContent({ groups, isActive, t }: { groups: { groupKey: string; i
     <nav className="flex-1 px-3 py-4 space-y-1">
       {groups.map((group) => {
         const isOpen = open.includes(group.groupKey);
-        const label = safeT(t, group.groupKey, group.groupKey.split('.').pop() || '');
+        const label = safeT(t, group.groupKey || '', keyTail(group.groupKey));
         const hasActive = group.items.some((i) => isActive(i.href));
         return (
           <div key={group.groupKey}>
@@ -247,7 +251,7 @@ function SidebarContent({ groups, isActive, t }: { groups: { groupKey: string; i
               <div className="mt-0.5 ml-[1.1rem] pl-2 border-l border-slate-100 space-y-0.5 animate-in fade-in slide-in-from-top-1 duration-150">
                 {group.items.map((item) => {
                   const active = isActive(item.href);
-                  const ilabel = safeT(t, item.labelKey, item.labelKey.split('.').pop() || item.href);
+                  const ilabel = safeT(t, item.labelKey || item.href || '', keyTail(item.labelKey) || item.href || '');
                   return (
                     <Link key={item.href} href={item.href as any}
                       className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${active ? 'bg-brand-50 text-brand-700' : 'text-slate-700 hover:bg-slate-50'}`}>
