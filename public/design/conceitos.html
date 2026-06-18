@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeuroLearn · 2 identidades (fontes reais)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#1c1c22;-webkit-font-smoothing:antialiased}
+  .hint{max-width:720px;margin:0 auto;padding:18px 20px;color:#cfcfd6;font-family:'Inter',sans-serif;font-size:.82rem;text-align:center;line-height:1.5}
+  .scene{max-width:720px;margin:0 auto 26px;border-radius:26px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.35)}
+
+  /* ============ SINAPSE (escura) ============ */
+  .dark{position:relative;background:#0a0b0d;color:#f4f5f7;padding:40px 28px 46px;overflow:hidden}
+  .dark::before{content:"";position:absolute;top:-120px;right:-100px;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(196,242,58,.20),transparent 65%);filter:blur(10px)}
+  .dark::after{content:"";position:absolute;bottom:-140px;left:-90px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(124,77,255,.22),transparent 65%);filter:blur(10px)}
+  .dark > *{position:relative;z-index:1}
+  .d-eyebrow{font-family:'Space Mono',monospace;font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:#c4f23a}
+  .d-title{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(2.6rem,1.6rem+4.6vw,4rem);line-height:1.0;letter-spacing:-.03em;margin-top:16px}
+  .d-title em{font-style:normal;color:#c4f23a}
+  .d-sub{font-family:'Inter',sans-serif;font-size:1.05rem;line-height:1.55;color:#a7adba;margin-top:20px;max-width:36ch}
+  .nodes{display:flex;align-items:center;gap:0;margin:34px 0 8px}
+  .node{display:flex;flex-direction:column;align-items:center;gap:8px;flex:0 0 auto}
+  .dot{width:15px;height:15px;border-radius:50%;background:#2b2e36;border:2px solid #3a3e48}
+  .node.live .dot{background:#c4f23a;border-color:#c4f23a;box-shadow:0 0 0 5px rgba(196,242,58,.18),0 0 22px rgba(196,242,58,.55)}
+  .node span{font-family:'Space Mono',monospace;font-size:.66rem;letter-spacing:.08em;color:#8b91a0;text-transform:uppercase}
+  .node.live span{color:#f4f5f7}
+  .wire{flex:1;height:2px;background:linear-gradient(90deg,#3a3e48,#c4f23a)}
+  .wire.dim{background:#2b2e36}
+  .proof{font-family:'Space Mono',monospace;font-size:.78rem;margin-top:26px;color:#8b91a0;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .proof b{color:#c4f23a;font-weight:700}
+  .d-cta{display:inline-flex;align-items:center;gap:9px;margin-top:24px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1rem;color:#0a0b0d;background:#c4f23a;padding:14px 24px;border-radius:12px;text-decoration:none}
+  .d-card{margin-top:30px;border:1px solid #23262e;border-radius:16px;padding:18px;background:#101216}
+  .d-card h3{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:1.15rem;color:#f4f5f7}
+  .d-card p{font-family:'Inter',sans-serif;font-size:.9rem;color:#9aa0ad;margin-top:6px}
+  .d-num{font-family:'Space Mono',monospace;color:#c4f23a;font-weight:700}
+
+  /* ============ ATLAS (clara) ============ */
+  .light{position:relative;background:#f6f3ec;color:#1a1614;padding:42px 30px 48px}
+  .l-eyebrow{font-family:'Inter',sans-serif;font-size:.7rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#8a2f3b}
+  .l-title{font-family:'Instrument Serif',Georgia,serif;font-weight:400;font-size:clamp(3rem,1.8rem+5.4vw,4.6rem);line-height:1.02;letter-spacing:-.01em;margin-top:14px;color:#1a1614}
+  .l-title em{font-style:italic;color:#8a2f3b}
+  .l-sub{font-family:'Inter',sans-serif;font-size:1.05rem;line-height:1.6;color:#5b524c;margin-top:20px;max-width:38ch}
+  .l-rule{height:1px;background:#1a161422;margin:30px 0 22px}
+  .l-row{display:flex;gap:26px;flex-wrap:wrap;align-items:baseline}
+  .l-stat{font-family:'Instrument Serif',serif;font-size:2.6rem;color:#1a1614;line-height:1}
+  .l-stat small{display:block;font-family:'Inter',sans-serif;font-size:.72rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#938a7c;margin-top:6px}
+  .l-h2{font-family:'Instrument Serif',serif;font-size:1.7rem;color:#1a1614;margin-top:28px}
+  .l-body{font-family:'Inter',sans-serif;font-size:1rem;line-height:1.65;color:#5b524c;margin-top:10px;max-width:46ch}
+  .l-cta{display:inline-flex;align-items:center;gap:9px;margin-top:26px;font-family:'Inter',sans-serif;font-weight:700;font-size:.98rem;color:#f6f3ec;background:#8a2f3b;padding:14px 26px;border-radius:10px;text-decoration:none}
+  .label{font-family:'Inter',sans-serif;font-size:.72rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#fff;background:#000;display:inline-block;padding:5px 11px;border-radius:999px;margin-bottom:4px}
+</style>
+</head>
+<body>
+  <div class="hint"><b style="color:#fff">As 2 identidades — fontes reais.</b><br>Abre no Chrome (não no preview do chat). Em cima a versão escura, em baixo a clara.</div>
+
+  <!-- ESCURA -->
+  <div class="scene">
+    <div class="dark">
+      <span class="label" style="background:#c4f23a;color:#0a0b0d">ESCURA · SINAPSE</span>
+      <div class="d-eyebrow">// plataforma de aprendizagem</div>
+      <div class="d-title">Aprende.<br>Prova. <em>Trabalha.</em></div>
+      <p class="d-sub">Uma rede viva que te leva do primeiro conceito ao emprego — com competências que se provam.</p>
+
+      <div class="nodes">
+        <div class="node live"><span class="dot"></span><span>Aprender</span></div>
+        <div class="wire"></div>
+        <div class="node live"><span class="dot"></span><span>Competências</span></div>
+        <div class="wire dim"></div>
+        <div class="node"><span class="dot"></span><span>Trabalho</span></div>
+      </div>
+
+      <div class="proof">Certificado <b>CERT-NL-7F3A</b> · verificável on-chain · <span class="d-num">4.8</span>/5</div>
+      <a class="d-cta" href="#">Começar agora →</a>
+
+      <div class="d-card">
+        <h3>Fundamentos de Inteligência Artificial</h3>
+        <p>Do zero ao teu primeiro modelo · <span class="d-num">1 240</span> alunos · 8 módulos</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CLARA -->
+  <div class="scene">
+    <div class="light">
+      <span class="label">CLARA · ATLAS</span>
+      <div class="l-eyebrow">Plataforma de aprendizagem</div>
+      <div class="l-title">Aprende com <em>profundidade.</em></div>
+      <p class="l-sub">Conhecimento sério, ao teu ritmo, com certificado verificável e caminho até ao trabalho.</p>
+      <div class="l-rule"></div>
+      <div class="l-row">
+        <div class="l-stat">1 240<small>Alunos</small></div>
+        <div class="l-stat">4,8<small>Avaliação</small></div>
+        <div class="l-stat">96%<small>Conclusão</small></div>
+      </div>
+      <div class="l-h2">Fundamentos de Inteligência Artificial</div>
+      <p class="l-body">Cursos profissionais criados por especialistas. Pratica com casos reais e prova o que sabes.</p>
+      <a class="l-cta" href="#">Explorar cursos →</a>
+    </div>
+  </div>
+
+  <div class="hint">Diz-me: <b style="color:#fff">escura</b> ou <b style="color:#fff">clara</b> — e o que mudarias (acento, fonte de títulos, etc.).</div>
+</body>
+</html>
