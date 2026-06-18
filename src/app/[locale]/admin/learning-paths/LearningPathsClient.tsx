@@ -16,6 +16,8 @@ export function LearningPathsClient() {
   const [showCreate, setShowCreate] = useState(false);
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState({ slug: '', title: '', subtitle: '', emoji: '🎓', difficulty: 'beginner', estimated_hours: 40, category: '' });
+  const [slugLocked, setSlugLocked] = useState(false);
+  const slugify = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
   const [_, startTransition] = useTransition();
 
   async function load() {
@@ -169,13 +171,13 @@ export function LearningPathsClient() {
                 </label>
                 <label className="block">
                   <span className="text-xs font-semibold text-slate-700">Slug (URL)</span>
-                  <input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-') })} placeholder="ai-fundamentals"
+                  <input value={form.slug} onChange={(e) => { setSlugLocked(true); setForm({ ...form, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-') }); }} placeholder="ai-fundamentals"
                     className="mt-1 w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-brand-400 font-mono text-xs" />
                 </label>
               </div>
               <label className="block">
                 <span className="text-xs font-semibold text-slate-700">Título</span>
-                <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Fundamentos de IA"
+                <input value={form.title} onChange={(e) => { const v = e.target.value; setForm((f) => ({ ...f, title: v, ...(slugLocked ? {} : { slug: slugify(v) }) })); }} placeholder="Fundamentos de IA"
                   className="mt-1 w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-brand-400" />
               </label>
               <label className="block">
@@ -198,7 +200,7 @@ export function LearningPathsClient() {
                 </label>
                 <label className="block">
                   <span className="text-xs font-semibold text-slate-700">Categoria</span>
-                  <input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="AI"
+                  <input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="ex.: Culinária, Gestão, Tecnologia…"
                     className="mt-1 w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-brand-400" />
                 </label>
               </div>
