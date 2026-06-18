@@ -42,7 +42,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-violet-200 text-xs font-semibold text-violet-700 mb-6 shadow-sm">
               <Sparkles className="h-3.5 w-3.5" /> {t('so.badge')}
             </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 leading-tight">
+            <h1 className="t-h1 text-slate-900">
               {t('so.h1_pre')}<span className="bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">{t('so.h1_accent')}</span>
             </h1>
             <p className="mt-6 text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
@@ -53,7 +53,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
 
         {/* Story */}
         <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
-          <h2 className="text-3xl font-bold text-slate-900 mb-6">{t('so.story_title')}</h2>
+          <h2 className="t-h2 text-slate-900 mb-6">{t('so.story_title')}</h2>
           <div className="prose prose-slate prose-lg max-w-none space-y-4 text-slate-700 leading-relaxed">
             <p>{t('so.story_p1')}</p>
             <p>{t('so.story_p2')}</p>
@@ -65,7 +65,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
         <section className="bg-slate-50 py-16 sm:py-20 border-y border-slate-200/60">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
-              <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">{t('so.values_title')}</h2>
+              <h2 className="t-h2 text-slate-900">{t('so.values_title')}</h2>
               <p className="mt-3 text-slate-600 max-w-2xl mx-auto">{t('so.values_sub')}</p>
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
@@ -74,7 +74,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
                   <div className={`inline-flex h-12 w-12 rounded-xl bg-gradient-to-br ${v.cls} text-white items-center justify-center mb-4 shadow-md group-hover:scale-110 transition-transform`}>
                     <v.icon className="h-6 w-6" />
                   </div>
-                  <h3 className="font-bold text-lg text-slate-900 mb-2">{t(v.titleKey)}</h3>
+                  <h3 className="t-h3 text-slate-900 mb-2">{t(v.titleKey)}</h3>
                   <p className="text-sm text-slate-600 leading-relaxed">{t(v.descKey)}</p>
                 </div>
               ))}
@@ -103,7 +103,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
               <div className="absolute -bottom-10 -left-10 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
             </div>
             <div className="relative text-center text-white">
-              <h2 className="text-3xl sm:text-4xl font-bold">{t('so.cta_title')}</h2>
+              <h2 className="t-h2">{t('so.cta_title')}</h2>
               <p className="mt-4 text-lg text-white/90 max-w-2xl mx-auto">{t('so.cta_desc')}</p>
               <div className="mt-8 flex flex-wrap justify-center gap-3">
                 <Link href={'/cursos' as any} className="inline-flex items-center gap-2 px-6 py-3 bg-white text-violet-700 hover:bg-violet-50 hover:scale-105 transition-all font-bold rounded-xl shadow-lg">
