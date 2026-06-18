@@ -50,7 +50,7 @@ html, body {
   /* dir1 — Produto moderno (grotesca + mono, violeta/índigo) */
   [data-theme="dir1"] {
     --font-body:'Inter',-apple-system,system-ui,sans-serif;
-    --font-display:'Bricolage Grotesque','Inter',sans-serif;
+    --font-display:'Inter',-apple-system,system-ui,sans-serif;
     --font-num:'JetBrains Mono',ui-monospace,monospace;
     --paper:#fbfbfd; --card:#ffffff; --ink:#14161d; --ink-2:#4b5563; --ink-3:#9aa1ad; --line:rgba(20,22,29,.10);
     --accent:#6d28d9; --accent-bright:#7c4dff; --accent-tint:rgba(124,77,255,.12);
