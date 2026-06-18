@@ -135,10 +135,10 @@ html, body {
   .text-pretty { text-wrap: pretty; }
 
   /* Tokens tipográficos semânticos (seguem o tema ativo) */
-  .t-display { font-family: var(--font-display); font-size: var(--t-display); font-weight: 700; line-height: 1.02; letter-spacing: -.025em; font-optical-sizing: auto; }
-  .t-h1 { font-family: var(--font-display); font-size: var(--t-h1); font-weight: 700; line-height: 1.08; letter-spacing: -.018em; }
-  .t-h2 { font-family: var(--font-display); font-size: var(--t-h2); font-weight: 600; line-height: 1.16; letter-spacing: -.012em; }
-  .t-h3 { font-family: var(--font-display); font-size: var(--t-h3); font-weight: 600; line-height: 1.3; }
+  .t-display { font-family: var(--font-display); font-size: var(--t-display); font-weight: var(--w-display, 700); line-height: 1.02; letter-spacing: -.025em; font-optical-sizing: auto; }
+  .t-h1 { font-family: var(--font-display); font-size: var(--t-h1); font-weight: var(--w-h1, 700); line-height: 1.08; letter-spacing: -.018em; }
+  .t-h2 { font-family: var(--font-display); font-size: var(--t-h2); font-weight: var(--w-h2, 600); line-height: 1.16; letter-spacing: -.012em; }
+  .t-h3 { font-family: var(--font-display); font-size: var(--t-h3); font-weight: var(--w-h3, 600); line-height: 1.3; }
   .t-eyebrow { font-size: var(--t-eyebrow); font-weight: 600; text-transform: uppercase; letter-spacing: .09em; color: var(--accent); }
   .t-num { font-family: var(--font-num); font-weight: 500; font-feature-settings: "tnum" 1; letter-spacing: -.01em; }
 
@@ -148,3 +148,16 @@ html, body {
   .spine > .node { position: absolute; top: 50%; width: 11px; height: 11px; border-radius: 50%; background: var(--accent-bright); transform: translate(-50%, -50%); box-shadow: 0 0 0 4px var(--accent-tint), 0 0 14px 1px var(--accent-tint); transition: left 1s cubic-bezier(.2,.7,.2,1); }
   @media (prefers-reduced-motion: reduce) { .spine > .fill, .spine > .node { transition: none; } }
 }
+
+
+/* ===== Camada escura: remapeia superficies/texto fixos para os tokens (so quando data-theme-mode=dark) ===== */
+[data-theme-mode="dark"] body{background:var(--paper);color:var(--ink)}
+[data-theme-mode="dark"] .bg-white{background-color:var(--card)!important}
+[data-theme-mode="dark"] .bg-slate-50,[data-theme-mode="dark"] .bg-gray-50,[data-theme-mode="dark"] .bg-slate-100,[data-theme-mode="dark"] .bg-gray-100{background-color:color-mix(in srgb,var(--card) 78%,#000)!important}
+[data-theme-mode="dark"] .text-slate-900,[data-theme-mode="dark"] .text-gray-900,[data-theme-mode="dark"] .text-slate-800,[data-theme-mode="dark"] .text-black{color:var(--ink)!important}
+[data-theme-mode="dark"] .text-slate-700,[data-theme-mode="dark"] .text-slate-600,[data-theme-mode="dark"] .text-gray-700,[data-theme-mode="dark"] .text-gray-600{color:var(--ink-2)!important}
+[data-theme-mode="dark"] .text-slate-500,[data-theme-mode="dark"] .text-slate-400,[data-theme-mode="dark"] .text-gray-500,[data-theme-mode="dark"] .text-gray-400{color:var(--ink-3)!important}
+[data-theme-mode="dark"] .border-slate-200,[data-theme-mode="dark"] .border-slate-100,[data-theme-mode="dark"] .border-gray-200,[data-theme-mode="dark"] .border-gray-100,[data-theme-mode="dark"] .divide-slate-200>*{border-color:var(--line)!important}
+[data-theme-mode="dark"] .bg-gradient-to-br,[data-theme-mode="dark"] .bg-gradient-to-b,[data-theme-mode="dark"] .bg-gradient-to-r,[data-theme-mode="dark"] .bg-gradient-to-tr{background-image:none!important;background-color:var(--card)!important}
+[data-theme-mode="dark"] .bg-brand-600,[data-theme-mode="dark"] .bg-brand-500{color:#0a0b0d!important}
+[data-theme-mode="dark"] .shadow-sm,[data-theme-mode="dark"] .shadow,[data-theme-mode="dark"] .shadow-md,[data-theme-mode="dark"] .shadow-lg,[data-theme-mode="dark"] .shadow-xl{box-shadow:0 8px 30px rgba(0,0,0,.45)!important}

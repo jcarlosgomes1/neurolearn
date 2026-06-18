@@ -50,17 +50,35 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   let theme = 'dir4';
+  let themeMode = 'light';
+  let themeCss = '';
   try {
     const sb = await createClient();
-    const { data } = await sb.rpc('nl_design_active');
-    if (typeof data === 'string' && data) theme = data;
+    const { data } = await sb.rpc('nl_design_active_full');
+    const row = Array.isArray(data) ? data[0] : data;
+    if (row && row.id) {
+      theme = row.id;
+      themeMode = row.mode || 'light';
+      const t = row.tokens || {};
+      const b = t.brand || {};
+      const w = t.w || {};
+      const brandVars = Object.keys(b).map((k) => `--brand-${k}:${b[k]};`).join('');
+      themeCss =
+        (row.font_import ? `@import url("${row.font_import}");` : '') +
+        `:root{--font-body:${t.fbody};--font-display:${t.fdisplay};--font-num:${t.fnum};` +
+        `--paper:${t.paper};--card:${t.card};--ink:${t.ink};--ink-2:${t.ink2};--ink-3:${t.ink3};--line:${t.line};` +
+        `--accent:${t.accent};--accent-bright:${t.accentBright};--accent-tint:${t.accentTint};` +
+        brandVars +
+        `--w-display:${w.display||700};--w-h1:${w.h1||700};--w-h2:${w.h2||600};--w-h3:${w.h3||600};}`;
+    }
   } catch {
     // fallback: dir4 (Atelier)
   }
 
   return (
-    <html lang={locale} data-theme={theme}>
+    <html lang={locale} data-theme={theme} data-theme-mode={themeMode}>
       <body className="min-h-screen font-sans antialiased [overflow-x:clip]">
+        <style dangerouslySetInnerHTML={{ __html: themeCss }} />
         <ClientIntlProvider locale={locale} messages={messages}>
           <TopBar locale={locale} />
           <PeekBanner />
