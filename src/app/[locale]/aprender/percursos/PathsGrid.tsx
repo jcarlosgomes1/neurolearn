@@ -16,7 +16,7 @@ const DIFF_CLASS: Record<string, string> = {
   advanced: 'bg-rose-100 text-rose-700',
 };
 
-export function PathsGrid({ paths }: { paths: any[] }) {
+export function PathsGrid({ paths, basePath = '/aprender/percursos' }: { paths: any[]; basePath?: string }) {
   const t = useTranslations();
   const [shown, setShown] = useState(false);
   useEffect(() => {
@@ -39,7 +39,7 @@ export function PathsGrid({ paths }: { paths: any[] }) {
           className={p.featured ? 'md:col-span-2 lg:col-span-1' : ''}
         >
           <Link
-            href={`/aprender/percursos/${p.slug}` as any}
+            href={`${basePath}/${p.slug}` as any}
             className={`group relative flex flex-col h-full rounded-2xl border bg-white p-6 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl ${
               p.featured ? 'border-violet-300 ring-2 ring-violet-200' : 'border-slate-200 hover:border-violet-300'
             }`}
