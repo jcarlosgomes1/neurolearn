@@ -66,13 +66,16 @@ export default async function LocaleLayout({
       motionOn = t.motion !== false;
       const b = t.brand || {};
       const w = t.w || {};
+      const ndef: Record<string, string> = {'50':'250 249 246','100':'245 243 239','200':'232 228 222','300':'215 210 202','400':'168 161 151','500':'121 114 104','600':'88 82 74','700':'66 61 55','800':'41 37 33','900':'28 25 22','950':'14 12 10'};
+      const nn = (t.neutral || {}) as Record<string, string>;
+      const neutralVars = Object.keys(ndef).map((k) => `--n-${k}:${nn[k] || ndef[k]};`).join('');
       const brandVars = Object.keys(b).map((k) => `--brand-${k}:${b[k]};`).join('');
       themeCss =
         (row.font_import ? `@import url("${row.font_import}");` : '') +
         `:root{--font-body:${t.fbody};--font-display:${t.fdisplay};--font-num:${t.fnum};` +
         `--paper:${t.paper};--card:${t.card};--ink:${t.ink};--ink-2:${t.ink2};--ink-3:${t.ink3};--line:${t.line};` +
         `--accent:${t.accent};--accent-bright:${t.accentBright};--accent-tint:${t.accentTint};` +
-        brandVars +
+        brandVars + neutralVars +
         `--w-display:${w.display||700};--w-h1:${w.h1||700};--w-h2:${w.h2||600};--w-h3:${w.h3||600};}`;
     }
   } catch {

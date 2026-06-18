@@ -1,5 +1,7 @@
 import type { Config } from 'tailwindcss';
 
+// Rampa de marca ligada às CSS vars da direção ativa (violet/indigo/purple/fuchsia
+// apontam todas para Clay). Famílias semânticas (emerald/amber/rose/teal/blue) intactas.
 const brandRamp = {
   50: 'rgb(var(--brand-50) / <alpha-value>)',
   100: 'rgb(var(--brand-100) / <alpha-value>)',
@@ -14,6 +16,24 @@ const brandRamp = {
   950: 'rgb(var(--brand-900) / <alpha-value>)',
 };
 
+// Rampa NEUTRA quente, config-driven via --n-* (injetadas pelo layout a partir da
+// direção ativa). Fallback embebido na var() = neutros quentes "stone" aplicam-se
+// SEMPRE, mesmo sem injeção (sem risco de cor inválida). slate/gray/zinc/neutral
+// passam todas a seguir esta rampa → fim do navy/cinza-azulado frio em todo o site.
+const neutralRamp = {
+  50: 'rgb(var(--n-50, 250 249 246) / <alpha-value>)',
+  100: 'rgb(var(--n-100, 245 243 239) / <alpha-value>)',
+  200: 'rgb(var(--n-200, 232 228 222) / <alpha-value>)',
+  300: 'rgb(var(--n-300, 215 210 202) / <alpha-value>)',
+  400: 'rgb(var(--n-400, 168 161 151) / <alpha-value>)',
+  500: 'rgb(var(--n-500, 121 114 104) / <alpha-value>)',
+  600: 'rgb(var(--n-600, 88 82 74) / <alpha-value>)',
+  700: 'rgb(var(--n-700, 66 61 55) / <alpha-value>)',
+  800: 'rgb(var(--n-800, 41 37 33) / <alpha-value>)',
+  900: 'rgb(var(--n-900, 28 25 22) / <alpha-value>)',
+  950: 'rgb(var(--n-950, 14 12 10) / <alpha-value>)',
+};
+
 const config: Config = {
   content: ['./src/**/*.{ts,tsx,mdx}'],
   darkMode: 'class',
@@ -25,6 +45,10 @@ const config: Config = {
         indigo: brandRamp,
         purple: brandRamp,
         fuchsia: brandRamp,
+        slate: neutralRamp,
+        gray: neutralRamp,
+        zinc: neutralRamp,
+        neutral: neutralRamp,
         accent: 'var(--accent)',
         'accent-bright': 'var(--accent-bright)',
       },
