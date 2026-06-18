@@ -19,7 +19,7 @@ export function PageHeader({
             {badge}
           </div>
         )}
-        <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold text-slate-900 tracking-tight text-balance">
+        <h1 className="t-h1 text-slate-900 text-balance">
           {title}
         </h1>
         {subtitle && (
