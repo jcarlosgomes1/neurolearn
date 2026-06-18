@@ -3,13 +3,14 @@
 import { createClient } from '@/lib/supabase/server';
 import { assertNotPeek } from '@/lib/peek';
 import { revalidatePath } from 'next/cache';
+import { getLocale } from 'next-intl/server';
 
 // ============ NOTIFICAÇÕES ============
 
 export async function listNotificationsAction(unreadOnly = false, limit = 20) {
   try {
     const sb = await createClient();
-    const { data, error } = await sb.rpc('nl_notifications_list', { p_unread_only: unreadOnly, p_limit: limit });
+    const { data, error } = await sb.rpc('nl_notifications_list', { p_unread_only: unreadOnly, p_limit: limit, p_lang: await getLocale() });
     if (error) return { ok: false, error: error.message };
     return { ok: true, data: data || [] };
   } catch (e) { return { ok: false, error: e instanceof Error ? e.message : String(e) }; }
