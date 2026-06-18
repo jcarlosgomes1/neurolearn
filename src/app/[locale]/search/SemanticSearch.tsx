@@ -47,7 +47,21 @@ export function SemanticSearch({ initialQuery, locale }: { initialQuery: string;
         }),
       });
       const data = await resp.json();
-      setResults(data?.results || []);
+      let rows = (data?.results || []) as Result[];
+      // Fallback de texto (pesquisa por palavra-chave em cursos, titulo na lingua)
+      // quando a pesquisa semantica nao devolve nada.
+      if (!rows.length) {
+        try {
+          const fb = await fetch(`${SUPABASE_URL}/rest/v1/rpc/nl_search_text`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'apikey': SUPABASE_ANON_KEY },
+            body: JSON.stringify({ p_q: q.trim(), p_lang: locale, p_limit: 20 }),
+          });
+          const fbData = await fb.json();
+          if (Array.isArray(fbData)) rows = fbData as Result[];
+        } catch (err) { console.error('search fallback error:', err); }
+      }
+      setResults(rows);
     } catch (e) {
       console.error('search error:', e);
       setResults([]);
