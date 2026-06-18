@@ -191,6 +191,7 @@ export function CreateCourseForm() {
           <span className="inline-block text-xs font-semibold uppercase tracking-widest text-brand-700 bg-brand-50 px-3 py-1 rounded-full mb-4">{t('badge_create')}</span>
           <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">{t('heading')}</h1>
           <p className="mt-3 text-slate-600 max-w-xl mx-auto">{t('subheading')}</p>
+          <p className="mt-4 text-sm text-slate-500 max-w-xl mx-auto bg-slate-50 border border-slate-100 rounded-xl px-4 py-2.5 leading-relaxed">💡 {t('tip_intro')}</p>
         </div>
 
         <textarea
@@ -228,7 +229,7 @@ export function CreateCourseForm() {
           <p className="text-sm text-slate-700 leading-relaxed">{prompt}</p>
         </div>
 
-        <Section title={t('level_label')}>
+        <Section title={t('level_label')} hint={t('tip_level')}>
           <div className="grid grid-cols-3 gap-2">
             {LEVELS.map(([v, l, hint]) => (
               <button key={v} onClick={() => setLevel(v)}
@@ -240,7 +241,7 @@ export function CreateCourseForm() {
           </div>
         </Section>
 
-        <Section title={t('depth_label')}>
+        <Section title={t('depth_label')} hint={t('tip_depth')}>
           <div className="grid grid-cols-3 gap-2">
             {DURATIONS.map(([v, l, mods, aulas]) => (
               <button key={v} onClick={() => setDuration(v)}
@@ -252,7 +253,7 @@ export function CreateCourseForm() {
           </div>
         </Section>
 
-        {policy.allow_instructor_custom !== false && (<Section title={t('customize')}>
+        {policy.allow_instructor_custom !== false && (<Section title={t('customize')} hint={t('tip_customize')}>
           <label className="flex items-center gap-2 cursor-pointer">
             <input type="checkbox" checked={customOn} onChange={(e) => setCustomOn(e.target.checked)} className="h-4 w-4 rounded border-slate-300" />
             <span className="text-sm text-slate-700">{t('customize_toggle')}</span>
@@ -278,7 +279,7 @@ export function CreateCourseForm() {
           {customOn && <p className="text-xs text-slate-500 mt-2">{t('cust_hint', { n: cMods * cLessons })}</p>}
         </Section>)}
 
-        <Section title={t('tone_label')}>
+        <Section title={t('tone_label')} hint={t('tip_tone')}>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {TONES.map(([v, l]) => (
               <button key={v} onClick={() => setTone(v)}
@@ -289,7 +290,7 @@ export function CreateCourseForm() {
           </div>
         </Section>
 
-        <Section title={t('types_label')}>
+        <Section title={t('types_label')} hint={t('tip_types')}>
           <div className="space-y-2">
             <label className="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-xl cursor-pointer">
               <input type="checkbox" checked readOnly className="w-5 h-5 rounded text-brand-600 accent-brand-600" />
@@ -331,7 +332,8 @@ export function CreateCourseForm() {
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-16 text-center">
         <div className="text-6xl mb-6 animate-pulse">🧠</div>
         <h2 className="text-2xl font-bold text-slate-900 mb-2">{t('building')}</h2>
-        <p className="text-sm text-slate-500 mb-8">{job?.current_step || t('starting')}</p>
+        <p className="text-sm text-slate-500 mb-2">{job?.current_step || t('starting')}</p>
+        <p className="text-xs text-slate-400 mb-8 max-w-sm mx-auto leading-relaxed">{t('building_hint')}</p>
 
         {job && job.progress_total > 0 && (
           <div className="max-w-md mx-auto">
@@ -413,10 +415,11 @@ export function CreateCourseForm() {
   return null;
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
   return (
     <div>
       <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">{title}</h3>
+      {hint && <p className="text-xs text-slate-500 -mt-1 mb-3 leading-relaxed">{hint}</p>}
       {children}
     </div>
   );
