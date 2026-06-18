@@ -45,7 +45,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
         </Link>
 
         <header className="mt-6">
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">{a.title}</h1>
+          <h1 className="t-h1 text-slate-900">{a.title}</h1>
           <p className="mt-2 text-xs text-slate-400">{t('help.updated')} · {updated}</p>
         </header>
 
@@ -55,7 +55,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
 
         {related.length > 0 && (
           <section className="mt-14 border-t border-slate-200 pt-8">
-            <h2 className="text-lg font-bold text-slate-900 mb-4">{t('help.related')}</h2>
+            <h2 className="t-h3 text-slate-900 mb-4">{t('help.related')}</h2>
             <ul className="space-y-2">
               {related.map((r) => (
                 <li key={r.slug}>

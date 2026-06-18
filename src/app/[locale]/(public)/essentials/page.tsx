@@ -5,6 +5,7 @@ import { getHomeBlocks } from '@/lib/api/home-blocks';
 import { getTranslations } from 'next-intl/server';
 import { createClient } from '@/lib/supabase/server';
 import { CourseCard } from '@/components/shared/CourseCard';
+import { Rocket } from 'lucide-react';
 
 export const revalidate = 120;
 
@@ -33,8 +34,8 @@ export default async function EssentialsPage({ params }: { params: Promise<{ loc
         <section className="max-w-6xl mx-auto px-4 py-12">
           {!tracks || tracks.length === 0 ? (
             <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-600 via-brand-700 to-brand-900 text-white p-12 text-center">
-              <div className="text-5xl mb-4">🚀</div>
-              <h2 className="text-2xl sm:text-3xl font-bold">{t('ess.soon')}</h2>
+              <div className="flex justify-center mb-4"><Rocket className="h-12 w-12" strokeWidth={1.5} /></div>
+              <h2 className="t-h2">{t('ess.soon')}</h2>
               <p className="mt-4 text-brand-100 max-w-xl mx-auto text-pretty">{t('ess.soon_desc')}</p>
               <div className="mt-8 flex flex-wrap justify-center gap-3">
                 <Link href={'/register' as any} className="bg-white text-brand-700 font-semibold px-6 py-3 rounded-lg hover:bg-brand-50 transition-colors">{t('ess.cta_register')}</Link>
