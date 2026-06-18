@@ -168,7 +168,7 @@ export function CourseEditor({ courseId, backHref, mode = 'instructor' }: Props)
             </div>
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <label className="label">{t('level')}</label>
+                <label className="label">{t('level_label')}</label>
                 <select className="input" value={course.level || 'beginner'} onChange={(e) => update({ level: e.target.value })}>
                   <option value="beginner">{t('level.beginner')}</option>
                   <option value="intermediate">{t('level.intermediate')}</option>
