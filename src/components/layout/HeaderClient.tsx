@@ -121,7 +121,7 @@ export function HeaderClient({ session, nav }: { session: Session | null; nav: N
 
       {open && (
         <div className="md:hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm" onClick={() => setOpen(false)}>
-          <div className="absolute top-0 right-0 bottom-0 w-[88%] max-w-sm bg-white shadow-2xl flex flex-col" onClick={(e) => e.stopPropagation()}>
+          <div className="absolute top-0 right-0 w-[88%] max-w-sm max-h-[100dvh] overflow-y-auto bg-white shadow-2xl flex flex-col rounded-bl-3xl" onClick={(e) => e.stopPropagation()}>
             <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
               <span className="font-bold text-slate-900">{t('nav.menu')}</span>
               <button onClick={() => setOpen(false)} aria-label={t('nav.close_menu')} className="w-9 h-9 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-600">
@@ -130,7 +130,7 @@ export function HeaderClient({ session, nav }: { session: Session | null; nav: N
             </div>
 
 
-            <nav className="flex-1 overflow-y-auto px-3 py-4">
+            <nav className="px-3 py-4">
               {NAV.map((item) => (
                 <Link key={item.href} href={item.href as any}
                   className="flex items-center gap-3 px-3 py-3.5 rounded-lg hover:bg-slate-50 text-slate-800 font-medium transition-colors">
