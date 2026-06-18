@@ -18,12 +18,12 @@ export async function Footer({ data }: { data: FooterData }) {
     return fb;
   }
 
-  // Resolve os labels NO SERVIDOR (onde o i18n resolve corretamente).
-  // O cliente passa a renderizar strings já resolvidas — sem re-tradução, sem mismatch.
+  // Resolve os labels NO SERVIDOR. A TRADUÇÃO (i18n_key) ganha sempre; o
+  // label_override é só último recurso (nunca deve sobrepor-se à língua).
   function resolve(items: NavItem[]): FooterItem[] {
     return items.map((it) => {
-      let label = it.label_override || '';
-      if (!label && it.i18n_key) label = safeT(it.i18n_key, '');
+      let label = it.i18n_key ? safeT(it.i18n_key, '') : '';
+      if (!label) label = it.label_override || '';
       if (!label) label = (it.href || '').split('/').filter(Boolean).pop() || it.href || '';
       return { ...it, label };
     });
