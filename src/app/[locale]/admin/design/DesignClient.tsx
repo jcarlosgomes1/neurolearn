@@ -4,14 +4,18 @@ import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from '@/i18n/routing';
 import { toast } from 'sonner';
-import { Check, Loader2, ExternalLink, Eye } from 'lucide-react';
+import { Check, Loader2, ExternalLink, Eye, Sparkles } from 'lucide-react';
 
-interface Direction { id: string; name: string; tagline: string; file: string; accent: string; sort_order: number; }
+interface Direction { id: string; name: string; tagline: string; file: string; accent: string; sort_order: number; motion: boolean; }
 
 export function DesignClient({ initialActive, directions }: { initialActive: string; directions: Direction[] }) {
   const router = useRouter();
   const [active, setActive] = useState(initialActive);
   const [saving, setSaving] = useState<string | null>(null);
+  const [motion, setMotion] = useState<Record<string, boolean>>(
+    () => Object.fromEntries(directions.map((d) => [d.id, d.motion !== false]))
+  );
+  const [togglingMotion, setTogglingMotion] = useState<string | null>(null);
 
   async function activate(id: string) {
     if (id === active) return;
@@ -31,11 +35,30 @@ export function DesignClient({ initialActive, directions }: { initialActive: str
     }
   }
 
+  async function toggleMotion(id: string) {
+    const next = !(motion[id] ?? true);
+    setTogglingMotion(id);
+    try {
+      const sb = createClient();
+      const { data, error } = await sb.rpc('nl_design_set_motion', { p_id: id, p_on: next });
+      if (error) throw error;
+      if (!data?.ok) throw new Error(data?.error === 'forbidden' ? 'Sem permissão' : 'Direção inválida');
+      setMotion((m) => ({ ...m, [id]: next }));
+      toast.success(`${directions.find((d) => d.id === id)?.name ?? id}: movimento ${next ? 'ligado' : 'desligado'}`);
+      if (id === active) router.refresh();
+    } catch (e: any) {
+      toast.error(e?.message || 'Erro');
+    } finally {
+      setTogglingMotion(null);
+    }
+  }
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       {directions.map((d) => {
         const isActive = d.id === active;
         const isSaving = saving === d.id;
+        const motionOn = motion[d.id] ?? true;
         return (
           <div
             key={d.id}
@@ -84,6 +107,27 @@ export function DesignClient({ initialActive, directions }: { initialActive: str
                 >
                   {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : isActive ? <Check className="h-4 w-4" /> : null}
                   {isActive ? 'É a ativa' : 'Definir como ativa'}
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-100">
+                <span className="inline-flex items-center gap-1.5 text-sm text-slate-600">
+                  <Sparkles className="h-4 w-4 text-slate-400" /> Movimento {motionOn ? 'ligado' : 'desligado'}
+                </span>
+                <button
+                  onClick={() => toggleMotion(d.id)}
+                  disabled={togglingMotion === d.id}
+                  role="switch"
+                  aria-checked={motionOn ? 'true' : 'false'}
+                  aria-label="Ligar ou desligar o movimento desta direção"
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-60 ${motionOn ? '' : 'bg-slate-300'}`}
+                  style={motionOn ? { background: d.accent } : undefined}
+                >
+                  {togglingMotion === d.id ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin text-white mx-auto" />
+                  ) : (
+                    <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${motionOn ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                  )}
                 </button>
               </div>
             </div>

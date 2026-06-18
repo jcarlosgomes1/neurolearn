@@ -5,7 +5,7 @@ import { DesignClient } from './DesignClient';
 
 export const dynamic = 'force-dynamic';
 
-interface Direction { id: string; name: string; tagline: string; file: string; accent: string; sort_order: number; }
+interface Direction { id: string; name: string; tagline: string; file: string; accent: string; sort_order: number; motion: boolean; }
 
 export default async function Page() {
   const sb = await createClient();
@@ -24,7 +24,7 @@ export default async function Page() {
         emoji="🎨"
         eyebrow="Sistema · Aparência"
         title="Direção de design"
-        description="Escolhe entre as 4 direções. Pré-visualiza qualquer uma e define a ativa — a escolha re-tematiza o site inteiro (público incluído): cor de acento, tipografia e superfície mudam em todas as páginas."
+        description="Pré-visualiza qualquer direção e define a ativa — a escolha re-tematiza o site inteiro (público incluído): cor de acento, tipografia e superfície mudam em todas as páginas. O movimento (animações) liga/desliga por direção."
       />
       <DesignClient initialActive={active} directions={directions} />
     </div>

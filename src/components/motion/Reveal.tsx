@@ -2,18 +2,22 @@
 
 import { useEffect, useRef, useState } from 'react';
 
+// Revelação ao scroll. O estado escondido/transição vive em CSS (.nl-reveal),
+// injetado pelo layout consoante a direção de design ativa (data-motion).
+// Quando o movimento está desligado, o CSS força visível e nós nem observamos.
 export function Reveal({
-  children, delay = 0, y = 18, className,
-}: { children: React.ReactNode; delay?: number; y?: number; className?: string }) {
+  children, delay = 0, className,
+}: { children: React.ReactNode; delay?: number; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const [shown, setShown] = useState(false);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+    const motionOff = typeof document !== 'undefined' && document.documentElement.dataset.motion === 'off';
     const reduce = typeof window !== 'undefined' && typeof window.matchMedia === 'function'
       && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduce) { setShown(true); return; }
+    if (motionOff || reduce) { setShown(true); return; }
     const io = new IntersectionObserver((entries) => {
       for (const e of entries) {
         if (e.isIntersecting) { setShown(true); io.disconnect(); break; }
@@ -26,14 +30,9 @@ export function Reveal({
   return (
     <div
       ref={ref}
-      className={className}
-      style={{
-        opacity: shown ? 1 : 0,
-        transform: shown ? 'none' : `translateY(${y}px)`,
-        transition: 'opacity .65s ease, transform .65s cubic-bezier(.2,.7,.2,1)',
-        transitionDelay: shown ? `${delay}ms` : '0ms',
-        willChange: 'opacity, transform',
-      }}
+      className={`nl-reveal${className ? ' ' + className : ''}`}
+      data-shown={shown ? 'true' : 'false'}
+      style={delay ? { transitionDelay: `${delay}ms` } : undefined}
     >
       {children}
     </div>

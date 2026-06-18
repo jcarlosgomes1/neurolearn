@@ -53,6 +53,7 @@ export default async function LocaleLayout({
   let theme = 'dir4';
   let themeMode = 'light';
   let themeCss = '';
+  let motionOn = true;
   try {
     const sb = await createClient();
     const { data } = await sb.rpc('nl_design_active_full');
@@ -61,6 +62,7 @@ export default async function LocaleLayout({
       theme = row.id;
       themeMode = row.mode || 'light';
       const t = row.tokens || {};
+      motionOn = t.motion !== false;
       const b = t.brand || {};
       const w = t.w || {};
       const brandVars = Object.keys(b).map((k) => `--brand-${k}:${b[k]};`).join('');
@@ -76,10 +78,16 @@ export default async function LocaleLayout({
     // fallback: dir4 (Atelier)
   }
 
+  // Camada de movimento, governada pela direção de design ativa (config-driven).
+  const motionCss = motionOn
+    ? `.nl-reveal{opacity:0;transform:translateY(18px);transition:opacity .65s ease,transform .65s cubic-bezier(.2,.7,.2,1)}.nl-reveal[data-shown="true"]{opacity:1;transform:none}@media (prefers-reduced-motion:reduce){.nl-reveal{opacity:1!important;transform:none!important;transition:none!important}}`
+    : `.nl-reveal{opacity:1!important;transform:none!important;transition:none!important}.nl-page-enter{animation:none!important}`;
+
   return (
-    <html lang={locale} data-theme={theme} data-theme-mode={themeMode}>
+    <html lang={locale} data-theme={theme} data-theme-mode={themeMode} data-motion={motionOn ? 'on' : 'off'}>
       <body className="min-h-screen font-sans antialiased [overflow-x:clip]">
-        <style dangerouslySetInnerHTML={{ __html: themeCss }} />
+        <style dangerouslySetInnerHTML={{ __html: themeCss + motionCss }} />
+        <noscript><style dangerouslySetInnerHTML={{ __html: '.nl-reveal{opacity:1!important;transform:none!important}' }} /></noscript>
         <ClientIntlProvider locale={locale} messages={messages}>
           <TopBar locale={locale} />
           <PeekBanner />
@@ -92,7 +100,6 @@ export default async function LocaleLayout({
         </ClientIntlProvider>
         <Analytics />
         <SpeedInsights />
-        
       </body>
     </html>
   );
