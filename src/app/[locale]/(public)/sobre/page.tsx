@@ -2,6 +2,7 @@ import { seoMetadata } from '@/lib/seo';
 import { Link } from '@/i18n/routing';
 import { getTranslations } from 'next-intl/server';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
+import { PageHero } from '@/components/shared/PageHero';
 import { Sparkles, Target, Heart, Globe2, Zap, ArrowRight, Users, BookOpen, Briefcase, Trophy } from 'lucide-react';
 
 export const revalidate = 600;
@@ -33,23 +34,13 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   return (
       <main className="bg-white min-h-screen">
         {/* Hero */}
-        <section className="relative overflow-hidden bg-gradient-to-br from-violet-50 via-white to-indigo-50 border-b border-slate-200/60">
-          <div className="absolute inset-0 -z-10">
-            <div className="absolute top-0 left-1/4 h-96 w-96 rounded-full bg-violet-400/20 blur-3xl animate-pulse" />
-            <div className="absolute bottom-0 right-1/4 h-96 w-96 rounded-full bg-indigo-400/20 blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-          </div>
-          <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-24 text-center">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-violet-200 text-xs font-semibold text-violet-700 mb-6 shadow-sm">
-              <Sparkles className="h-3.5 w-3.5" /> {t('so.badge')}
-            </div>
-            <h1 className="t-h1 text-slate-900">
-              {t('so.h1_pre')}<span className="bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">{t('so.h1_accent')}</span>
-            </h1>
-            <p className="mt-6 text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
-              {t('so.hero_desc')}
-            </p>
-          </div>
-        </section>
+        <PageHero
+          badge={<><Sparkles className="h-3.5 w-3.5" /> {t('so.badge')}</>}
+          title={t('so.h1_pre')}
+          titleAccent={t('so.h1_accent')}
+          subtitle={t('so.hero_desc')}
+          align="center"
+        />
 
         {/* Story */}
         <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
