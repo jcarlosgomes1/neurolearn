@@ -52,7 +52,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-amber-200 text-xs font-semibold text-amber-700 mb-6 shadow-sm">
               <GraduationCap className="h-3.5 w-3.5" /> {t('pi.badge')}
             </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 leading-tight">
+            <h1 className="t-h1 text-slate-900">
               {t('pi.h1_pre')}<span className="bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">{t('pi.h1_accent')}</span>
             </h1>
             <p className="mt-6 text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
@@ -77,7 +77,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
         {/* Features */}
         <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">{t('pi.features_title')}</h2>
+            <h2 className="t-h2 text-slate-900">{t('pi.features_title')}</h2>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {FEATURES.map((f, i) => (
@@ -85,7 +85,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
                 <div className={`inline-flex h-12 w-12 rounded-xl bg-gradient-to-br ${f.cls} text-white items-center justify-center mb-4 shadow-md group-hover:scale-110 transition-transform`}>
                   <f.icon className="h-6 w-6" />
                 </div>
-                <h3 className="font-bold text-slate-900 mb-1.5">{t(f.tKey)}</h3>
+                <h3 className="t-h3 text-slate-900 mb-1.5">{t(f.tKey)}</h3>
                 <p className="text-sm text-slate-600 leading-relaxed">{t(f.dKey)}</p>
               </div>
             ))}
@@ -96,7 +96,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
         <section className="bg-slate-50 py-20 border-y border-slate-200/60">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-10">
-              <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">{t('pi.compare_title')}</h2>
+              <h2 className="t-h2 text-slate-900">{t('pi.compare_title')}</h2>
               <p className="mt-3 text-slate-600">{t('pi.compare_sub')}</p>
             </div>
             <div className="overflow-x-auto bg-white rounded-3xl border border-slate-200 shadow-sm">
@@ -129,7 +129,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
         {/* CTA */}
         <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-600 via-orange-600 to-red-600 p-10 sm:p-14 shadow-2xl text-center text-white">
-            <h2 className="text-3xl sm:text-4xl font-bold">{t('pi.cta_title')}</h2>
+            <h2 className="t-h2">{t('pi.cta_title')}</h2>
             <p className="mt-4 text-lg text-white/90 max-w-2xl mx-auto">{t('pi.cta_desc')}</p>
             <Link href={'/candidatar' as any} className="inline-flex items-center gap-2 px-8 py-3.5 mt-8 bg-white text-orange-700 hover:bg-orange-50 hover:scale-105 transition-all font-bold rounded-xl shadow-lg text-base">
               {t('pi.cta_apply2')} <ArrowRight className="h-4 w-4" />

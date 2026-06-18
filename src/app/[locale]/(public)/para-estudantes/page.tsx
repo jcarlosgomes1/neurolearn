@@ -41,7 +41,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-blue-200 text-xs font-semibold text-blue-700 mb-6 shadow-sm">
               <Compass className="h-3.5 w-3.5" /> {t('ps.badge')}
             </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 leading-tight">
+            <h1 className="t-h1 text-slate-900">
               {t('ps.h1_pre')}<span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">{t('ps.h1_accent')}</span>
             </h1>
             <p className="mt-6 text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
@@ -60,7 +60,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
 
         <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">{t('ps.features_title')}</h2>
+            <h2 className="t-h2 text-slate-900">{t('ps.features_title')}</h2>
             <p className="mt-3 text-slate-600 max-w-2xl mx-auto">{t('ps.features_sub')}</p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -69,7 +69,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
                 <div className={`inline-flex h-12 w-12 rounded-xl bg-gradient-to-br ${f.cls} text-white items-center justify-center mb-4 shadow-md group-hover:scale-110 transition-transform`}>
                   <f.icon className="h-6 w-6" />
                 </div>
-                <h3 className="font-bold text-slate-900 mb-1.5">{t(f.tKey)}</h3>
+                <h3 className="t-h3 text-slate-900 mb-1.5">{t(f.tKey)}</h3>
                 <p className="text-sm text-slate-600 leading-relaxed">{t(f.dKey)}</p>
               </div>
             ))}
@@ -78,12 +78,12 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
 
         <section className="bg-slate-50 py-20 border-y border-slate-200/60">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 text-center mb-12">{t('ps.paths_title')}</h2>
+            <h2 className="t-h2 text-slate-900 text-center mb-12">{t('ps.paths_title')}</h2>
             <div className="grid sm:grid-cols-3 gap-4">
               {PATHS.map((p, i) => (
                 <div key={i} className="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-xl hover:-translate-y-1 transition-all">
                   <div className="text-4xl mb-3">{p.icon}</div>
-                  <h3 className={`font-bold text-lg bg-gradient-to-br ${p.cls} bg-clip-text text-transparent`}>{t(p.tKey)}</h3>
+                  <h3 className={`t-h3 bg-gradient-to-br ${p.cls} bg-clip-text text-transparent`}>{t(p.tKey)}</h3>
                   <p className="text-sm text-slate-600 mt-2 leading-relaxed">{t(p.dKey)}</p>
                 </div>
               ))}
@@ -94,7 +94,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
         <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-cyan-600 to-teal-600 p-10 sm:p-14 shadow-2xl text-center text-white">
             <Sparkles className="h-8 w-8 mx-auto mb-4 opacity-70" />
-            <h2 className="text-3xl sm:text-4xl font-bold">{t('ps.cta_title')}</h2>
+            <h2 className="t-h2">{t('ps.cta_title')}</h2>
             <p className="mt-4 text-lg text-white/90 max-w-2xl mx-auto">{t('ps.cta_desc')}</p>
             <Link href={'/register' as any} className="inline-flex items-center gap-2 px-8 py-3.5 mt-8 bg-white text-blue-700 hover:bg-blue-50 hover:scale-105 transition-all font-bold rounded-xl shadow-lg">
               {t('ps.cta_create')} <ArrowRight className="h-4 w-4" />

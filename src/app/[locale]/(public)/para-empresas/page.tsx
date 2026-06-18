@@ -49,7 +49,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-xs font-semibold text-violet-200 mb-6 backdrop-blur-sm">
                 <Building2 className="h-3.5 w-3.5" /> {t('pe.badge')}
               </div>
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-tight">
+              <h1 className="t-h1">
                 {t('pe.h1_pre')}<span className="bg-gradient-to-r from-violet-300 to-indigo-300 bg-clip-text text-transparent">{t('pe.h1_accent')}</span>
               </h1>
               <p className="mt-6 text-lg sm:text-xl text-white/80 leading-relaxed">
@@ -79,7 +79,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
 
         <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">{t('pe.features_title')}</h2>
+            <h2 className="t-h2 text-slate-900">{t('pe.features_title')}</h2>
             <p className="mt-3 text-slate-600 max-w-2xl mx-auto">{t('pe.features_sub')}</p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -88,7 +88,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
                 <div className={`inline-flex h-12 w-12 rounded-xl bg-gradient-to-br ${f.cls} text-white items-center justify-center mb-4 shadow-md group-hover:scale-110 transition-transform`}>
                   <f.icon className="h-6 w-6" />
                 </div>
-                <h3 className="font-bold text-slate-900 mb-1.5">{t(f.tKey)}</h3>
+                <h3 className="t-h3 text-slate-900 mb-1.5">{t(f.tKey)}</h3>
                 <p className="text-sm text-slate-600 leading-relaxed">{t(f.dKey)}</p>
               </div>
             ))}
@@ -97,12 +97,12 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
 
         <section className="bg-slate-50 py-20 border-y border-slate-200/60">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 text-center mb-12">{t('pe.steps_title')}</h2>
+            <h2 className="t-h2 text-slate-900 text-center mb-12">{t('pe.steps_title')}</h2>
             <div className="grid sm:grid-cols-3 gap-6">
               {STEPS.map((s) => (
                 <div key={s.num} className="relative bg-white rounded-2xl border border-slate-200 p-6">
                   <div className="absolute -top-4 -left-4 h-12 w-12 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 text-white text-xl font-bold flex items-center justify-center shadow-lg">{s.num}</div>
-                  <h3 className="font-bold text-slate-900 mt-3 mb-2">{t(s.tKey)}</h3>
+                  <h3 className="t-h3 text-slate-900 mt-3 mb-2">{t(s.tKey)}</h3>
                   <p className="text-sm text-slate-600 leading-relaxed">{t(s.dKey)}</p>
                 </div>
               ))}
@@ -112,7 +112,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
 
         <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">{t('pe.pricing_title')}</h2>
+            <h2 className="t-h2 text-slate-900">{t('pe.pricing_title')}</h2>
             <p className="mt-3 text-slate-600">{t('pe.pricing_sub')}</p>
           </div>
           <div className="grid md:grid-cols-3 gap-4">
@@ -122,7 +122,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
                 <div className={`inline-flex h-10 w-10 rounded-xl bg-gradient-to-br ${tier.cls} text-white items-center justify-center mb-4`}>
                   {tier.popular ? <Crown className="h-5 w-5" /> : <Zap className="h-5 w-5" />}
                 </div>
-                <h3 className="font-bold text-xl text-slate-900">{tier.name}</h3>
+                <h3 className="t-h3 text-slate-900">{tier.name}</h3>
                 <div className="mt-3 flex items-baseline gap-1">
                   <span className="text-4xl font-bold text-slate-900">{tier.priceKey ? t(tier.priceKey) : tier.price}</span>
                   <span className="text-sm text-slate-500">{t(tier.periodKey)}</span>
