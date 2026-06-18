@@ -10,6 +10,7 @@ import { Footer } from '@/components/sections/Footer';
 import { TrustedByStrip, HowItWorksSection, CategoriesGrid, LiveMomentumSection } from '@/components/sections/HomeExtras';
 import { OrganizationStructuredData, WebsiteStructuredData, FAQStructuredData } from '@/components/seo/StructuredData';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
+import { Reveal } from '@/components/motion/Reveal';
 
 export const revalidate = 60;
 
@@ -38,18 +39,18 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       <Header />
       <main className="bg-white">
         {blocks.hero && <Hero data={blocks.hero} />}
-        <TrustedByStrip />
-        {blocks.stats && <Stats data={blocks.stats} />}
-        <HowItWorksSection />
-        {blocks.features && <Features data={blocks.features} />}
-        <CategoriesGrid />
+        <Reveal delay={60}><TrustedByStrip /></Reveal>
+        {blocks.stats && <Reveal><Stats data={blocks.stats} /></Reveal>}
+        <Reveal><HowItWorksSection /></Reveal>
+        {blocks.features && <Reveal><Features data={blocks.features} /></Reveal>}
+        <Reveal><CategoriesGrid /></Reveal>
         {blocks.plans && blocks.pricing_header && (
-          <Pricing header={blocks.pricing_header} plans={blocks.plans} />
+          <Reveal><Pricing header={blocks.pricing_header} plans={blocks.plans} /></Reveal>
         )}
-        {blocks.testimonials && <Testimonials data={blocks.testimonials} />}
-        <LiveMomentumSection />
-        {blocks.faq && <Faq data={blocks.faq} />}
-        {blocks.cta_section && <FinalCta data={blocks.cta_section} />}
+        {blocks.testimonials && <Reveal><Testimonials data={blocks.testimonials} /></Reveal>}
+        <Reveal><LiveMomentumSection /></Reveal>
+        {blocks.faq && <Reveal><Faq data={blocks.faq} /></Reveal>}
+        {blocks.cta_section && <Reveal><FinalCta data={blocks.cta_section} /></Reveal>}
         <Footer data={blocks.footer_brand || {}} />
       </main>
     </>
