@@ -59,6 +59,8 @@ export function CreateCourseForm() {
   const [cMods, setCMods] = useState(5);
   const [cLessons, setCLessons] = useState(4);
   const [cMins, setCMins] = useState(25);
+  const [policy, setPolicy] = useState<any>({ allow_instructor_custom: true, min_modules: 1, max_modules: 12, min_lessons: 1, max_lessons: 10, allowed_minutes: [5, 10, 15, 20, 25, 30, 45, 60] });
+  useEffect(() => { (async () => { try { const sb = createClient(); const { data } = await sb.rpc('nl_course_structure_policy'); if (data) setPolicy((p: any) => ({ ...p, ...data })); } catch {} })(); }, []);
 
   const [job, setJob] = useState<GenJob | null>(null);
   const [course, setCourse] = useState<Course | null>(null);
@@ -250,7 +252,7 @@ export function CreateCourseForm() {
           </div>
         </Section>
 
-        <Section title={t('customize')}>
+        {policy.allow_instructor_custom !== false && (<Section title={t('customize')}>
           <label className="flex items-center gap-2 cursor-pointer">
             <input type="checkbox" checked={customOn} onChange={(e) => setCustomOn(e.target.checked)} className="h-4 w-4 rounded border-slate-300" />
             <span className="text-sm text-slate-700">{t('customize_toggle')}</span>
@@ -259,22 +261,22 @@ export function CreateCourseForm() {
             <div className="grid grid-cols-3 gap-3 mt-3">
               <div>
                 <label className="block text-xs font-medium text-slate-600 mb-1">{t('cust_modules')}</label>
-                <input type="number" min={1} max={12} value={cMods} onChange={(e) => setCMods(Math.min(12, Math.max(1, parseInt(e.target.value) || 1)))} className="w-full px-3 py-2 rounded-lg border border-slate-200 text-center font-semibold focus:outline-none focus:border-brand-400" />
+                <input type="number" min={policy.min_modules} max={policy.max_modules} value={cMods} onChange={(e) => setCMods(Math.min(policy.max_modules, Math.max(policy.min_modules, parseInt(e.target.value) || 1)))} className="w-full px-3 py-2 rounded-lg border border-slate-200 text-center font-semibold focus:outline-none focus:border-brand-400" />
               </div>
               <div>
                 <label className="block text-xs font-medium text-slate-600 mb-1">{t('cust_lessons')}</label>
-                <input type="number" min={1} max={10} value={cLessons} onChange={(e) => setCLessons(Math.min(10, Math.max(1, parseInt(e.target.value) || 1)))} className="w-full px-3 py-2 rounded-lg border border-slate-200 text-center font-semibold focus:outline-none focus:border-brand-400" />
+                <input type="number" min={policy.min_lessons} max={policy.max_lessons} value={cLessons} onChange={(e) => setCLessons(Math.min(policy.max_lessons, Math.max(policy.min_lessons, parseInt(e.target.value) || 1)))} className="w-full px-3 py-2 rounded-lg border border-slate-200 text-center font-semibold focus:outline-none focus:border-brand-400" />
               </div>
               <div>
                 <label className="block text-xs font-medium text-slate-600 mb-1">{t('cust_minutes')}</label>
                 <select value={cMins} onChange={(e) => setCMins(parseInt(e.target.value))} className="w-full px-3 py-2 rounded-lg border border-slate-200 text-center font-semibold focus:outline-none focus:border-brand-400">
-                  {[5, 10, 15, 20, 25, 30, 45, 60].map((m) => <option key={m} value={m}>{m}</option>)}
+                  {(policy.allowed_minutes || [5, 10, 15, 20, 25, 30, 45, 60]).map((m: number) => <option key={m} value={m}>{m}</option>)}
                 </select>
               </div>
             </div>
           )}
           {customOn && <p className="text-xs text-slate-500 mt-2">{t('cust_hint', { n: cMods * cLessons })}</p>}
-        </Section>
+        </Section>)}
 
         <Section title={t('tone_label')}>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
