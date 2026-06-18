@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 
 /**
- * Hero premium canónico das páginas públicas.
+ * Hero premium canónico das páginas públicas — tratamento "Aurora".
  * Theme-aware: usa exclusivamente tokens de marca (brand-*) e neutros do tema (slate-* remapeados).
  * Um único padrão para todas as páginas → consonância total.
  */
@@ -22,12 +22,14 @@ export function PageHero({
 }) {
   const centered = align === 'center';
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-brand-50 via-white to-brand-50/40 border-b border-slate-200/60">
+    <section className="relative overflow-hidden bg-gradient-to-br from-brand-50 via-white to-brand-100/40 border-b border-slate-200/60">
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute -top-24 left-[15%] h-72 w-72 sm:h-96 sm:w-96 rounded-full bg-brand-400/20 blur-3xl animate-pulse" />
-        <div className="absolute -bottom-24 right-[15%] h-72 w-72 sm:h-96 sm:w-96 rounded-full bg-brand-500/15 blur-3xl animate-pulse" style={{ animationDelay: '1.2s' }} />
+        <div className="absolute -top-32 left-[10%] h-96 w-96 rounded-full bg-brand-400/30 blur-3xl animate-pulse" />
+        <div className="absolute top-8 right-[8%] h-80 w-80 rounded-full bg-brand-300/30 blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="absolute -bottom-24 left-1/3 h-72 w-72 rounded-full bg-brand-500/20 blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
       </div>
-      <div className={`relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-12 sm:py-20 lg:py-24 ${centered ? 'text-center' : ''}`}>
+      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10" style={{ background: 'radial-gradient(60% 55% at 50% 0%, rgb(var(--brand-400) / 0.18), transparent 70%)' }} />
+      <div className={`relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-14 sm:py-20 lg:py-24 ${centered ? 'text-center' : ''}`}>
         {badge && (
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-brand-200 text-xs font-semibold text-brand-700 mb-4 sm:mb-5 shadow-sm max-w-full truncate">
             {badge}
