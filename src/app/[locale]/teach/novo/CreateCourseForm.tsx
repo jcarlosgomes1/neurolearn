@@ -55,6 +55,10 @@ export function CreateCourseForm() {
   const [tone, setTone] = useState<'didactic'|'practical'|'technical'|'inspirational'>('practical');
   const [includeVideo, setIncludeVideo] = useState(false);
   const [includeExercises, setIncludeExercises] = useState(true);
+  const [customOn, setCustomOn] = useState(false);
+  const [cMods, setCMods] = useState(5);
+  const [cLessons, setCLessons] = useState(4);
+  const [cMins, setCMins] = useState(25);
 
   const [job, setJob] = useState<GenJob | null>(null);
   const [course, setCourse] = useState<Course | null>(null);
@@ -124,9 +128,9 @@ export function CreateCourseForm() {
           config: {
             topic: prompt.trim(),
             level,
-            num_modules: dur[2],
-            lessons_per_module: dur[3],
-            avg_lesson_minutes: 25,
+            num_modules: customOn ? cMods : dur[2],
+            lessons_per_module: customOn ? cLessons : dur[3],
+            avg_lesson_minutes: customOn ? cMins : 25,
             tone,
             depth: duration === 'long' ? 'extensive' : duration === 'short' ? 'summary' : 'normal',
             formats,
@@ -244,6 +248,32 @@ export function CreateCourseForm() {
               </button>
             ))}
           </div>
+        </Section>
+
+        <Section title={t('customize')}>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={customOn} onChange={(e) => setCustomOn(e.target.checked)} className="h-4 w-4 rounded border-slate-300" />
+            <span className="text-sm text-slate-700">{t('customize_toggle')}</span>
+          </label>
+          {customOn && (
+            <div className="grid grid-cols-3 gap-3 mt-3">
+              <div>
+                <label className="block text-xs font-medium text-slate-600 mb-1">{t('cust_modules')}</label>
+                <input type="number" min={1} max={12} value={cMods} onChange={(e) => setCMods(Math.min(12, Math.max(1, parseInt(e.target.value) || 1)))} className="w-full px-3 py-2 rounded-lg border border-slate-200 text-center font-semibold focus:outline-none focus:border-brand-400" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-600 mb-1">{t('cust_lessons')}</label>
+                <input type="number" min={1} max={10} value={cLessons} onChange={(e) => setCLessons(Math.min(10, Math.max(1, parseInt(e.target.value) || 1)))} className="w-full px-3 py-2 rounded-lg border border-slate-200 text-center font-semibold focus:outline-none focus:border-brand-400" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-600 mb-1">{t('cust_minutes')}</label>
+                <select value={cMins} onChange={(e) => setCMins(parseInt(e.target.value))} className="w-full px-3 py-2 rounded-lg border border-slate-200 text-center font-semibold focus:outline-none focus:border-brand-400">
+                  {[5, 10, 15, 20, 25, 30, 45, 60].map((m) => <option key={m} value={m}>{m}</option>)}
+                </select>
+              </div>
+            </div>
+          )}
+          {customOn && <p className="text-xs text-slate-500 mt-2">{t('cust_hint', { n: cMods * cLessons })}</p>}
         </Section>
 
         <Section title={t('tone_label')}>
