@@ -13,6 +13,7 @@ import { TopBar } from '@/components/layout/TopBar';
 import { PeekBanner } from '@/components/peek/PeekBanner';
 import { createClient } from '@/lib/supabase/server';
 import { PageEnter } from '@/components/motion/PageEnter';
+import { AutoReveal } from '@/components/motion/AutoReveal';
 import '@/app/globals.css';
 
 export async function generateMetadata() {
@@ -93,6 +94,7 @@ export default async function LocaleLayout({
           <PeekBanner />
           <OnboardingGate />
           <PageEnter>{children}</PageEnter>
+          <AutoReveal />
           <Toaster richColors position="top-right" />
           <CookieBanner />
           <Telemetry />
