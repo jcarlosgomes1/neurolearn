@@ -30,10 +30,10 @@ html, body {
     /* escala tipográfica fluida — comum a todos os temas */
     --t-eyebrow: .6875rem;
     --t-caption: clamp(.75rem, .72rem + .13vw, .8125rem);
-    --t-h3: clamp(1.0625rem, 1rem + .3vw, 1.3125rem);
-    --t-h2: clamp(1.4375rem, 1.25rem + .85vw, 1.875rem);
-    --t-h1: clamp(1.875rem, 1.5rem + 1.6vw, 2.75rem);
-    --t-display: clamp(2.5rem, 1.7rem + 3.7vw, 4.25rem);
+    --t-h3: clamp(1.0625rem, 1rem + .28vw, 1.25rem);
+    --t-h2: clamp(1.375rem, 1.2rem + .78vw, 1.75rem);
+    --t-h1: clamp(1.75rem, 1.43rem + 1.42vw, 2.5rem);
+    --t-display: clamp(2.5rem, 1.7rem + 3.55vw, 4.25rem);
   }
 
   /* ===== Temas (config: design_active_direction) — trocados via data-theme no <html> ===== */
@@ -135,11 +135,11 @@ html, body {
   .text-pretty { text-wrap: pretty; }
 
   /* Tokens tipográficos semânticos (seguem o tema ativo) */
-  .t-display { font-family: var(--font-display); font-size: var(--t-display); font-weight: 520; line-height: 1.04; letter-spacing: -.02em; font-optical-sizing: auto; }
-  .t-h1 { font-family: var(--font-display); font-size: var(--t-h1); font-weight: 560; line-height: 1.07; letter-spacing: -.015em; }
-  .t-h2 { font-family: var(--font-display); font-size: var(--t-h2); font-weight: 540; line-height: 1.16; letter-spacing: -.01em; }
-  .t-h3 { font-family: var(--font-display); font-size: var(--t-h3); font-weight: 560; line-height: 1.28; }
-  .t-eyebrow { font-size: var(--t-eyebrow); font-weight: 600; text-transform: uppercase; letter-spacing: .11em; color: var(--ink-3); }
+  .t-display { font-family: var(--font-display); font-size: var(--t-display); font-weight: 700; line-height: 1.02; letter-spacing: -.025em; font-optical-sizing: auto; }
+  .t-h1 { font-family: var(--font-display); font-size: var(--t-h1); font-weight: 700; line-height: 1.08; letter-spacing: -.018em; }
+  .t-h2 { font-family: var(--font-display); font-size: var(--t-h2); font-weight: 600; line-height: 1.16; letter-spacing: -.012em; }
+  .t-h3 { font-family: var(--font-display); font-size: var(--t-h3); font-weight: 600; line-height: 1.3; }
+  .t-eyebrow { font-size: var(--t-eyebrow); font-weight: 600; text-transform: uppercase; letter-spacing: .09em; color: var(--accent); }
   .t-num { font-family: var(--font-num); font-weight: 500; font-feature-settings: "tnum" 1; letter-spacing: -.01em; }
 
   /* Assinatura: espinha de mestria (fio que enche do acento do tema) */
