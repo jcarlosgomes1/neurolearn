@@ -140,7 +140,7 @@ export function CourseEditor({ courseId, backHref, mode = 'instructor' }: Props)
         <nav className="flex gap-1 -mb-px overflow-x-auto">
           {(['info','modules','materials','publish'] as const).map((tk) => (
             <button key={tk} onClick={() => setTab(tk)} className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${tab === tk ? 'border-brand-600 text-brand-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>
-              {tk === 'info' ? t('tab_info') : tk === 'modules' ? t('tab_modules', { n: lessonCount }) : t('tab_publish')}
+              {tk === 'info' ? t('tab_info') : tk === 'modules' ? t('tab_modules', { n: lessonCount }) : tk === 'materials' ? t('tab_materials') : t('tab_publish')}
             </button>
           ))}
         </nav>
