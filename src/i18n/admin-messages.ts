@@ -8,6 +8,7 @@
 import type { AbstractIntlMessages } from 'next-intl';
 
 const PT = {
+  create_course: { tip_intro: "Descreve o tema e faz as escolhas abaixo. A estrutura e as aulas ficam prontas em segundos — revês e ajustas tudo antes de publicar.", tip_level: "Para quem é o curso. Ajusta a profundidade da linguagem e dos exemplos.", tip_depth: "Escolhe um tamanho típico — define quantos módulos e aulas o curso terá.", tip_customize: "Preferes controlar? Define o número exato de módulos, aulas e duração.", tip_tone: "A voz do curso — como o conteúdo comunica com quem aprende.", tip_types: "O que cada aula inclui: leitura, vídeo e/ou exercícios práticos.", building_hint: "A estruturar os módulos, a escrever as aulas e a preparar os exercícios. Demora cerca de um minuto." },
   shell: {
     role: { admin: 'Admin', instructor: 'Instrutor', student: 'Aluno' },
     group: {
@@ -63,6 +64,7 @@ const PT = {
 };
 
 const EN = {
+  create_course: { tip_intro: "Describe the topic and make the choices below. The structure and lessons are drafted for you — review and adjust everything before publishing.", tip_level: "Who the course is for. Sets the depth of language and examples.", tip_depth: "Pick a typical size — sets how many modules and lessons the course will have.", tip_customize: "Prefer full control? Set the exact number of modules, lessons and duration.", tip_tone: "The course's voice — how the content speaks to learners.", tip_types: "What each lesson includes: reading, video and/or hands-on exercises.", building_hint: "Structuring the modules, writing the lessons and preparing the exercises. Takes about a minute." },
   shell: {
     role: { admin: 'Admin', instructor: 'Instructor', student: 'Student' },
     group: {
@@ -118,6 +120,7 @@ const EN = {
 };
 
 const ES = {
+  create_course: { tip_intro: "Describe el tema y elige abajo. La estructura y las clases se preparan para ti — revisas y ajustas todo antes de publicar.", tip_level: "Para quién es el curso. Ajusta la profundidad del lenguaje y los ejemplos.", tip_depth: "Elige un tamaño típico — define cuántos módulos y clases tendrá el curso.", tip_customize: "¿Prefieres controlar? Define el número exacto de módulos, clases y duración.", tip_tone: "La voz del curso — cómo el contenido habla con quien aprende.", tip_types: "Qué incluye cada clase: lectura, vídeo y/o ejercicios prácticos.", building_hint: "Estructurando los módulos, escribiendo las clases y preparando los ejercicios. Tarda alrededor de un minuto." },
   shell: {
     role: { admin: 'Admin', instructor: 'Instructor', student: 'Estudiante' },
     group: {
@@ -173,6 +176,7 @@ const ES = {
 };
 
 const FR = {
+  create_course: { tip_intro: "Décrivez le sujet et faites vos choix ci-dessous. La structure et les leçons sont préparées pour vous — vous révisez et ajustez tout avant de publier.", tip_level: "À qui s'adresse le cours. Ajuste le niveau du langage et des exemples.", tip_depth: "Choisissez une taille type — définit le nombre de modules et de leçons.", tip_customize: "Vous préférez tout contrôler ? Définissez le nombre exact de modules, leçons et la durée.", tip_tone: "La voix du cours — comment le contenu s'adresse aux apprenants.", tip_types: "Ce que contient chaque leçon : lecture, vidéo et/ou exercices pratiques.", building_hint: "Structuration des modules, rédaction des leçons et préparation des exercices. Cela prend environ une minute." },
   shell: {
     role: { admin: 'Admin', instructor: 'Formateur', student: 'Étudiant' },
     group: {
