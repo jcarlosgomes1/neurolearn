@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeuroLearn · conceitos premium (animados)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono&family=Inter:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#101116;font-family:'Inter',system-ui,sans-serif}
+  .hint{max-width:760px;margin:0 auto;padding:20px;color:#c9c9d2;font-size:.83rem;text-align:center;line-height:1.6}
+  .hint b{color:#fff}
+  .scene{max-width:760px;margin:0 auto 28px;border-radius:28px;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.45)}
+
+  /* ===================== AURORA (escura) ===================== */
+  .aurora{position:relative;background:#08090d;color:#f2f3f7;padding:48px 30px 54px;overflow:hidden;isolation:isolate}
+  .aurora .blob{position:absolute;border-radius:50%;filter:blur(60px);opacity:.55;z-index:-1}
+  .aurora .b1{top:-120px;right:-80px;width:340px;height:340px;background:radial-gradient(circle,#7c5cff,transparent 70%)}
+  .aurora .b2{bottom:-140px;left:-90px;width:320px;height:320px;background:radial-gradient(circle,#27d3c4,transparent 70%)}
+  .aurora .b3{top:40%;left:30%;width:240px;height:240px;background:radial-gradient(circle,#ff7ab8,transparent 70%);opacity:.35}
+  .eyebrow-d{font-family:'Space Mono',monospace;font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:#9bd}
+  .eyebrow-d b{color:#9be15d}
+  .title-d{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(2.7rem,1.5rem+5.4vw,4.2rem);line-height:1.0;letter-spacing:-.03em;margin-top:18px}
+  .title-d .grad{background:linear-gradient(100deg,#9be15d,#27d3c4 60%,#7c5cff);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub-d{font-family:'Inter';font-size:1.06rem;line-height:1.6;color:#aab0c0;margin-top:22px;max-width:38ch}
+  .sparkline{position:relative;height:2px;background:linear-gradient(90deg,transparent,#2a2e3a,transparent);margin:34px 0 6px;overflow:hidden}
+  .sparkline i{position:absolute;top:-3px;left:0;width:64px;height:8px;border-radius:8px;background:linear-gradient(90deg,transparent,#9be15d,transparent)}
+  .cta-d{display:inline-flex;align-items:center;gap:10px;margin-top:28px;font-family:'Space Grotesk';font-weight:600;font-size:1rem;color:#08090d;background:linear-gradient(100deg,#9be15d,#27d3c4);padding:15px 26px;border-radius:14px;text-decoration:none;transition:transform .25s ease,box-shadow .25s ease}
+  .cta-d:hover{transform:translateY(-2px);box-shadow:0 14px 34px rgba(155,225,93,.3)}
+  .chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:28px}
+  .chip-d{font-family:'Space Mono';font-size:.72rem;color:#cfd3de;border:1px solid #23262f;background:#0f1117;border-radius:999px;padding:7px 13px}
+  .chip-d b{color:#9be15d}
+
+  /* ===================== CLAY (clara, estilo Anthropic) ===================== */
+  .clay{position:relative;background:#faf9f5;color:#1a1714;padding:50px 32px 56px;overflow:hidden}
+  .clay .warm{position:absolute;top:-100px;right:-60px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(201,100,66,.18),transparent 70%);filter:blur(20px)}
+  .eyebrow-l{font-family:'Inter';font-size:.72rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#c96442}
+  .title-l{font-family:'Newsreader',Georgia,serif;font-weight:500;font-size:clamp(3rem,1.8rem+5.6vw,4.8rem);line-height:1.04;letter-spacing:-.015em;margin-top:16px;color:#1a1714}
+  .title-l em{font-style:italic;color:#c96442;font-weight:500}
+  .sub-l{font-family:'Inter';font-size:1.08rem;line-height:1.65;color:#5c544c;margin-top:22px;max-width:40ch}
+  .rule-l{height:1px;background:#1a171418;margin:32px 0 24px}
+  .row-l{display:flex;gap:30px;flex-wrap:wrap;align-items:baseline}
+  .stat-l{font-family:'Newsreader',serif;font-weight:500;font-size:2.7rem;color:#1a1714;line-height:1}
+  .stat-l small{display:block;font-family:'Inter';font-size:.7rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#a59b8f;margin-top:8px}
+  .cta-l{display:inline-flex;align-items:center;gap:10px;margin-top:30px;font-family:'Inter';font-weight:600;font-size:1rem;color:#faf9f5;background:#c96442;padding:15px 28px;border-radius:12px;text-decoration:none;transition:transform .25s ease,box-shadow .25s ease,background .25s ease}
+  .cta-l:hover{transform:translateY(-2px);background:#b4583a;box-shadow:0 14px 30px rgba(201,100,66,.28)}
+  .label{font-family:'Inter';font-size:.7rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;display:inline-block;padding:6px 12px;border-radius:999px;margin-bottom:6px}
+
+  /* ===================== animação (com respeito por reduced-motion) ===================== */
+  @media (prefers-reduced-motion: no-preference){
+    .fu{opacity:0;animation:fadeUp .8s cubic-bezier(.2,.7,.2,1) forwards}
+    .d1{animation-delay:.06s}.d2{animation-delay:.16s}.d3{animation-delay:.28s}.d4{animation-delay:.42s}.d5{animation-delay:.56s}
+    .aurora .b1{animation:drift 17s ease-in-out infinite alternate}
+    .aurora .b2{animation:drift2 21s ease-in-out infinite alternate}
+    .aurora .b3{animation:drift 14s ease-in-out infinite alternate}
+    .clay .warm{animation:drift 19s ease-in-out infinite alternate}
+    .sparkline i{animation:sweep 3.2s ease-in-out infinite}
+  }
+  @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+  @keyframes drift{0%{transform:translate(0,0) scale(1)}100%{transform:translate(46px,-34px) scale(1.18)}}
+  @keyframes drift2{0%{transform:translate(0,0) scale(1)}100%{transform:translate(-34px,24px) scale(1.12)}}
+  @keyframes sweep{0%{transform:translateX(-120%)}55%{transform:translateX(360%)}100%{transform:translateX(360%)}}
+</style>
+</head>
+<body>
+  <div class="hint"><b>Conceitos premium, animados — fontes reais.</b><br>Abre no Chrome (não no preview do chat). Em cima a escura "Aurora", em baixo a clara "Clay". Repara no movimento subtil.</div>
+
+  <!-- AURORA -->
+  <div class="scene">
+    <div class="aurora">
+      <span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span>
+      <span class="label fu d1" style="background:#9be15d;color:#08090d">ESCURA · AURORA</span>
+      <div class="eyebrow-d fu d1">// aprender &nbsp;·&nbsp; <b>provar</b> &nbsp;·&nbsp; trabalhar</div>
+      <div class="title-d fu d2">Do primeiro<br>conceito ao <span class="grad">emprego.</span></div>
+      <p class="sub-d fu d3">Uma rede viva que liga o que aprendes às competências que provas — e ao trabalho que se segue.</p>
+      <div class="sparkline fu d3"><i></i></div>
+      <div class="chips fu d4">
+        <span class="chip-d">Certificado <b>verificável</b></span>
+        <span class="chip-d"><b>4.8</b>/5 · 1 240 alunos</span>
+        <span class="chip-d">8 módulos</span>
+      </div>
+      <a class="cta-d fu d5" href="#">Começar agora →</a>
+    </div>
+  </div>
+
+  <!-- CLAY -->
+  <div class="scene">
+    <div class="clay">
+      <span class="warm"></span>
+      <span class="label fu d1" style="background:#1a1714;color:#faf9f5">CLARA · CLAY</span>
+      <div class="eyebrow-l fu d1">Plataforma de aprendizagem</div>
+      <div class="title-l fu d2">Aprende com <em>profundidade.</em></div>
+      <p class="sub-l fu d3">Conhecimento sério, ao teu ritmo, com certificado verificável e um caminho claro até ao trabalho.</p>
+      <div class="rule-l fu d3"></div>
+      <div class="row-l fu d4">
+        <div class="stat-l">1 240<small>Alunos</small></div>
+        <div class="stat-l">4,8<small>Avaliação</small></div>
+        <div class="stat-l">96%<small>Conclusão</small></div>
+      </div>
+      <a class="cta-l fu d5" href="#">Explorar cursos →</a>
+    </div>
+  </div>
+
+  <div class="hint">Qual te faz dizer <b>uau</b>? Diz <b>Aurora</b> ou <b>Clay</b> — e o que afinarias. Depois reconstruímos os componentes nessa identidade (a sério, não por cima).</div>
+</body>
+</html>
