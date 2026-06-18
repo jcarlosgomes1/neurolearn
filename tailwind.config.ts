@@ -1,23 +1,35 @@
 import type { Config } from 'tailwindcss';
 
+// Rampa única ligada às CSS vars da direção de design ativa (injetadas pelo layout
+// a partir de nl_design_directions). As famílias "de marca" (brand + violet/indigo/
+// purple/fuchsia) apontam TODAS para a mesma rampa Clay — assim qualquer página
+// (blog incluído) segue a direção ativa, sem cores hardcoded. Famílias semânticas
+// (emerald/amber/rose/teal/blue…) ficam intactas de propósito.
+const brandRamp = {
+  50: 'rgb(var(--brand-50) / <alpha-value>)',
+  100: 'rgb(var(--brand-100) / <alpha-value>)',
+  200: 'rgb(var(--brand-200) / <alpha-value>)',
+  300: 'rgb(var(--brand-300) / <alpha-value>)',
+  400: 'rgb(var(--brand-400) / <alpha-value>)',
+  500: 'rgb(var(--brand-500) / <alpha-value>)',
+  600: 'rgb(var(--brand-600) / <alpha-value>)',
+  700: 'rgb(var(--brand-700) / <alpha-value>)',
+  800: 'rgb(var(--brand-800) / <alpha-value>)',
+  900: 'rgb(var(--brand-900) / <alpha-value>)',
+  950: 'rgb(var(--brand-900) / <alpha-value>)',
+};
+
 const config: Config = {
   content: ['./src/**/*.{ts,tsx,mdx}'],
   darkMode: 'class',
   theme: {
     extend: {
       colors: {
-        brand: {
-          50: 'rgb(var(--brand-50) / <alpha-value>)',
-          100: 'rgb(var(--brand-100) / <alpha-value>)',
-          200: 'rgb(var(--brand-200) / <alpha-value>)',
-          300: 'rgb(var(--brand-300) / <alpha-value>)',
-          400: 'rgb(var(--brand-400) / <alpha-value>)',
-          500: 'rgb(var(--brand-500) / <alpha-value>)',
-          600: 'rgb(var(--brand-600) / <alpha-value>)',
-          700: 'rgb(var(--brand-700) / <alpha-value>)',
-          800: 'rgb(var(--brand-800) / <alpha-value>)',
-          900: 'rgb(var(--brand-900) / <alpha-value>)',
-        },
+        brand: brandRamp,
+        violet: brandRamp,
+        indigo: brandRamp,
+        purple: brandRamp,
+        fuchsia: brandRamp,
         accent: 'var(--accent)',
         'accent-bright': 'var(--accent-bright)',
       },
@@ -38,11 +50,11 @@ const config: Config = {
         DEFAULT: {
           css: {
             maxWidth: 'none',
-            color: '#4b463d',
-            '--tw-prose-headings': '#23211c',
-            '--tw-prose-bold': '#23211c',
-            '--tw-prose-links': '#0f6b63',
-            '--tw-prose-quote-borders': '#0f6b63',
+            color: 'var(--ink-2)',
+            '--tw-prose-headings': 'var(--ink)',
+            '--tw-prose-bold': 'var(--ink)',
+            '--tw-prose-links': 'var(--accent)',
+            '--tw-prose-quote-borders': 'var(--accent)',
             fontSize: '1.0625rem',
             lineHeight: '1.7',
             h2: { fontWeight: '700', marginTop: '2.5em', marginBottom: '0.75em' },
