@@ -91,6 +91,7 @@ export default async function LocaleLayout({
         </ClientIntlProvider>
         <Analytics />
         <SpeedInsights />
+        <script dangerouslySetInnerHTML={{ __html: "(function(){try{var d=document,r=d.documentElement;if(!('IntersectionObserver' in window))return;r.classList.add('nl-js');var n=[].slice.call(d.querySelectorAll('main section, main [data-reveal]'));if(!n.length)return;n.forEach(function(e){e.setAttribute('data-nlr','');});var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('nlr-in');io.unobserve(e.target);}});},{rootMargin:'0px 0px -8% 0px',threshold:.05});n.forEach(function(e){io.observe(e);});setTimeout(function(){n.forEach(function(e){e.classList.add('nlr-in');});},2500);}catch(e){}})();" }} />
       </body>
     </html>
   );

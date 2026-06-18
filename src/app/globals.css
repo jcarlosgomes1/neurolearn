@@ -161,3 +161,12 @@ html, body {
 [data-theme-mode="dark"] .bg-gradient-to-br,[data-theme-mode="dark"] .bg-gradient-to-b,[data-theme-mode="dark"] .bg-gradient-to-r,[data-theme-mode="dark"] .bg-gradient-to-tr{background-image:none!important;background-color:var(--card)!important}
 [data-theme-mode="dark"] .bg-brand-600,[data-theme-mode="dark"] .bg-brand-500{color:#0a0b0d!important}
 [data-theme-mode="dark"] .shadow-sm,[data-theme-mode="dark"] .shadow,[data-theme-mode="dark"] .shadow-md,[data-theme-mode="dark"] .shadow-lg,[data-theme-mode="dark"] .shadow-xl{box-shadow:0 8px 30px rgba(0,0,0,.45)!important}
+
+
+/* ===== Movimento premium: revelacao suave ao scroll + transicoes (estilo Anthropic) ===== */
+html{scroll-behavior:smooth}
+a,button{transition:color .18s ease,background-color .18s ease,border-color .18s ease,box-shadow .25s ease,transform .18s ease}
+@media (prefers-reduced-motion: no-preference){
+  html.nl-js [data-nlr]{opacity:0;transform:translateY(18px);will-change:opacity,transform}
+  html.nl-js [data-nlr].nlr-in{opacity:1;transform:none;transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+}
