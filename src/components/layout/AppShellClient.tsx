@@ -5,6 +5,7 @@ import { UserMenu } from './UserMenu';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { LayoutDashboard, ListTodo, Wrench, Radio, HeartPulse, BookOpen, Library, Route, Search, Package, ListChecks, FlaskConical, Award, Trophy, Gamepad2, Video, Mic, ShieldCheck, Star, Eye, Users, GraduationCap, FileCheck, Building2, BadgeEuro, ScrollText, FileText, TrendingUp, DollarSign, CreditCard, Receipt, Undo2, Coins, Ticket, ArrowUpCircle, PlusCircle, Link2, LineChart, Filter, BarChart3, Gem, Megaphone, Share2, CalendarDays, Mail, Hourglass, Inbox, LayoutTemplate, Files, PanelTop, Compass, SearchCheck, Cpu, SlidersHorizontal, MessageSquare, Sparkles, Lightbulb, Bot, Plane, Brain, Banknote, Clock, Workflow, Bug, FileSearch, Activity, ClipboardCheck, Server, Plug, Fingerprint, Shield, KeyRound, Settings2, Globe, ToggleLeft, Palette } from 'lucide-react';
 
 interface Session { email: string; area: 'student' | 'instructor' | 'admin'; areas: Array<'student' | 'instructor' | 'admin'> }
 interface NavItem { href: string; labelKey: string; emoji: string; groupKey: string; badge?: string }
@@ -97,7 +98,7 @@ function CommandPalette({ open, onClose, items, t }: { open: boolean; onClose: (
           ) : results.map((r, i) => (
             <button key={r.it.href} onMouseEnter={() => setHi(i)} onClick={() => go(r.it.href)}
               className={`w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors ${i === hi ? 'bg-brand-50 text-brand-700' : 'text-slate-700 hover:bg-slate-50'}`}>
-              <span className="text-base flex-shrink-0">{r.it.emoji}</span>
+              <NavIcon name={r.it.emoji} className="h-[18px] w-[18px] flex-shrink-0" />
               <span className="flex-1 truncate font-medium">{r.label}</span>
               {r.group && <span className="text-[11px] text-slate-400 flex-shrink-0">{r.group}</span>}
             </button>
@@ -206,7 +207,7 @@ export function AppShellClient({ role, pageTitle, session, nav, collapsedPref, c
               return (
                 <Link key={item.href} href={item.href as any} title={ilabel} aria-label={ilabel}
                   className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl transition-colors ${active ? 'bg-brand-50 ring-1 ring-brand-200' : 'hover:bg-slate-50'}`}>
-                  <span>{item.emoji}</span>
+                  <NavIcon name={item.emoji} className="h-5 w-5" />
                 </Link>
               );
             })}
@@ -246,6 +247,23 @@ export function AppShellClient({ role, pageTitle, session, nav, collapsedPref, c
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} items={nav} t={t} />
     </div>
   );
+}
+
+const NAV_ICONS: Record<string, any> = {
+  'layout-dashboard': LayoutDashboard, 'list-todo': ListTodo, 'wrench': Wrench, 'radio': Radio, 'heart-pulse': HeartPulse,
+  'book-open': BookOpen, 'library': Library, 'route': Route, 'search': Search, 'package': Package, 'list-checks': ListChecks, 'flask-conical': FlaskConical, 'award': Award, 'trophy': Trophy, 'gamepad-2': Gamepad2, 'video': Video, 'mic': Mic, 'shield-check': ShieldCheck, 'star': Star, 'eye': Eye,
+  'users': Users, 'graduation-cap': GraduationCap, 'file-check': FileCheck, 'building-2': Building2, 'badge-euro': BadgeEuro, 'scroll-text': ScrollText, 'file-text': FileText,
+  'trending-up': TrendingUp, 'dollar-sign': DollarSign, 'credit-card': CreditCard, 'receipt': Receipt, 'undo-2': Undo2, 'coins': Coins, 'ticket': Ticket, 'arrow-up-circle': ArrowUpCircle, 'plus-circle': PlusCircle, 'link-2': Link2, 'line-chart': LineChart, 'filter': Filter, 'bar-chart-3': BarChart3, 'gem': Gem,
+  'megaphone': Megaphone, 'share-2': Share2, 'calendar-days': CalendarDays, 'mail': Mail, 'hourglass': Hourglass, 'inbox': Inbox, 'layout-template': LayoutTemplate, 'files': Files, 'panel-top': PanelTop, 'compass': Compass, 'search-check': SearchCheck,
+  'cpu': Cpu, 'sliders-horizontal': SlidersHorizontal, 'message-square': MessageSquare, 'sparkles': Sparkles, 'lightbulb': Lightbulb, 'bot': Bot, 'plane': Plane, 'brain': Brain, 'banknote': Banknote, 'clock': Clock, 'workflow': Workflow, 'bug': Bug, 'file-search': FileSearch, 'activity': Activity, 'clipboard-check': ClipboardCheck, 'server': Server, 'plug': Plug, 'fingerprint': Fingerprint, 'shield': Shield, 'key-round': KeyRound, 'settings-2': Settings2, 'globe': Globe, 'toggle-left': ToggleLeft, 'palette': Palette,
+};
+
+function NavIcon({ name, className }: { name?: string; className?: string }) {
+  const Cmp = name ? NAV_ICONS[name] : null;
+  if (Cmp) {
+    return <Cmp className={className} strokeWidth={1.75} style={{ filter: 'drop-shadow(0 1px 0.5px rgba(255,255,255,0.75)) drop-shadow(0 -1px 0.5px rgba(2,6,23,0.16))' }} />;
+  }
+  return <span className={`inline-flex items-center justify-center ${className || ''}`} style={{ fontSize: '1.05rem', lineHeight: 1 }}>{name}</span>;
 }
 
 function SidebarContent({ groups, isActive, t }: { groups: { groupKey: string; items: NavItem[] }[]; isActive: (href: string) => boolean; t: any }) {
@@ -295,7 +313,7 @@ function SidebarContent({ groups, isActive, t }: { groups: { groupKey: string; i
                   return (
                     <Link key={item.href} href={item.href as any}
                       className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${active ? 'bg-brand-50 text-brand-700' : 'text-slate-700 hover:bg-slate-50'}`}>
-                      <span className="text-base flex-shrink-0">{item.emoji}</span>
+                      <NavIcon name={item.emoji} className="h-[18px] w-[18px] flex-shrink-0" />
                       <span className="truncate flex-1">{ilabel}</span>
                       {item.badge && (
                         <span className="text-[9px] bg-fuchsia-100 text-fuchsia-700 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider flex-shrink-0">{item.badge}</span>
