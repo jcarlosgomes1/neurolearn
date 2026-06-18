@@ -192,7 +192,7 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
                 <p className="text-sm text-slate-600 mb-4">{t('cdp.in_paths_sub')}</p>
                 <div className="flex flex-col gap-2">
                   {coursePaths.map((p: any) => (
-                    <Link key={p.id} href={`/aprender/percursos/${p.slug}` as any} className="group flex items-center gap-3 bg-white rounded-xl border border-violet-100 px-4 py-3 hover:border-violet-300 hover:shadow-sm transition-all min-w-0 max-w-full">
+                    <Link key={p.id} href={`/percursos/${p.slug}` as any} className="group flex items-center gap-3 bg-white rounded-xl border border-violet-100 px-4 py-3 hover:border-violet-300 hover:shadow-sm transition-all min-w-0 max-w-full">
                       <span className="text-2xl flex-shrink-0">{p.emoji || '\u{1F393}'}</span>
                       <div className="min-w-0 flex-1">
                         <div className="font-semibold text-slate-900 group-hover:text-violet-700 transition-colors truncate">{p.title}</div>
