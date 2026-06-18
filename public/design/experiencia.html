@@ -3,72 +3,62 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NeuroLearn · experiência (Anthropic + gamificação)</title>
+<title>NeuroLearn · experiência (2 sans + gamificação)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=Space+Mono&display=swap" rel="stylesheet">
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   :root{--cream:#faf9f5;--card:#fffefb;--ink:#1a1714;--ink2:#5c544c;--ink3:#9a9085;--line:rgba(26,23,20,.10);--clay:#c96442;--clay-d:#b4583a;--amber:#d99a52;--teal:#4a8c7e;--green:#4f9d69}
   body{background:var(--cream);color:var(--ink);font-family:'Inter',system-ui,sans-serif;line-height:1.6}
-  .wrap{max-width:720px;margin:0 auto;padding:0 20px 60px}
+  .wrap{max-width:720px;margin:0 auto;padding:0 20px 64px}
   .hint{padding:20px;color:var(--ink2);font-size:.83rem;text-align:center;line-height:1.6}
   .hint b{color:var(--ink)}
 
-  /* ---------- HERO (Anthropic / clay) ---------- */
-  .hero{position:relative;padding:46px 4px 30px;overflow:hidden}
-  .hero .warm{position:absolute;top:-110px;right:-70px;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(201,100,66,.16),transparent 70%);filter:blur(20px);z-index:0}
+  .hero{position:relative;padding:38px 4px 30px;overflow:hidden;border-bottom:1px solid var(--line)}
+  .hero .warm{position:absolute;top:-110px;right:-70px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(201,100,66,.16),transparent 70%);filter:blur(20px);z-index:0}
   .hero>*{position:relative;z-index:1}
-  .eyebrow{font-size:.72rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--clay)}
-  .h-title{font-family:'Newsreader',Georgia,serif;font-weight:500;font-size:clamp(2.9rem,1.8rem+5vw,4.4rem);line-height:1.04;letter-spacing:-.015em;margin-top:14px}
-  .h-title em{font-style:italic;color:var(--clay)}
-  .h-sub{font-size:1.06rem;color:var(--ink2);margin-top:20px;max-width:40ch}
-  .h-cta{display:inline-flex;align-items:center;gap:9px;margin-top:26px;font-weight:600;color:var(--cream);background:var(--clay);padding:14px 26px;border-radius:12px;text-decoration:none;box-shadow:0 6px 0 var(--clay-d);transition:transform .12s ease,box-shadow .12s ease}
-  .h-cta:active{transform:translateY(4px);box-shadow:0 2px 0 var(--clay-d)}
+  .tag{display:inline-block;font-size:.7rem;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:#fff;background:var(--clay);padding:6px 12px;border-radius:999px}
+  .tag.b{background:var(--ink)}
+  .fontnote{font-size:.74rem;color:var(--ink3);margin-top:12px;font-weight:600;letter-spacing:.02em}
+  .title{font-weight:700;font-size:clamp(2.7rem,1.7rem+5vw,4.2rem);line-height:1.02;letter-spacing:-.025em;margin-top:8px;color:var(--ink)}
+  .title .ac{color:var(--clay)}
+  .title-a{font-family:'Hanken Grotesk','Inter',sans-serif}
+  .title-b{font-family:'Space Grotesk','Inter',sans-serif}
+  .sub{font-size:1.04rem;color:var(--ink2);margin-top:18px;max-width:40ch}
+  .cta{display:inline-flex;align-items:center;gap:9px;margin-top:22px;font-weight:600;color:var(--cream);background:var(--clay);padding:13px 24px;border-radius:12px;text-decoration:none;box-shadow:0 5px 0 var(--clay-d);transition:transform .12s,box-shadow .12s}
+  .cta:active{transform:translateY(4px);box-shadow:0 1px 0 var(--clay-d)}
+  .cta-b{box-shadow:0 5px 0 #2a2520;background:var(--ink)}
+  .cta-b:active{box-shadow:0 1px 0 #2a2520}
 
-  .section-label{font-family:'Newsreader',serif;font-style:italic;font-size:1.5rem;color:var(--ink);margin:18px 0 14px}
-
-  /* ---------- cards grid ---------- */
+  .section-label{font-weight:800;font-size:.75rem;letter-spacing:.13em;text-transform:uppercase;color:var(--ink3);margin:30px 0 14px}
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
   .g-card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:0 2px 10px rgba(26,23,20,.04);position:relative;overflow:hidden}
   .g-card.full{grid-column:1 / -1}
   .g-h{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}
-
-  /* anel objetivo */
   .ring-wrap{display:flex;align-items:center;gap:16px;margin-top:12px}
   .ring{width:96px;height:96px;flex:0 0 auto;transform:rotate(-90deg)}
   .ring .bg{fill:none;stroke:#efe9e0;stroke-width:11}
   .ring .fg{fill:none;stroke:var(--clay);stroke-width:11;stroke-linecap:round;stroke-dasharray:283;stroke-dashoffset:283}
-  .ring-num{font-size:1.6rem;font-weight:800;color:var(--ink)}
-  .ring-cap{font-size:.85rem;color:var(--ink2)}
-
-  /* streak */
+  .ring-num{font-size:1.6rem;font-weight:800}.ring-cap{font-size:.85rem;color:var(--ink2)}
   .flame{font-size:2.6rem;display:inline-block;transform-origin:50% 80%}
-  .streak-num{font-size:2.2rem;font-weight:800}
-  .streak-cap{font-size:.85rem;color:var(--ink2)}
-
-  /* xp bar */
-  .xp-top{display:flex;justify-content:space-between;align-items:baseline;margin-top:10px}
-  .lvl{font-weight:800;color:var(--ink)}
+  .streak-num{font-size:2.2rem;font-weight:800}.streak-cap{font-size:.85rem;color:var(--ink2)}
+  .xp-top{display:flex;justify-content:space-between;align-items:baseline;margin-top:10px}.lvl{font-weight:800}
   .xp-bar{height:14px;border-radius:99px;background:#efe9e0;overflow:hidden;margin-top:10px}
   .xp-fill{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--amber),var(--clay));position:relative}
   .xp-fill::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.5),transparent);transform:translateX(-100%)}
   .xp-float{position:absolute;right:20px;top:42px;font-weight:800;color:var(--clay);opacity:0}
-
-  /* correto + confete */
   .correct{display:flex;align-items:center;gap:14px;margin-top:6px}
   .check{width:54px;height:54px;flex:0 0 auto;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;transform:scale(0)}
   .check svg{width:28px;height:28px;stroke:#fff;stroke-width:3.5;fill:none}
-  .correct-txt{font-family:'Newsreader',serif;font-style:italic;font-size:1.7rem;color:var(--green)}
+  .correct-txt{font-weight:800;font-size:1.4rem;color:var(--green)}
   .confetti{position:absolute;left:47px;top:46px;width:0;height:0;z-index:5}
   .confetti i{position:absolute;width:9px;height:9px;border-radius:2px;opacity:0}
-
-  /* badge concluido */
   .badge-wrap{display:flex;align-items:center;gap:16px;margin-top:8px}
   .badge{position:relative;width:74px;height:74px;flex:0 0 auto;border-radius:20px;background:linear-gradient(135deg,var(--amber),var(--clay));display:flex;align-items:center;justify-content:center;font-size:2rem;transform:scale(0)}
   .badge::before,.badge::after{content:"";position:absolute;inset:0;border-radius:20px;border:2px solid var(--clay);opacity:0}
+  .bt{font-weight:700;font-size:1.15rem}
 
-  /* ---------- animação ---------- */
   @media (prefers-reduced-motion: no-preference){
     .fu{opacity:0;animation:fadeUp .8s cubic-bezier(.2,.7,.2,1) forwards}
     .d1{animation-delay:.05s}.d2{animation-delay:.15s}.d3{animation-delay:.28s}.d4{animation-delay:.42s}
@@ -98,22 +88,31 @@
 </style>
 </head>
 <body>
-  <div class="hint"><b>A experiência: Anthropic + gamificação.</b><br>Abre no Chrome. Estética quente e premium, com micro-animações que prendem (anel, streak, XP, "correto", conclusão).</div>
+  <div class="hint"><b>Duas sans, mesma identidade Clay (estética Anthropic) + gamificação.</b><br>Abre no Chrome. Compara os títulos A vs B. Ambas já são ativáveis em /admin/design (dir7 e dir8).</div>
 
   <div class="wrap">
-    <!-- HERO -->
+    <!-- HERO A -->
     <section class="hero">
       <span class="warm"></span>
-      <div class="eyebrow fu d1">Plataforma de aprendizagem</div>
-      <h1 class="h-title fu d2">Aprende com <em>profundidade.</em></h1>
-      <p class="h-sub fu d3">Ao teu ritmo, com o prazer de evoluir todos os dias — e um caminho claro até ao trabalho.</p>
-      <a class="h-cta fu d4" href="#">Começar agora →</a>
+      <span class="tag fu d1">Opção A · Clay Limpa</span>
+      <div class="fontnote fu d1">Títulos: Hanken Grotesk (geométrica, limpa)</div>
+      <h1 class="title title-a fu d2">Aprende com <span class="ac">profundidade.</span></h1>
+      <p class="sub fu d3">Ao teu ritmo, com o prazer de evoluir todos os dias — e um caminho claro até ao trabalho.</p>
+      <a class="cta fu d4" href="#">Começar agora →</a>
     </section>
 
-    <div class="section-label">O que te faz voltar amanhã</div>
+    <!-- HERO B -->
+    <section class="hero">
+      <span class="warm"></span>
+      <span class="tag b fu d1">Opção B · Clay Carácter</span>
+      <div class="fontnote fu d1">Títulos: Space Grotesk (grotesca com carácter)</div>
+      <h1 class="title title-b fu d2">Aprende com <span class="ac">profundidade.</span></h1>
+      <p class="sub fu d3">Ao teu ritmo, com o prazer de evoluir todos os dias — e um caminho claro até ao trabalho.</p>
+      <a class="cta cta-b fu d4" href="#">Começar agora →</a>
+    </section>
 
+    <div class="section-label">A gamificação que te faz voltar (igual nas duas)</div>
     <div class="grid">
-      <!-- ANEL OBJETIVO -->
       <div class="g-card">
         <div class="g-h">Objetivo diário</div>
         <div class="ring-wrap">
@@ -121,8 +120,6 @@
           <div><div class="ring-num" data-count="8">8</div><div class="ring-cap">de 10 lições</div></div>
         </div>
       </div>
-
-      <!-- STREAK -->
       <div class="g-card">
         <div class="g-h">Sequência</div>
         <div style="display:flex;align-items:center;gap:12px;margin-top:14px">
@@ -130,16 +127,12 @@
           <div><div class="streak-num" data-count="12">12</div><div class="streak-cap">dias seguidos</div></div>
         </div>
       </div>
-
-      <!-- XP -->
       <div class="g-card full">
         <div class="xp-top"><div class="g-h">Nível</div><div class="lvl">Nível 7</div></div>
         <div class="xp-bar"><div class="xp-fill"></div></div>
         <div class="xp-float">+40 XP</div>
         <div style="font-size:.82rem;color:var(--ink2);margin-top:10px">720 / 1000 XP para o Nível 8</div>
       </div>
-
-      <!-- CORRETO + CONFETE -->
       <div class="g-card full">
         <div class="g-h">Resposta certa</div>
         <div class="confetti">
@@ -156,34 +149,26 @@
           <div class="correct-txt">Boa! Acertaste.</div>
         </div>
       </div>
-
-      <!-- BADGE CONCLUIDO -->
       <div class="g-card full">
         <div class="g-h">Lição concluída</div>
         <div class="badge-wrap">
           <div class="badge">🏆</div>
-          <div>
-            <div style="font-family:'Newsreader',serif;font-style:italic;font-size:1.4rem">Módulo 3 dominado</div>
-            <div style="font-size:.85rem;color:var(--ink2);margin-top:2px">Ganhaste um certificado verificável</div>
-          </div>
+          <div><div class="bt">Módulo 3 dominado</div><div style="font-size:.85rem;color:var(--ink2);margin-top:2px">Ganhaste um certificado verificável</div></div>
         </div>
       </div>
     </div>
 
-    <div class="hint" style="margin-top:30px">É este o rumo? Diz <b>sim</b> (ou o que mudarias) e adapto o sistema real da plataforma a esta identidade — cores, tipografia e estas micro-animações em todo o produto.</div>
+    <div class="hint" style="margin-top:30px">Diz <b>A</b> ou <b>B</b>. Já podes também ativar cada uma em <b>/admin/design</b> (Clay · Limpa / Clay · Carácter). Escolhida a fonte, ligo estas micro-animações aos sítios reais (fim de aula, acerto, streak, nível).</div>
   </div>
 
   <script>
-    (function(){
-      try{
-        var els=document.querySelectorAll('[data-count]');
-        els.forEach(function(el){
-          var end=parseInt(el.getAttribute('data-count'),10)||0, start=0, dur=1200, t0=null;
-          function step(ts){ if(!t0)t0=ts; var p=Math.min((ts-t0)/dur,1); el.textContent=Math.round(start+(end-start)*(p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2)); if(p<1)requestAnimationFrame(step);}
-          setTimeout(function(){requestAnimationFrame(step);},500);
-        });
-      }catch(e){}
-    })();
+    (function(){try{
+      document.querySelectorAll('[data-count]').forEach(function(el){
+        var end=parseInt(el.getAttribute('data-count'),10)||0,t0=null,dur=1200;
+        function step(ts){if(!t0)t0=ts;var p=Math.min((ts-t0)/dur,1);el.textContent=Math.round(end*(p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2));if(p<1)requestAnimationFrame(step);}
+        setTimeout(function(){requestAnimationFrame(step);},500);
+      });
+    }catch(e){}})();
   </script>
 </body>
 </html>
