@@ -1,10 +1,5 @@
 import type { Config } from 'tailwindcss';
 
-// Rampa única ligada às CSS vars da direção de design ativa (injetadas pelo layout
-// a partir de nl_design_directions). As famílias "de marca" (brand + violet/indigo/
-// purple/fuchsia) apontam TODAS para a mesma rampa Clay — assim qualquer página
-// (blog incluído) segue a direção ativa, sem cores hardcoded. Famílias semânticas
-// (emerald/amber/rose/teal/blue…) ficam intactas de propósito.
 const brandRamp = {
   50: 'rgb(var(--brand-50) / <alpha-value>)',
   100: 'rgb(var(--brand-100) / <alpha-value>)',
@@ -55,10 +50,12 @@ const config: Config = {
             '--tw-prose-bold': 'var(--ink)',
             '--tw-prose-links': 'var(--accent)',
             '--tw-prose-quote-borders': 'var(--accent)',
-            fontSize: '1.0625rem',
+            fontSize: '1rem',
             lineHeight: '1.7',
-            h2: { fontWeight: '700', marginTop: '2.5em', marginBottom: '0.75em' },
-            h3: { fontWeight: '600', marginTop: '1.8em', marginBottom: '0.5em' },
+            h1: { fontFamily: 'var(--font-display)', fontWeight: '800', letterSpacing: '-0.02em' },
+            h2: { fontFamily: 'var(--font-display)', fontWeight: '700', letterSpacing: '-0.01em', marginTop: '2.5em', marginBottom: '0.75em' },
+            h3: { fontFamily: 'var(--font-display)', fontWeight: '600', marginTop: '1.8em', marginBottom: '0.5em' },
+            h4: { fontFamily: 'var(--font-display)', fontWeight: '600' },
             p: { marginTop: '1em', marginBottom: '1em' },
           },
         },
