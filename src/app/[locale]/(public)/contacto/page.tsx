@@ -45,7 +45,7 @@ export default async function Page({ params, searchParams }: {
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-slate-200 text-xs font-semibold text-slate-700 mb-5 shadow-sm">
               <MessageSquare className="h-3.5 w-3.5" /> {safeT(t, 'contact.title', 'Falar connosco')}
             </div>
-            <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-slate-900">
+            <h1 className="t-h1 text-slate-900">
               {safeT(t, 'contact.title', 'Falar connosco')}
             </h1>
             <p className="mt-4 text-lg text-slate-600 max-w-xl mx-auto leading-relaxed">

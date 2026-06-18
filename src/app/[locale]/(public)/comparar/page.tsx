@@ -46,7 +46,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-emerald-200 text-xs font-semibold text-emerald-700 mb-6 shadow-sm">
               <GitCompare className="h-3.5 w-3.5" /> {t('cmp2.badge')}
             </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 leading-tight">
+            <h1 className="t-h1 text-slate-900">
               {t('cmp2.h1_pre')}<span className="bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">{t('cmp2.h1_accent')}</span>
             </h1>
             <p className="mt-6 text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
@@ -86,7 +86,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
         <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 text-center">
           <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-600 to-blue-600 p-10 shadow-2xl text-white">
             <Sparkles className="h-8 w-8 mx-auto mb-3 opacity-70" />
-            <h2 className="text-2xl sm:text-3xl font-bold">{t('cmp2.cta_title')}</h2>
+            <h2 className="t-h2">{t('cmp2.cta_title')}</h2>
             <p className="mt-3 text-white/90 max-w-xl mx-auto">{t('cmp2.cta_desc')}</p>
             <Link href={'/register' as any} className="inline-flex items-center gap-2 px-6 py-3 mt-6 bg-white text-emerald-700 hover:bg-emerald-50 hover:scale-105 transition-all font-bold rounded-xl shadow-lg">
               {t('ps.cta_create')} <ArrowRight className="h-4 w-4" />

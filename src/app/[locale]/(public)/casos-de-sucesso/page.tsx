@@ -51,7 +51,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-emerald-200 text-xs font-semibold text-emerald-700 mb-6 shadow-sm">
               <Trophy className="h-3.5 w-3.5" /> {t('cs.badge')}
             </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 leading-tight">
+            <h1 className="t-h1 text-slate-900">
               {t('cs.h1_pre')}<span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">{t('cs.h1_accent')}</span>
             </h1>
             <p className="mt-6 text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
@@ -95,7 +95,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
         <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
           <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600 p-10 sm:p-14 shadow-2xl text-center text-white">
             <Sparkles className="h-8 w-8 mx-auto mb-4 opacity-70" />
-            <h2 className="text-3xl sm:text-4xl font-bold">{t('cs.cta_title')}</h2>
+            <h2 className="t-h2">{t('cs.cta_title')}</h2>
             <p className="mt-4 text-lg text-white/90 max-w-2xl mx-auto">{t('cs.cta_desc')}</p>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
               <Link href={'/cursos' as any} className="inline-flex items-center gap-2 px-6 py-3 bg-white text-emerald-700 hover:bg-emerald-50 hover:scale-105 transition-all font-bold rounded-xl shadow-lg">

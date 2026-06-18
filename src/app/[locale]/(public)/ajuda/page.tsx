@@ -71,7 +71,7 @@ export default async function Page({
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-slate-200 text-xs font-semibold text-slate-700 mb-6 shadow-sm">
             <HelpCircle className="h-3.5 w-3.5" /> {t('aj.badge')}
           </div>
-          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-slate-900 leading-tight">
+          <h1 className="t-h1 text-slate-900">
             {t('aj.h1_pre')}
             <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">{t('aj.h1_accent')}</span>
           </h1>
@@ -90,7 +90,7 @@ export default async function Page({
 
       {query ? (
         <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
-          <h2 className="text-2xl font-bold text-slate-900">{t('help.search.results_title', { q: query })}</h2>
+          <h2 className="t-h2 text-slate-900">{t('help.search.results_title', { q: query })}</h2>
           <p className="mt-1 text-sm text-slate-500">{t('help.search.count', { n: results.length })}</p>
           {results.length === 0 ? (
             <div className="mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-8 text-center text-slate-600">
@@ -112,7 +112,7 @@ export default async function Page({
         </section>
       ) : (
         <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
-          <h2 className="text-2xl font-bold text-slate-900 mb-8">{t('help.browse_title')}</h2>
+          <h2 className="t-h2 text-slate-900 mb-8">{t('help.browse_title')}</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {cats.map((c) => {
               const ui = CAT_UI[c] || FALLBACK_UI;
@@ -122,7 +122,7 @@ export default async function Page({
                   <div className={`inline-flex h-11 w-11 rounded-xl bg-gradient-to-br ${ui.cls} text-white items-center justify-center mb-4 shadow-md`}>
                     <Icon className="h-5 w-5" />
                   </div>
-                  <h3 className="font-bold text-slate-900 mb-3">{catLabel(c)}</h3>
+                  <h3 className="t-h3 text-slate-900 mb-3">{catLabel(c)}</h3>
                   <ul className="space-y-1.5">
                     {(byCat.get(c) || []).map((a) => (
                       <li key={a.slug}>
@@ -141,7 +141,7 @@ export default async function Page({
 
       <section className="bg-slate-50 py-20 border-t border-slate-200/60">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-slate-900">{t('aj.cta_title')}</h2>
+          <h2 className="t-h2 text-slate-900">{t('aj.cta_title')}</h2>
           <p className="mt-3 text-slate-600">{t('aj.cta_desc')}</p>
           <div className="mt-6 grid sm:grid-cols-1 max-w-md mx-auto">
             <Link href={{ pathname: '/contacto', query: { topic: 'support', from: '/ajuda' } } as any}

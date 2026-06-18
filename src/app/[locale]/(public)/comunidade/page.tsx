@@ -41,7 +41,7 @@ export default async function Page() {
           <div className="mb-2 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-violet-600">
             <Users className="h-4 w-4" /> {t('community.badge')}
           </div>
-          <h1 className="text-4xl font-bold tracking-tight text-slate-900">{t('community.title')}</h1>
+          <h1 className="t-h1 text-slate-900">{t('community.title')}</h1>
           <p className="mt-2 text-slate-600">{t('community.subtitle')}</p>
         </div>
       </section>
