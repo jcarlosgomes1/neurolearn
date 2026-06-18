@@ -2,6 +2,7 @@ import { seoMetadata } from '@/lib/seo';
 import { Link } from '@/i18n/routing';
 import { getTranslations } from 'next-intl/server';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
+import { PageHero } from '@/components/shared/PageHero';
 import { Building2, Users, Shield, Sparkles, BarChart3, Headphones, Upload, Briefcase, Crown, Check, ArrowRight, Zap } from 'lucide-react';
 
 export const revalidate = 600;
@@ -38,35 +39,20 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   const blocks = await getHomeBlocks(locale);
   return (
       <main className="bg-white min-h-screen">
-        <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-violet-900 to-indigo-900 text-white">
-          <div className="absolute inset-0 -z-10">
-            <div className="absolute top-0 left-1/4 h-96 w-96 rounded-full bg-violet-500/30 blur-3xl animate-pulse" />
-            <div className="absolute bottom-0 right-1/4 h-96 w-96 rounded-full bg-indigo-500/30 blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.4)_100%)]" />
-          </div>
-          <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-28">
-            <div className="max-w-3xl">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-xs font-semibold text-violet-200 mb-6 backdrop-blur-sm">
-                <Building2 className="h-3.5 w-3.5" /> {t('pe.badge')}
-              </div>
-              <h1 className="t-h1">
-                {t('pe.h1_pre')}<span className="bg-gradient-to-r from-violet-300 to-indigo-300 bg-clip-text text-transparent">{t('pe.h1_accent')}</span>
-              </h1>
-              <p className="mt-6 text-lg sm:text-xl text-white/80 leading-relaxed">
-                {t('pe.hero_desc')}
-              </p>
-              <div className="mt-8 flex flex-wrap gap-3">
-                <Link href={{ pathname: '/contacto', query: { topic: 'sales', subject: 'Demo B2B', from: '/para-empresas' } } as any}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-white text-violet-700 hover:bg-violet-50 hover:scale-105 transition-all font-bold rounded-xl shadow-lg">
-                  {t('pe.cta_demo')} <ArrowRight className="h-4 w-4" />
-                </Link>
-                <Link href={'/precos' as any} className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold rounded-xl backdrop-blur-sm">
-                  {t('pe.cta_pricing')}
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
+        <PageHero
+          badge={<><Building2 className="h-3.5 w-3.5" /> {t('pe.badge')}</>}
+          title={t('pe.h1_pre')}
+          titleAccent={t('pe.h1_accent')}
+          subtitle={t('pe.hero_desc')}
+        >
+          <Link href={{ pathname: '/contacto', query: { topic: 'sales', subject: 'Demo B2B', from: '/para-empresas' } } as any}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-brand-600 text-white hover:bg-brand-700 hover:scale-105 transition-all font-bold rounded-xl shadow-lg">
+            {t('pe.cta_demo')} <ArrowRight className="h-4 w-4" />
+          </Link>
+          <Link href={'/precos' as any} className="inline-flex items-center gap-2 px-6 py-3 bg-white hover:bg-brand-50 border border-slate-300 text-slate-700 font-bold rounded-xl">
+            {t('pe.cta_pricing')}
+          </Link>
+        </PageHero>
 
         <section className="bg-slate-50 py-8 border-b border-slate-200/60">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
