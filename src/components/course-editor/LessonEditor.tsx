@@ -9,11 +9,13 @@ import { toast } from 'sonner';
 import { useAIFeatures } from '@/lib/hooks/useAIFeatures';
 import type { Lesson } from './ModulesEditor';
 import { LessonStudioRecorder } from './LessonStudioRecorder';
+import { LessonResourcesEditor } from './LessonResourcesEditor';
 import { VideoEmbed } from '@/components/shared/VideoEmbed';
 
 interface Props {
   course: { id: string; title: string; level: string };
   moduleName: string;
+  moduleIndex: number;
   lesson: Lesson;
   lessonIndex: number;
   totalLessons: number;
@@ -24,7 +26,7 @@ interface Props {
   onBack: () => void;
 }
 
-export function LessonEditor({ course, moduleName, lesson, lessonIndex, totalLessons, prevLesson, nextLesson, onUpdate, onDelete, onBack }: Props) {
+export function LessonEditor({ course, moduleName, moduleIndex, lesson, lessonIndex, totalLessons, prevLesson, nextLesson, onUpdate, onDelete, onBack }: Props) {
   const t = useTranslations('lesson_editor');
   const TYPE_OPTIONS = [
     { v: 'reading' as const, label: t('type.reading'), emoji: '📖' },
@@ -113,6 +115,8 @@ export function LessonEditor({ course, moduleName, lesson, lessonIndex, totalLes
           />
         </div>
       )}
+
+      <LessonResourcesEditor courseId={course.id} moduleIndex={moduleIndex} lessonIndex={lessonIndex} />
 
       {featLoading ? null : !canGenerate ? (
         <div className="bg-slate-50 rounded-xl border border-slate-200 p-5 flex items-start gap-3">

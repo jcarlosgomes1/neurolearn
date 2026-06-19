@@ -74,7 +74,7 @@ export function ModulesEditor({ course, modules, onChange }: Props) {
     if (!lesson) { setEditingLesson(null); return null; }
     return (
       <LessonEditor
-        course={course} moduleName={mod.title} lesson={lesson}
+        course={course} moduleName={mod.title} moduleIndex={editingLesson.mod} lesson={lesson}
         lessonIndex={editingLesson.les} totalLessons={mod.lessons.length}
         prevLesson={mod.lessons[editingLesson.les - 1]?.title}
         nextLesson={mod.lessons[editingLesson.les + 1]?.title}
