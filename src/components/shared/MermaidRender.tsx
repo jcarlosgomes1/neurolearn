@@ -8,6 +8,7 @@ export function MermaidRender({ code, className = '' }: { code: string; classNam
   const ref = useRef<HTMLDivElement>(null);
   const [err, setErr] = useState<string | null>(null);
   const [rendered, setRendered] = useState(false);
+  const codeStr = typeof code === 'string' ? code : (((code as any) && (code as any).content) ? String((code as any).content) : '');
 
   useEffect(() => {
     let cancelled = false;
@@ -32,7 +33,7 @@ export function MermaidRender({ code, className = '' }: { code: string; classNam
           securityLevel: 'strict',
         });
         const id = 'mermaid-' + Math.random().toString(36).slice(2, 10);
-        const { svg } = await mermaid.render(id, code);
+        const { svg } = await mermaid.render(id, codeStr);
         if (cancelled) return;
         if (ref.current) {
           ref.current.innerHTML = svg;
@@ -45,13 +46,13 @@ export function MermaidRender({ code, className = '' }: { code: string; classNam
       }
     })();
     return () => { cancelled = true; };
-  }, [code, t]);
+  }, [codeStr, t]);
 
   if (err) {
     return (
       <div className={`bg-slate-50 border border-slate-200 rounded-lg p-4 ${className}`}>
         <p className="text-xs text-slate-500 mb-2">{t('err_explain')}</p>
-        <pre className="text-xs bg-white p-3 rounded border border-slate-100 overflow-x-auto"><code>{code}</code></pre>
+        <pre className="text-xs bg-white p-3 rounded border border-slate-100 overflow-x-auto"><code>{codeStr}</code></pre>
       </div>
     );
   }

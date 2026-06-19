@@ -133,6 +133,7 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
   }
 
   const c = lesson.content || {};
+  const diagramCode = typeof c.diagram === 'string' ? c.diagram : (((c.diagram as any) && (c.diagram as any).content) ? String((c.diagram as any).content) : '');
   const totalLessons = course.modules.reduce((s, m) => s + m.lessons.length, 0);
   const overallIdx = course.modules.slice(0, moduleIndex).reduce((s, m) => s + m.lessons.length, 0) + lessonIndex + 1;
   const progressPct = Math.round((overallIdx / totalLessons) * 100);
@@ -244,12 +245,12 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
                   </div>
                 )}
 
-                {c.diagram && (
+                {diagramCode && (
                   <section>
                     <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-3 flex items-center gap-2">
                       <span className="w-6 h-px bg-slate-300" /> {t('diagram_label')} <span className="flex-1 h-px bg-slate-100" />
                     </h3>
-                    <MermaidRender code={c.diagram} />
+                    <MermaidRender code={diagramCode} />
                   </section>
                 )}
 
