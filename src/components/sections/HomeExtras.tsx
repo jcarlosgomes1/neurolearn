@@ -1,5 +1,7 @@
 import { Link } from '@/i18n/routing';
 import { getTranslations, getLocale } from 'next-intl/server';
+import { createClient } from '@/lib/supabase/server';
+import { CategoryCard } from '@/components/sections/CategoryCard';
 import {
   Building2, Sparkles, Award, Compass, ArrowRight,
   Brain, Code, Briefcase, Palette, BarChart3, Megaphone, Globe2, Heart,
@@ -78,6 +80,10 @@ export async function HowItWorksSection() {
 // ============= CATEGORIES GRID =============
 export async function CategoriesGrid() {
   const t = await getTranslations();
+  const sb = await createClient();
+  const { data: ccsRaw } = await sb.rpc('nl_platform_config_get', { p_key: 'category_card_style' });
+  let cardVariant: any = 'icon-tl-brand'; let cardArrow = true;
+  try { const cfg = ccsRaw ? JSON.parse(ccsRaw as string) : null; if (cfg) { cardVariant = cfg.variant || cardVariant; cardArrow = cfg.arrow_on_clickable !== false; } } catch {}
   const CATS = [
     { nameKey: 'hx.cat_prog', icon: Code, countKey: 'hx.cnt_prog', href: '/cursos?cat=programacao', cls: 'from-violet-500 to-indigo-600' },
     { nameKey: 'hx.cat_data', icon: BarChart3, countKey: 'hx.cnt_data', href: '/cursos?cat=data', cls: 'from-blue-500 to-cyan-600' },
@@ -102,17 +108,16 @@ export async function CategoriesGrid() {
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {CATS.map((c) => (
-            <Link
+            <CategoryCard
               key={c.nameKey}
-              href={c.href as any}
-              className="group bg-white rounded-2xl border border-slate-200 p-5 hover:-translate-y-1 hover:shadow-xl transition-all"
-            >
-              <div className={`inline-flex h-11 w-11 rounded-xl bg-gradient-to-br ${c.cls} text-white items-center justify-center mb-3 shadow-md group-hover:scale-110 transition-transform`}>
-                <c.icon className="h-5 w-5" />
-              </div>
-              <div className="font-bold text-slate-900 text-sm">{t(c.nameKey)}</div>
-              <div className="text-[11px] text-slate-500 mt-0.5">{t(c.countKey)}</div>
-            </Link>
+              name={t(c.nameKey)}
+              count={t(c.countKey)}
+              Icon={c.icon}
+              href={c.href}
+              cls={c.cls}
+              variant={cardVariant}
+              arrow={cardArrow}
+            />
           ))}
         </div>
         <div className="text-center mt-8">

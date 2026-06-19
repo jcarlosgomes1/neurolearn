@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { redirect } from 'next/navigation';
 import { DesignClient } from './DesignClient';
+import { CategoryStyleControl } from './CategoryStyleControl';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,6 +18,9 @@ export default async function Page() {
   const { data } = await sb.rpc('nl_design_directions_list');
   const active: string = data?.active ?? 'dir4';
   const directions: Direction[] = Array.isArray(data?.directions) ? data.directions : [];
+  const { data: ccsRaw } = await sb.rpc('nl_platform_config_get', { p_key: 'category_card_style' });
+  let ccsVariant = 'icon-tl-brand'; let ccsArrow = true;
+  try { const cfg = ccsRaw ? JSON.parse(ccsRaw as string) : null; if (cfg) { ccsVariant = cfg.variant || ccsVariant; ccsArrow = cfg.arrow_on_clickable !== false; } } catch {}
 
   return (
     <div className="">
@@ -27,6 +31,7 @@ export default async function Page() {
         description="Pré-visualiza qualquer direção e define a ativa — a escolha re-tematiza o site inteiro (público incluído): cor de acento, tipografia e superfície mudam em todas as páginas. O movimento (animações) liga/desliga por direção."
       />
       <DesignClient initialActive={active} directions={directions} />
+      <CategoryStyleControl initialVariant={ccsVariant} initialArrow={ccsArrow} />
     </div>
   );
 }
