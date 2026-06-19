@@ -7,7 +7,7 @@ import { NotificationsDropdown } from '@/components/notifications/NotificationsD
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
-import { BookOpen, Route, Sparkles, Building2, Newspaper, Star, Gem, BookMarked, Milestone } from 'lucide-react';
+import { BookOpen, Route, Sparkles, Building2, Newspaper, Star, Gem, BookMarked, Milestone, Mail, GraduationCap } from 'lucide-react';
 import type { NavItem } from '@/lib/api/nav-items';
 import { BrandLogo } from '@/components/shared/BrandLogo';
 
@@ -94,7 +94,7 @@ export function HeaderClient({ session, nav }: { session: Session | null; nav: N
             {(!session || session.area === 'student') && (
               <Link href={'/candidatar' as any}
                 className="hidden md:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-semibold bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 text-white transition-all shadow-sm hover:shadow">
-                <span>🎓</span><span>{t('nav.teach_cta')}</span>
+                <GraduationCap className="h-4 w-4" /><span>{t('nav.teach_cta')}</span>
               </Link>
             )}
 
@@ -140,7 +140,7 @@ export function HeaderClient({ session, nav }: { session: Session | null; nav: N
 
               {(!session || session.area === 'student') && (
                 <Link href={'/candidatar' as any} className="flex items-center gap-3 px-3 py-3.5 rounded-lg hover:opacity-90 text-white font-semibold transition-colors bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 mt-2 shadow-sm">
-                  <span>🎓</span><span>{t('nav.teach_cta')}</span>
+                  <GraduationCap className="h-4 w-4" /><span>{t('nav.teach_cta')}</span>
                 </Link>
               )}
 
@@ -156,13 +156,7 @@ export function HeaderClient({ session, nav }: { session: Session | null; nav: N
                 </Link>
               )}
               <Link href={'/contacto' as any} className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-slate-50 text-slate-700 text-sm">
-                <span>📨</span> {t('nav.contact')}
-              </Link>
-              <Link href={'/legal/faq' as any} className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-slate-50 text-slate-700 text-sm">
-                <span>❓</span> {t('footer.faq')}
-              </Link>
-              <Link href={'/legal/about' as any} className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-slate-50 text-slate-700 text-sm">
-                <span>ℹ️</span> {t('nav.about')}
+                <Mail className="h-[18px] w-[18px] text-slate-400" /> {t('nav.contact')}
               </Link>
             </nav>
 

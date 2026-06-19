@@ -57,7 +57,7 @@ function CommandPalette({ open, onClose, items, t }: { open: boolean; onClose: (
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (open) { setQ(''); setHi(0); const id = setTimeout(() => inputRef.current?.focus(), 30); return () => clearTimeout(id); }
+    if (open) { setQ(''); setHi(0); const id = setTimeout(() => { if (typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches) inputRef.current?.focus(); }, 30); return () => clearTimeout(id); }
   }, [open]);
 
   const results = useMemo(() => {
