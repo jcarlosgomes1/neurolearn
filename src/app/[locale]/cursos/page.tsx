@@ -1,6 +1,6 @@
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/sections/Footer';
-import { PageHeader } from '@/components/shared/PageHeader';
+import { PageHero } from '@/components/shared/PageHero';
 import { CatalogClient } from './CatalogClient';
 import { createClient } from '@/lib/supabase/server';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
@@ -76,7 +76,7 @@ export default async function CoursesPage({ params, searchParams }: { params: Pr
       {courseList.length > 0 && <CatalogItemList courses={courseList} locale={locale} />}
       <Header />
       <main className="bg-white min-h-screen">
-        <PageHeader badge={t('catalog.badge')} title={t('catalog.title')} subtitle={t('catalog.subtitle')} />
+        <PageHero badge={t('catalog.badge')} title={t('catalog.title')} subtitle={t('catalog.subtitle')} />
         <section className="max-w-6xl mx-auto px-4 py-8 sm:py-12">
           <CatalogClient courses={courseList} cats={cats || []} initialCat={initialCat} ratingMin={ratingMin} enrollMin={enrollMin} />
         </section>

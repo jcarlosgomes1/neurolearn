@@ -1,5 +1,6 @@
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/sections/Footer';
+import { PageHero } from '@/components/shared/PageHero';
 import { Link } from '@/i18n/routing';
 import { CoverImage } from '@/components/shared/CoverImage';
 import { createClient } from '@/lib/supabase/server';
@@ -68,13 +69,7 @@ export default async function BlogPage({ params }: { params: Promise<{ locale: s
     <>
       <Header />
       <main className="bg-white min-h-screen">
-        <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14 pb-6 sm:pb-10">
-          <div className="text-center sm:text-left max-w-2xl">
-            <span className="inline-block text-xs font-semibold uppercase tracking-widest text-brand-700 bg-brand-50 px-3 py-1 rounded-full mb-4">{t('blog.eyebrow')}</span>
-            <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 tracking-tight">{t('blog.title')}</h1>
-            <p className="mt-4 text-lg text-slate-600 leading-relaxed">{t('blog.subtitle')}</p>
-          </div>
-        </section>
+        <PageHero badge={t('blog.eyebrow')} title={t('blog.title')} subtitle={t('blog.subtitle')} />
 
         {enriched.length === 0 ? (
           <section className="max-w-3xl mx-auto px-4 py-16 text-center">
