@@ -2,6 +2,7 @@ import { Link } from '@/i18n/routing';
 import { getTranslations, getLocale } from 'next-intl/server';
 import { createClient } from '@/lib/supabase/server';
 import { CategoryCard } from '@/components/sections/CategoryCard';
+import { categoryIcon } from '@/lib/category-icons';
 import {
   Building2, Sparkles, Award, Compass, ArrowRight,
   Brain, Code, Briefcase, Palette, BarChart3, Megaphone, Globe2, Heart,
@@ -81,19 +82,12 @@ export async function HowItWorksSection() {
 export async function CategoriesGrid() {
   const t = await getTranslations();
   const sb = await createClient();
+  const locale = await getLocale();
   const { data: ccsRaw } = await sb.rpc('nl_platform_config_get', { p_key: 'category_card_style' });
   let cardVariant: any = 'icon-tl-brand'; let cardArrow = true;
   try { const cfg = ccsRaw ? JSON.parse(ccsRaw as string) : null; if (cfg) { cardVariant = cfg.variant || cardVariant; cardArrow = cfg.arrow_on_clickable !== false; } } catch {}
-  const CATS = [
-    { nameKey: 'hx.cat_prog', icon: Code, countKey: 'hx.cnt_prog', href: '/cursos?cat=programacao', cls: 'from-violet-500 to-indigo-600' },
-    { nameKey: 'hx.cat_data', icon: BarChart3, countKey: 'hx.cnt_data', href: '/cursos?cat=data', cls: 'from-blue-500 to-cyan-600' },
-    { nameKey: 'hx.cat_design', icon: Palette, countKey: 'hx.cnt_design', href: '/cursos?cat=design', cls: 'from-fuchsia-500 to-pink-600' },
-    { nameKey: 'hx.cat_mkt', icon: Megaphone, countKey: 'hx.cnt_mkt', href: '/cursos?cat=marketing', cls: 'from-amber-500 to-orange-600' },
-    { nameKey: 'hx.cat_biz', icon: Briefcase, countKey: 'hx.cnt_biz', href: '/cursos?cat=business', cls: 'from-emerald-500 to-teal-600' },
-    { nameKey: 'hx.cat_ai', icon: Sparkles, countKey: 'hx.cnt_ai', href: '/cursos?cat=ai', cls: 'from-purple-500 to-violet-600' },
-    { nameKey: 'hx.cat_lang', icon: Globe2, countKey: 'hx.cnt_lang', href: '/cursos?cat=linguas', cls: 'from-rose-500 to-red-600' },
-    { nameKey: 'hx.cat_well', icon: Heart, countKey: 'hx.cnt_well', href: '/cursos?cat=wellness', cls: 'from-pink-500 to-rose-600' },
-  ];
+  const { data: catsRaw } = await sb.rpc('nl_course_categories_with_counts', { p_lang: locale, p_b2c: true });
+  const cats: { slug: string; icon: string; name: string; count: number; href: string }[] = Array.isArray(catsRaw) ? catsRaw : [];
   return (
     <section className="bg-slate-50 py-20 sm:py-24 border-y border-slate-200/60">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -107,14 +101,13 @@ export async function CategoriesGrid() {
           <p className="mt-3 text-slate-600 max-w-2xl mx-auto">{t('hx.cat_sub')}</p>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-          {CATS.map((c) => (
+          {cats.map((c) => (
             <CategoryCard
-              key={c.nameKey}
-              name={t(c.nameKey)}
-              count={t(c.countKey)}
-              Icon={c.icon}
+              key={c.slug}
+              name={c.name}
+              count={t('hx.cat_count', { n: c.count })}
+              Icon={categoryIcon(c.icon)}
               href={c.href}
-              cls={c.cls}
               variant={cardVariant}
               arrow={cardArrow}
             />

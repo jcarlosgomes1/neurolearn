@@ -22,15 +22,16 @@ interface Course {
   available_langs?: string[] | null;
 }
 
-interface Props { courses: Course[] }
+interface CatNode { slug: string; parent: string | null; name: string; track: string | null }
+interface Props { courses: Course[]; cats?: CatNode[]; initialCat?: string }
 
 type PriceFilter = 'all' | 'free' | 'paid';
 
-export function CatalogClient({ courses }: Props) {
+export function CatalogClient({ courses, cats = [], initialCat = 'all' }: Props) {
   const t = useTranslations();
   const locale = useLocale();
   const [search, setSearch] = useState('');
-  const [cat, setCat] = useState<string>('all');
+  const [cat, setCat] = useState<string>(initialCat);
   const [lvl, setLvl] = useState<string>('all');
   const [price, setPrice] = useState<PriceFilter>('all');
   const [onlyMyLang, setOnlyMyLang] = useState(false);
@@ -44,11 +45,8 @@ export function CatalogClient({ courses }: Props) {
     return () => { document.body.style.overflow = prev; };
   }, [open]);
 
-  const categories = useMemo(() => {
-    const s = new Set<string>();
-    for (const c of courses) if (c.category) s.add(c.category);
-    return Array.from(s).sort();
-  }, [courses]);
+  const parentOf = useMemo(() => { const m: Record<string, string | null> = {}; for (const c of cats) m[c.slug] = c.parent; return m; }, [cats]);
+  const tops = useMemo(() => cats.filter((c) => !c.parent), [cats]);
   const levels = useMemo(() => {
     const s = new Set<string>();
     for (const c of courses) if (c.level) s.add(c.level);
@@ -58,7 +56,7 @@ export function CatalogClient({ courses }: Props) {
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return courses.filter((c) => {
-      if (cat !== 'all' && c.category !== cat) return false;
+      if (cat !== 'all' && c.category !== cat && parentOf[c.category || ''] !== cat) return false;
       if (lvl !== 'all' && c.level !== lvl) return false;
       if (price === 'free' && (c.price_cents ?? 0) > 0) return false;
       if (price === 'paid' && (c.price_cents ?? 0) === 0) return false;
@@ -69,7 +67,7 @@ export function CatalogClient({ courses }: Props) {
       }
       return true;
     });
-  }, [courses, search, cat, lvl, price, onlyMyLang, locale]);
+  }, [courses, search, cat, lvl, price, onlyMyLang, locale, parentOf]);
 
   const activeFilters = (cat !== 'all' ? 1 : 0) + (lvl !== 'all' ? 1 : 0) + (price !== 'all' ? 1 : 0) + (onlyMyLang ? 1 : 0);
 
@@ -91,10 +89,10 @@ export function CatalogClient({ courses }: Props) {
   // Conteudo dos filtros (reutilizado em desktop inline e em bottom-sheet mobile)
   const filterControls = (
     <>
-      {categories.length > 0 && (
+      {tops.length > 0 && (
         <select value={cat} onChange={(e) => setCat(e.target.value)} className={selectCls} aria-label={t('catalog.f_cat_all')}>
           <option value="all">{t('catalog.f_cat_all')}</option>
-          {categories.map((x) => <option key={x} value={x}>{x}</option>)}
+          {tops.map((c) => <option key={c.slug} value={c.slug}>{c.name}</option>)}
         </select>
       )}
       {levels.length > 0 && (

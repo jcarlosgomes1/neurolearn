@@ -52,11 +52,14 @@ function CatalogItemList({ courses, locale }: { courses: any[]; locale: string }
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
 }
 
-export default async function CoursesPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function CoursesPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ cat?: string }> }) {
   const { locale } = await params;
   const t = await getTranslations();
   const sb = await createClient();
   const { data: courses } = await sb.rpc('nl_courses_catalog', { p_lang: locale });
+  const { data: cats } = await sb.rpc('nl_course_categories_list', { p_lang: locale });
+  const sp = await searchParams;
+  const initialCat = sp?.cat || 'all';
   const blocks = await getHomeBlocks(locale);
   const courseList = courses || [];
 
@@ -71,7 +74,7 @@ export default async function CoursesPage({ params }: { params: Promise<{ locale
       <main className="bg-white min-h-screen">
         <PageHeader badge={t('catalog.badge')} title={t('catalog.title')} subtitle={t('catalog.subtitle')} />
         <section className="max-w-6xl mx-auto px-4 py-8 sm:py-12">
-          <CatalogClient courses={courseList} />
+          <CatalogClient courses={courseList} cats={cats || []} initialCat={initialCat} />
         </section>
         <Footer data={blocks.footer_brand || {}} />
       </main>
