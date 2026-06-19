@@ -1,11 +1,11 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Link, useRouter } from '@/i18n/routing';
 import { SUPABASE_URL } from '@/lib/supabase/config';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
 const EMOJIS = ['📚','🤖','🧠','💡','📊','🎨','⚙️','🚀','📈','🔬','💬','🎯','📝','🎓','🛠','🔮','💼','🌐'];
@@ -60,12 +60,15 @@ function suggestPrice(numModules: number, lessonsPerModule: number, avgMinutes: 
 export function CourseGeneratorForm() {
   const t = useTranslations();
   const router = useRouter();
+  const locale = useLocale();
+  const [cats, setCats] = useState<any[]>([]);
+  useEffect(() => { (async () => { try { const sb = createClient(); const { data } = await sb.rpc('nl_course_categories_list', { p_lang: locale }); if (Array.isArray(data)) setCats(data); } catch {} })(); }, [locale]);
   const [submitting, setSubmitting] = useState(false);
 
   const [topic, setTopic] = useState('');
   const [language, setLanguage] = useState('pt');
   const [emoji, setEmoji] = useState('📚');
-  const [category, setCategory] = useState('ai');
+  const [category, setCategory] = useState('');
   const [courseType, setCourseType] = useState<'essential' | 'ai_generated'>('essential');
   const [level, setLevel] = useState<'beginner' | 'intermediate' | 'advanced'>('beginner');
   const [tone, setTone] = useState<'didactic' | 'technical' | 'practical' | 'inspirational'>('didactic');
@@ -89,6 +92,7 @@ export function CourseGeneratorForm() {
     e.preventDefault();
     if (!topic.trim()) { toast.error(t('cgf.toast_topic_required')); return; }
     if (formats.length === 0) { toast.error(t('cgf.toast_format_required')); return; }
+    if (!category) { toast.error(t('cgf.category_ph')); return; }
     setSubmitting(true);
     try {
       const sb = createClient();
@@ -154,7 +158,18 @@ export function CourseGeneratorForm() {
             </div>
             <div>
               <label className="label">{t('cgf.category')}</label>
-              <input className="input" value={category} onChange={(e) => setCategory(e.target.value)} />
+              <select className="input" value={category} onChange={(e) => setCategory(e.target.value)} required>
+                <option value="" disabled>{t('cgf.category_ph')}</option>
+                <optgroup label={t('cgf.cat_areas')}>
+                  {cats.filter((c: any) => !c.parent).map((c: any) => <option key={c.slug} value={c.slug}>{c.name}</option>)}
+                </optgroup>
+                <optgroup label={t('cgf.cat_ia_pratica')}>
+                  {cats.filter((c: any) => c.parent === 'ia' && c.track === 'pratica').map((c: any) => <option key={c.slug} value={c.slug}>{c.name}</option>)}
+                </optgroup>
+                <optgroup label={t('cgf.cat_ia_avancada')}>
+                  {cats.filter((c: any) => c.parent === 'ia' && c.track === 'avancada').map((c: any) => <option key={c.slug} value={c.slug}>{c.name}</option>)}
+                </optgroup>
+              </select>
             </div>
             <div>
               <label className="label">{t('cgf.emoji')}</label>

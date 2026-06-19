@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
 import { SUPABASE_URL } from '@/lib/supabase/config';
 import { createClient } from '@/lib/supabase/client';
@@ -48,6 +48,10 @@ const DURATION_STRUCT: Record<string, [number, number]> = {
 export function CreateCourseForm() {
   const t = useTranslations('create_course');
   const router = useRouter();
+  const locale = useLocale();
+  const [category, setCategory] = useState('');
+  const [cats, setCats] = useState<any[]>([]);
+  useEffect(() => { (async () => { try { const sb = createClient(); const { data } = await sb.rpc('nl_course_categories_list', { p_lang: locale }); if (Array.isArray(data)) setCats(data); } catch {} })(); }, [locale]);
   const [phase, setPhase] = useState<Phase>('prompt');
   const [prompt, setPrompt] = useState('');
   const [level, setLevel] = useState<'beginner'|'intermediate'|'advanced'>('intermediate');
@@ -111,6 +115,7 @@ export function CreateCourseForm() {
       toast.error(t('err_min_chars'));
       return;
     }
+    if (!category) { toast.error(t('cc_category_required')); return; }
     setPhase('generating');
     setJob({ id: 'pending', course_id: 'pending', status: 'pending', progress_total: 0, progress_done: 0, current_step: t('starting'), error_message: null });
 
@@ -137,7 +142,7 @@ export function CreateCourseForm() {
             depth: duration === 'long' ? 'extensive' : duration === 'short' ? 'summary' : 'normal',
             formats,
             emoji: EMOJIS[Math.floor(Math.random() * EMOJIS.length)],
-            category: 'ai',
+            category,
             course_type: 'ai_generated',
             language: 'pt',
           },
@@ -288,6 +293,22 @@ export function CreateCourseForm() {
               </button>
             ))}
           </div>
+        </Section>
+
+        <Section title={t('cc_category')} hint={t('cc_category_hint')}>
+          <select value={category} onChange={(e) => setCategory(e.target.value)} required
+            className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-brand-400">
+            <option value="" disabled>{t('cc_category_ph')}</option>
+            <optgroup label={t('cc_cat_areas')}>
+              {cats.filter((c: any) => !c.parent).map((c: any) => <option key={c.slug} value={c.slug}>{c.name}</option>)}
+            </optgroup>
+            <optgroup label={t('cc_cat_ia_pratica')}>
+              {cats.filter((c: any) => c.parent === 'ia' && c.track === 'pratica').map((c: any) => <option key={c.slug} value={c.slug}>{c.name}</option>)}
+            </optgroup>
+            <optgroup label={t('cc_cat_ia_avancada')}>
+              {cats.filter((c: any) => c.parent === 'ia' && c.track === 'avancada').map((c: any) => <option key={c.slug} value={c.slug}>{c.name}</option>)}
+            </optgroup>
+          </select>
         </Section>
 
         <Section title={t('types_label')} hint={t('tip_types')}>
