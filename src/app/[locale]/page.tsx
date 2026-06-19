@@ -10,6 +10,7 @@ import { Footer } from '@/components/sections/Footer';
 import { TrustedByStrip, HowItWorksSection, CategoriesGrid, LiveMomentumSection } from '@/components/sections/HomeExtras';
 import { OrganizationStructuredData, WebsiteStructuredData, FAQStructuredData } from '@/components/seo/StructuredData';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
+import { createClient } from '@/lib/supabase/server';
 import { Reveal } from '@/components/motion/Reveal';
 
 export const revalidate = 60;
@@ -19,6 +20,8 @@ const SITE_URL = 'https://neurolearn-rosy.vercel.app';
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const blocks = await getHomeBlocks(locale);
+  const sb = await createClient();
+  const { data: statsResolved } = await sb.rpc('nl_home_stats', { p_lang: locale });
 
   // Extrair FAQ items para Schema.org (defensive)
   const faqItems: Array<{ q: string; a: string }> = [];
@@ -40,7 +43,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       <main className="bg-white">
         {blocks.hero && <Hero data={blocks.hero} />}
         <Reveal delay={60}><TrustedByStrip /></Reveal>
-        {blocks.stats && <Reveal><Stats data={blocks.stats} /></Reveal>}
+        {(statsResolved as any)?.items?.length ? <Reveal><Stats data={statsResolved as any} /></Reveal> : null}
         <Reveal><HowItWorksSection /></Reveal>
         {blocks.features && <Reveal><Features data={blocks.features} /></Reveal>}
         <Reveal><CategoriesGrid /></Reveal>
