@@ -160,7 +160,7 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
   return (
     <>
       <div className="sticky top-16 z-20 bg-white/85 backdrop-blur-sm border-b border-slate-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center gap-3">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center gap-3">
           <Link href={'/learn' as any} className="text-xs text-slate-500 hover:text-slate-900 flex-shrink-0">{t('my_courses')}</Link>
           <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
             <div className="h-full bg-gradient-to-r from-brand-500 to-purple-500 transition-all duration-500" style={{ width: `${progressPct}%` }} />
@@ -170,7 +170,7 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
       </div>
 
       {completed !== null && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-3">
           {remainingToCert > 0 ? (
             <div className="inline-flex items-center gap-2 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium px-3 py-1.5">
               🎓 {t('to_certificate', { n: remainingToCert })}
@@ -183,16 +183,9 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 pb-28 sm:pb-12">
-        <div className="flex gap-6 lg:gap-8">
-          <aside className="hidden lg:flex w-[300px] xl:w-[340px] flex-shrink-0 sticky top-28 self-start h-[calc(100vh-8rem)]">
-            <div className="w-full rounded-2xl border border-slate-200 shadow-sm overflow-hidden bg-white">
-              <CourseCurriculumNav courseId={courseId} modules={course.modules} moduleIndex={moduleIndex} lessonIndex={lessonIndex} progress={progressMap} locale={locale} mode={progressionMode} />
-            </div>
-          </aside>
-
-          <div className="flex-1 min-w-0">
-            <button onClick={() => setNavOpen(true)} className="lg:hidden mb-4 inline-flex items-center gap-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-lg">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 pb-28 sm:pb-12">
+        <div className="min-w-0">
+            <button onClick={() => setNavOpen(true)} className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-lg">
               ☰ {t('curriculum_btn')}
             </button>
             <header className="mb-6">
@@ -363,8 +356,6 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
             {!nextLesson && <ReviewSystem courseId={courseId} courseTitle={course.title} />}
             {!nextLesson && <div className="mt-4"><CourseFeedbackPanel courseId={courseId} courseTitle={course.title} /></div>}
           </div>
-
-        </div>
       </div>
 
       {tutorOpen && (
@@ -386,7 +377,7 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
         />
       )}
       {navOpen && (
-        <div className="lg:hidden fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm flex" onClick={() => setNavOpen(false)}>
+        <div className="fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm flex" onClick={() => setNavOpen(false)}>
           <div className="bg-white w-[85%] max-w-sm h-full shadow-2xl flex flex-col" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
               <span className="text-sm font-bold text-slate-800">{t('curriculum_btn')}</span>
