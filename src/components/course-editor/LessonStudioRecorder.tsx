@@ -41,6 +41,14 @@ export function LessonStudioRecorder({ onUploaded, currentUrl, lessonTitle, cont
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [withCam, setWithCam] = useState(true);
   const [paused, setPaused] = useState(false);
+  const [countdown, setCountdown] = useState<number | null>(null);
+  const [pipPos, setPipPos] = useState<'tl' | 'tr' | 'bl' | 'br'>('br');
+  const [pipSize, setPipSize] = useState<'s' | 'm' | 'l'>('m');
+  const [pipShape, setPipShape] = useState<'circle' | 'rect'>('circle');
+  const cfgCountdown = useRef(3);
+  const pipPosRef = useRef(pipPos);
+  const pipSizeRef = useRef(pipSize);
+  const pipShapeRef = useRef(pipShape);
   const [slides, setSlides] = useState<Slide[]>([]);
   const [slideIdx, setSlideIdx] = useState(0);
 
@@ -74,6 +82,24 @@ export function LessonStudioRecorder({ onUploaded, currentUrl, lessonTitle, cont
 
   useEffect(() => { slideIdxRef.current = slideIdx; }, [slideIdx]);
   useEffect(() => { slidesRef.current = slides; }, [slides]);
+  useEffect(() => { pipPosRef.current = pipPos; }, [pipPos]);
+  useEffect(() => { pipSizeRef.current = pipSize; }, [pipSize]);
+  useEffect(() => { pipShapeRef.current = pipShape; }, [pipShape]);
+  useEffect(() => {
+    (async () => {
+      try {
+        const sb = createClient();
+        const { data } = await sb.rpc('nl_platform_config_get', { p_key: 'studio_config' });
+        if (data) {
+          const c = typeof data === 'string' ? JSON.parse(data) : data;
+          if (c && c.pip_position) setPipPos(c.pip_position);
+          if (c && c.pip_size) setPipSize(c.pip_size);
+          if (c && c.pip_shape) setPipShape(c.pip_shape);
+          if (c && typeof c.countdown_seconds === 'number') cfgCountdown.current = c.countdown_seconds;
+        }
+      } catch { /* mantem defaults */ }
+    })();
+  }, []);
 
   const stopAll = useCallback(() => {
     if (rafId.current) cancelAnimationFrame(rafId.current);
@@ -208,16 +234,37 @@ export function LessonStudioRecorder({ onUploaded, currentUrl, lessonTitle, cont
         else { dh = canvas.width / ar; dy = (canvas.height - dh) / 2; }
         ctx.drawImage(camV, dx, dy, dw, dh);
       } else {
-        const d = Math.round(canvas.height * 0.26);
-        const x = canvas.width - d - 32, y = canvas.height - d - 32;
-        ctx.save();
-        ctx.beginPath(); ctx.arc(x + d / 2, y + d / 2, d / 2, 0, Math.PI * 2); ctx.closePath(); ctx.clip();
-        const side = Math.min(camV.videoWidth, camV.videoHeight);
-        const sx = (camV.videoWidth - side) / 2, sy = (camV.videoHeight - side) / 2;
-        ctx.drawImage(camV, sx, sy, side, side, x, y, d, d);
-        ctx.restore();
-        ctx.beginPath(); ctx.arc(x + d / 2, y + d / 2, d / 2, 0, Math.PI * 2);
-        ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.lineWidth = 4; ctx.stroke();
+        const sf = pipSizeRef.current === 's' ? 0.18 : pipSizeRef.current === 'l' ? 0.34 : 0.26;
+        const margin = 32;
+        const pos = pipPosRef.current;
+        if (pipShapeRef.current === 'rect') {
+          const w = Math.round(canvas.width * (sf * 0.95));
+          const h = Math.round((w * 9) / 16);
+          const x = pos === 'tl' || pos === 'bl' ? margin : canvas.width - w - margin;
+          const y = pos === 'tl' || pos === 'tr' ? margin : canvas.height - h - margin;
+          const car = w / h, ar = camV.videoWidth / camV.videoHeight;
+          let sw = camV.videoWidth, sh = camV.videoHeight, sx = 0, sy = 0;
+          if (ar > car) { sw = camV.videoHeight * car; sx = (camV.videoWidth - sw) / 2; }
+          else { sh = camV.videoWidth / car; sy = (camV.videoHeight - sh) / 2; }
+          ctx.save();
+          ctx.beginPath(); (ctx as any).roundRect?.(x, y, w, h, 18); ctx.clip();
+          ctx.drawImage(camV, sx, sy, sw, sh, x, y, w, h);
+          ctx.restore();
+          ctx.beginPath(); (ctx as any).roundRect?.(x, y, w, h, 18);
+          ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.lineWidth = 4; ctx.stroke();
+        } else {
+          const d = Math.round(canvas.height * sf);
+          const x = pos === 'tl' || pos === 'bl' ? margin : canvas.width - d - margin;
+          const y = pos === 'tl' || pos === 'tr' ? margin : canvas.height - d - margin;
+          ctx.save();
+          ctx.beginPath(); ctx.arc(x + d / 2, y + d / 2, d / 2, 0, Math.PI * 2); ctx.closePath(); ctx.clip();
+          const side = Math.min(camV.videoWidth, camV.videoHeight);
+          const sx = (camV.videoWidth - side) / 2, sy = (camV.videoHeight - side) / 2;
+          ctx.drawImage(camV, sx, sy, side, side, x, y, d, d);
+          ctx.restore();
+          ctx.beginPath(); ctx.arc(x + d / 2, y + d / 2, d / 2, 0, Math.PI * 2);
+          ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.lineWidth = 4; ctx.stroke();
+        }
       }
     }
     rafId.current = requestAnimationFrame(drawLoop);
@@ -274,6 +321,18 @@ export function LessonStudioRecorder({ onUploaded, currentUrl, lessonTitle, cont
     setPaused(false);
     timerId.current = setInterval(() => setSeconds((s) => s + 1), 1000);
     setPhase('recording');
+  }
+
+  function beginCountdown() {
+    const n = Math.max(0, cfgCountdown.current ?? 3);
+    if (n === 0) { startRecording(); return; }
+    setCountdown(n);
+    let cur = n;
+    const iv = setInterval(() => {
+      cur -= 1;
+      if (cur <= 0) { clearInterval(iv); setCountdown(null); startRecording(); }
+      else setCountdown(cur);
+    }, 800);
   }
 
   function pauseRecording() {
@@ -398,7 +457,45 @@ export function LessonStudioRecorder({ onUploaded, currentUrl, lessonTitle, cont
       )}
 
       <div className={phase === 'preview' || phase === 'recording' ? 'block space-y-3' : 'hidden'}>
-        <canvas ref={canvasRef} className="w-full rounded-lg bg-slate-900 aspect-video" />
+        <div className="relative rounded-2xl overflow-hidden ring-1 ring-slate-800 bg-gradient-to-b from-slate-900 to-slate-950 p-1.5 shadow-xl">
+          <canvas ref={canvasRef} className="w-full rounded-xl bg-slate-900 aspect-video block" />
+          {phase === 'recording' && (
+            <span className={`absolute top-3 left-3 inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full text-white ${paused ? 'bg-amber-500/90' : 'bg-rose-600/90'}`}>
+              <span className={`w-2 h-2 rounded-full bg-white ${paused ? '' : 'animate-pulse'}`} /> {paused ? t('paused') : 'REC'} {mmss}
+            </span>
+          )}
+          {countdown !== null && (
+            <div className="absolute inset-0 flex items-center justify-center bg-slate-950/55">
+              <span key={countdown} className="text-white text-8xl font-black tabular-nums drop-shadow-lg">{countdown}</span>
+            </div>
+          )}
+        </div>
+        {source !== 'camera' && withCam && (
+          <div className="flex items-center gap-2 flex-wrap text-xs">
+            <span className="font-medium text-slate-500 mr-1">{t('cam_layout')}</span>
+            <div className="inline-flex rounded-lg border border-slate-200 overflow-hidden">
+              {(['tl', 'tr', 'bl', 'br'] as const).map((p) => (
+                <button key={p} type="button" onClick={() => setPipPos(p)} aria-label={p} className={`px-2 py-1.5 text-sm ${pipPos === p ? 'bg-brand-600 text-white' : 'bg-white text-slate-500 hover:bg-slate-50'}`}>
+                  {p === 'tl' ? '◰' : p === 'tr' ? '◳' : p === 'bl' ? '◱' : '◲'}
+                </button>
+              ))}
+            </div>
+            <div className="inline-flex rounded-lg border border-slate-200 overflow-hidden">
+              {(['s', 'm', 'l'] as const).map((s) => (
+                <button key={s} type="button" onClick={() => setPipSize(s)} className={`px-2.5 py-1.5 font-semibold ${pipSize === s ? 'bg-brand-600 text-white' : 'bg-white text-slate-500 hover:bg-slate-50'}`}>
+                  {s.toUpperCase()}
+                </button>
+              ))}
+            </div>
+            <div className="inline-flex rounded-lg border border-slate-200 overflow-hidden">
+              {(['circle', 'rect'] as const).map((sh) => (
+                <button key={sh} type="button" onClick={() => setPipShape(sh)} aria-label={sh} className={`px-2.5 py-1.5 text-sm ${pipShape === sh ? 'bg-brand-600 text-white' : 'bg-white text-slate-500 hover:bg-slate-50'}`}>
+                  {sh === 'circle' ? '●' : '▭'}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         {(content?.p?.length || 0) > 0 && (
           <details className="rounded-lg border border-slate-200 bg-slate-50">
             <summary className="px-3 py-2 text-sm font-medium text-slate-600 cursor-pointer select-none">📜 {t('teleprompter')}</summary>
@@ -415,7 +512,7 @@ export function LessonStudioRecorder({ onUploaded, currentUrl, lessonTitle, cont
           </div>
         )}
         <div className="flex gap-2">
-          {phase === 'preview' && <button onClick={startRecording} className="btn-primary flex-1">⏺ {t('start')}</button>}
+          {phase === 'preview' && <button onClick={beginCountdown} className="btn-primary flex-1">⏺ {t('start')}</button>}
           {phase === 'recording' && !paused && <button onClick={pauseRecording} className="px-4 py-2.5 rounded-lg border border-amber-300 bg-amber-50 text-amber-700 font-semibold text-sm">⏸ {t('pause')}</button>}
           {phase === 'recording' && paused && <button onClick={resumeRecording} className="px-4 py-2.5 rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-700 font-semibold text-sm">⏵ {t('resume')}</button>}
           {phase === 'recording' && <button onClick={stopRecording} className="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-lg py-2.5">⏹ {t('stop')}</button>}
