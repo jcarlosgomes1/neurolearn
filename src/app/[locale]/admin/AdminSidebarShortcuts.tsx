@@ -4,7 +4,7 @@ import { Link } from '@/i18n/routing';
 import {
   Package, Tag, DollarSign, GraduationCap, Shield, Key, BarChart3, Receipt,
   RotateCcw, Mail, Users, Lock, Sparkles, CalendarClock, AlertTriangle, Settings,
-  Activity, ShieldAlert, Languages
+  Activity, ShieldAlert, Languages, FolderTree, Zap
 } from 'lucide-react';
 
 type ShortcutItem = {
@@ -42,6 +42,7 @@ const SECTIONS: ShortcutSection[] = [
       { href: '/admin/cupoes', label: 'Cupões', icon: Tag },
       { href: '/admin/drip-schedules', label: 'Calendário drip', icon: CalendarClock },
       { href: '/admin/i18n', label: 'Traduções', icon: Languages },
+      { href: '/admin/categorias', label: 'Categorias', icon: FolderTree },
     ],
   },
   {
@@ -60,6 +61,7 @@ const SECTIONS: ShortcutSection[] = [
       { href: '/admin/observabilidade', label: 'Observabilidade', icon: Activity, badge: 'Novo' },
       { href: '/admin/compliance', label: 'Compliance', icon: ShieldAlert, badge: 'Novo' },
       { href: '/admin/agentes', label: 'Agentes', icon: Sparkles },
+      { href: '/admin/automacoes', label: 'Automações', icon: Zap },
     ],
   },
   {
