@@ -52,6 +52,7 @@ export function CmsView() {
     hero: { label: t('slug.hero'), emoji: '🎯', group: t('group_home') },
     features: { label: t('slug.features'), emoji: '✨', group: t('group_home') },
     stats: { label: t('slug.stats'), emoji: '📊', group: t('group_home') },
+    capabilities: { label: t('slug.capabilities'), emoji: '🏢', group: t('group_home') },
     testimonials: { label: t('slug.testimonials'), emoji: '💬', group: t('group_home') },
     plans: { label: t('slug.plans'), emoji: '💳', group: t('group_pricing') },
     pricing_header: { label: t('slug.pricing_header'), emoji: '📑', group: t('group_pricing') },
