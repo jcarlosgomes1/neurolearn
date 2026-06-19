@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { CourseCard } from '@/components/shared/CourseCard';
 import { useTranslations, useLocale } from 'next-intl';
 import { SlidersHorizontal, X } from 'lucide-react';
@@ -34,6 +35,14 @@ export function CatalogClient({ courses }: Props) {
   const [price, setPrice] = useState<PriceFilter>('all');
   const [onlyMyLang, setOnlyMyLang] = useState(false);
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, [open]);
 
   const categories = useMemo(() => {
     const s = new Set<string>();
@@ -136,8 +145,8 @@ export function CatalogClient({ courses }: Props) {
         )}
       </div>
 
-      {/* Mobile: bottom-sheet */}
-      {open && (
+      {/* Mobile: bottom-sheet (portal para o body: escapa a ancestrais com transform) */}
+      {open && mounted && createPortal(
         <div className="md:hidden fixed inset-0 z-50 flex flex-col justify-end bg-slate-900/40 backdrop-blur-sm" onClick={() => setOpen(false)}>
           <div className="bg-white rounded-t-3xl shadow-2xl max-h-[85vh] flex flex-col animate-in slide-in-from-bottom duration-300" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
@@ -161,7 +170,7 @@ export function CatalogClient({ courses }: Props) {
             </div>
           </div>
         </div>
-      )}
+      , document.body)}
 
       {filtered.length === 0 ? (
         <div className="text-center py-16">
