@@ -1,5 +1,5 @@
 import { seoMetadata } from '@/lib/seo';
-import { PageHeader } from '@/components/shared/PageHeader';
+import { PageHero } from '@/components/shared/PageHero';
 import { Link } from '@/i18n/routing';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
 import { getTranslations } from 'next-intl/server';
@@ -30,7 +30,7 @@ export default async function EssentialsPage({ params }: { params: Promise<{ loc
 
   return (
       <main className="bg-white min-h-screen">
-        <PageHeader badge={t('ess.badge')} title={t('ess.title')} subtitle={t('ess.subtitle')} />
+        <PageHero badge={t('ess.badge')} title={t('ess.title')} subtitle={t('ess.subtitle')} />
         <section className="max-w-6xl mx-auto px-4 py-12">
           {!tracks || tracks.length === 0 ? (
             <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-600 via-brand-700 to-brand-900 text-white p-12 text-center">

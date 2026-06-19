@@ -2,6 +2,8 @@ import { seoMetadata } from '@/lib/seo';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
 import { CandidaturaForm } from './CandidaturaForm';
 import { getTranslations } from 'next-intl/server';
+import { PageHero } from '@/components/shared/PageHero';
+import { Coins, Wrench, Globe } from 'lucide-react';
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -21,24 +23,27 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
 
   return (
       <main className="bg-white min-h-screen">
-        <section className="bg-gradient-to-br from-brand-50 via-purple-50 to-white pt-16 pb-12">
-          <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
-            <span className="inline-block text-xs font-semibold uppercase tracking-widest text-brand-700 bg-white px-3 py-1.5 rounded-full mb-5 shadow-sm">{t('apply.eyebrow')}</span>
-            <h1 className="t-h1 text-slate-900 text-balance">{t('apply.title')}</h1>
-            <p className="mt-5 text-lg sm:text-xl text-slate-600 leading-relaxed text-balance">{t('apply.subtitle')}</p>
-            <div className="mt-8 grid sm:grid-cols-3 gap-4 max-w-2xl mx-auto">
-              <div className="bg-white rounded-xl p-4 border border-slate-100">
-                <div className="text-2xl mb-1">💰</div>
+        <PageHero
+          badge={t('apply.eyebrow')}
+          title={t('apply.title')}
+          subtitle={t('apply.subtitle')}
+        />
+
+        <section className="py-10 border-b border-slate-200/60">
+          <div className="max-w-2xl mx-auto px-4 sm:px-6">
+            <div className="grid sm:grid-cols-3 gap-4">
+              <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+                <div className="inline-flex items-center justify-center h-10 w-10 rounded-lg bg-brand-50 text-brand-600 mb-3"><Coins className="h-5 w-5" /></div>
                 <div className="text-sm font-semibold text-slate-900">{t('apply.badge.revenue_title')}</div>
                 <div className="text-xs text-slate-500 mt-1">{t('apply.badge.revenue_sub')}</div>
               </div>
-              <div className="bg-white rounded-xl p-4 border border-slate-100">
-                <div className="text-2xl mb-1">🛠</div>
+              <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+                <div className="inline-flex items-center justify-center h-10 w-10 rounded-lg bg-brand-50 text-brand-600 mb-3"><Wrench className="h-5 w-5" /></div>
                 <div className="text-sm font-semibold text-slate-900">{t('apply.badge.ai_title')}</div>
                 <div className="text-xs text-slate-500 mt-1">{t('apply.badge.ai_sub')}</div>
               </div>
-              <div className="bg-white rounded-xl p-4 border border-slate-100">
-                <div className="text-2xl mb-1">🌍</div>
+              <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+                <div className="inline-flex items-center justify-center h-10 w-10 rounded-lg bg-brand-50 text-brand-600 mb-3"><Globe className="h-5 w-5" /></div>
                 <div className="text-sm font-semibold text-slate-900">{t('apply.badge.global_title')}</div>
                 <div className="text-xs text-slate-500 mt-1">{t('apply.badge.global_sub')}</div>
               </div>

@@ -1,6 +1,7 @@
 import { seoMetadata } from '@/lib/seo';
 import { Link } from '@/i18n/routing';
 import { getTranslations } from 'next-intl/server';
+import { PageHero } from '@/components/shared/PageHero';
 import { createClient } from '@/lib/supabase/server';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
 import { Mail, MessageSquare, Clock, MapPin } from 'lucide-react';
@@ -37,22 +38,11 @@ export default async function Page({ params, searchParams }: {
   return (
       <main className="bg-white min-h-screen">
         {/* Hero */}
-        <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-blue-50 border-b border-slate-200/60">
-          <div className="absolute inset-0 -z-10">
-            <div className="absolute top-0 left-1/3 h-96 w-96 rounded-full bg-blue-400/10 blur-3xl animate-pulse" />
-          </div>
-          <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 text-center">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-slate-200 text-xs font-semibold text-slate-700 mb-5 shadow-sm">
-              <MessageSquare className="h-3.5 w-3.5" /> {safeT(t, 'contact.title', 'Falar connosco')}
-            </div>
-            <h1 className="t-h1 text-slate-900">
-              {safeT(t, 'contact.title', 'Falar connosco')}
-            </h1>
-            <p className="mt-4 text-lg text-slate-600 max-w-xl mx-auto leading-relaxed">
-              {safeT(t, 'contact.subtitle', 'Mensagem directa para a nossa equipa. Respondemos em média em menos de 24h.')}
-            </p>
-          </div>
-        </section>
+        <PageHero
+          badge={<><MessageSquare className="h-3.5 w-3.5" /> {safeT(t, 'contact.title', 'Falar connosco')}</>}
+          title={safeT(t, 'contact.title', 'Falar connosco')}
+          subtitle={safeT(t, 'contact.subtitle', 'Mensagem directa para a nossa equipa. Respondemos em média em menos de 24h.')}
+        />
 
         {/* Form + side info */}
         <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">

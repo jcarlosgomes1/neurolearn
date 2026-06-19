@@ -1,6 +1,7 @@
 import { seoMetadata } from '@/lib/seo';
 import { Link } from '@/i18n/routing';
 import { getTranslations } from 'next-intl/server';
+import { PageHero } from '@/components/shared/PageHero';
 import { createClient } from '@/lib/supabase/server';
 import { Search, HelpCircle, User, BookOpen, CreditCard, Award, Building2, ShieldCheck, ArrowRight, Mail } from 'lucide-react';
 
@@ -63,30 +64,22 @@ export default async function Page({
 
   return (
     <main className="bg-white min-h-screen">
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-blue-50 border-b border-slate-200/60">
-        <div className="absolute inset-0 -z-10">
-          <div className="absolute top-0 left-1/4 h-96 w-96 rounded-full bg-blue-400/10 blur-3xl animate-pulse" />
-        </div>
-        <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-24 text-center">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-slate-200 text-xs font-semibold text-slate-700 mb-6 shadow-sm">
-            <HelpCircle className="h-3.5 w-3.5" /> {t('aj.badge')}
-          </div>
-          <h1 className="t-h1 text-slate-900">
-            {t('aj.h1_pre')}
-            <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">{t('aj.h1_accent')}</span>
-          </h1>
-          <form action={`/${locale}/ajuda`} method="get" className="mt-8 relative max-w-xl mx-auto">
-            <Search className="h-5 w-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="search"
-              name="q"
-              defaultValue={query}
-              placeholder={t('aj.search_ph')}
-              className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-200 bg-white text-slate-900 placeholder-slate-400 shadow-lg outline-none focus:border-blue-500"
-            />
-          </form>
-        </div>
-      </section>
+      <PageHero
+        badge={<><HelpCircle className="h-3.5 w-3.5" /> {t('aj.badge')}</>}
+        title={t('aj.h1_pre')}
+        titleAccent={t('aj.h1_accent')}
+      >
+        <form action={`/${locale}/ajuda`} method="get" className="relative w-full max-w-xl">
+          <Search className="h-5 w-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="search"
+            name="q"
+            defaultValue={query}
+            placeholder={t('aj.search_ph')}
+            className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-200 bg-white text-slate-900 placeholder-slate-400 shadow-lg outline-none focus:border-brand-500"
+          />
+        </form>
+      </PageHero>
 
       {query ? (
         <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
