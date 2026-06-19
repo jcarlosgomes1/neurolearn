@@ -38,7 +38,7 @@ export function LessonActionDock({ courseId, moduleIndex, lessonIndex }: { cours
       <div className="fixed right-4 bottom-20 md:bottom-6 z-40 flex flex-col items-end gap-2">
         {expanded && (
           <div className="flex flex-col items-end gap-2 mb-1 animate-in fade-in slide-in-from-bottom-2 duration-150">
-            <button onClick={openTutor} className={`2xl:hidden ${pill}`}>
+            <button onClick={openTutor} className={pill}>
               Tutor <span className={`${dot} bg-gradient-to-br from-brand-500 to-purple-500`}><GraduationCap className="h-4 w-4" /></span>
             </button>
             <button onClick={() => pick('questions')} className={pill}>

@@ -135,7 +135,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       ]} baseUrl={SITE_URL} />
       <Header />
       <main className="bg-white min-h-screen">
-        <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10">
+        <section className="max-w-3xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10">
           <Link href={'/blog' as any}
             className="group inline-flex items-center gap-2 mb-5 px-3 py-1.5 rounded-full bg-white hover:bg-slate-50 border border-slate-200 hover:border-brand-300 text-slate-700 hover:text-brand-700 text-sm font-medium transition-all"
             aria-label={backLabel}>
@@ -153,7 +153,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               {post.category}
             </span>
           )}
-          <h1 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 tracking-tight leading-[1.15] text-balance">
+          <h1 className="mt-3 text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight leading-[1.2] text-balance">
             {translation.title}
           </h1>
           <div className="mt-5 flex flex-wrap items-center gap-2 text-sm text-slate-500">
@@ -166,7 +166,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               {translation.excerpt}
             </p>
           )}
-          <div className="mt-10 prose prose-slate prose-lg max-w-none">
+          <div className="mt-8 prose prose-slate max-w-none">
             <Markdown source={translation.content_md || ''} />
           </div>
           {post.tags && post.tags.length > 0 && (

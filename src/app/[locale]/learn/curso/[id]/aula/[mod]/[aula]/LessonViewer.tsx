@@ -191,7 +191,7 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
             </div>
           </aside>
 
-          <div className="flex-1 min-w-0 max-w-3xl mx-auto lg:mx-0">
+          <div className="flex-1 min-w-0">
             <button onClick={() => setNavOpen(true)} className="lg:hidden mb-4 inline-flex items-center gap-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-lg">
               ☰ {t('curriculum_btn')}
             </button>
@@ -364,16 +364,11 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
             {!nextLesson && <div className="mt-4"><CourseFeedbackPanel courseId={courseId} courseTitle={course.title} /></div>}
           </div>
 
-          <aside className="hidden 2xl:flex w-[380px] flex-shrink-0 sticky top-28 self-start h-[calc(100vh-8rem)]">
-            <div className="w-full rounded-2xl border border-slate-200 shadow-sm overflow-hidden bg-white">
-              <LessonTutor context={tutorContext} />
-            </div>
-          </aside>
         </div>
       </div>
 
       {tutorOpen && (
-        <div className="2xl:hidden fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm flex items-end sm:items-stretch sm:justify-end" onClick={() => setTutorOpen(false)}>
+        <div className="fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm flex items-end sm:items-stretch sm:justify-end" onClick={() => setTutorOpen(false)}>
           <div className="bg-white w-full sm:w-[440px] rounded-t-2xl sm:rounded-none shadow-2xl h-[85vh] sm:h-full flex flex-col" onClick={(e) => e.stopPropagation()}>
             <LessonTutor context={tutorContext} onClose={() => setTutorOpen(false)} />
           </div>

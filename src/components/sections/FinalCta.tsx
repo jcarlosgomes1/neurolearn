@@ -13,7 +13,7 @@ export function FinalCta({ data }: { data: CtaData }) {
   const t = useTranslations();
   return (
     <section className="py-20">
-      <div className="max-w-4xl mx-auto px-4">
+      <div className="max-w-6xl mx-auto px-4">
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-600 via-brand-700 to-brand-900 px-6 py-16 sm:px-12 sm:py-20 text-center text-white">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.15),transparent_50%)]" />
           <div className="relative">
