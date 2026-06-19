@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { Users } from 'lucide-react';
 import { CommunityClient } from './CommunityClient';
 import { getTranslations } from 'next-intl/server';
+import { PageHero } from '@/components/shared/PageHero';
 
 export const dynamic = 'force-dynamic';
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
@@ -36,15 +37,11 @@ export default async function Page() {
 
   return (
     <main className="min-h-screen bg-slate-50">
-      <section className="border-b border-slate-200 bg-gradient-to-br from-violet-50 via-white to-fuchsia-50">
-        <div className="mx-auto max-w-3xl px-6 py-12">
-          <div className="mb-2 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-violet-600">
-            <Users className="h-4 w-4" /> {t('community.badge')}
-          </div>
-          <h1 className="t-h1 text-slate-900">{t('community.title')}</h1>
-          <p className="mt-2 text-slate-600">{t('community.subtitle')}</p>
-        </div>
-      </section>
+      <PageHero
+        badge={<><Users className="h-3.5 w-3.5" /> {t('community.badge')}</>}
+        title={t('community.title')}
+        subtitle={t('community.subtitle')}
+      />
       <div className="mx-auto max-w-3xl px-6 py-8">
         {!enabled ? (
           <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-slate-500">{t('community.unavailable')}</div>
