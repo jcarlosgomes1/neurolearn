@@ -136,9 +136,9 @@ export async function LiveMomentumSection() {
     { name: 'Diogo', role: 'Marketing Mgr', city: 'Madrid', whenKey: 'hx.when4' },
   ];
   const TOP_COURSES = [
-    { titleKey: 'hx.tc1', emoji: '🐍', enrolled: 1240, cls: 'from-yellow-500 to-amber-600' },
-    { titleKey: 'hx.tc2', emoji: '🎨', enrolled: 980, cls: 'from-fuchsia-500 to-pink-600' },
-    { titleKey: 'hx.tc3', emoji: '🧠', enrolled: 1850, cls: 'from-violet-500 to-indigo-600' },
+    { titleKey: 'hx.tc1', Icon: Code, enrolled: 1240, cls: 'from-yellow-500 to-amber-600' },
+    { titleKey: 'hx.tc2', Icon: Palette, enrolled: 980, cls: 'from-fuchsia-500 to-pink-600' },
+    { titleKey: 'hx.tc3', Icon: Brain, enrolled: 1850, cls: 'from-violet-500 to-indigo-600' },
   ];
   return (
     <section className="relative py-20 sm:py-24 bg-white overflow-hidden">
@@ -199,7 +199,7 @@ export async function LiveMomentumSection() {
                 <Link key={i} href={'/cursos' as any}
                   className="flex items-center gap-3 bg-slate-50/60 rounded-xl p-3 hover:bg-slate-50 transition-all group">
                   <div className={`flex-shrink-0 h-11 w-11 rounded-xl bg-gradient-to-br ${c.cls} text-white flex items-center justify-center text-xl shadow-sm group-hover:scale-110 transition-transform`}>
-                    {c.emoji}
+                    <c.Icon className="h-5 w-5" strokeWidth={1.75} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="font-semibold text-sm text-slate-900 truncate">{t(c.titleKey)}</div>

@@ -1,3 +1,12 @@
+import { Globe, Rocket, GraduationCap, Zap, MessageCircle, BarChart3, Sparkles, Award, ShieldCheck, Users, BookOpen, TrendingUp } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+
+const ICONS: Record<string, LucideIcon> = {
+  'globe': Globe, 'rocket': Rocket, 'graduation-cap': GraduationCap, 'zap': Zap,
+  'message-circle': MessageCircle, 'bar-chart-3': BarChart3, 'sparkles': Sparkles,
+  'award': Award, 'shield-check': ShieldCheck, 'users': Users, 'book-open': BookOpen, 'trending-up': TrendingUp,
+};
+
 interface FeaturesData {
   title?: string;
   sub?: string;
@@ -10,20 +19,25 @@ export function Features({ data }: { data: FeaturesData }) {
     <section className="py-20 bg-slate-50">
       <div className="max-w-6xl mx-auto px-4">
         <div className="text-center max-w-2xl mx-auto mb-12">
-          {data.title && <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight text-balance">{data.title}</h2>}
+          {data.title && <h2 className="t-h2 text-slate-900 text-balance">{data.title}</h2>}
           {data.sub && <p className="mt-4 text-lg text-slate-600 text-pretty">{data.sub}</p>}
         </div>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {data.items.map((item, i) => (
-            <div
-              key={i}
-              className="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-md hover:border-brand-200 transition-all"
-            >
-              <div className="text-3xl mb-3">{item.ic}</div>
-              <h3 className="font-semibold text-slate-900 text-lg">{item.t}</h3>
-              <p className="mt-2 text-sm text-slate-600 text-pretty leading-relaxed">{item.d}</p>
-            </div>
-          ))}
+          {data.items.map((item, i) => {
+            const Icon = ICONS[item.ic];
+            return (
+              <div
+                key={i}
+                className="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-md hover:border-brand-200 transition-all"
+              >
+                <div className="inline-flex items-center justify-center h-12 w-12 rounded-xl bg-brand-50 text-brand-600 mb-4">
+                  {Icon ? <Icon className="h-6 w-6" strokeWidth={1.75} /> : <span className="text-2xl">{item.ic}</span>}
+                </div>
+                <h3 className="t-h3 text-slate-900">{item.t}</h3>
+                <p className="mt-2 text-sm text-slate-600 text-pretty leading-relaxed">{item.d}</p>
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>
