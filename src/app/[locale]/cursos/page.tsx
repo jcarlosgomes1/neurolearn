@@ -58,6 +58,10 @@ export default async function CoursesPage({ params, searchParams }: { params: Pr
   const sb = await createClient();
   const { data: courses } = await sb.rpc('nl_courses_catalog', { p_lang: locale });
   const { data: cats } = await sb.rpc('nl_course_categories_list', { p_lang: locale });
+  const { data: rmRaw } = await sb.rpc('nl_platform_config_get', { p_key: 'rating_min_display' });
+  const { data: emRaw } = await sb.rpc('nl_platform_config_get', { p_key: 'enroll_min_display' });
+  const ratingMin = parseInt((rmRaw as string) || '5', 10) || 5;
+  const enrollMin = parseInt((emRaw as string) || '25', 10) || 25;
   const sp = await searchParams;
   const initialCat = sp?.cat || 'all';
   const blocks = await getHomeBlocks(locale);
@@ -74,7 +78,7 @@ export default async function CoursesPage({ params, searchParams }: { params: Pr
       <main className="bg-white min-h-screen">
         <PageHeader badge={t('catalog.badge')} title={t('catalog.title')} subtitle={t('catalog.subtitle')} />
         <section className="max-w-6xl mx-auto px-4 py-8 sm:py-12">
-          <CatalogClient courses={courseList} cats={cats || []} initialCat={initialCat} />
+          <CatalogClient courses={courseList} cats={cats || []} initialCat={initialCat} ratingMin={ratingMin} enrollMin={enrollMin} />
         </section>
         <Footer data={blocks.footer_brand || {}} />
       </main>

@@ -14,6 +14,7 @@ interface Course {
   price_cents: number | null;
   currency: string | null;
   rating_avg: number | null;
+  rating_count?: number | null;
   enrollments_count: number | null;
   level: string | null;
   course_type: string | null;
@@ -23,11 +24,11 @@ interface Course {
 }
 
 interface CatNode { slug: string; parent: string | null; name: string; track: string | null }
-interface Props { courses: Course[]; cats?: CatNode[]; initialCat?: string }
+interface Props { courses: Course[]; cats?: CatNode[]; initialCat?: string; ratingMin?: number; enrollMin?: number }
 
 type PriceFilter = 'all' | 'free' | 'paid';
 
-export function CatalogClient({ courses, cats = [], initialCat = 'all' }: Props) {
+export function CatalogClient({ courses, cats = [], initialCat = 'all', ratingMin = 5, enrollMin = 25 }: Props) {
   const t = useTranslations();
   const locale = useLocale();
   const [search, setSearch] = useState('');
@@ -182,7 +183,7 @@ export function CatalogClient({ courses, cats = [], initialCat = 'all' }: Props)
         <>
           <p className="text-sm text-slate-500 mb-5 sm:mb-6">{t('catalog.count_available', { count: filtered.length })}</p>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((c) => <CourseCard key={c.id} course={c as any} />)}
+            {filtered.map((c) => <CourseCard key={c.id} course={c as any} ratingMin={ratingMin} enrollMin={enrollMin} />)}
           </div>
         </>
       )}

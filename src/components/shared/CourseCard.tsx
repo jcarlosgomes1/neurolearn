@@ -1,6 +1,7 @@
 import { useTranslations, useLocale } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import { fmtCents } from '@/lib/utils/cn';
+import { Star, Users } from 'lucide-react';
 
 const LANG_NAMES: Record<string, string> = { pt: 'Português', en: 'English', es: 'Español', fr: 'Français' };
 
@@ -12,6 +13,7 @@ export interface CourseCardData {
   price_cents: number;
   currency?: string | null;
   rating_avg?: number | string | null;
+  rating_count?: number | null;
   enrollments_count?: number | null;
   level?: string | null;
   course_type?: string | null;
@@ -19,11 +21,14 @@ export interface CourseCardData {
   is_fallback?: boolean | null;
 }
 
-export function CourseCard({ course }: { course: CourseCardData }) {
+export function CourseCard({ course, ratingMin = 5, enrollMin = 25 }: { course: CourseCardData; ratingMin?: number; enrollMin?: number }) {
   const t = useTranslations('course_card');
   const locale = useLocale();
   const langs = (course.available_langs || []).filter(Boolean);
   const notInMyLang = !!course.is_fallback && langs.length > 0 && !langs.includes(locale);
+  const showRating = (course.rating_count ?? 0) >= ratingMin && !!course.rating_avg;
+  const showEnroll = (course.enrollments_count ?? 0) >= enrollMin;
+  const isNew = !showRating && !showEnroll;
   return (
     <Link
       href={`/curso/${course.id}` as any}
@@ -43,7 +48,7 @@ export function CourseCard({ course }: { course: CourseCardData }) {
             className="px-2 py-0.5 rounded-full font-medium inline-flex items-center gap-1"
             style={{ background: 'var(--accent-tint)', color: 'var(--accent)' }}
           >
-            🌐 {langs.map((l) => l.toUpperCase()).join(' · ')}
+            {langs.map((l) => l.toUpperCase()).join(' · ')}
           </span>
         )}
         {course.level && (
@@ -54,17 +59,20 @@ export function CourseCard({ course }: { course: CourseCardData }) {
             {t('pro')}
           </span>
         )}
-        {course.enrollments_count && course.enrollments_count > 0 ? (
-          <span>👥 {course.enrollments_count}</span>
+        {showEnroll ? (
+          <span className="inline-flex items-center gap-1"><Users className="h-3 w-3" /> {Number(course.enrollments_count).toLocaleString(locale)}</span>
+        ) : null}
+        {isNew ? (
+          <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-medium">{t('new')}</span>
         ) : null}
       </div>
       <div className="mt-auto pt-4 flex items-center justify-between">
         <span className="text-lg font-bold text-brand-700">
           {fmtCents(course.price_cents, course.currency || 'EUR')}
         </span>
-        {course.rating_avg ? (
-          <span className="text-sm text-amber-600">
-            ★ {Number(course.rating_avg).toFixed(1)}
+        {showRating ? (
+          <span className="inline-flex items-center gap-1 text-sm text-amber-600">
+            <Star className="h-3.5 w-3.5 fill-amber-500" /> {Number(course.rating_avg).toFixed(1)}
           </span>
         ) : null}
       </div>
