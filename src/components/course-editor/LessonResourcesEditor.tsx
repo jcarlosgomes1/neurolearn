@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
-import { Github, FileCode, ExternalLink, Download, Box, Loader2, Trash2, Paperclip, Link2 } from 'lucide-react';
+import { Github, FileCode, ExternalLink, Download, Box, Loader2, Trash2, Paperclip, Link2, Pencil, Check, X, ChevronUp, ChevronDown } from 'lucide-react';
 
 interface Res {
   id: string;
@@ -26,8 +26,8 @@ const TYPE_ICON: Record<string, any> = {
   sandbox_code: Box,
 };
 
-// Painel de autoria de materiais por aula (anexos para download + links). Escreve em nl_lesson_resources
-// (mesma fonte que o aluno ve no visualizador). Disponivel para qualquer tipo de aula.
+// Painel completo de autoria de materiais por aula: upload de ficheiro + links, com descricao,
+// edicao inline, reordenacao e obrigatorio. Escreve em nl_lesson_resources (mesma fonte do visualizador).
 export function LessonResourcesEditor({ courseId, moduleIndex, lessonIndex }: { courseId: string; moduleIndex: number; lessonIndex: number }) {
   const t = useTranslations('lesson_res_editor');
   const [items, setItems] = useState<Res[] | null>(null);
@@ -36,16 +36,27 @@ export function LessonResourcesEditor({ courseId, moduleIndex, lessonIndex }: { 
   const [linkType, setLinkType] = useState<string>('external_link');
   const [linkUrl, setLinkUrl] = useState('');
   const [linkLabel, setLinkLabel] = useState('');
+  const [linkDesc, setLinkDesc] = useState('');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editLabel, setEditLabel] = useState('');
+  const [editDesc, setEditDesc] = useState('');
 
   const load = useCallback(async () => {
     try {
       const sb = createClient();
       const { data } = await sb.rpc('nl_lesson_resources_list', { p_course_id: courseId, p_module_index: moduleIndex, p_lesson_index: lessonIndex });
-      setItems(Array.isArray(data) ? (data as Res[]) : []);
+      const arr = Array.isArray(data) ? (data as Res[]) : [];
+      arr.sort((a, b) => (a.sort_order - b.sort_order) || a.id.localeCompare(b.id));
+      setItems(arr);
     } catch { setItems([]); }
   }, [courseId, moduleIndex, lessonIndex]);
 
   useEffect(() => { load(); }, [load]);
+
+  function nextOrder() {
+    if (!items || items.length === 0) return 0;
+    return Math.max(...items.map((x) => x.sort_order ?? 0)) + 1;
+  }
 
   async function upsert(p: { resource_type: string; url: string; label: string; description?: string | null; required?: boolean; sort_order?: number; id?: string }) {
     const sb = createClient();
@@ -57,7 +68,7 @@ export function LessonResourcesEditor({ courseId, moduleIndex, lessonIndex }: { 
       p_url: p.url,
       p_label: p.label,
       p_description: p.description ?? null,
-      p_sort_order: p.sort_order ?? (items?.length || 0),
+      p_sort_order: p.sort_order ?? 0,
       p_required: p.required ?? false,
       p_id: p.id ?? null,
     });
@@ -79,7 +90,7 @@ export function LessonResourcesEditor({ courseId, moduleIndex, lessonIndex }: { 
       const up = await sb.storage.from('course-materials').upload(path, file, { upsert: false });
       if (up.error) throw up.error;
       const { data: pub } = sb.storage.from('course-materials').getPublicUrl(path);
-      await upsert({ resource_type: 'file_download', url: pub.publicUrl, label: file.name });
+      await upsert({ resource_type: 'file_download', url: pub.publicUrl, label: file.name, sort_order: nextOrder() });
       toast.success(t('added'));
       await load();
     } catch (err: any) {
@@ -93,9 +104,10 @@ export function LessonResourcesEditor({ courseId, moduleIndex, lessonIndex }: { 
     if (!linkUrl.trim()) { toast.error(t('url_required')); return; }
     setBusy(true);
     try {
-      await upsert({ resource_type: linkType, url: linkUrl.trim(), label: linkLabel.trim() || linkUrl.trim() });
+      await upsert({ resource_type: linkType, url: linkUrl.trim(), label: linkLabel.trim() || linkUrl.trim(), description: linkDesc.trim() || null, sort_order: nextOrder() });
       setLinkUrl('');
       setLinkLabel('');
+      setLinkDesc('');
       toast.success(t('added'));
       await load();
     } catch (e: any) {
@@ -105,11 +117,42 @@ export function LessonResourcesEditor({ courseId, moduleIndex, lessonIndex }: { 
     }
   }
 
+  function startEdit(r: Res) { setEditingId(r.id); setEditLabel(r.label); setEditDesc(r.description || ''); }
+  function cancelEdit() { setEditingId(null); setEditLabel(''); setEditDesc(''); }
+
+  async function saveEdit(r: Res) {
+    setBusy(true);
+    try {
+      await upsert({ id: r.id, resource_type: r.resource_type, url: r.url, label: editLabel.trim() || r.url, description: editDesc.trim() || null, required: r.required, sort_order: r.sort_order });
+      cancelEdit();
+      await load();
+    } catch (e: any) { toast.error(e?.message || t('error')); } finally { setBusy(false); }
+  }
+
   async function toggleRequired(r: Res) {
     try {
       await upsert({ id: r.id, resource_type: r.resource_type, url: r.url, label: r.label, description: r.description, required: !r.required, sort_order: r.sort_order });
       setItems((arr) => (arr || []).map((x) => (x.id === r.id ? { ...x, required: !x.required } : x)));
     } catch { toast.error(t('error')); }
+  }
+
+  async function move(idx: number, dir: -1 | 1) {
+    if (!items) return;
+    const j = idx + dir;
+    if (j < 0 || j >= items.length) return;
+    const arr = [...items];
+    const tmp = arr[idx]; arr[idx] = arr[j]; arr[j] = tmp;
+    setItems(arr);
+    setBusy(true);
+    try {
+      for (let k = 0; k < arr.length; k++) {
+        const r = arr[k];
+        if (r.sort_order !== k) {
+          await upsert({ id: r.id, resource_type: r.resource_type, url: r.url, label: r.label, description: r.description, required: r.required, sort_order: k });
+        }
+      }
+      await load();
+    } catch (e: any) { toast.error(e?.message || t('error')); await load(); } finally { setBusy(false); }
   }
 
   async function remove(r: Res) {
@@ -133,20 +176,39 @@ export function LessonResourcesEditor({ courseId, moduleIndex, lessonIndex }: { 
         <div className="flex items-center gap-2 text-xs text-slate-400"><Loader2 className="h-3 w-3 animate-spin" /> {t('loading')}</div>
       ) : items.length > 0 ? (
         <ul className="space-y-2">
-          {items.map((r) => {
+          {items.map((r, idx) => {
             const Icon = TYPE_ICON[r.resource_type] || ExternalLink;
+            const editing = editingId === r.id;
             return (
-              <li key={r.id} className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl p-3">
-                <span className="h-9 w-9 rounded-lg bg-white border border-slate-200 text-slate-600 flex items-center justify-center shrink-0"><Icon className="h-4 w-4" /></span>
-                <div className="min-w-0 flex-1">
-                  <a href={r.url} target="_blank" rel="noopener noreferrer" className="block text-sm font-medium text-slate-900 truncate hover:text-brand-700">{r.label}</a>
-                  <span className="text-[11px] text-slate-400">{t(`type_${r.resource_type}` as any)}</span>
-                </div>
-                <label className="flex items-center gap-1.5 cursor-pointer shrink-0 text-xs text-slate-600" title={t('required_hint')}>
-                  <input type="checkbox" checked={r.required} onChange={() => toggleRequired(r)} className="h-4 w-4 rounded border-slate-300" />
-                  {t('required')}
-                </label>
-                <button onClick={() => remove(r)} className="text-slate-400 hover:text-rose-600 shrink-0 p-1" aria-label={t('delete')}><Trash2 className="h-4 w-4" /></button>
+              <li key={r.id} className="bg-slate-50 border border-slate-200 rounded-xl p-3">
+                {editing ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-xs font-semibold text-slate-600"><Icon className="h-4 w-4" /> {t(`type_${r.resource_type}` as any)}</div>
+                    <input className="input text-sm" value={editLabel} onChange={(e) => setEditLabel(e.target.value)} placeholder={t('link_label_ph')} />
+                    <textarea className="input text-sm min-h-[56px]" value={editDesc} onChange={(e) => setEditDesc(e.target.value)} placeholder={t('description_ph')} />
+                    <div className="flex gap-2">
+                      <button onClick={() => saveEdit(r)} disabled={busy} className="btn-primary text-xs px-3 py-1.5 inline-flex items-center gap-1 disabled:opacity-50"><Check className="h-3.5 w-3.5" />{t('save')}</button>
+                      <button onClick={cancelEdit} className="text-xs px-3 py-1.5 rounded-md border border-slate-200 hover:bg-slate-100 inline-flex items-center gap-1"><X className="h-3.5 w-3.5" />{t('cancel')}</button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <span className="h-9 w-9 rounded-lg bg-white border border-slate-200 text-slate-600 flex items-center justify-center shrink-0"><Icon className="h-4 w-4" /></span>
+                    <div className="min-w-0 flex-1">
+                      <a href={r.url} target="_blank" rel="noopener noreferrer" className="block text-sm font-medium text-slate-900 truncate hover:text-brand-700">{r.label}</a>
+                      {r.description ? <p className="text-[11px] text-slate-500 line-clamp-1">{r.description}</p> : <span className="text-[11px] text-slate-400">{t(`type_${r.resource_type}` as any)}</span>}
+                    </div>
+                    <div className="flex items-center gap-0.5 shrink-0">
+                      <button onClick={() => move(idx, -1)} disabled={idx === 0 || busy} className="p-1 rounded hover:bg-slate-200 disabled:opacity-30 text-slate-500" aria-label={t('move_up')}><ChevronUp className="h-4 w-4" /></button>
+                      <button onClick={() => move(idx, 1)} disabled={idx === items.length - 1 || busy} className="p-1 rounded hover:bg-slate-200 disabled:opacity-30 text-slate-500" aria-label={t('move_down')}><ChevronDown className="h-4 w-4" /></button>
+                      <label className="flex items-center gap-1 cursor-pointer text-[11px] text-slate-600 px-1" title={t('required_hint')}>
+                        <input type="checkbox" checked={r.required} onChange={() => toggleRequired(r)} className="h-3.5 w-3.5 rounded border-slate-300" />{t('required')}
+                      </label>
+                      <button onClick={() => startEdit(r)} className="p-1 rounded hover:bg-slate-200 text-slate-500" aria-label={t('edit')}><Pencil className="h-4 w-4" /></button>
+                      <button onClick={() => remove(r)} className="p-1 rounded hover:bg-rose-50 text-slate-400 hover:text-rose-600" aria-label={t('delete')}><Trash2 className="h-4 w-4" /></button>
+                    </div>
+                  </div>
+                )}
               </li>
             );
           })}
@@ -170,6 +232,7 @@ export function LessonResourcesEditor({ courseId, moduleIndex, lessonIndex }: { 
           </select>
           <input className="input text-sm" placeholder={t('link_url_ph')} value={linkUrl} onChange={(e) => setLinkUrl(e.target.value)} />
           <input className="input text-sm" placeholder={t('link_label_ph')} value={linkLabel} onChange={(e) => setLinkLabel(e.target.value)} />
+          <input className="input text-sm" placeholder={t('description_ph')} value={linkDesc} onChange={(e) => setLinkDesc(e.target.value)} />
           <button onClick={addLink} disabled={busy} className="btn-primary w-full text-sm disabled:opacity-50">{busy ? t('adding') : t('add_link')}</button>
         </div>
       </div>
