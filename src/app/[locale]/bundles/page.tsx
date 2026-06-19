@@ -20,7 +20,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
       <Header />
       <main className="bg-slate-50 min-h-screen">
         <section className="bg-gradient-to-br from-brand-700 to-violet-800 text-white">
-          <div className="max-w-5xl mx-auto px-4 py-12 sm:py-16">
+          <div className="max-w-6xl mx-auto px-4 py-12 sm:py-16">
             <div className="flex items-center gap-2 mb-3">
               <Package className="h-6 w-6" />
               <span className="text-sm font-semibold uppercase tracking-wider text-brand-200">{t('bn.badge')}</span>
@@ -29,7 +29,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
             <p className="text-lg text-brand-100 max-w-2xl">{t('bn.sub')}</p>
           </div>
         </section>
-        <div className="max-w-5xl mx-auto px-4 py-8">
+        <div className="max-w-6xl mx-auto px-4 py-8">
           {bundles.length === 0 ? (
             <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
               <Package className="h-12 w-12 text-slate-300 mx-auto mb-3" />
