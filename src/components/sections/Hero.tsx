@@ -1,5 +1,6 @@
 import { Link } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
+import { Star } from 'lucide-react';
 
 interface HeroData {
   badge?: string;
@@ -8,6 +9,7 @@ interface HeroData {
   btn_primary?: string;
   btn_secondary?: string;
   trust?: string;
+  trust_stars?: number;
 }
 
 export function Hero({ data }: { data: HeroData }) {
@@ -65,7 +67,7 @@ export function Hero({ data }: { data: HeroData }) {
         </div>
         {data.trust && (
           <p className="mt-8 text-sm animate-fade-in [animation-delay:0.4s] flex items-center gap-2" style={{ color: 'var(--ink-3)' }}>
-            <span style={{ color: 'var(--accent)' }}>★★★★★</span>
+            {!!data.trust_stars && data.trust_stars > 0 && (<span className="inline-flex items-center gap-0.5" style={{ color: 'var(--accent)' }}>{Array.from({ length: Math.min(5, Math.max(0, Math.round(data.trust_stars))) }).map((_, i) => (<Star key={i} className="h-4 w-4 fill-current" />))}</span>)}
             <span>{data.trust}</span>
           </p>
         )}
