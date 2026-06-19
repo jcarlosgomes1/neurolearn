@@ -1,6 +1,7 @@
 import { seoMetadata } from '@/lib/seo';
 import { Link } from '@/i18n/routing';
 import { getTranslations } from 'next-intl/server';
+import { PageHero } from '@/components/shared/PageHero';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
 import { Check, X, ArrowRight, Sparkles, GitCompare } from 'lucide-react';
 
@@ -38,22 +39,12 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   const blocks = await getHomeBlocks(locale);
   return (
       <main className="bg-white min-h-screen">
-        <section className="relative overflow-hidden bg-gradient-to-br from-emerald-50 via-white to-blue-50 border-b border-slate-200/60">
-          <div className="absolute inset-0 -z-10">
-            <div className="absolute top-0 left-1/4 h-96 w-96 rounded-full bg-emerald-400/15 blur-3xl animate-pulse" />
-          </div>
-          <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-24 text-center">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-emerald-200 text-xs font-semibold text-emerald-700 mb-6 shadow-sm">
-              <GitCompare className="h-3.5 w-3.5" /> {t('cmp2.badge')}
-            </div>
-            <h1 className="t-h1 text-slate-900">
-              {t('cmp2.h1_pre')}<span className="bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">{t('cmp2.h1_accent')}</span>
-            </h1>
-            <p className="mt-6 text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
-              {t('cmp2.hero_desc')}
-            </p>
-          </div>
-        </section>
+        <PageHero
+          badge={<><GitCompare className="h-3.5 w-3.5" /> {t('cmp2.badge')}</>}
+          title={t('cmp2.h1_pre')}
+          titleAccent={t('cmp2.h1_accent')}
+          subtitle={t('cmp2.hero_desc')}
+        />
 
         <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
           <div className="overflow-x-auto bg-white rounded-3xl border border-slate-200 shadow-sm">
