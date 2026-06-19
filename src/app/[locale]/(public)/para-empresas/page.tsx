@@ -4,6 +4,8 @@ import { getTranslations } from 'next-intl/server';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
 import { PageHero } from '@/components/shared/PageHero';
 import { Building2, Users, Shield, Sparkles, BarChart3, Headphones, Upload, Briefcase, Crown, Check, ArrowRight, Zap } from 'lucide-react';
+import { IconTile } from '@/components/shared/IconTile';
+import { getIconPalette } from '@/lib/ui/icon-palette';
 
 export const revalidate = 600;
 
@@ -37,6 +39,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   const { locale } = await params;
   const t = await getTranslations();
   const blocks = await getHomeBlocks(locale);
+  const palette = await getIconPalette();
   return (
       <main className="bg-white min-h-screen">
         <PageHero
@@ -71,9 +74,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {FEATURES.map((f, i) => (
               <div key={i} className="group bg-white rounded-2xl border border-slate-200 p-6 hover:-translate-y-1 hover:shadow-xl transition-all">
-                <div className={`inline-flex h-12 w-12 rounded-xl bg-gradient-to-br ${f.cls} text-white items-center justify-center mb-4 shadow-md group-hover:scale-110 transition-transform`}>
-                  <f.icon className="h-6 w-6" />
-                </div>
+                <IconTile Icon={f.icon} from={palette[i % palette.length].from} to={palette[i % palette.length].to} className="mb-4 group-hover:scale-110 transition-transform" />
                 <h3 className="t-h3 text-slate-900 mb-1.5">{t(f.tKey)}</h3>
                 <p className="text-sm text-slate-600 leading-relaxed">{t(f.dKey)}</p>
               </div>

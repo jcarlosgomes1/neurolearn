@@ -1,5 +1,7 @@
 import { Globe, Rocket, GraduationCap, Zap, MessageCircle, BarChart3, Sparkles, Award, ShieldCheck, Users, BookOpen, TrendingUp } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { IconTile } from '@/components/shared/IconTile';
+import { getIconPalette } from '@/lib/ui/icon-palette';
 
 const ICONS: Record<string, LucideIcon> = {
   'globe': Globe, 'rocket': Rocket, 'graduation-cap': GraduationCap, 'zap': Zap,
@@ -13,8 +15,9 @@ interface FeaturesData {
   items: { ic: string; t: string; d: string }[];
 }
 
-export function Features({ data }: { data: FeaturesData }) {
+export async function Features({ data }: { data: FeaturesData }) {
   if (!data?.items?.length) return null;
+  const palette = await getIconPalette();
   return (
     <section className="py-20 bg-slate-50">
       <div className="max-w-6xl mx-auto px-4">
@@ -30,9 +33,11 @@ export function Features({ data }: { data: FeaturesData }) {
                 key={i}
                 className="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-md hover:border-brand-200 transition-all"
               >
-                <div className="inline-flex items-center justify-center h-12 w-12 rounded-xl bg-brand-50 text-brand-600 mb-4">
-                  {Icon ? <Icon className="h-6 w-6" strokeWidth={1.75} /> : <span className="text-2xl">{item.ic}</span>}
-                </div>
+                {Icon ? (
+                  <IconTile Icon={Icon} from={palette[i % palette.length].from} to={palette[i % palette.length].to} className="mb-4" />
+                ) : (
+                  <div className="inline-flex items-center justify-center h-12 w-12 rounded-xl bg-brand-50 text-brand-600 mb-4"><span className="text-2xl">{item.ic}</span></div>
+                )}
                 <h3 className="t-h3 text-slate-900">{item.t}</h3>
                 <p className="mt-2 text-sm text-slate-600 text-pretty leading-relaxed">{item.d}</p>
               </div>
