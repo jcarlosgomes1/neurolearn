@@ -1,6 +1,7 @@
 import { seoMetadata } from '@/lib/seo';
 import { Link } from '@/i18n/routing';
 import { getTranslations } from 'next-intl/server';
+import { PageHero } from '@/components/shared/PageHero';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
 import { GraduationCap, DollarSign, Globe2, Sparkles, Users, BarChart3, ArrowRight, Check, X, Briefcase } from 'lucide-react';
 
@@ -43,30 +44,23 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   return (
       <main className="bg-white min-h-screen">
         {/* Hero */}
-        <section className="relative overflow-hidden bg-gradient-to-br from-amber-50 via-white to-orange-50 border-b border-slate-200/60">
-          <div className="absolute inset-0 -z-10">
-            <div className="absolute top-0 left-1/4 h-96 w-96 rounded-full bg-amber-400/20 blur-3xl animate-pulse" />
-            <div className="absolute bottom-0 right-1/4 h-96 w-96 rounded-full bg-orange-400/20 blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-          </div>
-          <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-24 text-center">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-amber-200 text-xs font-semibold text-amber-700 mb-6 shadow-sm">
-              <GraduationCap className="h-3.5 w-3.5" /> {t('pi.badge')}
-            </div>
-            <h1 className="t-h1 text-slate-900">
-              {t('pi.h1_pre')}<span className="bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">{t('pi.h1_accent')}</span>
-            </h1>
-            <p className="mt-6 text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
-              {t('pi.hero_desc')}
-            </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-3">
-              <Link href={'/candidatar' as any} className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-br from-amber-600 to-orange-600 text-white hover:scale-105 transition-all font-bold rounded-xl shadow-lg">
-                {t('pi.cta_apply')} <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-            <div className="mt-16 grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <PageHero
+          badge={<><GraduationCap className="h-3.5 w-3.5" /> {t('pi.badge')}</>}
+          title={t('pi.h1_pre')}
+          titleAccent={t('pi.h1_accent')}
+          subtitle={t('pi.hero_desc')}
+        >
+          <Link href={'/candidatar' as any} className="inline-flex items-center gap-2 px-6 py-3 bg-brand-600 text-white hover:bg-brand-700 hover:scale-105 transition-all font-bold rounded-xl shadow-lg">
+            {t('pi.cta_apply')} <ArrowRight className="h-4 w-4" />
+          </Link>
+        </PageHero>
+
+        <section className="py-10 border-b border-slate-200/60">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {STATS.map((s, i) => (
-                <div key={i} className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-                  <div className="text-3xl sm:text-4xl font-bold bg-gradient-to-br from-amber-600 to-orange-600 bg-clip-text text-transparent">{s.value}</div>
+                <div key={i} className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm text-center">
+                  <div className="text-3xl sm:text-4xl font-bold bg-gradient-to-br from-brand-600 to-brand-500 bg-clip-text text-transparent">{s.value}</div>
                   <div className="text-xs text-slate-600 mt-1">{t(s.lKey)}</div>
                 </div>
               ))}

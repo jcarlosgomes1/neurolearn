@@ -39,7 +39,6 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
           title={t('so.h1_pre')}
           titleAccent={t('so.h1_accent')}
           subtitle={t('so.hero_desc')}
-          align="center"
         />
 
         {/* Story */}

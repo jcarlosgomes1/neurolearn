@@ -1,6 +1,7 @@
 import { seoMetadata } from '@/lib/seo';
 import { Link } from '@/i18n/routing';
 import { getTranslations } from 'next-intl/server';
+import { PageHero } from '@/components/shared/PageHero';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
 import { Compass, Briefcase, Award, Brain, Zap, Sparkles, ArrowRight, Target, BookMarked, MessageCircle } from 'lucide-react';
 
@@ -32,31 +33,19 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   const blocks = await getHomeBlocks(locale);
   return (
       <main className="bg-white min-h-screen">
-        <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-cyan-50 border-b border-slate-200/60">
-          <div className="absolute inset-0 -z-10">
-            <div className="absolute top-0 left-1/4 h-96 w-96 rounded-full bg-blue-400/20 blur-3xl animate-pulse" />
-            <div className="absolute bottom-0 right-1/4 h-96 w-96 rounded-full bg-cyan-400/20 blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-          </div>
-          <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-24 text-center">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-blue-200 text-xs font-semibold text-blue-700 mb-6 shadow-sm">
-              <Compass className="h-3.5 w-3.5" /> {t('ps.badge')}
-            </div>
-            <h1 className="t-h1 text-slate-900">
-              {t('ps.h1_pre')}<span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">{t('ps.h1_accent')}</span>
-            </h1>
-            <p className="mt-6 text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
-              {t('ps.hero_desc')}
-            </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-3">
-              <Link href={'/register' as any} className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-br from-blue-600 to-cyan-600 text-white hover:scale-105 transition-all font-bold rounded-xl shadow-lg">
-                {t('ps.cta_start')} <ArrowRight className="h-4 w-4" />
-              </Link>
-              <Link href={'/cursos' as any} className="inline-flex items-center gap-2 px-6 py-3 bg-white text-slate-900 hover:bg-slate-50 border border-slate-200 transition-all font-bold rounded-xl shadow-sm">
-                {t('ps.cta_catalog')}
-              </Link>
-            </div>
-          </div>
-        </section>
+        <PageHero
+          badge={<><Compass className="h-3.5 w-3.5" /> {t('ps.badge')}</>}
+          title={t('ps.h1_pre')}
+          titleAccent={t('ps.h1_accent')}
+          subtitle={t('ps.hero_desc')}
+        >
+          <Link href={'/register' as any} className="inline-flex items-center gap-2 px-6 py-3 bg-brand-600 text-white hover:bg-brand-700 hover:scale-105 transition-all font-bold rounded-xl shadow-lg">
+            {t('ps.cta_start')} <ArrowRight className="h-4 w-4" />
+          </Link>
+          <Link href={'/cursos' as any} className="inline-flex items-center gap-2 px-6 py-3 bg-white hover:bg-brand-50 border border-slate-300 text-slate-700 font-bold rounded-xl">
+            {t('ps.cta_catalog')}
+          </Link>
+        </PageHero>
 
         <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="text-center mb-12">
