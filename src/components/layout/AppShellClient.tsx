@@ -4,6 +4,7 @@ import { Link, useRouter } from '@/i18n/routing';
 import { UserMenu } from './UserMenu';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
+import { createPortal } from 'react-dom';
 import { useTranslations } from 'next-intl';
 import { LayoutDashboard, ListTodo, Wrench, Radio, HeartPulse, BookOpen, Library, Route, Search, Package, ListChecks, FlaskConical, Award, Trophy, Gamepad2, Video, Mic, ShieldCheck, Star, Eye, Users, GraduationCap, FileCheck, Building2, BadgeEuro, ScrollText, FileText, TrendingUp, DollarSign, CreditCard, Receipt, Undo2, Coins, Ticket, ArrowUpCircle, PlusCircle, Link2, LineChart, Filter, BarChart3, Gem, Megaphone, Share2, CalendarDays, Mail, Hourglass, Inbox, LayoutTemplate, Files, PanelTop, Compass, SearchCheck, Cpu, SlidersHorizontal, MessageSquare, Sparkles, Lightbulb, Bot, Plane, Brain, Banknote, Clock, Workflow, Bug, FileSearch, Activity, ClipboardCheck, Server, Plug, Fingerprint, Shield, KeyRound, Settings2, Globe, ToggleLeft, Palette, Briefcase, Handshake, FolderTree, Zap } from 'lucide-react';
 
@@ -72,11 +73,11 @@ function CommandPalette({ open, onClose, items, t }: { open: boolean; onClose: (
 
   useEffect(() => { setHi(0); }, [q]);
 
-  if (!open) return null;
+  if (!open || typeof document === 'undefined') return null;
 
   function go(href: string) { onClose(); router.push(href as any); }
 
-  return (
+  return createPortal((
     <div className="fixed inset-0 z-[60] bg-slate-900/40 backdrop-blur-sm flex items-start justify-center p-4 pt-[14vh] animate-in fade-in duration-150" onClick={onClose}>
       <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-in zoom-in-95 slide-in-from-top-2 duration-150" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center gap-2.5 px-4 border-b border-slate-100">
@@ -106,7 +107,7 @@ function CommandPalette({ open, onClose, items, t }: { open: boolean; onClose: (
         </div>
       </div>
     </div>
-  );
+  ), document.body);
 }
 
 export function AppShellClient({ role, pageTitle, session, nav, collapsedPref, children }: Props) {
@@ -224,7 +225,7 @@ export function AppShellClient({ role, pageTitle, session, nav, collapsedPref, c
             <SidebarContent groups={allGroups} isActive={isActive} t={t} />
           </aside>
         )}
-        {sidebarOpen && (
+        {sidebarOpen && typeof document !== 'undefined' && createPortal((
           <div className="lg:hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm" onClick={() => setSidebarOpen(false)}>
             <aside className="absolute top-0 left-0 bottom-0 w-72 max-w-[85%] bg-white shadow-2xl overflow-y-auto" onClick={(e) => e.stopPropagation()}>
               <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white z-10">
@@ -241,7 +242,7 @@ export function AppShellClient({ role, pageTitle, session, nav, collapsedPref, c
               <SidebarContent groups={allGroups} isActive={isActive} t={t} />
             </aside>
           </div>
-        )}
+        ), document.body)}
         <main className="flex-1 min-w-0 overflow-x-hidden"><div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 pt-3 pb-6 sm:py-8">{children}</div></main>
       </div>
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} items={nav} t={t} />
