@@ -1,10 +1,11 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 
 interface Props { url: string; title?: string }
 
-function parseUrl(url: string): { type: 'youtube' | 'vimeo' | 'mux' | 'mp4' | 'iframe'; embedUrl: string } | null {
+function parseUrl(url: string): { type: 'youtube' | 'vimeo' | 'hls' | 'mp4' | 'iframe'; embedUrl: string } | null {
   try {
     const u = new URL(url);
     if (u.hostname.includes('youtube.com') || u.hostname.includes('youtu.be')) {
@@ -18,12 +19,56 @@ function parseUrl(url: string): { type: 'youtube' | 'vimeo' | 'mux' | 'mp4' | 'i
       const id = u.pathname.replace(/^\//, '').split('/')[0];
       if (id) return { type: 'vimeo', embedUrl: `https://player.vimeo.com/video/${id}?byline=0&portrait=0` };
     }
-    if (u.hostname.includes('mux.com')) {
-      return { type: 'mux', embedUrl: url };
+    // Mux / HLS — streaming adaptativo (.m3u8). stream.mux.com/{id}.m3u8 ou qualquer HLS.
+    if (u.hostname.includes('mux.com') || /\.m3u8($|\?)/i.test(u.pathname)) {
+      return { type: 'hls', embedUrl: url };
     }
     if (/\.(mp4|webm|ogv)$/i.test(u.pathname)) return { type: 'mp4', embedUrl: url };
     return { type: 'iframe', embedUrl: url };
   } catch { return null; }
+}
+
+// Reprodutor HLS: nativo no Safari/iOS; hls.js (via CDN, sem dependencia npm) no Chrome/Firefox/Edge.
+function HlsPlayer({ src, title }: { src: string; title?: string }) {
+  const ref = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    const video = ref.current;
+    if (!video) return;
+    if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = src;
+      return;
+    }
+    let cancelled = false;
+    let hls: any = null;
+    (async () => {
+      const w = window as any;
+      if (!w.Hls) {
+        await new Promise<void>((resolve) => {
+          const s = document.createElement('script');
+          s.src = 'https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js';
+          s.async = true;
+          s.onload = () => resolve();
+          s.onerror = () => resolve();
+          document.head.appendChild(s);
+        });
+      }
+      if (cancelled) return;
+      const Hls = w.Hls;
+      if (Hls && Hls.isSupported()) {
+        hls = new Hls({ enableWorker: true });
+        hls.loadSource(src);
+        hls.attachMedia(video);
+      } else {
+        video.src = src;
+      }
+    })();
+    return () => { cancelled = true; if (hls) { try { hls.destroy(); } catch { /* noop */ } } };
+  }, [src]);
+  return (
+    <div className="relative rounded-xl overflow-hidden bg-black aspect-video">
+      <video ref={ref} controls preload="metadata" playsInline className="absolute inset-0 w-full h-full" title={title} />
+    </div>
+  );
 }
 
 export function VideoEmbed({ url, title }: Props) {
@@ -36,6 +81,8 @@ export function VideoEmbed({ url, title }: Props) {
       </div>
     );
   }
+
+  if (parsed.type === 'hls') return <HlsPlayer src={parsed.embedUrl} title={title} />;
 
   if (parsed.type === 'mp4') {
     return (
