@@ -11,16 +11,22 @@ import {
 
 // ============= TRUSTED BY (logos strip) =============
 export async function TrustedByStrip() {
-  const t = await getTranslations();
-  const COMPANIES = ['Healthcare Group', 'TechCorp', 'FinanceHub', 'RetailChain', 'ConsultingFirm', 'StartupHub'];
+  const sb = await createClient();
+  const locale = await getLocale();
+  const { data: capsRaw } = await sb.rpc('nl_home_capabilities', { p_lang: locale });
+  const caps: any = capsRaw || {};
+  const items: string[] = Array.isArray(caps.items) ? caps.items : [];
+  if (items.length === 0) return null;
   return (
     <section className="bg-slate-50/60 border-y border-slate-200/60 py-10">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <p className="text-xs uppercase tracking-wider font-bold text-slate-500 mb-4">
-          {t('hx.trusted_title')}
-        </p>
+        {caps.heading && (
+          <p className="text-xs uppercase tracking-wider font-bold text-slate-500 mb-4">
+            {caps.heading}
+          </p>
+        )}
         <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 sm:gap-x-12 opacity-60 text-slate-700 font-bold text-sm sm:text-base">
-          {COMPANIES.map((c) => (
+          {items.map((c) => (
             <span key={c} className="inline-flex items-center gap-1.5 hover:opacity-100 transition-opacity">
               <span className="h-2 w-2 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600" />
               {c}
