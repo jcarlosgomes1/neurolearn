@@ -30,7 +30,7 @@ export default async function EssentialsPage({ params }: { params: Promise<{ loc
 
   return (
       <main className="bg-white min-h-screen">
-        <PageHero title={t('ess.title')} subtitle={t('ess.subtitle')} />
+        <PageHero badge={t('ess.badge')} title={t('ess.title')} subtitle={t('ess.subtitle')} />
         <section className="max-w-6xl mx-auto px-4 py-12">
           {!tracks || tracks.length === 0 ? (
             <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-600 via-brand-700 to-brand-900 text-white p-12 text-center">
