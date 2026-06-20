@@ -3,7 +3,7 @@ import { Link } from '@/i18n/routing';
 import { getTranslations } from 'next-intl/server';
 import { PageHero } from '@/components/shared/PageHero';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
-import { GraduationCap, DollarSign, Globe2, Sparkles, Users, BarChart3, ArrowRight, Check, X, Briefcase } from 'lucide-react';
+import { GraduationCap, Globe2, Sparkles, Users, BarChart3, ArrowRight, Check, X, Briefcase } from 'lucide-react';
 
 export const revalidate = 600;
 
@@ -13,14 +13,12 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 const STATS = [
-  { value: '70%', lKey: 'pi.stat1_label' },
   { value: '4', lKey: 'pi.stat2_label' },
   { value: '€0', lKey: 'pi.stat3_label' },
   { value: '24h', lKey: 'pi.stat4_label' },
 ];
 
 const FEATURES = [
-  { icon: DollarSign, tKey: 'pi.feat.revshare_t', dKey: 'pi.feat.revshare_d', cls: 'from-emerald-500 to-teal-600' },
   { icon: Globe2, tKey: 'pi.feat.translate_t', dKey: 'pi.feat.translate_d', cls: 'from-violet-500 to-indigo-600' },
   { icon: Sparkles, tKey: 'pi.feat.gen_t', dKey: 'pi.feat.gen_d', cls: 'from-fuchsia-500 to-pink-600' },
   { icon: BarChart3, tKey: 'pi.feat.analytics_t', dKey: 'pi.feat.analytics_d', cls: 'from-amber-500 to-orange-600' },
@@ -29,7 +27,6 @@ const FEATURES = [
 ];
 
 const COMPARE = [
-  { fKey: 'pi.cmp.revshare', neuro: 'pi.cmp.v_70', udemy: 'pi.cmp.v_3797', coursera: 'pi.cmp.v_50', teachable: 'pi.cmp.v_90fixa' },
   { fKey: 'pi.cmp.translate', neuro: 'pi.cmp.v_4idiomas', udemy: 'pi.no', coursera: 'pi.cmp.v_limitada', teachable: 'pi.no' },
   { fKey: 'pi.cmp.gen', neuro: 'pi.yes', udemy: 'pi.no', coursera: 'pi.no', teachable: 'pi.no' },
   { fKey: 'pi.cmp.talent', neuro: 'pi.cmp.v_royalties', udemy: 'pi.no', coursera: 'pi.no', teachable: 'pi.no' },
