@@ -5,6 +5,7 @@ import type { LucideIcon } from 'lucide-react';
  * Hero premium canónico das páginas públicas — tratamento "Aurora".
  * Theme-aware: usa exclusivamente tokens de marca (brand-*) e neutros do tema (slate-* remapeados).
  * Um único padrão para todas as páginas → consonância total.
+ * variant: 'conversion' (Home/Empresas/Para-*, com CTA no slot children) | 'plain' (legal/ajuda/conteúdo, sem CTA).
  */
 export function PageHero({
   badge,
@@ -14,6 +15,7 @@ export function PageHero({
   subtitle,
   children,
   align = 'left',
+  variant = 'conversion',
 }: {
   badge?: ReactNode;
   icon?: LucideIcon;
@@ -22,8 +24,10 @@ export function PageHero({
   subtitle?: string;
   children?: ReactNode;
   align?: 'left' | 'center';
+  variant?: 'conversion' | 'plain';
 }) {
   const centered = align === 'center';
+  const pad = variant === 'plain' ? 'pt-10 pb-10 sm:py-14 lg:py-16' : 'pt-12 pb-14 sm:py-20 lg:py-24';
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-brand-50 via-white to-brand-100/40 border-b border-slate-200/60">
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
@@ -32,7 +36,7 @@ export function PageHero({
         <div className="absolute -bottom-24 left-1/3 h-72 w-72 rounded-full bg-brand-500/20 blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
       </div>
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10" style={{ background: 'radial-gradient(60% 55% at 50% 0%, rgb(var(--brand-400) / 0.18), transparent 70%)' }} />
-      <div className={`relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-14 sm:py-20 lg:py-24 ${centered ? 'text-center' : ''}`}>
+      <div className={`relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 ${pad} ${centered ? 'text-center' : ''}`}>
         {badge && (
           <div className={`inline-flex items-center gap-2 mb-4 sm:mb-5 text-brand-700 ${centered ? 'justify-center' : ''}`}>
             {Icon ? <Icon aria-hidden className="h-4 w-4 flex-shrink-0 text-brand-600" strokeWidth={2} /> : null}
