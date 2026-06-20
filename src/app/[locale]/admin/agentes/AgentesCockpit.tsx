@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import {
   Bot, CheckCircle2, XCircle, Play, Loader2, ShieldCheck, Sparkles,
   ClipboardList, ScrollText, AlertTriangle, Clock, ChevronDown, ChevronRight,
-  Megaphone, FileText, LifeBuoy, GraduationCap, Briefcase, Eye,
+  Megaphone, FileText, LifeBuoy, GraduationCap, Briefcase, Eye, BookPlus,
 } from 'lucide-react';
 
 type Trust = { total: number; approved: number; rejected: number; rate: number | null; sample: number };
@@ -43,6 +43,7 @@ const ACTION_ICON: Record<string, any> = {
   triage_messages: LifeBuoy,
   decide_application: GraduationCap,
   match_candidates: Briefcase,
+  generate_course_concept: BookPlus,
 };
 
 export function AgentesCockpit() {
@@ -159,6 +160,7 @@ export function AgentesCockpit() {
       case 'support': return `${pv.subject || '—'}${pv.from_name ? ' · ' + pv.from_name : (pv.from_email ? ' · ' + pv.from_email : '')}`;
       case 'application': return `${pv.full_name || '—'}${pv.job_title ? ' · ' + pv.job_title : ''}`;
       case 'match': return `${pv.headline || '—'} → ${pv.job_title || '—'}`;
+      case 'course_concept': return pv.title || actionLabel(p.action);
       default: return actionLabel(p.action);
     }
   }
@@ -247,6 +249,19 @@ export function AgentesCockpit() {
               <span className="inline-flex flex-wrap gap-1 align-middle">{pv.missing_skills.map((s: string, i: number) => <span key={i} className="text-[10px] px-1.5 py-0.5 rounded bg-rose-100 text-rose-700">{s}</span>)}</span>
             </div>
           )}
+        </div>
+      );
+    }
+    if (pv.type === 'course_concept') {
+      return (
+        <div className="space-y-1.5">
+          <p className="text-sm font-semibold text-slate-800">{pv.title}</p>
+          <p className="text-xs text-slate-500">{[pv.path_title ? `${tx('agents.review.in_path','No percurso')}: ${pv.path_title}` : null, pv.level ? `${tx('agents.review.level','Nível')}: ${pv.level}` : null].filter(Boolean).join(' · ')}</p>
+          {pv.description && <p className="text-xs text-slate-600">{pv.description}</p>}
+          {Array.isArray(pv.topics) && pv.topics.length > 0 && (
+            <div className="flex flex-wrap gap-1">{pv.topics.map((s: string, i: number) => <span key={i} className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">{s}</span>)}</div>
+          )}
+          <p className="text-[11px] text-violet-600 mt-1">{tx('agents.review.generates_draft', 'Aprovar gera o rascunho do curso.')}</p>
         </div>
       );
     }
