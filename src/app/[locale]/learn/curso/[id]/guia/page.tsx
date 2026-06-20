@@ -2,12 +2,13 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
-import { ArrowLeft, Target, Lightbulb, ListChecks } from 'lucide-react';
+import { ArrowLeft, Target, Lightbulb, ListChecks, Library } from 'lucide-react';
 
 export const metadata = { title: 'Guia de estudo' };
 
 interface GuideLesson { title?: string; objective?: string; kp?: string[] | null; tip?: string | null }
 interface GuideModule { title?: string; lessons?: GuideLesson[] }
+interface Term { id: string; term: string; definition: string }
 
 export default async function Page({ params }: { params: Promise<{ id: string; locale: string }> }) {
   const { id, locale } = await params;
@@ -22,6 +23,10 @@ export default async function Page({ params }: { params: Promise<{ id: string; l
     redirect(r?.error === 'no_access' ? `/${locale}/curso/${id}` : `/${locale}/learn`);
   }
   const modules: GuideModule[] = Array.isArray(r?.modules) ? r!.modules! : [];
+
+  const { data: gData } = await sb.rpc('nl_glossary_for_course', { p_course_id: id });
+  const gr = gData as { ok?: boolean; terms?: Term[] } | null;
+  const terms: Term[] = gr?.ok && Array.isArray(gr.terms) ? gr.terms : [];
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -73,6 +78,22 @@ export default async function Page({ params }: { params: Promise<{ id: string; l
             </div>
           </section>
         ))}
+
+        {terms.length > 0 && (
+          <section>
+            <h2 className="font-display text-xl font-bold text-slate-900 mb-4 pb-2 border-b border-slate-200 flex items-center gap-2">
+              <Library className="h-5 w-5 text-brand-500" /> {t('glossary')}
+            </h2>
+            <dl className="space-y-3">
+              {terms.map((g) => (
+                <div key={g.id} className="rounded-xl border border-slate-200 bg-white px-4 py-3">
+                  <dt className="font-semibold text-slate-900">{g.term}</dt>
+                  <dd className="text-sm text-slate-600 mt-0.5">{g.definition}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+        )}
       </div>
     </div>
   );
