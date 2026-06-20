@@ -131,7 +131,7 @@ export function LearnerJourney({
           <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
           <div className="relative">
             <p className="text-xs font-semibold uppercase tracking-wider text-white/70">{eyebrow}</p>
-            <h1 className="text-2xl font-bold mt-0.5">{title}</h1>
+            <h1 className="font-display font-bold text-2xl sm:text-3xl mt-0.5 tracking-tight">{title}</h1>
             <div className="flex items-center gap-4 mt-4">
               <div className="flex items-center gap-2">
                 <div className="h-11 w-11 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center font-bold text-lg"
