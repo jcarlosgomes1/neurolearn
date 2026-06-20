@@ -73,7 +73,7 @@ export default async function BlogPage({ params }: { params: Promise<{ locale: s
 
         {enriched.length === 0 ? (
           <section className="max-w-3xl mx-auto px-4 py-16 text-center">
-            <div className="text-5xl mb-4">📝</div>
+            
             <p className="text-lg text-slate-500">{t('blog.empty')}</p>
           </section>
         ) : (

@@ -14,12 +14,10 @@ interface Props {
 }
 
 const PALETTES = [
-  { from: '#4753f0', to: '#8b5cf6' },
-  { from: '#0ea5e9', to: '#4753f0' },
-  { from: '#8b5cf6', to: '#ec4899' },
-  { from: '#10b981', to: '#0ea5e9' },
-  { from: '#f59e0b', to: '#ef4444' },
-  { from: '#3b82f6', to: '#06b6d4' },
+  { from: 'rgb(var(--brand-500))', to: 'rgb(var(--brand-700))' },
+  { from: 'rgb(var(--brand-400))', to: 'rgb(var(--brand-600))' },
+  { from: 'rgb(var(--brand-600))', to: 'rgb(var(--brand-800))' },
+  { from: 'rgb(var(--brand-500))', to: 'rgb(var(--brand-800))' },
 ];
 
 function hashSeed(s: string): number {
@@ -28,7 +26,7 @@ function hashSeed(s: string): number {
   return Math.abs(h);
 }
 
-function SVGFallback({ seed, category, emoji, alt, className, aspectRatio = '16/9' }: { seed: string; category?: string | null; emoji?: string; alt: string; className?: string; aspectRatio?: string }) {
+function SVGFallback({ seed, category, alt, className, aspectRatio = '16/9' }: { seed: string; category?: string | null; alt: string; className?: string; aspectRatio?: string }) {
   const palette = PALETTES[hashSeed(seed) % PALETTES.length];
   return (
     <div className={`relative w-full overflow-hidden ${className || ''}`} style={{ aspectRatio }}>
@@ -44,7 +42,6 @@ function SVGFallback({ seed, category, emoji, alt, className, aspectRatio = '16/
           <circle cx="200" cy="700" r="240" fill="white" fillOpacity="0.08" />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-6">
-          <span className="text-7xl mb-3 drop-shadow-lg">{emoji || '📖'}</span>
           {category && <span className="text-xs uppercase tracking-widest font-semibold opacity-90 px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full">{category}</span>}
         </div>
       </div>
@@ -52,11 +49,11 @@ function SVGFallback({ seed, category, emoji, alt, className, aspectRatio = '16/
   );
 }
 
-export function CoverImage({ src, alt, seed, category, emoji, className, aspectRatio = '16/9', priority }: Props) {
+export function CoverImage({ src, alt, seed, category, className, aspectRatio = '16/9', priority }: Props) {
   const [failed, setFailed] = useState(false);
 
   if (!src || failed) {
-    return <SVGFallback seed={seed} category={category} emoji={emoji} alt={alt} className={className} aspectRatio={aspectRatio} />;
+    return <SVGFallback seed={seed} category={category} alt={alt} className={className} aspectRatio={aspectRatio} />;
   }
 
   return (
