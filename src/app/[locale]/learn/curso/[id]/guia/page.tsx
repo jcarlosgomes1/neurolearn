@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { ArrowLeft, Target, Lightbulb, ListChecks, Library, HelpCircle, ChevronDown, Route } from 'lucide-react';
+import { CourseQA } from '@/components/lesson/CourseQA';
 
 export const metadata = { title: 'Guia de estudo' };
 
@@ -51,6 +52,8 @@ export default async function Page({ params }: { params: Promise<{ id: string; l
       </header>
 
       <div className="space-y-10">
+        <CourseQA courseId={id} />
+
         {steps.length > 0 && (
           <section>
             <h2 className="font-display text-xl font-bold text-slate-900 mb-4 pb-2 border-b border-slate-200 flex items-center gap-2">
