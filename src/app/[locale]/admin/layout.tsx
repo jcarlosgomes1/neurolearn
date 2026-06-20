@@ -2,6 +2,7 @@ import { AppShell } from '@/components/layout/AppShell';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from '@/i18n/routing';
 import { TwoFactorBanner } from '@/components/security/TwoFactorBanner';
+import { PageTips } from '@/components/admin/PageTips';
 
 export default async function AdminLayout({ children, params }: { children: React.ReactNode; params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -47,6 +48,7 @@ export default async function AdminLayout({ children, params }: { children: Reac
     <AppShell role="admin">
       {!hasMfa && <TwoFactorBanner role={safeRole} />}
       {children}
+      <PageTips />
     </AppShell>
   );
 }
