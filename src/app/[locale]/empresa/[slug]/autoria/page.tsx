@@ -37,7 +37,7 @@ export default async function AuthoringPage({ params }: { params: Promise<{ slug
         <div className="flex items-center gap-2 text-indigo-600 text-xs font-semibold uppercase tracking-wider mb-1">
           <PenLine className="h-3.5 w-3.5" /> {safeT('academy.authoring.eyebrow', 'Academia · Autoria')}
         </div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">{safeT('academy.authoring.page_title', 'Autoria de conteúdo')}</h1>
+        <h1 className="font-display text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">{safeT('academy.authoring.page_title', 'Autoria de conteúdo')}</h1>
         <p className="text-sm text-slate-600 mt-1.5 max-w-2xl leading-relaxed">
           {safeT('academy.authoring.page_desc', 'Convoca especialistas internos para criar e validar formação — com reconhecimento.')}
         </p>
