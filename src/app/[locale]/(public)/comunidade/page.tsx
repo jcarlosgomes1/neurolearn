@@ -38,7 +38,7 @@ export default async function Page() {
   return (
     <main className="min-h-screen bg-slate-50">
       <PageHero
-        badge={<><Users className="h-3.5 w-3.5" /> {t('community.badge')}</>}
+        icon={Users} badge={t('community.badge')}
         title={t('community.title')}
         subtitle={t('community.subtitle')}
       />

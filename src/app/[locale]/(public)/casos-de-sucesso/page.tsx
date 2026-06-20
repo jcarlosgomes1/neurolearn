@@ -44,7 +44,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
       <main className="bg-white min-h-screen">
         {/* Hero */}
         <PageHero
-          badge={<><Trophy className="h-3.5 w-3.5" /> {t('cs.badge')}</>}
+          icon={Trophy} badge={t('cs.badge')}
           title={t('cs.h1_pre')}
           titleAccent={t('cs.h1_accent')}
           subtitle={t('cs.hero_desc')}

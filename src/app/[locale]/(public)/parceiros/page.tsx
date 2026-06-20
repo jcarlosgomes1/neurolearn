@@ -25,7 +25,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   return (
       <main className="bg-white min-h-screen">
         <PageHero
-          badge={<><Handshake className="h-3.5 w-3.5" /> {t('pa.badge')}</>}
+          icon={Handshake} badge={t('pa.badge')}
           title={t('pa.h1_pre')}
           titleAccent={t('pa.h1_accent')}
           subtitle={t('pa.hero_desc')}

@@ -65,7 +65,7 @@ export default async function Page({
   return (
     <main className="bg-white min-h-screen">
       <PageHero
-        badge={<><HelpCircle className="h-3.5 w-3.5" /> {t('aj.badge')}</>}
+        icon={HelpCircle} badge={t('aj.badge')}
         title={t('aj.h1_pre')}
         titleAccent={t('aj.h1_accent')}
       >

@@ -39,7 +39,7 @@ export default async function Page({ params, searchParams }: {
       <main className="bg-white min-h-screen">
         {/* Hero */}
         <PageHero
-          badge={<><MessageSquare className="h-3.5 w-3.5" /> {safeT(t, 'contact.title', 'Falar connosco')}</>}
+          icon={MessageSquare} badge={safeT(t, 'contact.title', 'Falar connosco')}
           title={safeT(t, 'contact.title', 'Falar connosco')}
           subtitle={safeT(t, 'contact.subtitle', 'Mensagem directa para a nossa equipa. Respondemos em média em menos de 24h.')}
         />
