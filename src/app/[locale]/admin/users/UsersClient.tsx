@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { useRouter } from '@/i18n/routing';
+import { useRouter, Link } from '@/i18n/routing';
+import { fmtCents } from '@/lib/utils/cn';
 import { toast } from 'sonner';
-import { Search, Filter, Crown, ShieldCheck, GraduationCap, User as UserIcon, CheckCircle2, XCircle, Loader2, ChevronLeft, ChevronRight, Mail, Calendar, Activity, X } from 'lucide-react';
+import { Search, Filter, Crown, ShieldCheck, GraduationCap, User as UserIcon, CheckCircle2, XCircle, Loader2, ChevronLeft, ChevronRight, Mail, Calendar, Activity, X, Wallet, ArrowUpRight } from 'lucide-react';
 
 interface User {
   id: string; name: string | null; email: string | null; handle: string | null;
@@ -13,6 +14,8 @@ interface User {
   subscription_status: string | null; subscription_plan: string | null;
   joined_at: string | null; last_login: string | null;
   enrolled_count: number; email_confirmed: boolean;
+  is_instructor_record?: boolean; instr_revenue_cents?: number;
+  instr_payouts_cents?: number; instr_revshare_pct?: number | null; instr_status?: string | null;
 }
 interface KPIs { total: number; active: number; inactive: number; admins: number; instructors: number; students: number; paying: number; last_7d: number; last_30d: number; }
 interface Page { items: User[]; total: number; limit: number; offset: number; }
@@ -161,6 +164,7 @@ export function UsersClient({ currentUserId, kpis, initialPage }: { currentUserI
               const RoleIcon = roleMeta.icon;
               const isMe = u.id === currentUserId;
               const saving = rowBusy === u.id;
+              const isInstr = !!u.is_instructor_record;
               return (
                 <div key={u.id} className={`p-3 sm:p-4 flex items-center gap-3 hover:bg-slate-50/40 ${!u.is_active ? 'opacity-60' : ''}`}>
                   {u.avatar_url ? (
@@ -172,7 +176,14 @@ export function UsersClient({ currentUserId, kpis, initialPage }: { currentUserI
                   )}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-semibold text-sm text-slate-900 truncate">{u.name || u.email || 'Sem nome'}</span>
+                      {isInstr ? (
+                        <Link href={`/admin/instrutor/${u.id}` as any} className="font-semibold text-sm text-slate-900 truncate hover:text-violet-700 hover:underline inline-flex items-center gap-1">
+                          {u.name || u.email || 'Sem nome'}
+                          <ArrowUpRight className="h-3 w-3 text-slate-400 flex-shrink-0" />
+                        </Link>
+                      ) : (
+                        <span className="font-semibold text-sm text-slate-900 truncate">{u.name || u.email || 'Sem nome'}</span>
+                      )}
                       {isMe && <span className="text-[9px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded uppercase font-bold">Tu</span>}
                       {!u.is_active && <span className="text-[9px] bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded uppercase font-bold">Inactivo</span>}
                       <span className={`inline-flex items-center gap-0.5 text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider ${roleMeta.cls}`}>
@@ -195,6 +206,14 @@ export function UsersClient({ currentUserId, kpis, initialPage }: { currentUserI
                       {u.last_login && <> · login {new Date(u.last_login).toLocaleDateString('pt-PT')}</>}
                       {u.enrolled_count > 0 && <> · {u.enrolled_count} curso(s)</>}
                     </div>
+                    {isInstr && (
+                      <div className="text-[10px] text-slate-500 mt-1 inline-flex items-center gap-2 flex-wrap bg-emerald-50/60 border border-emerald-100 rounded-md px-2 py-0.5">
+                        <span className="inline-flex items-center gap-1 font-medium text-emerald-800"><Wallet className="h-3 w-3" /> Ganhos {fmtCents(u.instr_revenue_cents || 0)}</span>
+                        <span className="text-slate-500">· Pago {fmtCents(u.instr_payouts_cents || 0)}</span>
+                        <span className="text-emerald-700 font-semibold">· A pagar {fmtCents(Math.max(0, (u.instr_revenue_cents || 0) - (u.instr_payouts_cents || 0)))}</span>
+                        {u.instr_revshare_pct != null && <span className="text-slate-500">· {u.instr_revshare_pct}% partilha</span>}
+                      </div>
+                    )}
                   </div>
 
                   {/* Inline actions: role + estado (sem modal) */}
