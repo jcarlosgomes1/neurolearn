@@ -178,8 +178,10 @@ export function UsersClient({ currentUserId, kpis, initialPage }: { currentUserI
                       <span className={`inline-flex items-center gap-0.5 text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider ${roleMeta.cls}`}>
                         <RoleIcon className="h-2.5 w-2.5" /> {roleMeta.label}
                       </span>
-                      {u.subscription_status === 'active' && (
-                        <span className="text-[9px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold uppercase">€ {u.subscription_plan || ''}</span>
+                      {u.subscription_status && (
+                        <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase ${u.subscription_status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
+                          {u.subscription_status}{u.subscription_plan ? ` · ${u.subscription_plan}` : ''}
+                        </span>
                       )}
                     </div>
                     <div className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-2 flex-wrap">

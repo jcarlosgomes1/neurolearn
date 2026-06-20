@@ -135,7 +135,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       ]} baseUrl={SITE_URL} />
       <Header />
       <main className="bg-white min-h-screen">
-        <section className="max-w-3xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10">
+        <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10">
           <Link href={'/blog' as any}
             className="group inline-flex items-center gap-2 mb-5 px-3 py-1.5 rounded-full bg-white hover:bg-slate-50 border border-slate-200 hover:border-brand-300 text-slate-700 hover:text-brand-700 text-sm font-medium transition-all"
             aria-label={backLabel}>
@@ -147,7 +147,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               category={post.category} emoji={heroEmoji} aspectRatio="21/9" priority />
           </div>
         </section>
-        <article className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+        <article className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
           {post.category && (
             <span className="inline-block text-xs font-semibold uppercase tracking-wider text-brand-700 bg-brand-50 px-2.5 py-1 rounded-full">
               {post.category}
