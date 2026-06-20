@@ -9,6 +9,7 @@ interface Row { id: number; title: string; area: string; priority: string; statu
 const BOARD_COLS = [
   { key: 'todo', label: 'A Fazer', accent: 'from-slate-400 to-slate-500' },
   { key: 'doing', label: 'Em curso', accent: 'from-blue-500 to-indigo-600' },
+  { key: 'review', label: 'Verificação', accent: 'from-violet-500 to-purple-600' },
   { key: 'blocked', label: 'Bloqueado', accent: 'from-rose-500 to-red-600' },
   { key: 'parked', label: 'Parado', accent: 'from-amber-500 to-orange-600' },
 ];
