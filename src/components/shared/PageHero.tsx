@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import type { LucideIcon } from 'lucide-react';
 
 /**
  * Hero premium canónico das páginas públicas — tratamento "Aurora".
@@ -7,6 +8,7 @@ import type { ReactNode } from 'react';
  */
 export function PageHero({
   badge,
+  icon: Icon,
   title,
   titleAccent,
   subtitle,
@@ -14,6 +16,7 @@ export function PageHero({
   align = 'left',
 }: {
   badge?: ReactNode;
+  icon?: LucideIcon;
   title: string;
   titleAccent?: string;
   subtitle?: string;
@@ -32,7 +35,7 @@ export function PageHero({
       <div className={`relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-14 sm:py-20 lg:py-24 ${centered ? 'text-center' : ''}`}>
         {badge && (
           <div className={`inline-flex items-center gap-2 mb-4 sm:mb-5 text-brand-700 ${centered ? 'justify-center' : ''}`}>
-            <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-brand-500 flex-shrink-0" />
+            {Icon ? <Icon aria-hidden className="h-4 w-4 flex-shrink-0 text-brand-600" strokeWidth={2} /> : null}
             <span className="text-xs font-semibold uppercase tracking-[0.18em] truncate">{badge}</span>
           </div>
         )}
