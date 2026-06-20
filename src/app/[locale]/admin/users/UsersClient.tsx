@@ -176,13 +176,14 @@ export function UsersClient({ currentUserId, kpis, initialPage }: { currentUserI
                   )}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      {isInstr ? (
-                        <Link href={`/admin/instrutor/${u.id}` as any} className="font-semibold text-sm text-slate-900 truncate hover:text-violet-700 hover:underline inline-flex items-center gap-1">
-                          {u.name || u.email || 'Sem nome'}
-                          <ArrowUpRight className="h-3 w-3 text-slate-400 flex-shrink-0" />
+                      <Link href={`/admin/users/${u.id}` as any} className="font-semibold text-sm text-slate-900 truncate hover:text-violet-700 hover:underline inline-flex items-center gap-1">
+                        {u.name || u.email || 'Sem nome'}
+                        <ArrowUpRight className="h-3 w-3 text-slate-400 flex-shrink-0" />
+                      </Link>
+                      {isInstr && (
+                        <Link href={`/admin/instrutor/${u.id}` as any} title="Painel do instrutor" className="inline-flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-1.5 py-0.5 rounded">
+                          <GraduationCap className="h-2.5 w-2.5" /> Painel
                         </Link>
-                      ) : (
-                        <span className="font-semibold text-sm text-slate-900 truncate">{u.name || u.email || 'Sem nome'}</span>
                       )}
                       {isMe && <span className="text-[9px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded uppercase font-bold">Tu</span>}
                       {!u.is_active && <span className="text-[9px] bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded uppercase font-bold">Inactivo</span>}
