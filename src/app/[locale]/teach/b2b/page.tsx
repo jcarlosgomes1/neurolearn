@@ -27,11 +27,11 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   const active = r.ok ? r.active_subscriptions : 0;
   
   return (
-    <div className="px-4 sm:px-6 py-6 max-w-5xl mx-auto">
+    <div className="px-4 sm:px-6 py-6 max-w-6xl mx-auto">
       <Link href={'/teach' as any} className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-brand-700 mb-4">
         <ArrowLeft className="h-4 w-4" /> {t('btn.back')}
       </Link>
-      <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2 mb-6">
+      <h1 className="font-display text-2xl font-bold text-slate-900 flex items-center gap-2 mb-6">
         <TrendingUp className="h-6 w-6 text-emerald-600" /> {t('tea.b2b_h1')}
       </h1>
       
