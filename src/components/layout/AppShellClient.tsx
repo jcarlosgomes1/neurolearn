@@ -191,7 +191,7 @@ export function AppShellClient({ role, pageTitle, session, nav, collapsedPref, c
         {session && <UserMenu email={session.email} area={session.area} areas={session.areas} />}
       </header>
       <div className="flex">
-        {collapsed ? (
+        {!isLessonRoute && (collapsed ? (
           <aside className="hidden lg:flex w-16 flex-shrink-0 sticky top-14 h-[calc(100vh-3.5rem)] border-r border-slate-200 bg-white flex-col items-center py-3 gap-1 overflow-y-auto">
             <button onClick={toggleCollapsed} title={safeT(t, 'shell.expand', 'Expandir menu')} aria-label={safeT(t, 'shell.expand', 'Expandir menu')}
               className="w-10 h-10 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-500">
@@ -224,7 +224,7 @@ export function AppShellClient({ role, pageTitle, session, nav, collapsedPref, c
             </div>
             <SidebarContent groups={allGroups} isActive={isActive} t={t} />
           </aside>
-        )}
+        ))}
         {sidebarOpen && typeof document !== 'undefined' && createPortal((
           <div className="lg:hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm" onClick={() => setSidebarOpen(false)}>
             <aside className="absolute top-0 left-0 bottom-0 w-72 max-w-[85%] bg-white shadow-2xl overflow-y-auto" onClick={(e) => e.stopPropagation()}>

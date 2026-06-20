@@ -20,10 +20,6 @@ export function CourseCurriculumNav({
 
   const toggle = (i: number) => setOpenMods((prev) => { const n = new Set(prev); n.has(i) ? n.delete(i) : n.add(i); return n; });
 
-  const totalLessons = modules.reduce((s, m) => s + m.lessons.length, 0);
-  const doneLessons = Object.values(progress).filter(Boolean).length;
-  const overallPct = totalLessons ? Math.round((doneLessons / totalLessons) * 100) : 0;
-
   const seq = mode === 'sequential';
   const linear: Array<{ m: number; l: number }> = [];
   modules.forEach((mm, mi) => mm.lessons.forEach((_, li) => linear.push({ m: mi, l: li })));
@@ -36,17 +32,6 @@ export function CourseCurriculumNav({
 
   return (
     <div className="flex flex-col h-full">
-      <div className="px-4 pt-4 pb-3 border-b border-slate-100">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-xs font-bold uppercase tracking-widest text-slate-500">{t('content')}</span>
-          <span className="text-xs font-semibold text-brand-700 tabular-nums">{overallPct}%</span>
-        </div>
-        <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-          <div className="h-full bg-gradient-to-r from-brand-500 to-purple-500 transition-all duration-500" style={{ width: `${overallPct}%` }} />
-        </div>
-        <p className="mt-2 text-[11px] text-slate-400 tabular-nums">{t('lessons_done', { done: doneLessons, total: totalLessons })}</p>
-      </div>
-
       <nav className="flex-1 overflow-y-auto px-2 py-2 space-y-1">
         {modules.map((mod, mi) => {
           const modDone = mod.lessons.filter((_, li) => progress[`${mi}_${li}`]).length;
