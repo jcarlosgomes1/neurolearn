@@ -2,13 +2,14 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
-import { ArrowLeft, Target, Lightbulb, ListChecks, Library } from 'lucide-react';
+import { ArrowLeft, Target, Lightbulb, ListChecks, Library, HelpCircle, ChevronDown } from 'lucide-react';
 
 export const metadata = { title: 'Guia de estudo' };
 
 interface GuideLesson { title?: string; objective?: string; kp?: string[] | null; tip?: string | null }
 interface GuideModule { title?: string; lessons?: GuideLesson[] }
 interface Term { id: string; term: string; definition: string }
+interface Faq { id: string; question: string; answer: string }
 
 export default async function Page({ params }: { params: Promise<{ id: string; locale: string }> }) {
   const { id, locale } = await params;
@@ -23,6 +24,10 @@ export default async function Page({ params }: { params: Promise<{ id: string; l
     redirect(r?.error === 'no_access' ? `/${locale}/curso/${id}` : `/${locale}/learn`);
   }
   const modules: GuideModule[] = Array.isArray(r?.modules) ? r!.modules! : [];
+
+  const { data: fData } = await sb.rpc('nl_faq_for_course', { p_course_id: id });
+  const fr = fData as { ok?: boolean; faq?: Faq[] } | null;
+  const faq: Faq[] = fr?.ok && Array.isArray(fr.faq) ? fr.faq : [];
 
   const { data: gData } = await sb.rpc('nl_glossary_for_course', { p_course_id: id });
   const gr = gData as { ok?: boolean; terms?: Term[] } | null;
@@ -78,6 +83,25 @@ export default async function Page({ params }: { params: Promise<{ id: string; l
             </div>
           </section>
         ))}
+
+        {faq.length > 0 && (
+          <section>
+            <h2 className="font-display text-xl font-bold text-slate-900 mb-4 pb-2 border-b border-slate-200 flex items-center gap-2">
+              <HelpCircle className="h-5 w-5 text-brand-500" /> {t('faq')}
+            </h2>
+            <div className="space-y-2">
+              {faq.map((q) => (
+                <details key={q.id} className="group rounded-xl border border-slate-200 bg-white px-4 py-3">
+                  <summary className="cursor-pointer list-none font-medium text-slate-900 flex items-start justify-between gap-3">
+                    <span>{q.question}</span>
+                    <ChevronDown className="h-4 w-4 text-slate-400 shrink-0 mt-0.5 group-open:rotate-180 transition-transform" />
+                  </summary>
+                  <p className="text-sm text-slate-600 mt-2 leading-relaxed">{q.answer}</p>
+                </details>
+              ))}
+            </div>
+          </section>
+        )}
 
         {terms.length > 0 && (
           <section>
