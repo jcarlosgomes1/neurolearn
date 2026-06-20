@@ -5,6 +5,7 @@ import { Link } from '@/i18n/routing';
 import { CoverImage } from '@/components/shared/CoverImage';
 import { useTranslations } from 'next-intl';
 import { fmtDate } from '@/lib/utils/cn';
+import { SearchX } from 'lucide-react';
 
 interface Post {
   id: string;
@@ -78,7 +79,7 @@ export function BlogClient({ posts }: { posts: Post[] }) {
 
       {filtered.length === 0 ? (
         <div className="text-center py-16">
-          <div className="text-4xl mb-2">🔍</div>
+          <SearchX className="h-8 w-8 text-slate-300 mx-auto mb-3" aria-hidden />
           <p className="text-slate-700 font-medium">{t('blog.no_match')}</p>
           <button onClick={clearFilters} className="mt-3 text-sm text-brand-600 hover:underline">
             {t('blog.clear_filters')}
