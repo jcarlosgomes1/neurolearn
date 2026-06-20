@@ -61,7 +61,7 @@ export function JobPostingsClient({ slug, initial }: { slug: string; initial: Jo
       
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2"><Briefcase className="h-6 w-6 text-brand-600" /> {t('org.nav.jobs_h')}</h1>
+          <h1 className="font-display text-2xl font-bold text-slate-900 flex items-center gap-2"><Briefcase className="h-6 w-6 text-brand-600" /> {t('org.nav.jobs_h')}</h1>
           <p className="text-sm text-slate-500 mt-1">{t('org.nav.jobs_p')}</p>
         </div>
         <button onClick={() => setEditing({ ...EMPTY })} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold">

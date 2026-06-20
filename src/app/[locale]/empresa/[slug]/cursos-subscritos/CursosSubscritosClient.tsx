@@ -32,7 +32,7 @@ export function CursosSubscritosClient({ orgId, orgSlug, memberRole, members, lo
           <div>
             <div className="flex items-center gap-2 mb-1">
               <BookOpen className="h-6 w-6 text-brand-600" />
-              <h1 className="text-2xl font-bold text-slate-900">{t('org.sub.title')}</h1>
+              <h1 className="font-display text-2xl font-bold text-slate-900">{t('org.sub.title')}</h1>
             </div>
             <p className="text-sm text-slate-500">{t('org.sub.subtitle')}</p>
           </div>

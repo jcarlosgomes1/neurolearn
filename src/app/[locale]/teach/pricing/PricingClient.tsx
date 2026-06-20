@@ -80,7 +80,7 @@ export function PricingClient() {
           <span className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600"><Tag className="w-5 h-5" /></span>
           <span className="text-xs font-medium uppercase tracking-wide text-emerald-600">{t('teach.pricing.eyebrow')}</span>
         </div>
-        <h1 className="text-2xl font-bold text-slate-900">{t('teach.pricing.title')}</h1>
+        <h1 className="font-display text-2xl font-bold text-slate-900">{t('teach.pricing.title')}</h1>
         <p className="mt-1 text-sm text-slate-500 max-w-2xl">{t('teach.pricing.description')}</p>
       </div>
 

@@ -56,7 +56,7 @@ export function ServicosClient({ locale, services: initialServices }: { locale: 
     <div className="px-4 sm:px-6 py-6 max-w-6xl mx-auto">
       <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+          <h1 className="font-display text-2xl font-bold text-slate-900 flex items-center gap-2">
             <Briefcase className="h-6 w-6 text-brand-600" /> Serviços Corporate
           </h1>
           <p className="text-sm text-slate-500 mt-1">

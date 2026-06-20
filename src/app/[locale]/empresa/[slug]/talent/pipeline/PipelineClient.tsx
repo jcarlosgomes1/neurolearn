@@ -61,7 +61,7 @@ export function PipelineClient({ orgId, orgSlug, memberRole, locale, placements:
           <div>
             <div className="flex items-center gap-2 mb-1">
               <Briefcase className="h-6 w-6 text-emerald-600" />
-              <h1 className="text-2xl font-bold text-slate-900">{t('org.pipe.title')}</h1>
+              <h1 className="font-display text-2xl font-bold text-slate-900">{t('org.pipe.title')}</h1>
             </div>
             <p className="text-sm text-slate-500">{t('org.pipe.count', { count: placements.length })}</p>
           </div>

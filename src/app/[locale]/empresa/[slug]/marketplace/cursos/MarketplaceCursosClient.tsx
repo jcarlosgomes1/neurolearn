@@ -50,7 +50,7 @@ export function MarketplaceCursosClient({ orgId, orgName, orgSlug, memberRole, f
         <div className="max-w-6xl mx-auto px-4 py-6">
           <div className="flex items-center gap-2 mb-2">
             <BookOpen className="h-6 w-6 text-brand-600" />
-            <h1 className="text-2xl font-bold text-slate-900">{t('org.mc.title')}</h1>
+            <h1 className="font-display text-2xl font-bold text-slate-900">{t('org.mc.title')}</h1>
           </div>
           <p className="text-sm text-slate-500">{t('org.mc.subtitle')}</p>
         </div>

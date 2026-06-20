@@ -41,7 +41,7 @@ export function LeagueClient({ locale }: { locale: string }) {
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 space-y-5">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2"><Trophy className="h-6 w-6 text-amber-500" /> {t('liga.title')}</h1>
+        <h1 className="font-display text-2xl font-bold text-slate-900 flex items-center gap-2"><Trophy className="h-6 w-6 text-amber-500" /> {t('liga.title')}</h1>
         <p className="text-sm text-slate-500 mt-1">{t('liga.subtitle')}</p>
       </div>
 

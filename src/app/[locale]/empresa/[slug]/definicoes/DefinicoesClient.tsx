@@ -39,7 +39,7 @@ export function DefinicoesClient({ org }: { org: Org }) {
         <div className="flex items-center gap-2 text-violet-600 text-xs font-semibold uppercase tracking-wider mb-1">
           <Building2 className="h-3.5 w-3.5" /> {t('empresa.settings.eyebrow')}
         </div>
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{t('empresa.settings.title')}</h1>
+        <h1 className="font-display text-3xl font-bold text-slate-900 tracking-tight">{t('empresa.settings.title')}</h1>
         <p className="text-sm text-slate-600 mt-1.5 max-w-2xl leading-relaxed">{t('empresa.settings.desc')}</p>
       </header>
       <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4">

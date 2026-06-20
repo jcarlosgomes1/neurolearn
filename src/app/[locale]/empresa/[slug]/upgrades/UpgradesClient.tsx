@@ -27,7 +27,7 @@ export function UpgradesClient({ orgId, orgName, orgSlug, memberRole, features, 
             <Sparkles className="h-6 w-6" />
             <span className="text-sm font-semibold uppercase tracking-wider">{t('org.upg.kicker')}</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold mb-2">{t('org.upg.title', { org: orgName })}</h1>
+          <h1 className="font-display text-3xl sm:text-4xl font-bold mb-2">{t('org.upg.title', { org: orgName })}</h1>
           <p className="text-lg text-violet-100 max-w-2xl">{t('org.upg.subtitle')}</p>
         </div>
       </section>

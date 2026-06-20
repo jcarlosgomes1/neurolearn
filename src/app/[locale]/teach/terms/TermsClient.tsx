@@ -89,7 +89,7 @@ export function TermsClient() {
           <span className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600"><ShieldCheck className="w-5 h-5" /></span>
           <span className="text-xs font-medium uppercase tracking-wide text-indigo-600">{t('teach.terms.eyebrow')}</span>
         </div>
-        <h1 className="text-2xl font-bold text-slate-900">{t('teach.terms.title')}</h1>
+        <h1 className="font-display text-2xl font-bold text-slate-900">{t('teach.terms.title')}</h1>
         <p className="mt-1 text-sm text-slate-500 max-w-2xl">{t('teach.terms.description')}</p>
       </div>
 

@@ -110,7 +110,7 @@ export function QuizzesClient() {
           <span className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-violet-50 text-violet-600"><FileQuestion className="w-5 h-5" /></span>
           <span className="text-xs font-medium uppercase tracking-wide text-violet-600">{t('teach.qb.eyebrow')}</span>
         </div>
-        <h1 className="text-2xl font-bold text-slate-900">{t('teach.qb.title')}</h1>
+        <h1 className="font-display text-2xl font-bold text-slate-900">{t('teach.qb.title')}</h1>
         <p className="mt-1 text-sm text-slate-500 max-w-2xl">{t('teach.qb.description')}</p>
       </div>
 

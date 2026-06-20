@@ -46,7 +46,7 @@ export function PedidosInstructorClient({ locale, inquiries: initial }: { locale
   return (
     <div className="px-4 sm:px-6 py-6 max-w-5xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+        <h1 className="font-display text-2xl font-bold text-slate-900 flex items-center gap-2">
           <Inbox className="h-6 w-6 text-brand-600" /> Pedidos Corporate
         </h1>
         <p className="text-sm text-slate-500 mt-1">Empresas que pediram orçamento para os teus serviços.</p>

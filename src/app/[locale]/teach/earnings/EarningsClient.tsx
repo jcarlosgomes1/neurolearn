@@ -63,7 +63,7 @@ export function EarningsClient() {
           </span>
           <span className="text-xs font-medium uppercase tracking-wide text-emerald-600">{t('teach.earnings.eyebrow')}</span>
         </div>
-        <h1 className="text-2xl font-bold text-slate-900">{t('teach.earnings.title')}</h1>
+        <h1 className="font-display text-2xl font-bold text-slate-900">{t('teach.earnings.title')}</h1>
         <p className="mt-1 text-sm text-slate-500 max-w-2xl">{t('teach.earnings.description')}</p>
       </div>
 
