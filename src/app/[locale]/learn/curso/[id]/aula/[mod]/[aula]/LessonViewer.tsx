@@ -14,6 +14,7 @@ import { VideoEmbed } from '@/components/shared/VideoEmbed';
 import { ReviewSystem } from '@/components/course/ReviewSystem';
 import { LessonOpenQuiz } from '@/components/lesson/LessonOpenQuiz';
 import { LessonPractice } from '@/components/lesson/LessonPractice';
+import { FlashcardStudy } from '@/components/lesson/FlashcardStudy';
 import { CourseFeedbackPanel } from '@/app/[locale]/aprender/CourseFeedbackPanel';
 import { CourseCurriculumNav } from '@/components/lesson/CourseCurriculumNav';
 import { LessonRewardBurst } from '@/components/lesson/LessonRewardBurst';
@@ -325,6 +326,8 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
             <LessonOpenQuiz courseId={courseId} moduleIndex={moduleIndex} lessonIndex={lessonIndex} />
 
             <LessonPractice courseId={courseId} moduleIndex={moduleIndex} lessonIndex={lessonIndex} />
+
+            <FlashcardStudy courseId={courseId} moduleIndex={moduleIndex} lessonIndex={lessonIndex} />
 
             <div className="mt-10 pt-6 border-t border-slate-100 flex items-center justify-between gap-3 flex-wrap">
               {prevLesson ? (
