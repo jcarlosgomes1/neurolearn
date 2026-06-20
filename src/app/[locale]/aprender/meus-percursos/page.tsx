@@ -34,10 +34,10 @@ export default async function MyLearningPathsPage({ params }: { params: Promise<
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
+    <div className="max-w-6xl mx-auto px-4 py-8">
       <header className="mb-8 flex items-start justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-2">
+          <h1 className="font-display text-3xl font-bold text-slate-900 flex items-center gap-2">
             <GraduationCap className="h-7 w-7 text-brand-600" />
             {t('path.my_h1')}
           </h1>

@@ -28,7 +28,7 @@ export default async function LearningPathsPublicPage() {
           <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-white/15 backdrop-blur mb-4 ring-1 ring-white/30 animate-pulse">
             <GraduationCap className="h-8 w-8" />
           </div>
-          <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-balance">{t('path.h1')}</h1>
+          <h1 className="font-display text-3xl sm:text-5xl font-bold tracking-tight text-balance">{t('path.h1')}</h1>
           <p className="mt-3 text-base sm:text-lg text-white/85 max-w-2xl mx-auto text-pretty">{t('path.sub')}</p>
         </div>
       </header>
