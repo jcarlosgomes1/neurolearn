@@ -52,7 +52,7 @@ export function AdminPageHeader({ backHref, backLabel, eyebrow, eyebrowIcon: Eye
               {EyeIcon && <EyeIcon className="h-3.5 w-3.5 shrink-0" />} <span className="truncate">{eyebrow}</span>
             </div>
           )}
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight text-balance">{title}</h1>
+          <h1 className="font-display text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight text-balance">{title}</h1>
           {description && <p className="text-sm text-slate-600 mt-1.5 max-w-2xl leading-relaxed">{description}</p>}
         </div>
         {actions && <div className="flex-shrink-0">{actions}</div>}
