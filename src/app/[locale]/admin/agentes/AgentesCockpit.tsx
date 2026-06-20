@@ -2,12 +2,13 @@
 
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { relTime } from '@/lib/utils/cn';
 import { toast } from 'sonner';
 import {
   Bot, CheckCircle2, XCircle, Play, Loader2, ShieldCheck, Sparkles,
   ClipboardList, ScrollText, AlertTriangle, Clock, ChevronDown, ChevronRight,
+  Megaphone, FileText, LifeBuoy, GraduationCap, Briefcase, Eye,
 } from 'lucide-react';
 
 type Trust = { total: number; approved: number; rejected: number; rate: number | null; sample: number };
@@ -26,7 +27,7 @@ type Task = {
 type Proposal = {
   id: string; agent_id: string; agent_name: string | null; action: string; reason: string | null;
   params: Record<string, unknown> | null; status: string; created_at: string; decided_at: string | null;
-  approval_note: string | null; expires_at: string | null;
+  approval_note: string | null; expires_at: string | null; preview?: any;
 };
 type LogRow = {
   id: number; agent_id: string; agent_name: string | null; actor_kind: string; action: string;
@@ -36,8 +37,17 @@ type LogRow = {
 
 const MODES = ['manual', 'supervised', 'autonomous', 'conditional'];
 
+const ACTION_ICON: Record<string, any> = {
+  publish_social_posts: Megaphone,
+  publish_blog_post: FileText,
+  triage_messages: LifeBuoy,
+  decide_application: GraduationCap,
+  match_candidates: Briefcase,
+};
+
 export function AgentesCockpit() {
   const t = useTranslations();
+  const locale = useLocale();
   const supabase = useMemo(() => createClient(), []);
   const [tab, setTab] = useState<'agents' | 'proposals' | 'log'>('agents');
   const [loading, setLoading] = useState(true);
@@ -46,10 +56,16 @@ export function AgentesCockpit() {
   const [logs, setLogs] = useState<LogRow[]>([]);
   const [tasksByAgent, setTasksByAgent] = useState<Record<string, Task[]>>({});
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [openProposal, setOpenProposal] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [rejecting, setRejecting] = useState<Proposal | null>(null);
 
+  function tx(key: string, fb: string): string {
+    try { const v = t(key as any); if (v && typeof v === 'string' && v !== key) return v; } catch {}
+    return fb;
+  }
   const modeLabel = (m: string | null) => t(`agents.cockpit.mode_${m || 'supervised'}`);
+  const actionLabel = (a: string) => tx(`agents.action.${a}`, a.replace(/_/g, ' '));
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -132,6 +148,109 @@ export function AgentesCockpit() {
       toast.success(t('agents.cockpit.saved'));
     } catch { toast.error(t('agents.cockpit.error')); }
     finally { setBusyId(null); }
+  }
+
+  function proposalSummary(p: Proposal): string {
+    const pv: any = p.preview;
+    if (!pv) return (p.reason && p.reason !== 'event_wake') ? p.reason : actionLabel(p.action);
+    switch (pv.type) {
+      case 'social': return `${pv.posts?.length ?? 0} post(s)${pv.course_title ? ' · ' + pv.course_title : ''}`;
+      case 'blog': return pv.title || actionLabel(p.action);
+      case 'support': return `${pv.subject || '—'}${pv.from_name ? ' · ' + pv.from_name : (pv.from_email ? ' · ' + pv.from_email : '')}`;
+      case 'application': return `${pv.full_name || '—'}${pv.job_title ? ' · ' + pv.job_title : ''}`;
+      case 'match': return `${pv.headline || '—'} → ${pv.job_title || '—'}`;
+      default: return actionLabel(p.action);
+    }
+  }
+
+  function ProposalPreview({ p }: { p: Proposal }) {
+    const pv: any = p.preview;
+    if (!pv) return <p className="text-xs text-slate-400">{tx('agents.review.no_detail', 'Sem detalhe disponível para esta proposta.')}</p>;
+
+    if (pv.type === 'social') {
+      return (
+        <div className="space-y-2">
+          {(pv.posts || []).map((post: any, i: number) => (
+            <div key={i} className="rounded-lg border border-slate-200 bg-slate-50/70 p-2.5">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-violet-100 text-violet-700">{post.platform}</span>
+                {post.lang && <span className="text-[10px] uppercase text-slate-400">{post.lang}</span>}
+                {post.scheduled_at && <span className="text-[10px] text-slate-400">{new Date(post.scheduled_at).toLocaleString('pt-PT')}</span>}
+              </div>
+              <p className="text-xs text-slate-700 whitespace-pre-wrap">{post.content}</p>
+              {Array.isArray(post.hashtags) && post.hashtags.length > 0 && (
+                <p className="text-[11px] text-sky-600 mt-1">{post.hashtags.map((h: string) => '#' + String(h).replace(/^#/, '')).join(' ')}</p>
+              )}
+            </div>
+          ))}
+        </div>
+      );
+    }
+    if (pv.type === 'blog') {
+      return (
+        <div className="space-y-1.5">
+          <p className="text-sm font-semibold text-slate-800">{pv.title}</p>
+          {pv.category && <span className="text-[10px] uppercase tracking-wide text-slate-400">{pv.category}</span>}
+          {pv.excerpt && <p className="text-xs text-slate-600">{pv.excerpt}</p>}
+          {pv.slug && (
+            <a href={`/${locale}/blog/${pv.slug}`} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-xs font-medium text-violet-700 hover:underline">
+              <Eye className="h-3.5 w-3.5" /> {tx('agents.review.preview_post', 'pré-visualizar')}
+            </a>
+          )}
+        </div>
+      );
+    }
+    if (pv.type === 'support') {
+      return (
+        <div className="space-y-1.5">
+          <p className="text-xs text-slate-500">{tx('agents.review.from', 'De')}: <span className="text-slate-700">{pv.from_name}{pv.from_email ? ` · ${pv.from_email}` : ''}</span>{pv.topic ? ` · ${pv.topic}` : ''}</p>
+          {pv.subject && <p className="text-sm font-semibold text-slate-800">{pv.subject}</p>}
+          {pv.message && <p className="text-xs text-slate-600 whitespace-pre-wrap">{pv.message}</p>}
+        </div>
+      );
+    }
+    if (pv.type === 'application') {
+      return (
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-sm font-semibold text-slate-800">{pv.full_name}</span>
+            {pv.email && <span className="text-xs text-slate-500">{pv.email}</span>}
+            {pv.ai_score_total != null && <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-violet-100 text-violet-700 font-medium">{pv.ai_score_total}/100</span>}
+          </div>
+          {(pv.job_title || pv.years_experience != null || pv.expertise) && (
+            <p className="text-xs text-slate-500">{[pv.job_title, pv.years_experience != null ? `${pv.years_experience}a exp.` : null, pv.expertise].filter(Boolean).join(' · ')}</p>
+          )}
+          {pv.proposed_course_title && <p className="text-xs text-slate-600">Curso proposto: {pv.proposed_course_title}</p>}
+          {pv.ai_summary && <p className="text-xs text-slate-600 italic">{pv.ai_summary}</p>}
+          {Array.isArray(pv.ai_strengths) && pv.ai_strengths.length > 0 && (
+            <p className="text-[11px]"><span className="text-emerald-700 font-medium">{tx('agents.review.strengths', 'Pontos fortes')}:</span> <span className="text-slate-600">{pv.ai_strengths.join('; ')}</span></p>
+          )}
+          {Array.isArray(pv.ai_red_flags) && pv.ai_red_flags.length > 0 && (
+            <p className="text-[11px]"><span className="text-rose-700 font-medium">{tx('agents.review.red_flags', 'Sinais de alerta')}:</span> <span className="text-slate-600">{pv.ai_red_flags.join('; ')}</span></p>
+          )}
+        </div>
+      );
+    }
+    if (pv.type === 'match') {
+      return (
+        <div className="space-y-1.5">
+          <p className="text-sm font-semibold text-slate-800">{pv.headline}</p>
+          <p className="text-xs text-slate-500">→ {pv.job_title}{pv.score != null ? ` · ${pv.score}%` : ''}</p>
+          {Array.isArray(pv.matched_skills) && pv.matched_skills.length > 0 && (
+            <div><span className="text-[11px] text-emerald-700 font-medium">{tx('agents.review.matched', 'Skills compatíveis')}: </span>
+              <span className="inline-flex flex-wrap gap-1 align-middle">{pv.matched_skills.map((s: string, i: number) => <span key={i} className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700">{s}</span>)}</span>
+            </div>
+          )}
+          {Array.isArray(pv.missing_skills) && pv.missing_skills.length > 0 && (
+            <div><span className="text-[11px] text-rose-700 font-medium">{tx('agents.review.missing', 'Skills em falta')}: </span>
+              <span className="inline-flex flex-wrap gap-1 align-middle">{pv.missing_skills.map((s: string, i: number) => <span key={i} className="text-[10px] px-1.5 py-0.5 rounded bg-rose-100 text-rose-700">{s}</span>)}</span>
+            </div>
+          )}
+        </div>
+      );
+    }
+    return <pre className="text-[11px] text-slate-500 overflow-x-auto">{JSON.stringify(pv, null, 2)}</pre>;
   }
 
   const TABS = [
@@ -268,47 +387,66 @@ export function AgentesCockpit() {
         <div className="space-y-2">
           {proposals.length === 0 ? (
             <div className="text-center py-16 text-slate-400 text-sm">{t('agents.cockpit.no_proposals')}</div>
-          ) : proposals.map((p) => (
-            <div key={p.id} className="bg-white border border-slate-200 rounded-xl p-4">
-              <div className="flex items-start gap-3">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs font-semibold text-violet-700 capitalize">{p.agent_name}</span>
-                    <span className="text-xs text-slate-400">·</span>
-                    <span className="text-xs font-mono text-slate-500">{p.action}</span>
-                    <span className="text-xs text-slate-400">{relTime(p.created_at)}</span>
+          ) : proposals.map((p) => {
+            const isOpen = openProposal === p.id;
+            const ActIcon = ACTION_ICON[p.action] || ClipboardList;
+            return (
+              <div key={p.id} className="bg-white border border-slate-200 rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center flex-shrink-0">
+                    <ActIcon className="h-4 w-4" />
                   </div>
-                  {p.reason && <p className="text-sm text-slate-700 mt-1">{p.reason}</p>}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-semibold text-slate-900">{actionLabel(p.action)}</span>
+                      <span className="text-xs text-slate-400">·</span>
+                      <span className="text-xs font-medium text-violet-700 capitalize">{p.agent_name}</span>
+                      <span className="text-xs text-slate-400">{relTime(p.created_at)}</span>
+                    </div>
+                    <p className="text-sm text-slate-600 mt-0.5 truncate">{proposalSummary(p)}</p>
+                    <button onClick={() => setOpenProposal(isOpen ? null : p.id)}
+                      className="inline-flex items-center gap-1 mt-1.5 text-xs font-medium text-slate-500 hover:text-violet-700">
+                      {isOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+                      {isOpen ? tx('agents.review.hide', 'Ocultar') : tx('agents.review.show', 'Ver conteúdo')}
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <button onClick={() => decide(p, true)} disabled={busyId === p.id}
+                      className="inline-flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50">
+                      {busyId === p.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
+                      {t('agents.cockpit.approve')}
+                    </button>
+                    <button onClick={() => decide(p, false)} disabled={busyId === p.id}
+                      className="inline-flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-rose-600 hover:bg-rose-50 disabled:opacity-50">
+                      <XCircle className="h-3.5 w-3.5" /> {t('agents.cockpit.reject')}
+                    </button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <button onClick={() => decide(p, true)} disabled={busyId === p.id}
-                    className="inline-flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50">
-                    {busyId === p.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
-                    {t('agents.cockpit.approve')}
-                  </button>
-                  <button onClick={() => decide(p, false)} disabled={busyId === p.id}
-                    className="inline-flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-rose-600 hover:bg-rose-50 disabled:opacity-50">
-                    <XCircle className="h-3.5 w-3.5" /> {t('agents.cockpit.reject')}
-                  </button>
-                </div>
+
+                {isOpen && (
+                  <div className="mt-3 pt-3 border-t border-slate-100">
+                    <ProposalPreview p={p} />
+                  </div>
+                )}
+
+                {rejecting?.id === p.id && (
+                  <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                    <p className="text-xs text-amber-800 mb-2">{t('agents.cockpit.reject_q')}</p>
+                    <div className="flex gap-2">
+                      <button onClick={() => decide(p, false, 'retry_now')}
+                        className="text-xs font-medium px-3 py-1.5 rounded-lg bg-amber-600 text-white hover:bg-amber-700">
+                        {t('agents.cockpit.retry_now')}
+                      </button>
+                      <button onClick={() => decide(p, false, 'wait_next')}
+                        className="text-xs font-medium px-3 py-1.5 rounded-lg bg-white border border-amber-300 text-amber-700 hover:bg-amber-100">
+                        {t('agents.cockpit.wait_next')}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
-              {rejecting?.id === p.id && (
-                <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                  <p className="text-xs text-amber-800 mb-2">{t('agents.cockpit.reject_q')}</p>
-                  <div className="flex gap-2">
-                    <button onClick={() => decide(p, false, 'retry_now')}
-                      className="text-xs font-medium px-3 py-1.5 rounded-lg bg-amber-600 text-white hover:bg-amber-700">
-                      {t('agents.cockpit.retry_now')}
-                    </button>
-                    <button onClick={() => decide(p, false, 'wait_next')}
-                      className="text-xs font-medium px-3 py-1.5 rounded-lg bg-white border border-amber-300 text-amber-700 hover:bg-amber-100">
-                      {t('agents.cockpit.wait_next')}
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div className="bg-white border border-slate-200 rounded-2xl divide-y divide-slate-100">
