@@ -116,7 +116,7 @@ export function UserDetailClient({ userId }: { userId: string }) {
             <div className="space-y-1.5">
               <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Cursos ({ins.courses.length})</div>
               {ins.courses.map((c: any) => (
-                <Link key={c.id} href={`/admin/curso/${c.id}` as any} className="group flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors">
+                <Link key={c.id} href={`/admin/curso/${c.id}/editar` as any} className="group flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors">
                   <span className="text-sm text-slate-800 truncate group-hover:text-violet-700">{c.title}</span>
                   <span className="flex items-center gap-2 flex-shrink-0 text-xs text-slate-500">
                     {!c.published && <span className="text-[9px] uppercase bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold">Rascunho</span>}
@@ -137,7 +137,7 @@ export function UserDetailClient({ userId }: { userId: string }) {
         ) : (
           <div className="space-y-2">
             {data.enrollments.map((e: any) => (
-              <Link key={e.course_id} href={`/admin/curso/${e.course_id}` as any} className="group flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors">
+              <Link key={e.course_id} href={`/admin/curso/${e.course_id}/editar` as any} className="group flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors">
                 <span className="text-lg flex-shrink-0">{e.emoji || '📘'}</span>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium text-slate-800 truncate group-hover:text-violet-700">{e.title || e.course_id}</div>

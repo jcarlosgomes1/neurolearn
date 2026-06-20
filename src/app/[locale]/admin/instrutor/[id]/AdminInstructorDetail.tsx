@@ -43,6 +43,7 @@ export function AdminInstructorDetail({ instructorId }: { instructorId: string }
           <Link href={'/admin/instrutores' as any} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-violet-100 hover:text-violet-700 hover:ring-violet-200 transition-colors"><span className="text-sm leading-none">👨‍🏫</span> Instrutores</Link>
           <Link href={'/admin/candidaturas' as any} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-violet-100 hover:text-violet-700 hover:ring-violet-200 transition-colors"><span className="text-sm leading-none">🎓</span> Candidaturas</Link>
           <Link href={'/admin/cursos' as any} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-violet-100 hover:text-violet-700 hover:ring-violet-200 transition-colors"><span className="text-sm leading-none">📚</span> Cursos</Link>
+          <Link href={`/admin/users/${instructorId}` as any} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-violet-100 hover:text-violet-700 hover:ring-violet-200 transition-colors"><span className="text-sm leading-none">👤</span> Perfil</Link>
         </div>
         <div className="flex items-center gap-3 mt-3">
           {inst && (inst.avatar_url || inst.profile_picture_url) ? (
@@ -72,7 +73,7 @@ export function AdminInstructorDetail({ instructorId }: { instructorId: string }
         ) : (
           <div className="space-y-2">
             {dash.my_courses.map((c: any) => (
-              <Link key={c.id} href={`/curso/${c.id}` as any} className="flex items-center justify-between p-3 rounded-lg border border-slate-100 hover:bg-slate-50">
+              <Link key={c.id} href={`/admin/curso/${c.id}/editar` as any} className="flex items-center justify-between p-3 rounded-lg border border-slate-100 hover:bg-slate-50">
                 <div className="flex items-center gap-3 min-w-0">
                   <span className="text-2xl flex-shrink-0">{c.emoji || '📘'}</span>
                   <div className="min-w-0">
