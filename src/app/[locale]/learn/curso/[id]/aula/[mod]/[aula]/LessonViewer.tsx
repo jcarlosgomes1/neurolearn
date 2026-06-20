@@ -159,7 +159,7 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
 
   return (
     <>
-      <div className="sticky top-16 z-20 bg-white/85 backdrop-blur-sm border-b border-slate-100">
+      <div className="sticky top-16 z-20 bg-white border-b border-slate-100">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center gap-3">
           <Link href={'/learn' as any} className="text-xs text-slate-500 hover:text-slate-900 flex-shrink-0">{t('my_courses')}</Link>
           <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
@@ -169,22 +169,21 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
         </div>
       </div>
 
-      {completed !== null && (
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-3">
-          {remainingToCert > 0 ? (
-            <div className="inline-flex items-center gap-2 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium px-3 py-1.5">
-              🎓 {t('to_certificate', { n: remainingToCert })}
-            </div>
-          ) : (
-            <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium px-3 py-1.5">
-              🎓 {t('certificate_ready')}
-            </div>
-          )}
-        </div>
-      )}
-
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 pb-28 sm:pb-12">
         <div className="min-w-0">
+            {completed !== null && (
+              <div className="mb-4">
+                {remainingToCert > 0 ? (
+                  <div className="inline-flex items-center gap-2 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium px-3 py-1.5">
+                    🎓 {t('to_certificate', { n: remainingToCert })}
+                  </div>
+                ) : (
+                  <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium px-3 py-1.5">
+                    🎓 {t('certificate_ready')}
+                  </div>
+                )}
+              </div>
+            )}
             <button onClick={() => setNavOpen(true)} className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-lg">
               ☰ {t('curriculum_btn')}
             </button>
