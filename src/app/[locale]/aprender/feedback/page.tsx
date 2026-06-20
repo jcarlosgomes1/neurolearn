@@ -29,7 +29,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
         <div className="flex items-center gap-2 text-violet-600 text-xs font-semibold uppercase tracking-wider mb-1">
           <MessageSquareHeart className="h-3.5 w-3.5" /> {t('feedback.title')}
         </div>
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{t('feedback.page_title')}</h1>
+        <h1 className="font-display text-3xl font-bold text-slate-900 tracking-tight">{t('feedback.page_title')}</h1>
         <p className="text-sm text-slate-600 mt-1.5">{t('feedback.page_sub')}</p>
       </header>
 
