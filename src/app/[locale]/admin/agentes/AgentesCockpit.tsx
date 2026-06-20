@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import {
   Bot, CheckCircle2, XCircle, Play, Loader2, ShieldCheck, Sparkles,
   ClipboardList, ScrollText, AlertTriangle, Clock, ChevronDown, ChevronRight,
-  Megaphone, FileText, LifeBuoy, GraduationCap, Briefcase, Eye, BookPlus,
+  Megaphone, FileText, LifeBuoy, GraduationCap, Briefcase, Eye, BookPlus, Mail,
 } from 'lucide-react';
 
 type Trust = { total: number; approved: number; rejected: number; rate: number | null; sample: number };
@@ -44,6 +44,7 @@ const ACTION_ICON: Record<string, any> = {
   decide_application: GraduationCap,
   match_candidates: Briefcase,
   generate_course_concept: BookPlus,
+  send_support_reply: Mail,
 };
 
 export function AgentesCockpit() {
@@ -160,6 +161,7 @@ export function AgentesCockpit() {
       case 'support': return `${pv.subject || '—'}${pv.from_name ? ' · ' + pv.from_name : (pv.from_email ? ' · ' + pv.from_email : '')}`;
       case 'application': return `${pv.full_name || '—'}${pv.job_title ? ' · ' + pv.job_title : ''}`;
       case 'match': return `${pv.headline || '—'} → ${pv.job_title || '—'}`;
+      case 'support_reply': return `${pv.subject || '—'}${pv.from_name ? ' · ' + pv.from_name : (pv.from_email ? ' · ' + pv.from_email : '')}`;
       case 'course_concept': return pv.title || actionLabel(p.action);
       default: return actionLabel(p.action);
     }
@@ -249,6 +251,22 @@ export function AgentesCockpit() {
               <span className="inline-flex flex-wrap gap-1 align-middle">{pv.missing_skills.map((s: string, i: number) => <span key={i} className="text-[10px] px-1.5 py-0.5 rounded bg-rose-100 text-rose-700">{s}</span>)}</span>
             </div>
           )}
+        </div>
+      );
+    }
+    if (pv.type === 'support_reply') {
+      return (
+        <div className="space-y-3">
+          <div className="rounded-lg bg-slate-50 border border-slate-200 p-2.5">
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1">{tx('agents.review.original_msg', 'Mensagem do cliente')}</div>
+            <p className="text-xs text-slate-500">{[pv.from_name, pv.from_email].filter(Boolean).join(' · ')}</p>
+            {pv.subject && <p className="text-xs font-semibold text-slate-700 mt-0.5">{pv.subject}</p>}
+            {pv.message && <p className="text-xs text-slate-600 mt-0.5 whitespace-pre-wrap">{pv.message}</p>}
+          </div>
+          <div className="rounded-lg bg-violet-50/60 border border-violet-200 p-2.5">
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-violet-500 mb-1">{tx('agents.review.proposed_reply', 'Resposta proposta')}</div>
+            <p className="text-sm text-slate-700 whitespace-pre-wrap">{pv.draft}</p>
+          </div>
         </div>
       );
     }
