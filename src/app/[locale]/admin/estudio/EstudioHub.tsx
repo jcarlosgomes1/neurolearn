@@ -3,12 +3,13 @@
 import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
-import { Layers, Library, HelpCircle, Route, Sparkles, ExternalLink, PencilRuler } from 'lucide-react';
+import { Layers, Library, HelpCircle, Route, Sparkles, ExternalLink, PencilRuler, Wand2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Course { id: string; title: string }
 interface Lesson { m: number; l: number; title: string; cards: number }
 interface Overview { ok?: boolean; title?: string; glossary?: number; faq?: number; timeline?: number; lessons?: Lesson[] }
+interface Autogen { enabled: boolean; max_per_run: number; since?: string }
 
 interface Action { label: string; onClick: () => void; primary?: boolean }
 
@@ -43,6 +44,8 @@ export function EstudioHub() {
   const [busy, setBusy] = useState<string | null>(null);
   const [progress, setProgress] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [autogen, setAutogen] = useState<Autogen | null>(null);
+  const [savingAg, setSavingAg] = useState(false);
 
   async function rpc(fn: string, args: Record<string, unknown>) {
     const sb = createClient();
@@ -59,6 +62,12 @@ export function EstudioHub() {
   }, []);
   useEffect(() => { loadCourses(); }, [loadCourses]);
 
+  const loadAutogen = useCallback(async () => {
+    try { const r = await rpc('nl_studio_autogen_get', {}); setAutogen({ enabled: !!r.enabled, max_per_run: (r.max_per_run as number) || 6, since: r.since as string }); }
+    catch { /* silencioso */ }
+  }, []);
+  useEffect(() => { loadAutogen(); }, [loadAutogen]);
+
   const loadOv = useCallback(async (id: string) => {
     if (!id) { setOv(null); return; }
     setLoadingOv(true);
@@ -67,6 +76,13 @@ export function EstudioHub() {
     finally { setLoadingOv(false); }
   }, []);
   useEffect(() => { loadOv(courseId); }, [courseId, loadOv]);
+
+  async function toggleAutogen(next: boolean) {
+    if (!autogen) return;
+    setSavingAg(true);
+    try { await rpc('nl_studio_autogen_set', { p_enabled: next, p_max: autogen.max_per_run }); setAutogen({ ...autogen, enabled: next }); toast.success(next ? 'Autogeração ativada' : 'Autogeração desativada'); }
+    catch (e) { toast.error(e instanceof Error ? e.message : 'Erro'); } finally { setSavingAg(false); }
+  }
 
   async function genCourse(kind: 'glossary' | 'faq' | 'timeline') {
     setBusy(kind);
@@ -96,6 +112,19 @@ export function EstudioHub() {
       <AdminPageHeader eyebrow="Estúdio de conhecimento" title="Gerar auxiliares de estudo" description="Escolhe um curso e gera flashcards, glossário, FAQ e percurso. A geração é ao vivo e cada gerador está registado como tarefa do agente de formação." icon={Sparkles} />
 
       {err && <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">{err === 'forbidden' ? 'Sem acesso. Esta área é exclusiva de administradores.' : 'Não foi possível carregar.'}</div>}
+
+      {autogen && (
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 mb-6 flex items-start justify-between gap-4">
+          <div>
+            <h3 className="font-display text-base font-bold text-slate-900 flex items-center gap-2"><Wand2 className="h-4 w-4 text-brand-500" /> Autogeração para cursos novos</h3>
+            <p className="text-xs text-slate-500 mt-1 max-w-prose">Quando um curso novo é publicado com aulas, os auxiliares são gerados automaticamente em segundo plano ({autogen.max_per_run} por ciclo). Não afeta cursos já existentes.</p>
+          </div>
+          <button onClick={() => toggleAutogen(!autogen.enabled)} disabled={savingAg} role="switch" aria-checked={autogen.enabled}
+            className={(autogen.enabled ? 'bg-brand-600' : 'bg-slate-300') + ' relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors disabled:opacity-50'}>
+            <span className={(autogen.enabled ? 'translate-x-6' : 'translate-x-1') + ' inline-block h-4 w-4 rounded-full bg-white transition-transform'} />
+          </button>
+        </div>
+      )}
 
       <div className="rounded-2xl border border-slate-200 bg-white p-5 mb-6">
         <label className="block text-sm font-medium text-slate-700 mb-1.5">Curso</label>
