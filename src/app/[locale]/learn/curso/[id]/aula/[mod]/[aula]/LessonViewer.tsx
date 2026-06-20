@@ -8,7 +8,7 @@ import { callAgentOps } from '@/lib/api/client';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import { LessonTutor } from '@/components/lesson/LessonTutor';
-import { MermaidRender } from '@/components/shared/MermaidRender';
+import { MindMap } from '@/components/shared/MindMap';
 import { CoverImage } from '@/components/shared/CoverImage';
 import { VideoEmbed } from '@/components/shared/VideoEmbed';
 import { ReviewSystem } from '@/components/course/ReviewSystem';
@@ -242,7 +242,7 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
                     <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-3 flex items-center gap-2">
                       <span className="w-6 h-px bg-slate-300" /> {t('diagram_label')} <span className="flex-1 h-px bg-slate-100" />
                     </h3>
-                    <MermaidRender code={diagramCode} />
+                    <MindMap code={diagramCode} />
                   </section>
                 )}
 
