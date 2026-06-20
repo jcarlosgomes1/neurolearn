@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
-import { ArrowLeft, Target, Lightbulb, ListChecks, Library, HelpCircle, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Target, Lightbulb, ListChecks, Library, HelpCircle, ChevronDown, Route } from 'lucide-react';
 
 export const metadata = { title: 'Guia de estudo' };
 
@@ -10,6 +10,7 @@ interface GuideLesson { title?: string; objective?: string; kp?: string[] | null
 interface GuideModule { title?: string; lessons?: GuideLesson[] }
 interface Term { id: string; term: string; definition: string }
 interface Faq { id: string; question: string; answer: string }
+interface Step { id: string; label: string; detail?: string | null }
 
 export default async function Page({ params }: { params: Promise<{ id: string; locale: string }> }) {
   const { id, locale } = await params;
@@ -24,6 +25,10 @@ export default async function Page({ params }: { params: Promise<{ id: string; l
     redirect(r?.error === 'no_access' ? `/${locale}/curso/${id}` : `/${locale}/learn`);
   }
   const modules: GuideModule[] = Array.isArray(r?.modules) ? r!.modules! : [];
+
+  const { data: tlData } = await sb.rpc('nl_timeline_for_course', { p_course_id: id });
+  const tlr = tlData as { ok?: boolean; steps?: Step[] } | null;
+  const steps: Step[] = tlr?.ok && Array.isArray(tlr.steps) ? tlr.steps : [];
 
   const { data: fData } = await sb.rpc('nl_faq_for_course', { p_course_id: id });
   const fr = fData as { ok?: boolean; faq?: Faq[] } | null;
@@ -46,6 +51,28 @@ export default async function Page({ params }: { params: Promise<{ id: string; l
       </header>
 
       <div className="space-y-10">
+        {steps.length > 0 && (
+          <section>
+            <h2 className="font-display text-xl font-bold text-slate-900 mb-4 pb-2 border-b border-slate-200 flex items-center gap-2">
+              <Route className="h-5 w-5 text-brand-500" /> {t('timeline')}
+            </h2>
+            <ol className="space-y-1">
+              {steps.map((s, si) => (
+                <li key={s.id} className="flex gap-3">
+                  <div className="flex flex-col items-center">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white text-xs font-bold">{si + 1}</span>
+                    {si < steps.length - 1 && <span className="w-px flex-1 bg-slate-200 my-1" />}
+                  </div>
+                  <div className="pb-4">
+                    <h3 className="font-semibold text-slate-900">{s.label}</h3>
+                    {s.detail && <p className="text-sm text-slate-600 mt-0.5">{s.detail}</p>}
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </section>
+        )}
+
         {modules.map((mod, mi) => (
           <section key={mi}>
             <h2 className="font-display text-xl font-bold text-slate-900 mb-4 pb-2 border-b border-slate-200">{mod.title}</h2>
