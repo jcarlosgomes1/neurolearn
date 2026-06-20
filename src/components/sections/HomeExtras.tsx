@@ -3,6 +3,7 @@ import { getTranslations, getLocale } from 'next-intl/server';
 import { createClient } from '@/lib/supabase/server';
 import { CategoryCard } from '@/components/sections/CategoryCard';
 import { categoryIcon } from '@/lib/category-icons';
+import { getIconPalette } from '@/lib/ui/icon-palette';
 import {
   Building2, Sparkles, Award, Compass, ArrowRight,
   Brain, Code, Briefcase, Palette, BarChart3, Megaphone, Globe2, Heart,
@@ -41,10 +42,11 @@ export async function TrustedByStrip() {
 // ============= HOW IT WORKS (3 steps) =============
 export async function HowItWorksSection() {
   const t = await getTranslations();
+  const palette = await getIconPalette();
   const STEPS = [
-    { num: '01', icon: Compass, titleKey: 'hx.step1_title', descKey: 'hx.step1_desc', cls: 'from-violet-500 to-indigo-600' },
-    { num: '02', icon: Brain, titleKey: 'hx.step2_title', descKey: 'hx.step2_desc', cls: 'from-emerald-500 to-teal-600' },
-    { num: '03', icon: Award, titleKey: 'hx.step3_title', descKey: 'hx.step3_desc', cls: 'from-amber-500 to-orange-600' },
+    { num: '01', icon: Compass, titleKey: 'hx.step1_title', descKey: 'hx.step1_desc' },
+    { num: '02', icon: Brain, titleKey: 'hx.step2_title', descKey: 'hx.step2_desc' },
+    { num: '03', icon: Award, titleKey: 'hx.step3_title', descKey: 'hx.step3_desc' },
   ];
   return (
     <section className="relative py-20 sm:py-24 bg-white overflow-hidden">
@@ -63,21 +65,21 @@ export async function HowItWorksSection() {
           <p className="mt-3 text-slate-600 max-w-2xl mx-auto">{t('hx.how_sub')}</p>
         </div>
         <div className="grid sm:grid-cols-3 gap-4 sm:gap-6">
-          {STEPS.map((s) => (
+          {STEPS.map((s, i) => { const g = palette[i % palette.length]; return (
             <div key={s.num} className="group relative bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 hover:-translate-y-1 hover:shadow-2xl transition-all">
-              <div className={`absolute top-0 right-0 h-32 w-32 rounded-full bg-gradient-to-br ${s.cls} opacity-5 blur-2xl group-hover:opacity-15 transition-opacity`} />
+              <div className="absolute top-0 right-0 h-32 w-32 rounded-full opacity-5 blur-2xl group-hover:opacity-15 transition-opacity" style={{ backgroundImage: `linear-gradient(to bottom right, ${g.from}, ${g.to})` }} />
               <div className="relative">
                 <div className="flex items-center justify-between mb-4">
-                  <div className={`inline-flex h-14 w-14 rounded-2xl bg-gradient-to-br ${s.cls} text-white items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
+                  <div className="inline-flex h-14 w-14 rounded-2xl text-white items-center justify-center shadow-lg group-hover:scale-110 transition-transform" style={{ backgroundImage: `linear-gradient(to bottom right, ${g.from}, ${g.to})` }}>
                     <s.icon className="h-7 w-7" />
                   </div>
-                  <span className={`text-4xl font-black bg-gradient-to-br ${s.cls} bg-clip-text text-transparent opacity-30`}>{s.num}</span>
+                  <span className="text-4xl font-black text-transparent opacity-30" style={{ backgroundImage: `linear-gradient(to bottom right, ${g.from}, ${g.to})`, WebkitBackgroundClip: 'text', backgroundClip: 'text' }}>{s.num}</span>
                 </div>
                 <h3 className="font-bold text-lg text-slate-900 mb-2">{t(s.titleKey)}</h3>
                 <p className="text-sm text-slate-600 leading-relaxed">{t(s.descKey)}</p>
               </div>
             </div>
-          ))}
+          ); })}
         </div>
       </div>
     </section>
