@@ -147,7 +147,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               category={post.category} emoji={heroEmoji} aspectRatio="21/9" priority />
           </div>
         </section>
-        <article className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+        <article className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
           {post.category && (
             <span className="inline-block text-xs font-semibold uppercase tracking-wider text-brand-700 bg-brand-50 px-2.5 py-1 rounded-full">
               {post.category}

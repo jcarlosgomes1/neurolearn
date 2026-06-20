@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Link } from '@/i18n/routing';
 import { CoverImage } from '@/components/shared/CoverImage';
 import { useTranslations } from 'next-intl';
@@ -28,10 +28,13 @@ const CATEGORY_EMOJI: Record<string, string> = {
   'Caso de estudo': '💼',
 };
 
+const PAGE = 9;
+
 export function BlogClient({ posts }: { posts: Post[] }) {
   const t = useTranslations();
   const [search, setSearch] = useState('');
   const [cat, setCat] = useState<string>('all');
+  const [visible, setVisible] = useState(PAGE);
 
   const categories = useMemo(() => {
     const s = new Set<string>();
@@ -52,30 +55,34 @@ export function BlogClient({ posts }: { posts: Post[] }) {
     });
   }, [posts, search, cat]);
 
-  const activeFilters = (cat !== 'all' ? 1 : 0);
+  useEffect(() => { setVisible(PAGE); }, [search, cat]);
+
+  const shown = filtered.slice(0, visible);
 
   function clearFilters() { setSearch(''); setCat('all'); }
+
+  function pillClass(active: boolean) {
+    return `text-sm font-medium px-3.5 py-1.5 rounded-full border transition-colors ${active ? 'bg-brand-600 text-white border-brand-600' : 'bg-white text-slate-600 border-slate-200 hover:border-brand-300 hover:text-brand-700'}`;
+  }
 
   if (posts.length === 0) return null;
 
   return (
     <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 sm:pb-24">
-      <div className="mb-6 sm:mb-8 bg-slate-50 border border-slate-200 rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row gap-2 sm:gap-3 items-stretch sm:items-center flex-wrap">
+      <div className="mb-4 sm:mb-5">
         <input type="search" value={search} onChange={(e) => setSearch(e.target.value)}
           placeholder={t('blog.search_ph')}
-          className="input text-sm flex-1 min-w-[180px]" />
-        {categories.length > 0 && (
-          <select value={cat} onChange={(e) => setCat(e.target.value)} className="input text-sm">
-            <option value="all">{t('blog.f_cat_all')}</option>
-            {categories.map((x) => <option key={x} value={x}>{x}</option>)}
-          </select>
-        )}
-        {(activeFilters > 0 || search) && (
-          <button onClick={clearFilters} className="text-xs text-brand-600 hover:underline self-center px-2">
-            {t('blog.clear_filters')}
-          </button>
-        )}
+          className="input text-sm w-full" />
       </div>
+
+      {categories.length > 0 && (
+        <div className="mb-6 sm:mb-8 flex flex-wrap gap-2">
+          <button onClick={() => setCat('all')} className={pillClass(cat === 'all')}>{t('blog.f_cat_all')}</button>
+          {categories.map((x) => (
+            <button key={x} onClick={() => setCat(x)} className={pillClass(cat === x)}>{x}</button>
+          ))}
+        </div>
+      )}
 
       {filtered.length === 0 ? (
         <div className="text-center py-16">
@@ -89,7 +96,7 @@ export function BlogClient({ posts }: { posts: Post[] }) {
         <>
           <p className="text-sm text-slate-500 mb-5 sm:mb-6">{t('blog.showing', { n: filtered.length })}</p>
           <div className="grid gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((p) => (
+            {shown.map((p) => (
               <Link key={p.id} href={`/blog/${p.slug}` as any} className="group flex flex-col bg-white rounded-xl overflow-hidden border border-slate-200 hover:border-slate-300 hover:shadow-lg transition-all duration-300">
                 <CoverImage
                   src={p.featured_image_url}
@@ -111,6 +118,14 @@ export function BlogClient({ posts }: { posts: Post[] }) {
               </Link>
             ))}
           </div>
+          {filtered.length > visible && (
+            <div className="mt-10 sm:mt-12 text-center">
+              <button onClick={() => setVisible((v) => v + PAGE)}
+                className="inline-flex items-center px-6 py-2.5 rounded-full border border-slate-200 bg-white text-sm font-semibold text-slate-700 hover:border-brand-300 hover:text-brand-700 transition-colors">
+                {t('blog.load_more')}
+              </button>
+            </div>
+          )}
         </>
       )}
     </section>
