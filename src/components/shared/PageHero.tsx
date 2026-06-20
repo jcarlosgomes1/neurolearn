@@ -31,8 +31,9 @@ export function PageHero({
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10" style={{ background: 'radial-gradient(60% 55% at 50% 0%, rgb(var(--brand-400) / 0.18), transparent 70%)' }} />
       <div className={`relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-14 sm:py-20 lg:py-24 ${centered ? 'text-center' : ''}`}>
         {badge && (
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-brand-200 text-xs font-semibold text-brand-700 mb-4 sm:mb-5 shadow-sm max-w-full truncate">
-            {badge}
+          <div className={`inline-flex items-center gap-2 mb-4 sm:mb-5 text-brand-700 ${centered ? 'justify-center' : ''}`}>
+            <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-brand-500 flex-shrink-0" />
+            <span className="text-xs font-semibold uppercase tracking-[0.18em] truncate">{badge}</span>
           </div>
         )}
         <h1 className="t-h1 text-slate-900 text-balance">
