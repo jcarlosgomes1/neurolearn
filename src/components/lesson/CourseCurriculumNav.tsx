@@ -33,6 +33,9 @@ export function CourseCurriculumNav({
   return (
     <div className="flex flex-col h-full">
       <nav className="flex-1 overflow-y-auto px-2 py-2 space-y-1">
+        <Link href={`/learn/curso/${courseId}/guia` as any} className="flex items-center gap-2 px-3 py-2 mb-1 rounded-lg text-sm font-semibold text-brand-700 bg-brand-50 hover:bg-brand-100 transition-colors">
+          <span aria-hidden>📑</span> {t('study_guide')}
+        </Link>
         {modules.map((mod, mi) => {
           const modDone = mod.lessons.filter((_, li) => progress[`${mi}_${li}`]).length;
           const modPct = mod.lessons.length ? Math.round((modDone / mod.lessons.length) * 100) : 0;
