@@ -1,0 +1,13 @@
+import { SessionsClient } from './SessionsClient';
+import { getTranslations } from 'next-intl/server';
+
+export const dynamic = 'force-dynamic';
+
+export async function generateMetadata() {
+  const t = await getTranslations();
+  return { title: t('teach.live.title') };
+}
+
+export default function Page() {
+  return <SessionsClient />;
+}
