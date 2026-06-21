@@ -9,6 +9,7 @@ import { relTime } from '@/lib/utils/cn';
 import { toast } from 'sonner';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { useTranslations } from 'next-intl';
+import { ProposalDossier } from '@/components/admin/ProposalDossier';
 
 const PLATFORM_ICONS: Record<string, string> = {
   linkedin: '💼', twitter: '🐦', instagram: '📷', facebook: '👥', tiktok: '🎵', youtube: '▶️',
@@ -181,6 +182,7 @@ export function ApprovalDetail({ approvalId }: { approvalId: string }) {
               <div className="flex flex-wrap gap-1.5">{(approval.params as any).suggested_topics.map((tp: string) => <span key={tp} className="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">{tp}</span>)}</div>
             </div>
           )}
+          <ProposalDossier approvalId={approvalId} />
         </div>
       )}
 
