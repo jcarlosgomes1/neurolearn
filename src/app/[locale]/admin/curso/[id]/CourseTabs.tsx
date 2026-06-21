@@ -2,7 +2,7 @@
 
 import { Link, usePathname } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
-import { FileText, Users } from 'lucide-react';
+import { FileText, Users, Sparkles } from 'lucide-react';
 
 /** Barra de abas do workspace do curso. Cada aba migrada acrescenta-se aqui. */
 export function CourseTabs({ courseId }: { courseId: string }) {
@@ -11,6 +11,7 @@ export function CourseTabs({ courseId }: { courseId: string }) {
   const tabs = [
     { key: 'content', seg: 'editar', label: t('course_ws.tab.content'), icon: FileText },
     { key: 'students', seg: 'alunos', label: t('course_ws.tab.students'), icon: Users },
+    { key: 'studio', seg: 'estudio', label: t('course_ws.tab.studio'), icon: Sparkles },
   ];
   return (
     <nav className="flex gap-1 overflow-x-auto -mb-px">
