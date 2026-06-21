@@ -9,7 +9,7 @@ import { DashboardSkeleton } from '@/components/shared/DashboardSkeleton';
 import { fmtCents, relTime } from '@/lib/utils/cn';
 import { ArrowLeft } from 'lucide-react';
 
-export function AdminInstructorDetail({ instructorId }: { instructorId: string }) {
+export function AdminInstructorDetail({ instructorId, embedded = false }: { instructorId: string; embedded?: boolean }) {
   const t = useTranslations('instr_detail');
   const [dash, setDash] = useState<any>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -35,7 +35,7 @@ export function AdminInstructorDetail({ instructorId }: { instructorId: string }
 
   return (
     <div className="max-w-7xl mx-auto px-6 lg:px-8 py-8 space-y-6 animate-fade-in">
-      <div>
+      {!embedded && (<div>
         <Link href={'/admin/instrutores' as any} className="group inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900 font-medium transition-colors">
           <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" /> {t('back_all')}
         </Link>
@@ -56,7 +56,7 @@ export function AdminInstructorDetail({ instructorId }: { instructorId: string }
             <p className="text-slate-500 text-sm">{t('admin_view', { s: inst?.status || '' })}</p>
           </div>
         </div>
-      </div>
+      </div>)}
 
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         <Stat icon="📚" label={t('courses')} value={`${s.courses_published}/${s.courses_total}`} accent="brand" />
