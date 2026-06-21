@@ -6,11 +6,12 @@ import { createClient } from '@/lib/supabase/client';
 import { assertNotPeekClient } from '@/lib/peek-client';
 import { useTranslations, useLocale } from 'next-intl';
 import { toast } from 'sonner';
-import { Loader2, Plus, Pencil, Video, Radio, Calendar, Users, Link2, ExternalLink, Save, X } from 'lucide-react';
+import { Loader2, Plus, Pencil, Video, Radio, Calendar, Users, Link2, ExternalLink, Save, X, Copy, Eye, EyeOff } from 'lucide-react';
 
 type Sess = {
   id: string; title: string; description: string | null; session_kind: string; visibility: string; status: string;
   starts_at: string | null; ends_at: string | null; timezone: string | null; meeting_provider: string | null; meeting_url: string | null;
+  meeting_id: string | null; meeting_password: string | null;
   attendees_count: number | null; attendees_max: number | null; is_recorded: boolean; course_id: string | null; course_title: string | null;
 };
 type CourseMin = { id: string; title: string; emoji?: string | null };
@@ -21,6 +22,7 @@ type Editor = {
 
 const KINDS = ['class', 'webinar', 'event', 'one_on_one'];
 const VIS = ['enrolled', 'public', 'org'];
+const MUX_INGEST = 'rtmps://global-live.mux.com:443/app';
 
 function toLocalInput(iso: string | null): string {
   if (!iso) return '';
@@ -37,6 +39,7 @@ export function SessionsClient() {
   const [editor, setEditor] = useState<Editor | null>(null);
   const [saving, setSaving] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [broadcast, setBroadcast] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -93,15 +96,17 @@ export function SessionsClient() {
       const sb = createClient();
       const { data, error } = await sb.rpc('nl_live_session_provision', { p_session_id: id });
       if (error) throw error;
-      if (!(data as { ok: boolean })?.ok) throw new Error('rpc');
+      if (!(data as { ok: boolean })?.ok) { toast.error(t('teach.live.error')); }
       await load();
     } catch { toast.error(t('teach.live.error')); }
     finally { setBusyId(null); }
   }
 
+  function copyText(value: string) {
+    navigator.clipboard.writeText(value).then(() => toast.success(t('teach.live.copied')));
+  }
   function copyLink(id: string) {
-    const url = `${window.location.origin}/${locale}/learn/sessao/${id}`;
-    navigator.clipboard.writeText(url).then(() => toast.success(t('teach.live.copied')));
+    copyText(`${window.location.origin}/${locale}/learn/sessao/${id}`);
   }
 
   const kindIcon = (k: string) => k === 'webinar' ? <Radio className="w-4 h-4" /> : k === 'event' ? <Calendar className="w-4 h-4" /> : <Video className="w-4 h-4" />;
@@ -126,33 +131,48 @@ export function SessionsClient() {
       ) : (
         <div className="space-y-3">
           {sessions.map((s) => (
-            <div key={s.id} className="rounded-2xl border border-neutral-200 bg-white p-4 flex flex-col sm:flex-row sm:items-center gap-3">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-700">{kindIcon(s.session_kind)} {t(`teach.live.kind.${s.session_kind}`)}</span>
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">{t(`teach.live.visibility.${s.visibility}`)}</span>
-                  <StatusBadge status={s.status} t={t} />
+            <div key={s.id} className="rounded-2xl border border-neutral-200 bg-white p-4">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-700">{kindIcon(s.session_kind)} {t(`teach.live.kind.${s.session_kind}`)}</span>
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">{t(`teach.live.visibility.${s.visibility}`)}</span>
+                    <StatusBadge status={s.status} t={t} />
+                  </div>
+                  <h3 className="font-medium text-neutral-900 mt-1.5 truncate">{s.title}</h3>
+                  <div className="flex items-center gap-3 text-xs text-neutral-500 mt-1 flex-wrap">
+                    <span className="inline-flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> {fmt(s.starts_at)}</span>
+                    <span className="inline-flex items-center gap-1"><Users className="w-3.5 h-3.5" /> {s.attendees_count || 0}{s.attendees_max ? `/${s.attendees_max}` : ''} {t('teach.live.attendees')}</span>
+                    <span className="text-neutral-400">{s.course_title || t('teach.live.no_course')}</span>
+                  </div>
                 </div>
-                <h3 className="font-medium text-neutral-900 mt-1.5 truncate">{s.title}</h3>
-                <div className="flex items-center gap-3 text-xs text-neutral-500 mt-1 flex-wrap">
-                  <span className="inline-flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> {fmt(s.starts_at)}</span>
-                  <span className="inline-flex items-center gap-1"><Users className="w-3.5 h-3.5" /> {s.attendees_count || 0}{s.attendees_max ? `/${s.attendees_max}` : ''} {t('teach.live.attendees')}</span>
-                  <span className="text-neutral-400">{s.course_title || t('teach.live.no_course')}</span>
+                <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                  <button onClick={() => openEdit(s)} className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 px-3 py-1.5 text-sm hover:border-neutral-300"><Pencil className="w-3.5 h-3.5" /> {t('teach.live.edit')}</button>
+                  {s.meeting_url ? (
+                    <>
+                      <button onClick={() => copyLink(s.id)} className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 px-3 py-1.5 text-sm hover:border-neutral-300"><Link2 className="w-3.5 h-3.5" /> {t('teach.live.copy_link')}</button>
+                      <a href={`/${locale}/learn/sessao/${s.id}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-lg bg-neutral-900 text-white px-3 py-1.5 text-sm hover:bg-neutral-800"><ExternalLink className="w-3.5 h-3.5" /> {t('teach.live.open_room')}</a>
+                    </>
+                  ) : (
+                    <button onClick={() => provision(s.id)} disabled={busyId === s.id} className="inline-flex items-center gap-1.5 rounded-lg bg-neutral-900 text-white px-3 py-1.5 text-sm hover:bg-neutral-800 disabled:opacity-50">
+                      {busyId === s.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Video className="w-3.5 h-3.5" />} {t('teach.live.provision')}
+                    </button>
+                  )}
                 </div>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <button onClick={() => openEdit(s)} className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 px-3 py-1.5 text-sm hover:border-neutral-300"><Pencil className="w-3.5 h-3.5" /> {t('teach.live.edit')}</button>
-                {s.meeting_url ? (
-                  <>
-                    <button onClick={() => copyLink(s.id)} className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 px-3 py-1.5 text-sm hover:border-neutral-300"><Link2 className="w-3.5 h-3.5" /> {t('teach.live.copy_link')}</button>
-                    <a href={`/${locale}/learn/sessao/${s.id}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-lg bg-neutral-900 text-white px-3 py-1.5 text-sm hover:bg-neutral-800"><ExternalLink className="w-3.5 h-3.5" /> {t('teach.live.open_room')}</a>
-                  </>
-                ) : (
-                  <button onClick={() => provision(s.id)} disabled={busyId === s.id} className="inline-flex items-center gap-1.5 rounded-lg bg-neutral-900 text-white px-3 py-1.5 text-sm hover:bg-neutral-800 disabled:opacity-50">
-                    {busyId === s.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Video className="w-3.5 h-3.5" />} {t('teach.live.provision')}
-                  </button>
-                )}
-              </div>
+
+              {s.meeting_provider === 'mux_live' && s.meeting_url && (
+                <div className="mt-3 pt-3 border-t border-neutral-100">
+                  <button onClick={() => setBroadcast(broadcast === s.id ? null : s.id)} className="text-xs font-medium text-violet-700 inline-flex items-center gap-1.5"><Radio className="w-3.5 h-3.5" /> {t('teach.live.broadcast')}</button>
+                  {broadcast === s.id && (
+                    <div className="mt-2 rounded-lg bg-neutral-50 border border-neutral-200 p-3 space-y-2">
+                      <p className="text-[11px] text-neutral-500">{t('teach.live.broadcast_hint')}</p>
+                      <Copyable label={t('teach.live.ingest')} value={MUX_INGEST} copyLabel={t('teach.live.copy')} onCopy={() => copyText(MUX_INGEST)} />
+                      <Copyable label={t('teach.live.stream_key')} value={s.meeting_password || ''} secret copyLabel={t('teach.live.copy')} onCopy={() => copyText(s.meeting_password || '')} />
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -223,6 +243,19 @@ export function SessionsClient() {
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (<label className="block"><span className="block text-xs font-medium text-neutral-600 mb-1">{label}</span>{children}</label>);
+}
+function Copyable({ label, value, secret, copyLabel, onCopy }: { label: string; value: string; secret?: boolean; copyLabel: string; onCopy: () => void }) {
+  const [show, setShow] = useState(false);
+  return (
+    <div>
+      <div className="text-[11px] text-neutral-400 mb-0.5">{label}</div>
+      <div className="flex items-center gap-2">
+        <code className="flex-1 truncate bg-white border border-neutral-200 rounded px-2 py-1 text-xs text-neutral-700">{secret && !show ? '••••••••••••••••' : value}</code>
+        {secret && <button onClick={() => setShow(!show)} className="text-neutral-400 hover:text-neutral-700">{show ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}</button>}
+        <button onClick={onCopy} title={copyLabel} className="text-violet-600 hover:text-violet-800"><Copy className="w-3.5 h-3.5" /></button>
+      </div>
+    </div>
+  );
 }
 function StatusBadge({ status, t }: { status: string; t: (k: string) => string }) {
   const map: Record<string, string> = { scheduled: 'bg-amber-50 text-amber-700', live: 'bg-green-50 text-green-700', ended: 'bg-neutral-100 text-neutral-500' };

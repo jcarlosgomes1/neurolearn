@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useTranslations, useLocale } from 'next-intl';
 import { toast } from 'sonner';
@@ -11,6 +11,37 @@ type Sess = {
   starts_at: string | null; ends_at: string | null; attendees_count: number | null; attendees_max: number | null;
   is_recorded: boolean; recording_available: boolean; recording_url: string | null; course_id: string | null; instructor: string;
 };
+
+type HlsCtor = { isSupported: () => boolean; new (): { loadSource: (s: string) => void; attachMedia: (v: HTMLVideoElement) => void; destroy: () => void } };
+
+function MuxLivePlayer({ src }: { src: string }) {
+  const ref = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    const video = ref.current; if (!video) return;
+    let destroyed = false;
+    let hlsInstance: { destroy: () => void } | null = null;
+    const getHls = (): HlsCtor | undefined => (window as unknown as { Hls?: HlsCtor }).Hls;
+    const init = () => {
+      if (destroyed) return;
+      const H = getHls();
+      if (H && H.isSupported()) { const h = new H(); h.loadSource(src); h.attachMedia(video); hlsInstance = h; }
+      else { video.src = src; }
+    };
+    if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = src;
+    } else if (getHls()) {
+      init();
+    } else {
+      const sc = document.createElement('script');
+      sc.src = 'https://cdn.jsdelivr.net/npm/hls.js@1';
+      sc.onload = init;
+      sc.onerror = () => { video.src = src; };
+      document.body.appendChild(sc);
+    }
+    return () => { destroyed = true; if (hlsInstance) hlsInstance.destroy(); };
+  }, [src]);
+  return <video ref={ref} controls autoPlay playsInline className="w-full h-full bg-black" />;
+}
 
 export function SessionRoom({ sessionId }: { sessionId: string }) {
   const t = useTranslations();
@@ -65,14 +96,20 @@ export function SessionRoom({ sessionId }: { sessionId: string }) {
   if (loading) return <div className="flex justify-center py-24"><Loader2 className="w-6 h-6 animate-spin text-neutral-400" /></div>;
   if (!sess) return <div className="max-w-2xl mx-auto px-4 py-16 text-center text-neutral-500">{t('learn.session.error')}</div>;
 
-  if (room && room.provider === 'daily') {
+  const isHls = !!room && (room.provider === 'mux_live' || room.url.endsWith('.m3u8'));
+
+  if (room && (room.provider === 'daily' || isHls)) {
     return (
       <div className="fixed inset-0 z-40 bg-black flex flex-col">
         <div className="flex items-center justify-between px-4 py-2 bg-neutral-900 text-white">
           <span className="text-sm font-medium truncate">{sess.title}</span>
           <button onClick={() => setRoom(null)} className="text-xs text-neutral-300 hover:text-white inline-flex items-center gap-1"><ArrowLeft className="w-4 h-4" /> {t('learn.session.back')}</button>
         </div>
-        <iframe src={room.url} className="flex-1 w-full border-0" allow="camera; microphone; fullscreen; speaker; display-capture; autoplay; clipboard-write" />
+        {isHls ? (
+          <div className="flex-1 min-h-0"><MuxLivePlayer src={room.url} /></div>
+        ) : (
+          <iframe src={room.url} className="flex-1 w-full border-0" allow="camera; microphone; fullscreen; speaker; display-capture; autoplay; clipboard-write" />
+        )}
       </div>
     );
   }
@@ -105,9 +142,6 @@ export function SessionRoom({ sessionId }: { sessionId: string }) {
               <button onClick={join} disabled={joining} className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-neutral-900 text-white px-4 py-3 text-sm font-medium hover:bg-neutral-800 disabled:opacity-50">
                 {joining ? <Loader2 className="w-4 h-4 animate-spin" /> : <Video className="w-4 h-4" />} {joining ? t('learn.session.joining') : t('learn.session.join')}
               </button>
-              {room && room.provider !== 'daily' && (
-                <a href={room.url} target="_blank" rel="noreferrer" className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-neutral-300 px-4 py-3 text-sm font-medium hover:border-neutral-400"><PlayCircle className="w-4 h-4" /> {t('learn.session.open_external')}</a>
-              )}
             </div>
           )}
 
