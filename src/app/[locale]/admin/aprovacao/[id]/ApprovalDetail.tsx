@@ -51,7 +51,7 @@ export function ApprovalDetail({ approvalId }: { approvalId: string }) {
 
   const { approval, kind } = data;
   const isPending = approval.status === 'pending';
-  const titleKey = kind === 'blog_post' ? 'approval.title.blog' : kind === 'social_posts' ? 'approval.title.social' : kind === 'course' ? 'approval.title.course' : kind === 'instructor_application' ? 'approval.title.instr' : 'approval.title.other';
+  const titleKey = kind === 'blog_post' ? 'approval.title.blog' : kind === 'social_posts' ? 'approval.title.social' : kind === 'course' ? 'approval.title.course' : kind === 'instructor_application' ? 'approval.title.instr' : approval.action === 'generate_course_concept' ? 'approval.title.course_concept' : 'approval.title.other';
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-5 animate-fade-in">
@@ -164,7 +164,27 @@ export function ApprovalDetail({ approvalId }: { approvalId: string }) {
         </div>
       )}
 
-      {kind === 'other' && (
+      {approval.action === 'generate_course_concept' && (
+        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 space-y-4">
+          <div>
+            <h2 className="text-xl font-bold text-slate-900">{(approval.params as any)?.suggested_title}</h2>
+            {(approval.params as any)?.suggested_description && <p className="mt-1 text-sm text-slate-700 leading-relaxed">{(approval.params as any).suggested_description}</p>}
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+            <div className="bg-slate-50 rounded p-2"><span className="text-slate-500">{t('approval.cc_path')}</span><div className="font-medium">{(approval.params as any)?.path_title || '—'}</div></div>
+            <div className="bg-slate-50 rounded p-2"><span className="text-slate-500">{t('approval.cc_position')}</span><div className="font-medium">{(approval.params as any)?.position_in_path ?? '—'}</div></div>
+            <div className="bg-slate-50 rounded p-2"><span className="text-slate-500">{t('approval.level')}</span><div className="font-medium">{(approval.params as any)?.suggested_level || '—'}</div></div>
+          </div>
+          {Array.isArray((approval.params as any)?.suggested_topics) && (approval.params as any).suggested_topics.length > 0 && (
+            <div>
+              <h3 className="text-xs font-semibold uppercase text-slate-500 mb-1.5">{t('approval.cc_topics')}</h3>
+              <div className="flex flex-wrap gap-1.5">{(approval.params as any).suggested_topics.map((tp: string) => <span key={tp} className="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">{tp}</span>)}</div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {kind === 'other' && approval.action !== 'generate_course_concept' && (
         <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6">
           <p className="text-sm text-slate-500">{t('approval.other_detail')}</p>
           <pre className="mt-3 text-xs bg-slate-50 p-3 rounded overflow-auto">{JSON.stringify(approval.params, null, 2)}</pre>
