@@ -22,15 +22,19 @@ interface Props {
 // Deteta um emoji no inicio do titulo para nao o duplicar com o glifo do cabecalho.
 const LEADING_EMOJI = /^(\p{Extended_Pictographic}(?:\uFE0F)?(?:\u200D\p{Extended_Pictographic}(?:\uFE0F)?)*)\s*/u;
 
+/**
+ * Cabecalho canonico do admin — HOMOGENEO em todas as paginas, sem excecao.
+ * Regra unica: UM so glifo "grande" (sem caixa). Prioridade: emoji no titulo > emoji > icon > eyebrowIcon.
+ * A eyebrow e sempre so texto (nunca repete o icone), evitando qualquer duplicacao.
+ */
 export function AdminPageHeader({ backHref, backLabel, eyebrow, eyebrowIcon: EyeIcon, eyebrowAccent = 'text-violet-600', title, description, emoji, icon: TileIcon, actions, related }: Props) {
-  // Apenas o icone "grande" (sem quadrado). eyebrowIcon ja aparece na eyebrow, por isso nao o repetimos como glifo.
-  const TileGlyph = TileIcon;
+  const GlyphIcon = TileIcon || EyeIcon;
   const trimmedTitle = (title || '').trim();
   const m = trimmedTitle.match(LEADING_EMOJI);
   const titleEmoji = m ? m[1] : undefined;
   const cleanTitle = titleEmoji ? trimmedTitle.slice(m![0].length) : title;
-  const glyph = titleEmoji || emoji; // um unico glifo
-  const showGlyph = Boolean(glyph || TileGlyph);
+  const glyphEmoji = titleEmoji || emoji;
+  const showGlyph = Boolean(glyphEmoji || GlyphIcon);
   const resolvedBack = backHref === '/admin' ? '/admin/overview' : backHref;
   return (
     <header className="mb-6 sm:mb-8">
@@ -50,15 +54,15 @@ export function AdminPageHeader({ backHref, backLabel, eyebrow, eyebrowIcon: Eye
       <div className="flex items-start gap-2.5 sm:gap-3">
         {showGlyph && (
           <div className="flex-shrink-0 leading-none mt-0.5 sm:mt-1">
-            {glyph
-              ? <span className="text-3xl sm:text-4xl leading-none">{glyph}</span>
-              : (TileGlyph ? <TileGlyph className="h-7 w-7 sm:h-8 sm:w-8 text-slate-700" strokeWidth={1.75} /> : null)}
+            {glyphEmoji
+              ? <span className="text-3xl sm:text-4xl leading-none">{glyphEmoji}</span>
+              : (GlyphIcon ? <GlyphIcon className="h-8 w-8 sm:h-9 sm:w-9 text-slate-700" strokeWidth={1.75} /> : null)}
           </div>
         )}
         <div className="flex-1 min-w-0">
           {eyebrow && (
-            <div className={`flex items-center gap-2 ${eyebrowAccent} text-[11px] sm:text-xs font-semibold uppercase tracking-wider mb-1`}>
-              {EyeIcon && <EyeIcon className="h-3.5 w-3.5 shrink-0" />} <span className="truncate">{eyebrow}</span>
+            <div className={`${eyebrowAccent} text-[11px] sm:text-xs font-semibold uppercase tracking-wider mb-1 truncate`}>
+              {eyebrow}
             </div>
           )}
           <h1 className="font-display text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight text-balance">{cleanTitle}</h1>
