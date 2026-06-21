@@ -12,13 +12,19 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return seoMetadata('marketing', 'eventos', locale, { title: 'Eventos & Webinars · NeuroLearn' });
 }
 
+type Ev = {
+  id: string; title: string; description: string | null; session_kind: string; host: string; url: string;
+  cover_url: string | null; location: string | null; attendees_max: number | null; attendees_count: number | null;
+  starts_at: string | null;
+};
+
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const t = await getTranslations();
   const sb = await createClient();
-  const { data: { user } } = await sb.auth.getUser();
-  const { data } = await sb.rpc('nl_events_upcoming', { p_lang: locale });
-  const events = (data as never[]) || [];
+  const { data } = await sb.rpc('nl_events_public_list', { p_lang: locale, p_limit: 48 });
+  const res = (data as { ok?: boolean; events?: Ev[] }) || {};
+  const events = res.events || [];
 
   return (
     <main className="bg-white min-h-screen">
@@ -31,7 +37,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
 
       <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
         <h2 className="t-h2 text-slate-900 mb-8">{t('ev.upcoming_title')}</h2>
-        <EventsList events={events} isAuthed={!!user} />
+        <EventsList events={events} />
       </section>
 
       <section className="bg-slate-50 py-20 border-t border-slate-200/60">
