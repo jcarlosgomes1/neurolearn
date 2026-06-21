@@ -29,6 +29,7 @@ export function ContactForm({
   const t = useTranslations();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [topic, setTopic] = useState(defaultTopic);
   const [subject, setSubject] = useState(defaultSubject);
   const [message, setMessage] = useState('');
@@ -52,6 +53,7 @@ export function ContactForm({
         p_topic: topic,
         p_subject: subject || null,
         p_source_path: sourcePath,
+        p_phone: phone || null,
       });
       if (error) throw error;
       const result = data as any;
@@ -78,7 +80,7 @@ export function ContactForm({
             b: (chunks) => <strong className="text-slate-900">{chunks}</strong>,
           })}
         </p>
-        <button onClick={() => { setSent(false); setName(''); setEmail(''); setSubject(''); setMessage(''); }}
+        <button onClick={() => { setSent(false); setName(''); setEmail(''); setPhone(''); setSubject(''); setMessage(''); }}
           className="mt-6 text-sm font-semibold text-emerald-700 hover:text-emerald-900">
           {t('contactform.sent_again')}
         </button>
@@ -101,6 +103,12 @@ export function ContactForm({
             placeholder={t('contactform.ph_email')} maxLength={180}
             className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:border-blue-500 outline-none" />
         </div>
+      </div>
+
+      <div>
+        <label className="text-[10px] uppercase tracking-wider font-bold text-slate-500 mb-1.5 block">{t('contactform.label_phone')} <span className="text-slate-400 font-normal normal-case">{t('contactform.phone_hint')}</span></label>
+        <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={t('contactform.ph_phone')} maxLength={40}
+          className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:border-blue-500 outline-none" />
       </div>
 
       <div>
