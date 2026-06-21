@@ -11,7 +11,7 @@ export default async function InstrutorLayout({ children, params }: { children: 
   const name = (inst?.display_name as string) || t('instr_ws.fallback');
   const status = (inst?.status as string) || '';
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <div className="flex items-center gap-2 text-sm text-slate-500 mb-3">
         <Link href={'/admin/instrutores' as any} className="hover:text-slate-900 font-medium">{t('instr_ws.crumb')}</Link>
         <span className="text-slate-300">/</span>

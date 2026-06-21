@@ -12,7 +12,7 @@ export default async function EventoLayout({ children, params }: { children: Rea
   const title = (d?.ok && d.event?.title) ? d.event.title : t('evt_ws.fallback');
   const status = d?.ok ? (d.event?.status || '') : '';
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-5">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <div className="flex items-center gap-2 text-sm text-slate-500 mb-3">
         <Link href={'/admin/agenda' as any} className="hover:text-slate-900 font-medium">{t('evt_ws.crumb')}</Link>
         <span className="text-slate-300">/</span>

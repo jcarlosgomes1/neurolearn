@@ -55,7 +55,7 @@ export function ApprovalDetail({ approvalId }: { approvalId: string }) {
   const titleKey = kind === 'blog_post' ? 'approval.title.blog' : kind === 'social_posts' ? 'approval.title.social' : kind === 'course' ? 'approval.title.course' : kind === 'instructor_application' ? 'approval.title.instr' : approval.action === 'generate_course_concept' ? 'approval.title.course_concept' : 'approval.title.other';
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-5 animate-fade-in">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-5 animate-fade-in">
       <AdminPageHeader
         backHref="/admin/overview"
         backLabel={t('approval.back_cockpit')}
