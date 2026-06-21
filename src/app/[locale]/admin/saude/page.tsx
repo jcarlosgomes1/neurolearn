@@ -10,6 +10,7 @@ interface Finding {
   severity: 'critical' | 'high' | 'medium' | 'low' | string;
   entity: string;
   detail: string;
+  first_seen: string;
   last_seen: string;
 }
 
@@ -39,6 +40,11 @@ export default async function Page() {
     .map((sev) => ({ sev, items: findings.filter((f) => f.severity === sev) }))
     .filter((g) => g.items.length > 0);
 
+  const lastScan = findings.reduce<string | null>(
+    (acc, f) => (f.last_seen && (!acc || f.last_seen > acc) ? f.last_seen : acc),
+    null,
+  );
+
   const sevLabel = (sev: string) => t(`health.sev.${sev}` as any);
 
   return (
@@ -55,14 +61,28 @@ export default async function Page() {
           {t('health.subtitle')}
         </div>
       ) : findings.length === 0 ? (
-        <div className="p-6 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 font-semibold flex items-center gap-3">
-          <span className="text-2xl">✅</span>
-          <span>{t('health.all_clear')}</span>
+        <div className="space-y-3">
+          <div className="p-6 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 font-semibold flex items-center gap-3">
+            <span className="text-2xl">✅</span>
+            <span>{t('health.all_clear')}</span>
+          </div>
+          {lastScan && (
+            <div className="text-xs text-slate-400">
+              {t('health.last_check')}: {new Date(lastScan).toLocaleString('pt-PT')}
+            </div>
+          )}
         </div>
       ) : (
         <div className="space-y-6">
-          <div className="text-sm text-slate-500 font-medium">
-            {t('health.open_issues')}: <span className="font-bold text-slate-900">{findings.length}</span>
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="text-sm text-slate-500 font-medium">
+              {t('health.open_issues')}: <span className="font-bold text-slate-900">{findings.length}</span>
+            </div>
+            {lastScan && (
+              <div className="text-xs text-slate-400">
+                {t('health.last_check')}: {new Date(lastScan).toLocaleString('pt-PT')}
+              </div>
+            )}
           </div>
           {groups.map((g) => (
             <section key={g.sev} className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
@@ -75,6 +95,11 @@ export default async function Page() {
                   <li key={`${f.check_key}:${f.entity}:${i}`} className="px-4 py-3">
                     <div className="text-sm font-semibold text-slate-900">{f.detail || f.check_key}</div>
                     <div className="text-[11px] text-slate-500 mt-0.5 font-mono">{f.check_key}{f.entity ? ` · ${f.entity}` : ''}</div>
+                    {f.first_seen && (
+                      <div className="text-[11px] text-slate-400 mt-0.5">
+                        {t('health.detected')}: {new Date(f.first_seen).toLocaleString('pt-PT')}
+                      </div>
+                    )}
                   </li>
                 ))}
               </ul>

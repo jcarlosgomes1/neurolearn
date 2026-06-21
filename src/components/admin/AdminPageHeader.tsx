@@ -19,13 +19,21 @@ interface Props {
   related?: RelatedLink[];
 }
 
+// Deteta um emoji no inicio do titulo para nao o duplicar com o glifo do cabecalho.
+const LEADING_EMOJI = /^(\p{Extended_Pictographic}(?:\uFE0F)?(?:\u200D\p{Extended_Pictographic}(?:\uFE0F)?)*)\s*/u;
+
 export function AdminPageHeader({ backHref, backLabel, eyebrow, eyebrowIcon: EyeIcon, eyebrowAccent = 'text-violet-600', title, description, emoji, icon: TileIcon, actions, related }: Props) {
-  const TileGlyph = TileIcon || EyeIcon;
-  const showTile = Boolean(emoji || TileGlyph);
+  // Apenas o icone "grande" (sem quadrado). eyebrowIcon ja aparece na eyebrow, por isso nao o repetimos como glifo.
+  const TileGlyph = TileIcon;
+  const trimmedTitle = (title || '').trim();
+  const m = trimmedTitle.match(LEADING_EMOJI);
+  const titleEmoji = m ? m[1] : undefined;
+  const cleanTitle = titleEmoji ? trimmedTitle.slice(m![0].length) : title;
+  const glyph = titleEmoji || emoji; // um unico glifo
+  const showGlyph = Boolean(glyph || TileGlyph);
   const resolvedBack = backHref === '/admin' ? '/admin/overview' : backHref;
   return (
     <header className="mb-6 sm:mb-8">
-      {/* Breadcrumb (substitui a antiga pílula "Voltar") */}
       {backHref && (
         <nav aria-label="breadcrumb" className="mb-3 sm:mb-4">
           <ol className="flex items-center gap-1 text-xs font-medium text-slate-400 min-w-0">
@@ -35,15 +43,16 @@ export function AdminPageHeader({ backHref, backLabel, eyebrow, eyebrowIcon: Eye
               </Link>
             </li>
             <li className="shrink-0"><ChevronRight className="h-3.5 w-3.5" /></li>
-            <li className="text-slate-600 font-semibold truncate">{title}</li>
+            <li className="text-slate-600 font-semibold truncate">{cleanTitle}</li>
           </ol>
         </nav>
       )}
-      <div className="flex items-start gap-3 sm:gap-3.5">
-        {/* Tile/ícone grande: escondido em mobile (poupa ecrã), visível a partir de sm */}
-        {showTile && (
-          <div className="hidden sm:inline-flex flex-shrink-0 h-10 w-10 items-center justify-center rounded-xl bg-slate-50 border border-slate-200/70 text-slate-700">
-            {emoji ? <span className="text-xl leading-none">{emoji}</span> : (TileGlyph ? <TileGlyph className="h-5 w-5 text-slate-500" /> : null)}
+      <div className="flex items-start gap-2.5 sm:gap-3">
+        {showGlyph && (
+          <div className="flex-shrink-0 leading-none mt-0.5 sm:mt-1">
+            {glyph
+              ? <span className="text-3xl sm:text-4xl leading-none">{glyph}</span>
+              : (TileGlyph ? <TileGlyph className="h-7 w-7 sm:h-8 sm:w-8 text-slate-700" strokeWidth={1.75} /> : null)}
           </div>
         )}
         <div className="flex-1 min-w-0">
@@ -52,7 +61,7 @@ export function AdminPageHeader({ backHref, backLabel, eyebrow, eyebrowIcon: Eye
               {EyeIcon && <EyeIcon className="h-3.5 w-3.5 shrink-0" />} <span className="truncate">{eyebrow}</span>
             </div>
           )}
-          <h1 className="font-display text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight text-balance">{title}</h1>
+          <h1 className="font-display text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight text-balance">{cleanTitle}</h1>
           {description && <p className="text-sm text-slate-600 mt-1.5 max-w-2xl leading-relaxed">{description}</p>}
         </div>
         {actions && <div className="flex-shrink-0">{actions}</div>}
