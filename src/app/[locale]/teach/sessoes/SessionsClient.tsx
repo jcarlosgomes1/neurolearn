@@ -6,18 +6,18 @@ import { createClient } from '@/lib/supabase/client';
 import { assertNotPeekClient } from '@/lib/peek-client';
 import { useTranslations, useLocale } from 'next-intl';
 import { toast } from 'sonner';
-import { Loader2, Plus, Pencil, Video, Radio, Calendar, Users, Link2, ExternalLink, Save, X, Copy, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Plus, Pencil, Video, Radio, Calendar, Users, Link2, ExternalLink, Save, X, Copy, Eye, EyeOff, Globe2, Megaphone } from 'lucide-react';
 
 type Sess = {
   id: string; title: string; description: string | null; session_kind: string; visibility: string; status: string;
   starts_at: string | null; ends_at: string | null; timezone: string | null; meeting_provider: string | null; meeting_url: string | null;
-  meeting_id: string | null; meeting_password: string | null;
+  meeting_id: string | null; meeting_password: string | null; cover_url: string | null; location: string | null; published: boolean;
   attendees_count: number | null; attendees_max: number | null; is_recorded: boolean; course_id: string | null; course_title: string | null;
 };
 type CourseMin = { id: string; title: string; emoji?: string | null };
 type Editor = {
   id: string | null; title: string; description: string; session_kind: string; visibility: string;
-  course_id: string; starts_at: string; ends_at: string; attendees_max: string; is_recorded: boolean;
+  course_id: string; starts_at: string; ends_at: string; attendees_max: string; is_recorded: boolean; cover_url: string; location: string;
 };
 
 const KINDS = ['class', 'webinar', 'event', 'one_on_one'];
@@ -59,10 +59,10 @@ export function SessionsClient() {
   useEffect(() => { load(); }, [load]);
 
   function openNew() {
-    setEditor({ id: null, title: '', description: '', session_kind: 'class', visibility: 'enrolled', course_id: '', starts_at: '', ends_at: '', attendees_max: '', is_recorded: false });
+    setEditor({ id: null, title: '', description: '', session_kind: 'class', visibility: 'enrolled', course_id: '', starts_at: '', ends_at: '', attendees_max: '', is_recorded: false, cover_url: '', location: '' });
   }
   function openEdit(s: Sess) {
-    setEditor({ id: s.id, title: s.title, description: s.description || '', session_kind: s.session_kind, visibility: s.visibility, course_id: s.course_id || '', starts_at: toLocalInput(s.starts_at), ends_at: toLocalInput(s.ends_at), attendees_max: s.attendees_max ? String(s.attendees_max) : '', is_recorded: s.is_recorded });
+    setEditor({ id: s.id, title: s.title, description: s.description || '', session_kind: s.session_kind, visibility: s.visibility, course_id: s.course_id || '', starts_at: toLocalInput(s.starts_at), ends_at: toLocalInput(s.ends_at), attendees_max: s.attendees_max ? String(s.attendees_max) : '', is_recorded: s.is_recorded, cover_url: s.cover_url || '', location: s.location || '' });
   }
 
   async function save() {
@@ -78,6 +78,7 @@ export function SessionsClient() {
         starts_at: editor.starts_at ? new Date(editor.starts_at).toISOString() : null,
         ends_at: editor.ends_at ? new Date(editor.ends_at).toISOString() : null,
         attendees_max: editor.attendees_max || null, is_recorded: editor.is_recorded,
+        cover_url: editor.cover_url.trim() || null, location: editor.location.trim() || null,
       };
       const { data, error } = await sb.rpc('nl_live_session_upsert', { p });
       if (error) throw error;
@@ -97,6 +98,35 @@ export function SessionsClient() {
       const { data, error } = await sb.rpc('nl_live_session_provision', { p_session_id: id });
       if (error) throw error;
       if (!(data as { ok: boolean })?.ok) { toast.error(t('teach.live.error')); }
+      await load();
+    } catch { toast.error(t('teach.live.error')); }
+    finally { setBusyId(null); }
+  }
+
+  async function togglePublish(s: Sess) {
+    setBusyId(s.id);
+    try {
+      assertNotPeekClient();
+      const sb = createClient();
+      const { data, error } = await sb.rpc('nl_event_publish', { p_id: s.id, p_published: !s.published });
+      if (error) throw error;
+      if (!(data as { ok: boolean })?.ok) throw new Error('rpc');
+      toast.success(!s.published ? t('teach.live.published_badge') : t('teach.live.draft_badge'));
+      await load();
+    } catch { toast.error(t('teach.live.error')); }
+    finally { setBusyId(null); }
+  }
+
+  async function promote(s: Sess) {
+    setBusyId(s.id);
+    try {
+      assertNotPeekClient();
+      const sb = createClient();
+      const { data, error } = await sb.rpc('nl_event_promote', { p_event_id: s.id });
+      if (error) throw error;
+      const r = data as { ok: boolean; scope?: string };
+      if (!r?.ok) throw new Error('rpc');
+      toast.success(t('teach.live.promote_done'));
       await load();
     } catch { toast.error(t('teach.live.error')); }
     finally { setBusyId(null); }
@@ -139,6 +169,7 @@ export function SessionsClient() {
                     <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-700">{kindIcon(s.session_kind)} {t(`teach.live.kind.${s.session_kind}`)}</span>
                     <span className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">{t(`teach.live.visibility.${s.visibility}`)}</span>
                     <StatusBadge status={s.status} t={t} />
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${s.published ? 'bg-green-50 text-green-700' : 'bg-neutral-100 text-neutral-500'}`}>{s.published ? t('teach.live.published_badge') : t('teach.live.draft_badge')}</span>
                   </div>
                   <h3 className="font-medium text-neutral-900 mt-1.5 truncate">{s.title}</h3>
                   <div className="flex items-center gap-3 text-xs text-neutral-500 mt-1 flex-wrap">
@@ -149,6 +180,14 @@ export function SessionsClient() {
                 </div>
                 <div className="flex items-center gap-2 shrink-0 flex-wrap">
                   <button onClick={() => openEdit(s)} className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 px-3 py-1.5 text-sm hover:border-neutral-300"><Pencil className="w-3.5 h-3.5" /> {t('teach.live.edit')}</button>
+                  <button onClick={() => togglePublish(s)} disabled={busyId === s.id} className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 px-3 py-1.5 text-sm hover:border-neutral-300 disabled:opacity-50">
+                    {s.published ? <EyeOff className="w-3.5 h-3.5" /> : <Globe2 className="w-3.5 h-3.5" />} {s.published ? t('teach.live.unpublish') : t('teach.live.publish')}
+                  </button>
+                  {s.published && (
+                    <button onClick={() => promote(s)} disabled={busyId === s.id} className="inline-flex items-center gap-1.5 rounded-lg border border-violet-200 text-violet-700 px-3 py-1.5 text-sm hover:bg-violet-50 disabled:opacity-50">
+                      <Megaphone className="w-3.5 h-3.5" /> {t('teach.live.promote')}
+                    </button>
+                  )}
                   {s.meeting_url ? (
                     <>
                       <button onClick={() => copyLink(s)} className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 px-3 py-1.5 text-sm hover:border-neutral-300"><Link2 className="w-3.5 h-3.5" /> {t('teach.live.copy_link')}</button>
@@ -210,6 +249,12 @@ export function SessionsClient() {
                   <option value="">{t('teach.live.no_course')}</option>
                   {courses.map((c) => <option key={c.id} value={c.id}>{c.title}</option>)}
                 </select>
+              </Field>
+              <Field label={t('teach.live.field.cover')}>
+                <input value={editor.cover_url} onChange={(e) => setEditor({ ...editor, cover_url: e.target.value })} placeholder="https://…" className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm" />
+              </Field>
+              <Field label={t('teach.live.field.location')}>
+                <input value={editor.location} onChange={(e) => setEditor({ ...editor, location: e.target.value })} className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm" />
               </Field>
               <div className="grid grid-cols-2 gap-3">
                 <Field label={t('teach.live.field.starts')}>
