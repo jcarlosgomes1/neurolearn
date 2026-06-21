@@ -7,6 +7,7 @@ import { assertNotPeekClient } from '@/lib/peek-client';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { User, Save, Loader2 } from 'lucide-react';
+import { AvatarUploader } from '@/components/account/AvatarUploader';
 
 interface Initial {
   name: string;
@@ -79,6 +80,8 @@ export function ProfileForm({ email, handle, initial }: { email: string; handle:
         <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{t('account.home.profile_title')}</h1>
         <p className="text-sm text-slate-600 mt-1.5">{t('profile.subtitle')}</p>
       </header>
+
+      <AvatarUploader />
 
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-5">
         <Field label={t('profile.email_label')} hint={t('profile.email_hint')}>

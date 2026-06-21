@@ -7,7 +7,7 @@ import { BadgeCheck, Star, Plus, Check, Archive, Trash2, Save, Upload } from 'lu
 import { toast } from 'sonner';
 
 interface Candidate { source_type: string; source_id: string; rating: number; quote: string; author_name?: string; course_id?: string; consent?: boolean }
-interface Item { id: string; source_type: string; quote: string; author_name?: string; author_role?: string; author_org?: string; avatar?: string; rating?: number; surfaces: string[]; lang: string; is_real: boolean; consent: boolean; status: string; sort_order: number }
+interface Item { id: string; source_type: string; quote: string; author_name?: string; author_role?: string; author_org?: string; avatar?: string; rating?: number; surfaces: string[]; lang: string; is_real: boolean; consent: boolean; publish_mode?: string; status: string; sort_order: number }
 
 const LANGS = ['pt', 'en', 'es', 'fr'];
 const SURFACES = ['home', 'b2b', 'talent'];
@@ -55,7 +55,7 @@ export function ProvaSocialClient() {
     if (!it.quote?.trim()) { toast.error('Citação obrigatória'); return; }
     setBusy(true);
     try {
-      await rpc('nl_social_proof_upsert', { p: { id: it.id || undefined, quote: it.quote, author_name: it.author_name, author_role: it.author_role, author_org: it.author_org, avatar: it.avatar, rating: it.rating ?? null, surfaces: it.surfaces, lang: it.lang, is_real: it.is_real, consent: it.consent, sort_order: it.sort_order } });
+      await rpc('nl_social_proof_upsert', { p: { id: it.id || undefined, quote: it.quote, author_name: it.author_name, author_role: it.author_role, author_org: it.author_org, avatar: it.avatar, rating: it.rating ?? null, surfaces: it.surfaces, lang: it.lang, is_real: it.is_real, consent: it.consent, publish_mode: it.publish_mode || 'identified', sort_order: it.sort_order } });
       toast.success('Guardado'); await load();
     } catch (e) { toast.error(e instanceof Error ? e.message : 'Erro'); } finally { setBusy(false); }
   }
@@ -79,7 +79,7 @@ export function ProvaSocialClient() {
   }
   function addManual() {
     if (items.some((i) => i.id === '')) return;
-    setItems((p) => [{ id: '', source_type: 'manual', quote: '', author_name: '', author_role: '', author_org: '', rating: 5, surfaces: ['home'], lang: 'pt', is_real: false, consent: false, status: 'proposed', sort_order: 0 }, ...p]);
+    setItems((p) => [{ id: '', source_type: 'manual', quote: '', author_name: '', author_role: '', author_org: '', rating: 5, surfaces: ['home'], lang: 'pt', is_real: false, consent: false, publish_mode: 'identified', status: 'proposed', sort_order: 0 }, ...p]);
   }
 
   const badge = (s: string) => s === 'approved' ? 'bg-emerald-100 text-emerald-700' : s === 'archived' ? 'bg-slate-200 text-slate-500' : 'bg-amber-100 text-amber-700';
@@ -145,6 +145,7 @@ export function ProvaSocialClient() {
                     {SURFACES.map((s) => (
                       <label key={s} className="inline-flex items-center gap-1 cursor-pointer"><input type="checkbox" checked={it.surfaces.includes(s)} onChange={() => toggleSurface(it.id, s)} /> {s}</label>
                     ))}
+                    <select value={it.publish_mode || 'identified'} onChange={(e) => patch(it.id, 'publish_mode', e.target.value)} className="rounded-lg border border-slate-200 px-2 py-1.5"><option value="identified">identificado</option><option value="anonymized">anonimizado</option></select>
                     <label className="inline-flex items-center gap-1 cursor-pointer"><input type="checkbox" checked={it.is_real} onChange={(e) => patch(it.id, 'is_real', e.target.checked)} /> real</label>
                     <label className="inline-flex items-center gap-1 cursor-pointer"><input type="checkbox" checked={it.consent} onChange={(e) => patch(it.id, 'consent', e.target.checked)} /> consentido</label>
                   </div>
