@@ -131,6 +131,7 @@ export function CursosClient() {
         actions={
           <div className="flex gap-2 flex-wrap">
             <Link href={'/admin/essential/novo' as any} className="text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-4 py-2 rounded-lg">{t('admin_courses.btn_manual')}</Link>
+            <Link href={'/admin/cursos-todos' as any} className="text-sm bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 font-medium px-4 py-2 rounded-lg">{t('admin_courses.btn_all_tenants')}</Link>
             <Link href={'/admin/curso-ia/novo' as any} className="text-sm bg-gradient-to-r from-brand-600 to-purple-600 text-white font-medium px-4 py-2 rounded-lg shadow hover:shadow-md">{t('admin_courses.btn_ai')}</Link>
           </div>
         }
