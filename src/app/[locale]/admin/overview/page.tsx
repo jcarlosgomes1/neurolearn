@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { PeekLauncher } from '@/components/peek/PeekLauncher';
+import { AgentSuggestionsRail } from '@/components/primitives/AgentSuggestionsRail';
 import { Link } from '@/i18n/routing';
 import { getLocale } from 'next-intl/server';
 import { Users, BookOpen, Building2, GraduationCap, TrendingUp, AlertCircle, MessageSquare, Award } from 'lucide-react';
@@ -47,6 +48,8 @@ export default async function Page() {
       />
 
       <PeekLauncher />
+
+      <AgentSuggestionsRail surface="all" />
 
       {error && (
         <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700">
