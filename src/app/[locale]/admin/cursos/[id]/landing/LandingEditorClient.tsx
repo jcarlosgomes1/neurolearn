@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from '@/i18n/routing';
 import { toast } from 'sonner';
-import { Save, Loader2, Plus, Trash2, GripVertical, Eye, EyeOff, Video, Image as ImageIcon, MessageSquare, HelpCircle, Code, Sparkles } from 'lucide-react';
+import { Save, Loader2, Plus, Trash2, GripVertical, Eye, EyeOff, Video, Image as ImageIcon, MessageSquare, HelpCircle, Code, Sparkles, Wand2 } from 'lucide-react';
 
 interface Landing {
   hero_title?: string | null; hero_subtitle?: string | null;
@@ -35,6 +35,7 @@ export function LandingEditorClient({ courseId, courseTitle, initial }: { course
   });
   const [busy, setBusy] = useState(false);
   const [dirty, setDirty] = useState(false);
+  const [gen, setGen] = useState(false);
 
   function set<K extends keyof Landing>(k: K, v: Landing[K]) {
     setForm((p) => ({ ...p, [k]: v }));
@@ -52,6 +53,30 @@ export function LandingEditorClient({ courseId, courseTitle, initial }: { course
       router.refresh();
     } catch (e: any) { toast.error(e?.message || 'Erro'); }
     finally { setBusy(false); }
+  }
+
+  async function generate() {
+    setGen(true);
+    try {
+      const sb = createClient();
+      const { data, error } = await sb.rpc('nl_admin_course_landing_generate', { p_course_id: courseId });
+      if (error) throw error;
+      const r = data as { ok?: boolean; draft?: Landing; error?: string };
+      if (!r?.ok || !r.draft) throw new Error(r?.error || 'fail');
+      const d = r.draft;
+      setForm((p) => ({
+        ...p,
+        hero_title: d.hero_title || p.hero_title,
+        hero_subtitle: d.hero_subtitle || p.hero_subtitle,
+        bullet_points: (Array.isArray(d.bullet_points) && d.bullet_points.length) ? d.bullet_points : p.bullet_points,
+        faq: (Array.isArray(d.faq) && d.faq.length) ? d.faq : p.faq,
+        cta_label: d.cta_label || p.cta_label,
+      }));
+      setDirty(true);
+      toast.success('Rascunho gerado · revê e guarda');
+    } catch (e: any) {
+      toast.error(e?.message === 'forbidden' ? 'Sem permissão' : 'Não foi possível gerar o rascunho');
+    } finally { setGen(false); }
   }
 
   // Bullets helpers
@@ -86,6 +111,18 @@ export function LandingEditorClient({ courseId, courseTitle, initial }: { course
         <button onClick={() => set('enabled', !form.enabled)}
           className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold ${form.enabled ? 'bg-rose-600 hover:bg-rose-700 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white'}`}>
           {form.enabled ? <><EyeOff className="h-4 w-4" /> Desactivar</> : <><Eye className="h-4 w-4" /> Activar</>}
+        </button>
+      </div>
+
+      {/* Assisted draft */}
+      <div className="border border-fuchsia-200 bg-gradient-to-br from-fuchsia-50 to-pink-50 rounded-2xl p-4 flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <div className="text-[10px] uppercase tracking-wider font-bold text-fuchsia-700">Rascunho assistido</div>
+          <p className="text-sm text-slate-600 mt-0.5">Preenche hero, bullets, FAQ e CTA a partir do conteúdo do curso. Podes editar tudo antes de guardar.</p>
+        </div>
+        <button onClick={generate} disabled={gen}
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold bg-white border border-fuchsia-300 text-fuchsia-700 hover:bg-fuchsia-100 disabled:opacity-50 flex-shrink-0">
+          {gen ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />} Gerar rascunho
         </button>
       </div>
 
