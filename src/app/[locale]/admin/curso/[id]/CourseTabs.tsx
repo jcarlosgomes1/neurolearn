@@ -2,7 +2,7 @@
 
 import { Link, usePathname } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
-import { FileText, Users, Sparkles, Tag, ScrollText, Globe, Package } from 'lucide-react';
+import { FileText, Users, Sparkles, Tag, ScrollText, Globe, Package, CalendarClock, Search, Handshake } from 'lucide-react';
 
 /** Barra de abas do workspace do curso. Cada aba migrada acrescenta-se aqui. */
 export function CourseTabs({ courseId }: { courseId: string }) {
@@ -12,10 +12,13 @@ export function CourseTabs({ courseId }: { courseId: string }) {
     { key: 'content', seg: 'editar', label: t('course_ws.tab.content'), icon: FileText },
     { key: 'students', seg: 'alunos', label: t('course_ws.tab.students'), icon: Users },
     { key: 'studio', seg: 'estudio', label: t('course_ws.tab.studio'), icon: Sparkles },
-    { key: 'price', seg: 'preco', label: t('course_ws.tab.price'), icon: Tag },
-    { key: 'terms', seg: 'termos', label: t('course_ws.tab.terms'), icon: ScrollText },
-    { key: 'landing', seg: 'landing', label: t('course_ws.tab.landing'), icon: Globe },
+    { key: 'ritmo', seg: 'ritmo', label: t('course_ws.tab.pace'), icon: CalendarClock },
     { key: 'resources', seg: 'recursos', label: t('course_ws.tab.resources'), icon: Package },
+    { key: 'landing', seg: 'landing', label: t('course_ws.tab.landing'), icon: Globe },
+    { key: 'seo', seg: 'seo', label: t('course_ws.tab.seo'), icon: Search },
+    { key: 'price', seg: 'preco', label: t('course_ws.tab.price'), icon: Tag },
+    { key: 'peer', seg: 'peer', label: t('course_ws.tab.peer'), icon: Handshake },
+    { key: 'terms', seg: 'termos', label: t('course_ws.tab.terms'), icon: ScrollText },
   ];
   return (
     <nav className="flex gap-1 overflow-x-auto -mb-px">
