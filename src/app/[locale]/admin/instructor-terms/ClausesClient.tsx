@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { usePathname } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { assertNotPeekClient } from '@/lib/peek-client';
 import { toast } from 'sonner';
-import { Loader2, Plus, Pencil, Trash2, Save, X } from 'lucide-react';
+import { Loader2, Plus, Pencil, Trash2, Save, X, Eye } from 'lucide-react';
 
 interface Clause {
   id: string; code: string; lang: string; title: string; body_md: string;
@@ -19,6 +20,7 @@ const LANGS = ['pt', 'en', 'es', 'fr'];
 const SCOPES: [string, string][] = [['both', 'Candidatura + Curso'], ['application', 'Só candidatura'], ['course', 'Só curso']];
 
 export function ClausesClient() {
+  const pathname = usePathname();
   const [items, setItems] = useState<Clause[]>([]);
   const [loading, setLoading] = useState(true);
   const [draft, setDraft] = useState<Draft | null>(null);
@@ -76,11 +78,16 @@ export function ClausesClient() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4 gap-2">
         <p className="text-sm text-slate-500">{items.length} cláusula(s)</p>
-        <button onClick={() => setDraft({ ...EMPTY })} className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 text-white text-sm font-medium px-3.5 py-2 hover:bg-slate-800">
-          <Plus className="w-4 h-4" />Nova cláusula
-        </button>
+        <div className="flex items-center gap-2">
+          <a href={`${(pathname || '').replace(/\/$/, '')}/preview`} className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-sm font-medium px-3.5 py-2 hover:border-slate-300">
+            <Eye className="w-4 h-4" />Pré-visualizar como instrutor
+          </a>
+          <button onClick={() => setDraft({ ...EMPTY })} className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 text-white text-sm font-medium px-3.5 py-2 hover:bg-slate-800">
+            <Plus className="w-4 h-4" />Nova cláusula
+          </button>
+        </div>
       </div>
 
       {draft && (
