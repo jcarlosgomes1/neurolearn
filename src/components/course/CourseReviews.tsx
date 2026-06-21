@@ -126,6 +126,7 @@ function ReviewForm({ courseId, onClose, onSaved }: { courseId: string; onClose:
   const [rating, setRating] = useState(5);
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
+  const [consent, setConsent] = useState(false);
   const [pending, startTransition] = useTransition();
   const sb = createClient();
 
@@ -133,7 +134,7 @@ function ReviewForm({ courseId, onClose, onSaved }: { courseId: string; onClose:
     if (!rating) return;
     startTransition(async () => {
       assertNotPeekClient();
-      await sb.rpc('nl_course_review_upsert', { p_course_id: courseId, p_rating: rating, p_title: title || null, p_body: body || null });
+      await sb.rpc('nl_course_review_upsert', { p_course_id: courseId, p_rating: rating, p_title: title || null, p_body: body || null, p_consent_to_feature: consent });
       onSaved();
     });
   }
@@ -160,6 +161,10 @@ function ReviewForm({ courseId, onClose, onSaved }: { courseId: string; onClose:
         <textarea value={body} onChange={(e) => setBody(e.target.value)} rows={3} placeholder="O que aprendeste, o que melhorarias…"
           className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" />
       </div>
+      <label className="flex items-start gap-2 text-xs text-slate-600 cursor-pointer">
+        <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5" />
+        <span>Autorizo destacar publicamente esta avaliação com o meu nome e cargo (opcional; podes retirar quando quiseres).</span>
+      </label>
       <div className="flex justify-end gap-2">
         <button onClick={onClose} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg text-sm">Cancelar</button>
         <button onClick={submit} disabled={pending} className="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-medium disabled:opacity-50">

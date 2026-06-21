@@ -53,6 +53,7 @@ export function ReviewSystem({ courseId, courseTitle }: { courseId: string; cour
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [consent, setConsent] = useState(false);
 
   async function load() {
     const sb = createClient();
@@ -79,7 +80,7 @@ export function ReviewSystem({ courseId, courseTitle }: { courseId: string; cour
     const sb = createClient();
     assertNotPeekClient();
     const { data, error } = await sb.rpc('nl_submit_review', {
-      p_course_id: courseId, p_rating: rating, p_title: title || null, p_body: body || null
+      p_course_id: courseId, p_rating: rating, p_title: title || null, p_body: body || null, p_consent_to_feature: consent
     });
     if (error) toast.error(error.message);
     else {
@@ -165,6 +166,10 @@ export function ReviewSystem({ courseId, courseTitle }: { courseId: string; cour
               <textarea value={body} onChange={(e) => setBody(e.target.value)} rows={4} maxLength={2000}
                 placeholder={t('body_ph')} className="mt-1 w-full p-2.5 border-2 border-slate-200 focus:border-brand-400 rounded-lg outline-none text-sm leading-relaxed" />
             </div>
+            <label className="flex items-start gap-2 text-xs text-slate-600 cursor-pointer mt-1">
+              <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5" />
+              <span>{t('consent_label')}</span>
+            </label>
             <div className="flex gap-2 justify-end">
               {editing && <button onClick={() => { setEditing(false); if (myReview) { setRating(myReview.rating); setTitle(myReview.title || ''); setBody(myReview.body || ''); } }} className="text-sm text-slate-600 hover:text-slate-900 px-3 py-2">{t('cancel')}</button>}
               <button onClick={submit} disabled={submitting || rating < 1} className="bg-brand-600 hover:bg-brand-700 disabled:opacity-40 text-white text-sm font-semibold px-5 py-2 rounded-lg shadow">
