@@ -105,8 +105,9 @@ export function SessionsClient() {
   function copyText(value: string) {
     navigator.clipboard.writeText(value).then(() => toast.success(t('teach.live.copied')));
   }
-  function copyLink(id: string) {
-    copyText(`${window.location.origin}/${locale}/learn/sessao/${id}`);
+  function copyLink(s: Sess) {
+    const path = s.session_kind === 'webinar' ? `/${locale}/webinar/${s.id}` : `/${locale}/learn/sessao/${s.id}`;
+    copyText(`${window.location.origin}${path}`);
   }
 
   const kindIcon = (k: string) => k === 'webinar' ? <Radio className="w-4 h-4" /> : k === 'event' ? <Calendar className="w-4 h-4" /> : <Video className="w-4 h-4" />;
@@ -150,7 +151,7 @@ export function SessionsClient() {
                   <button onClick={() => openEdit(s)} className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 px-3 py-1.5 text-sm hover:border-neutral-300"><Pencil className="w-3.5 h-3.5" /> {t('teach.live.edit')}</button>
                   {s.meeting_url ? (
                     <>
-                      <button onClick={() => copyLink(s.id)} className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 px-3 py-1.5 text-sm hover:border-neutral-300"><Link2 className="w-3.5 h-3.5" /> {t('teach.live.copy_link')}</button>
+                      <button onClick={() => copyLink(s)} className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 px-3 py-1.5 text-sm hover:border-neutral-300"><Link2 className="w-3.5 h-3.5" /> {t('teach.live.copy_link')}</button>
                       <a href={`/${locale}/learn/sessao/${s.id}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-lg bg-neutral-900 text-white px-3 py-1.5 text-sm hover:bg-neutral-800"><ExternalLink className="w-3.5 h-3.5" /> {t('teach.live.open_room')}</a>
                     </>
                   ) : (
