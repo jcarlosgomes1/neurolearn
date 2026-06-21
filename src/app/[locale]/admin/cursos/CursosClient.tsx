@@ -1,5 +1,6 @@
 'use client';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { AgentSuggestionsRail } from '@/components/primitives/AgentSuggestionsRail';
 
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from '@/i18n/routing';
@@ -136,6 +137,9 @@ export function CursosClient() {
           </div>
         }
       />
+      <div className="mb-5">
+        <AgentSuggestionsRail surface="courses" />
+      </div>
 
       {/* Filters */}
       <div className="mb-5 bg-white border border-slate-200 rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center flex-wrap">

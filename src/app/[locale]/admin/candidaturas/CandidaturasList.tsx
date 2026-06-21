@@ -1,5 +1,6 @@
 'use client';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { AgentSuggestionsRail } from '@/components/primitives/AgentSuggestionsRail';
 
 import { useEffect, useState } from 'react';
 import { Link } from '@/i18n/routing';
@@ -91,6 +92,9 @@ export function CandidaturasList() {
         description={t('candlist.subtitle', { n: apps.length })}
         actions={<button onClick={load} className="text-sm bg-white border border-slate-200 hover:border-slate-300 px-3 py-1.5 rounded-lg">{t('candlist.reload')}</button>}
       />
+      <div className="mb-5">
+        <AgentSuggestionsRail surface="talent" />
+      </div>
 
       <div className="mt-5 flex gap-2 overflow-x-auto pb-2">
         {[

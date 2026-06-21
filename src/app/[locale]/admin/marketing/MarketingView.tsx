@@ -1,5 +1,6 @@
 'use client';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { AgentSuggestionsRail } from '@/components/primitives/AgentSuggestionsRail';
 
 import { useEffect, useState, useCallback } from 'react';
 import { Link } from '@/i18n/routing';
@@ -239,6 +240,9 @@ export function MarketingView() {
           </div>
         }
       />
+      <div className="mb-5">
+        <AgentSuggestionsRail surface="blog" />
+      </div>
 
       {kpis && (
         <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">

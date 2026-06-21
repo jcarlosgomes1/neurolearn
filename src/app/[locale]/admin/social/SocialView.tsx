@@ -1,5 +1,6 @@
 'use client';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { AgentSuggestionsRail } from '@/components/primitives/AgentSuggestionsRail';
 
 import { useEffect, useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
@@ -223,6 +224,9 @@ export function SocialView() {
         title={t('title')}
         description={t('subtitle')}
       />
+      <div className="mb-5">
+        <AgentSuggestionsRail surface="social" />
+      </div>
 
       {loading ? (
         <div className="mt-8 text-center text-slate-400 py-10">{t('loading')}</div>

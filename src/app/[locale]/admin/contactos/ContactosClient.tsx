@@ -1,6 +1,7 @@
 'use client';
 
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { AgentSuggestionsRail } from '@/components/primitives/AgentSuggestionsRail';
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
@@ -80,6 +81,9 @@ export function ContactosClient({ initial }: { initial: Partial<Msg>[] }) {
           </div>
         }
       />
+      <div className="mb-5">
+        <AgentSuggestionsRail surface="support" />
+      </div>
 
       {loading && messages.length === 0 ? (
         <div className="flex justify-center py-10"><Loader2 className="h-5 w-5 animate-spin text-slate-400" /></div>
