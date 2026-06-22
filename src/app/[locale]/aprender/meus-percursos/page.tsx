@@ -3,6 +3,7 @@ import { Link } from '@/i18n/routing';
 import { redirect } from '@/i18n/routing';
 import { getTranslations } from 'next-intl/server';
 import { GraduationCap, CheckCircle2, Clock, BookOpen, ChevronRight, Route, Building2 } from 'lucide-react';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { RecommendationsPanel } from '../RecommendationsPanel';
 
 export const dynamic = 'force-dynamic';
@@ -35,19 +36,12 @@ export default async function MyLearningPathsPage({ params }: { params: Promise<
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
-      <header className="mb-8 flex items-start justify-between flex-wrap gap-4">
-        <div>
-          <h1 className="font-display text-3xl font-bold text-slate-900 flex items-center gap-2">
-            <GraduationCap className="h-7 w-7 text-brand-600" />
-            {t('path.my_h1')}
-          </h1>
-          <p className="text-slate-500 mt-1">{t('path.my_sub')}</p>
-        </div>
+      <AppPageHeader title={t('path.my_h1')} description={t('path.my_sub')} actions={
         <Link href={'/aprender/percursos' as any}
           className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-sm font-medium">
           <Route className="h-4 w-4" /> {t('path.explore')}
         </Link>
-      </header>
+      } />
 
       <RecommendationsPanel />
 
