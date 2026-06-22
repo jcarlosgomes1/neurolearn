@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { Loader2, Trophy } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 
 type Row = {
   rank: number; student_name: string | null; avatar_url: string | null;
@@ -40,10 +41,7 @@ export function LeagueClient({ locale }: { locale: string }) {
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 space-y-5">
-      <div>
-        <h1 className="font-display text-2xl font-bold text-slate-900 flex items-center gap-2"><Trophy className="h-6 w-6 text-amber-500" /> {t('liga.title')}</h1>
-        <p className="text-sm text-slate-500 mt-1">{t('liga.subtitle')}</p>
-      </div>
+      <AppPageHeader title={t('liga.title')} description={t('liga.subtitle')} />
 
       {myRank != null && (
         <div className="rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white px-4 py-3 text-sm font-medium">

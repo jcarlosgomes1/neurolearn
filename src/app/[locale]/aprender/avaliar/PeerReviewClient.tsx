@@ -4,7 +4,8 @@ import { useEffect, useState, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { Users2, Loader2, Send, CheckCircle2, Inbox } from 'lucide-react';
+import { Loader2, Send, CheckCircle2, Inbox } from 'lucide-react';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 
 type Assignment = {
   id: string; status: string; assigned_at: string;
@@ -51,15 +52,7 @@ export function PeerReviewClient() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8">
-      <div className="flex items-center gap-3 mb-1">
-        <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center">
-          <Users2 className="h-5 w-5 text-white" />
-        </div>
-        <div>
-          <h1 className="text-xl font-bold text-slate-900">{t('peer.page_title')}</h1>
-          <p className="text-sm text-slate-500">{t('peer.subtitle')}</p>
-        </div>
-      </div>
+      <AppPageHeader title={t('peer.page_title')} description={t('peer.subtitle')} />
 
       {loading ? (
         <div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-slate-400" /></div>
