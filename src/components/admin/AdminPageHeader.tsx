@@ -1,6 +1,7 @@
 import { Link } from '@/i18n/routing';
 import { ChevronRight, type LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { PageGlyph } from '@/components/layout/PageGlyph';
 
 interface RelatedLink { href: string; label: string; emoji?: string }
 
@@ -27,14 +28,12 @@ const LEADING_EMOJI = /^(\p{Extended_Pictographic}(?:\uFE0F)?(?:\u200D\p{Extende
  * Regra unica: UM so glifo "grande" (sem caixa). Prioridade: emoji no titulo > emoji > icon > eyebrowIcon.
  * A eyebrow e sempre so texto (nunca repete o icone), evitando qualquer duplicacao.
  */
-export function AdminPageHeader({ backHref, backLabel, eyebrow, eyebrowIcon: EyeIcon, eyebrowAccent = 'text-violet-600', title, description, emoji, icon: TileIcon, actions, related }: Props) {
-  const GlyphIcon = TileIcon || EyeIcon;
+export function AdminPageHeader({ backHref, backLabel, eyebrow, eyebrowAccent = 'text-violet-600', title, description, emoji, actions, related }: Props) {
   const trimmedTitle = (title || '').trim();
   const m = trimmedTitle.match(LEADING_EMOJI);
   const titleEmoji = m ? m[1] : undefined;
   const cleanTitle = titleEmoji ? trimmedTitle.slice(m![0].length) : title;
   const glyphEmoji = titleEmoji || emoji;
-  const showGlyph = Boolean(glyphEmoji || GlyphIcon);
   const resolvedBack = backHref === '/admin' ? '/admin/overview' : backHref;
   return (
     <header className="mb-6 sm:mb-8">
@@ -52,13 +51,9 @@ export function AdminPageHeader({ backHref, backLabel, eyebrow, eyebrowIcon: Eye
         </nav>
       )}
       <div className="flex items-start gap-2.5 sm:gap-3">
-        {showGlyph && (
-          <div className="flex-shrink-0 leading-none mt-0.5 sm:mt-1">
-            {glyphEmoji
-              ? <span className="text-3xl sm:text-4xl leading-none">{glyphEmoji}</span>
-              : (GlyphIcon ? <GlyphIcon className="h-8 w-8 sm:h-9 sm:w-9 text-slate-700" strokeWidth={1.75} /> : null)}
-          </div>
-        )}
+        <div className="flex-shrink-0 leading-none mt-0.5 sm:mt-1">
+          <PageGlyph fallback={glyphEmoji} />
+        </div>
         <div className="flex-1 min-w-0">
           {eyebrow && (
             <div className={`${eyebrowAccent} text-[11px] sm:text-xs font-semibold uppercase tracking-wider mb-1 truncate`}>

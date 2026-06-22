@@ -2,6 +2,7 @@
 
 import { Link, useRouter } from '@/i18n/routing';
 import { UserMenu } from './UserMenu';
+import { PageGlyphProvider } from './PageGlyph';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { createPortal } from 'react-dom';
@@ -10,7 +11,7 @@ import { LayoutDashboard, ListTodo, Wrench, Radio, HeartPulse, BookOpen, Library
 
 interface Session { email: string; area: 'student' | 'instructor' | 'admin'; areas: Array<'student' | 'instructor' | 'admin'> }
 interface NavItem { href: string; labelKey: string; emoji: string; groupKey: string; badge?: string }
-interface Props { role: 'admin' | 'instructor' | 'student'; pageTitle?: string; session: Session | null; nav: NavItem[]; collapsedPref?: boolean | null; children: React.ReactNode; }
+interface Props { role: 'admin' | 'instructor' | 'student'; pageTitle?: string; session: Session | null; nav: NavItem[]; collapsedPref?: boolean | null; pageGlyph?: string; children: React.ReactNode; }
 
 const FREQUENT: Record<string, string[]> = {
   admin: ['/admin/overview', '/admin/tools', '/admin/cursos', '/admin/users', '/admin/payments', '/admin/i18n', '/admin/backlog', '/admin/ai-custos'],
@@ -110,7 +111,7 @@ function CommandPalette({ open, onClose, items, t }: { open: boolean; onClose: (
   ), document.body);
 }
 
-export function AppShellClient({ role, pageTitle, session, nav, collapsedPref, children }: Props) {
+export function AppShellClient({ role, pageTitle, session, nav, collapsedPref, pageGlyph, children }: Props) {
   const t = useTranslations();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
@@ -243,7 +244,7 @@ export function AppShellClient({ role, pageTitle, session, nav, collapsedPref, c
             </aside>
           </div>
         ), document.body)}
-        <main className="flex-1 min-w-0 overflow-x-hidden"><div className={`mx-auto w-full ${role === 'admin' ? 'max-w-6xl' : 'max-w-7xl'} pt-3 pb-6 sm:py-8`}>{children}</div></main>
+        <main className="flex-1 min-w-0 overflow-x-hidden"><div className={`mx-auto w-full ${role === 'admin' ? 'max-w-6xl' : 'max-w-7xl'} pt-3 pb-6 sm:py-8`}><PageGlyphProvider value={pageGlyph || ''}>{children}</PageGlyphProvider></div></main>
       </div>
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} items={nav} t={t} />
     </div>

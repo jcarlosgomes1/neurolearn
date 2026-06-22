@@ -83,6 +83,14 @@ export async function AppShell({ role, pageTitle, children }: AppShellProps) {
 
   const nav = await readNav(role);
 
+  let pageGlyph = '';
+  try {
+    const sb = await createClient();
+    const gp = await readPathname();
+    const { data } = await sb.rpc('nl_page_glyph', { p_path: gp });
+    if (typeof data === 'string' && data) pageGlyph = data;
+  } catch {}
+
   let collapsedPref: boolean | null = null;
   try {
     const c = (await cookies()).get('nl_sb')?.value;
@@ -95,6 +103,7 @@ export async function AppShell({ role, pageTitle, children }: AppShellProps) {
       role={role}
       pageTitle={pageTitle}
       nav={nav}
+      pageGlyph={pageGlyph}
       collapsedPref={collapsedPref}
       session={session ? { email: session.user.email!, area: session.area, areas: session.areas } : null}
     >
