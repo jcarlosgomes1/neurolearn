@@ -112,7 +112,7 @@ export function AdminList({
   // Loading state — premium
   if (!rows) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="animate-pulse space-y-4">
           <div className="h-4 w-32 bg-slate-200 rounded" />
           <div className="h-10 w-64 bg-slate-200 rounded" />
@@ -128,7 +128,7 @@ export function AdminList({
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
       <AdminPageHeader
         backHref={backHref}
         icon={Icon}

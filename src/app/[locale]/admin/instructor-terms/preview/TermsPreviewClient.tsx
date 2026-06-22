@@ -41,7 +41,7 @@ export function TermsPreviewClient() {
   const lastAt = stats?.last_at ? new Date(stats.last_at).toLocaleDateString() : null;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <a href=".." className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 mb-3"><ArrowLeft className="w-4 h-4" />{t('admin.terms_doc.back')}</a>
       <AdminPageHeader emoji="📜" title={t('admin.terms_doc.title')} description={t('admin.terms_doc.subtitle')} />
 
