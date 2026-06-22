@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import { acceptInquiryAction, listInquiriesForOrgAction } from '../corporate-actions';
 import { Inbox, Clock, CheckCircle, XCircle, Send, Loader2, Calendar, Briefcase, AlertCircle } from 'lucide-react';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 
 const STATUS_BADGES: Record<string, { labelKey: string; className: string; icon: any }> = {
   pending: { labelKey: 'org.ped.st_pending', className: 'bg-amber-100 text-amber-800', icon: Clock },
@@ -51,21 +52,14 @@ export function PedidosOrgClient({ orgId, orgName, orgSlug, memberRole, locale, 
 
   return (
     <main className="bg-slate-50 min-h-screen">
-      <section className="bg-white border-b border-slate-200">
-        <div className="max-w-6xl mx-auto px-4 py-6 flex items-start justify-between gap-4 flex-wrap">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <Inbox className="h-6 w-6 text-brand-600" />
-              <h1 className="font-display text-2xl font-bold text-slate-900">{t('org.ped.title')}</h1>
-            </div>
-            <p className="text-sm text-slate-500">{t('org.ped.subtitle')}</p>
-          </div>
+      <div className="max-w-6xl mx-auto px-4 pt-6">
+        <AppPageHeader title={t('org.ped.title')} description={t('org.ped.subtitle')} actions={
           <Link href={`/empresa/${orgSlug}/marketplace/instrutores` as any}
             className="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-lg">
             <Briefcase className="h-4 w-4" /> {t('org.ped.browse')}
           </Link>
-        </div>
-      </section>
+        } />
+      </div>
 
       <div className="max-w-6xl mx-auto px-4 py-6">
         <div className="flex gap-2 mb-4 overflow-x-auto pb-1">

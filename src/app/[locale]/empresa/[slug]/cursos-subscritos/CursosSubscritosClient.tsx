@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import { enrollUserInCourseAction, listOrgSubscriptionsAction } from '../marketplace-actions';
 import { BookOpen, Users, UserPlus, Loader2, X, ShoppingCart } from 'lucide-react';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 
 function fmt(cents: number, locale: string, currency: string) {
   return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(cents / 100);
@@ -27,21 +28,14 @@ export function CursosSubscritosClient({ orgId, orgSlug, memberRole, members, lo
 
   return (
     <main className="bg-slate-50 min-h-screen">
-      <section className="bg-white border-b border-slate-200">
-        <div className="max-w-6xl mx-auto px-4 py-6 flex items-start justify-between gap-4 flex-wrap">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <BookOpen className="h-6 w-6 text-brand-600" />
-              <h1 className="font-display text-2xl font-bold text-slate-900">{t('org.sub.title')}</h1>
-            </div>
-            <p className="text-sm text-slate-500">{t('org.sub.subtitle')}</p>
-          </div>
+      <div className="max-w-6xl mx-auto px-4 pt-6">
+        <AppPageHeader title={t('org.sub.title')} description={t('org.sub.subtitle')} actions={
           <Link href={`/empresa/${orgSlug}/marketplace/cursos` as any}
             className="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-lg">
             <ShoppingCart className="h-4 w-4" /> {t('org.sub.browse')}
           </Link>
-        </div>
-      </section>
+        } />
+      </div>
 
       <div className="max-w-6xl mx-auto px-4 py-6">
         {subs.length === 0 ? (
