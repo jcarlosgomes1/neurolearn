@@ -6,6 +6,7 @@ import { assertNotPeekClient } from '@/lib/peek-client';
 import { Link } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import { Sparkles, Calendar, X, RotateCcw, Loader2 } from 'lucide-react';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 
 function fmt(c: number) { return new Intl.NumberFormat(undefined, { style: 'currency', currency: 'EUR' }).format(c/100); }
 
@@ -61,7 +62,7 @@ export function SubscriptionClient({ initial }: { initial: any }) {
   return (
     <main className="bg-slate-50 min-h-screen">
       <div className="max-w-3xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-2"><Sparkles className="h-6 w-6 text-violet-600" /> {t('sub.title')}</h1>
+        <AppPageHeader title={t('sub.title')} />
 
         <div className="bg-white border border-slate-200 rounded-2xl p-6 mb-4">
           <div className="flex items-start justify-between gap-3 flex-wrap mb-4">
