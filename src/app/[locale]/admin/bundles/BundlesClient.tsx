@@ -4,6 +4,7 @@ import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { useState, useTransition } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Package, Plus, Edit, X, Loader2, Trash2, ToggleLeft, ToggleRight, Star } from 'lucide-react';
+import { AgentSuggestionsRail } from '@/components/primitives/AgentSuggestionsRail';
 
 function fmt(c: number, cur = 'EUR') { return new Intl.NumberFormat('pt-PT', { style: 'currency', currency: cur }).format(c/100); }
 
@@ -48,6 +49,8 @@ export function BundlesClient({ initial, courses }: { initial: any[]; courses: a
           </button>
         }
       />
+
+      <AgentSuggestionsRail surface="bundles" onAfterDecide={reload} />
 
       {bundles.length === 0 ? (
         <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
