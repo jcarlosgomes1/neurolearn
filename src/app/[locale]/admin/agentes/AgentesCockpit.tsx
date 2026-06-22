@@ -136,6 +136,18 @@ export function AgentesCockpit() {
     finally { setBusyId(null); }
   }
 
+  async function runAll() {
+    setBusyId('run-all');
+    try {
+      const { data, error } = await supabase.rpc('nl_admin_run_all_agents');
+      if (error) throw error;
+      const d = data as { ok?: boolean; agents?: number; generated?: number };
+      toast.success(tx('agents.cockpit.run_all_done', 'Frota executada') + (d?.generated ? ` · ${d.generated}` : ''));
+      await load();
+    } catch { toast.error(t('agents.cockpit.error')); }
+    finally { setBusyId(null); }
+  }
+
   async function decide(p: Proposal, approve: boolean, followup: string | null = null) {
     setBusyId(p.id);
     try {
@@ -301,6 +313,18 @@ export function AgentesCockpit() {
         <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{t('agents.cockpit.title')}</h1>
         <p className="text-sm text-slate-600 mt-1.5">{t('agents.cockpit.subtitle')}</p>
       </header>
+
+      <div className="mb-6 flex items-center justify-between gap-3 rounded-xl border border-violet-200/70 bg-violet-50/60 p-3.5 sm:p-4">
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-slate-800">{tx('agents.cockpit.run_all_title', 'Correr toda a frota')}</p>
+          <p className="text-xs text-slate-500 mt-0.5">{tx('agents.cockpit.run_all_sub', 'Executa todos os agentes em sequência organizada — uns aproveitam o trabalho dos anteriores.')}</p>
+        </div>
+        <button onClick={runAll} disabled={busyId === 'run-all'}
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-violet-600 text-white text-sm font-medium hover:bg-violet-700 disabled:opacity-50 shrink-0">
+          {busyId === 'run-all' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
+          {tx('agents.cockpit.run_all', 'Correr todos')}
+        </button>
+      </div>
 
       <div className="flex gap-1 border-b border-slate-200 mb-6 overflow-x-auto">
         {TABS.map((tb) => (
