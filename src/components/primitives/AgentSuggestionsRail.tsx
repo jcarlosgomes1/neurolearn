@@ -4,9 +4,10 @@ import { useEffect, useState, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { assertNotPeekClient } from '@/lib/peek-client';
+import { Link } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { Sparkles, Check, X, Loader2, ChevronDown, Route, Bot, CornerDownRight } from 'lucide-react';
+import { Sparkles, Check, X, Loader2, ChevronDown, Route, Bot, CornerDownRight, ExternalLink } from 'lucide-react';
 import { ProposalDossier } from '@/components/admin/ProposalDossier';
 
 type Detail = {
@@ -19,6 +20,14 @@ type Detail = {
 type Suggestion = { id: string; action: string; surface: string; agent_id: string | null; agent_name: string; title: string; summary: string | null; created_at: string; detail?: Detail };
 
 const KNOWN = ['blog', 'social', 'courses', 'talent', 'support'];
+// Pagina onde "esta tudo escrito" para rever em contexto e decidir
+const SURFACE_LINK: Record<string, string> = {
+  courses: '/admin/learning-paths',
+  blog: '/admin/marketing',
+  social: '/admin/social',
+  support: '/admin/contactos',
+  talent: '/admin/jobs',
+};
 
 function Pills({ items, tone = 'slate' }: { items: string[]; tone?: 'slate' | 'emerald' | 'rose' }) {
   const cls = tone === 'emerald' ? 'text-emerald-700 bg-emerald-50 border-emerald-100'
@@ -36,7 +45,7 @@ function Pills({ items, tone = 'slate' }: { items: string[]; tone?: 'slate' | 'e
 function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="flex gap-2 text-xs">
-      <span className="text-slate-400 shrink-0 w-20">{label}</span>
+      <span className="text-slate-400 shrink-0 w-16 sm:w-20">{label}</span>
       <span className="text-slate-700 min-w-0 flex-1">{children}</span>
     </div>
   );
@@ -94,8 +103,8 @@ function ProposalDetail({ d, t }: { d: Detail; t: ReturnType<typeof useTranslati
 
 /**
  * Primitivo AgentSuggestionsRail — "agente-primeiro".
- * Topo: AGENTE primeiro, depois a area. Detalhe abre em linha (chevron no topo).
- * Conceitos de curso incluem o estudo de mercado (ProposalDossier) para decisao informada.
+ * Cada cartao tem link "Abrir" para a pagina onde esta tudo escrito (decidir em contexto).
+ * Conceitos de curso incluem o estudo de mercado (ProposalDossier).
  */
 export function AgentSuggestionsRail({ surface = 'all', limit = 8, showWhenEmpty = false, onAfterDecide }: {
   surface?: string;
@@ -141,7 +150,7 @@ export function AgentSuggestionsRail({ surface = 'all', limit = 8, showWhenEmpty
   const surfaceLabel = (s: string) => t(`rail.surface.${KNOWN.includes(s) ? s : 'other'}` as never);
 
   return (
-    <div className="mb-6 rounded-2xl border border-violet-200/70 bg-gradient-to-br from-violet-50/70 to-indigo-50/40 p-4">
+    <div className="mb-6 rounded-2xl border border-violet-200/70 bg-gradient-to-br from-violet-50/70 to-indigo-50/40 p-3 sm:p-4">
       <div className="flex items-center gap-2 mb-3">
         <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-violet-100 text-violet-600 shrink-0"><Sparkles className="w-4 h-4" /></span>
         <div className="min-w-0">
@@ -156,8 +165,9 @@ export function AgentSuggestionsRail({ surface = 'all', limit = 8, showWhenEmpty
         <ul className="space-y-2.5">
           {items.map((s) => {
             const isOpen = openId === s.id;
+            const href = SURFACE_LINK[s.surface] || null;
             return (
-              <li key={s.id} className="rounded-xl border border-slate-200/70 bg-white/90 p-3.5 shadow-sm">
+              <li key={s.id} className="rounded-xl border border-slate-200/70 bg-white/90 p-3 sm:p-3.5 shadow-sm">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0 flex flex-wrap items-center gap-1.5">
                     <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-violet-700 bg-violet-50 border border-violet-100 rounded px-1.5 py-0.5">
@@ -175,20 +185,27 @@ export function AgentSuggestionsRail({ surface = 'all', limit = 8, showWhenEmpty
 
                 <div className={`grid transition-all duration-300 ease-out ${isOpen ? 'grid-rows-[1fr] opacity-100 mt-2.5' : 'grid-rows-[0fr] opacity-0'}`}>
                   <div className="overflow-hidden">
-                    <div className="rounded-lg bg-slate-50/80 border border-slate-100 p-3 space-y-3">
+                    <div className="rounded-lg bg-slate-50/80 border border-slate-100 p-2.5 sm:p-3 space-y-3">
                       <ProposalDetail d={s.detail || null} t={t} />
                       {isOpen && s.surface === 'courses' && <ProposalDossier approvalId={s.id} />}
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
-                  <button onClick={() => decide(s.id, false)} disabled={busy === s.id} className="inline-flex items-center gap-1 rounded-lg border border-slate-200 text-slate-600 text-xs font-medium px-3.5 py-2 disabled:opacity-50 hover:border-slate-300">
-                    <X className="w-3.5 h-3.5" />{t('rail.reject')}
-                  </button>
-                  <button onClick={() => decide(s.id, true)} disabled={busy === s.id} className="inline-flex items-center gap-1 rounded-lg bg-slate-900 text-white text-xs font-medium px-3.5 py-2 disabled:opacity-50 hover:bg-slate-800">
-                    {busy === s.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}{t('rail.approve')}
-                  </button>
+                <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                  {href ? (
+                    <Link href={href as any} className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-500 hover:text-violet-700">
+                      <ExternalLink className="w-3.5 h-3.5" />{t('rail.open')}
+                    </Link>
+                  ) : <span />}
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button onClick={() => decide(s.id, false)} disabled={busy === s.id} className="inline-flex items-center gap-1 rounded-lg border border-slate-200 text-slate-600 text-xs font-medium px-3.5 py-2 disabled:opacity-50 hover:border-slate-300">
+                      <X className="w-3.5 h-3.5" />{t('rail.reject')}
+                    </button>
+                    <button onClick={() => decide(s.id, true)} disabled={busy === s.id} className="inline-flex items-center gap-1 rounded-lg bg-slate-900 text-white text-xs font-medium px-3.5 py-2 disabled:opacity-50 hover:bg-slate-800">
+                      {busy === s.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}{t('rail.approve')}
+                    </button>
+                  </div>
                 </div>
               </li>
             );
