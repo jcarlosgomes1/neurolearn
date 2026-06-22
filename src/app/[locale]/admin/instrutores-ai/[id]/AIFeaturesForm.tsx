@@ -109,7 +109,7 @@ export function AIFeaturesForm({ instructorId }: { instructorId: string }) {
   const used = features.credits_used_this_month || 0;
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-5 animate-fade-in">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-5 animate-fade-in">
       <Link href={'/admin/instrutores-ai' as any} className="group inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900 font-medium transition-colors">
         <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" /> {t('back')}
       </Link>

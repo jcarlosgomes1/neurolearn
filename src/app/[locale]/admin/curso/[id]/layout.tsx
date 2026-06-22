@@ -20,7 +20,7 @@ export default async function CourseWorkspaceLayout({ children, params }: { chil
   return (
     <div>
       <div className="border-b border-slate-200 bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           <Link href={'/admin/cursos' as any} className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700 mb-2">
             <ArrowLeft className="w-3.5 h-3.5" />{t('course_ws.back')}
           </Link>

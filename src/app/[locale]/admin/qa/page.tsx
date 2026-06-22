@@ -17,7 +17,7 @@ export default async function Page() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         <AdminPageHeader emoji="💬" title="Moderação de Perguntas & Respostas" description="Itens sinalizados: reportados por utilizadores, auto-sinalizados pela IA, ou marcados manualmente." />
         <QaModerationClient />
       </div>

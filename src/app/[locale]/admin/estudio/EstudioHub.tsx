@@ -108,7 +108,7 @@ export function EstudioHub() {
   const totalLessons = ov?.lessons?.length || 0;
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <AdminPageHeader eyebrow="Estúdio de conhecimento" title="Gerar auxiliares de estudo" description="Escolhe um curso e gera flashcards, glossário, FAQ e percurso. A geração é ao vivo e cada gerador está registado como tarefa do agente de formação." icon={Sparkles} />
 
       {err && <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">{err === 'forbidden' ? 'Sem acesso. Esta área é exclusiva de administradores.' : 'Não foi possível carregar.'}</div>}

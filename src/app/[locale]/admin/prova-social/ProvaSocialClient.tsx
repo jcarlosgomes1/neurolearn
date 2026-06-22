@@ -85,7 +85,7 @@ export function ProvaSocialClient() {
   const badge = (s: string) => s === 'approved' ? 'bg-emerald-100 text-emerald-700' : s === 'archived' ? 'bg-slate-200 text-slate-500' : 'bg-amber-100 text-amber-700';
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <AdminPageHeader eyebrow="Marketing" title="Prova social" description="Promove avaliações reais e consentidas a testemunhos. Aprovas, e publicas nos blocos da homepage. O B2B só mostra reais." icon={BadgeCheck} />
 
       <div className="rounded-2xl border border-slate-200 bg-white p-4 mb-6 flex flex-wrap items-center gap-3">
