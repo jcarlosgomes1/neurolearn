@@ -8,6 +8,7 @@ import { SUPABASE_URL } from '@/lib/supabase/config';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import { useTranslations, useLocale } from 'next-intl';
+import { Calendar, MapPin, Briefcase, Target } from 'lucide-react';
 
 interface Application {
   id: string; email: string; full_name: string;
@@ -140,11 +141,11 @@ export function CandidaturasList() {
                     </div>
                     <p className="text-sm text-slate-600 mt-0.5">{app.job_title}{app.current_company && ` · ${app.current_company}`}</p>
                     <p className="text-sm text-slate-700 mt-2 font-medium">&quot;{app.proposed_course_title}&quot;</p>
-                    <div className="mt-2 text-xs text-slate-500 flex flex-wrap gap-x-3 gap-y-1">
-                      <span>📅 {fmtDate(app.applied_at)}</span>
-                      {app.country && <span>📍 {app.city ? `${app.city}, ` : ''}{app.country}</span>}
-                      {app.years_experience && <span>💼 {t('candlist.years', { n: app.years_experience })}</span>}
-                      {app.expertise && app.expertise.length > 0 && <span>🎯 {app.expertise.slice(0, 2).join(', ')}{app.expertise.length > 2 && '...'}</span>}
+                    <div className="mt-2 text-xs text-slate-500 flex flex-wrap items-center gap-x-3 gap-y-1">
+                      <span className="inline-flex items-center gap-1"><Calendar className="h-3 w-3 text-slate-400" />{fmtDate(app.applied_at)}</span>
+                      {app.country && <span className="inline-flex items-center gap-1"><MapPin className="h-3 w-3 text-slate-400" />{app.city ? `${app.city}, ` : ''}{app.country}</span>}
+                      {app.years_experience && <span className="inline-flex items-center gap-1"><Briefcase className="h-3 w-3 text-slate-400" />{t('candlist.years', { n: app.years_experience })}</span>}
+                      {app.expertise && app.expertise.length > 0 && <span className="inline-flex items-center gap-1"><Target className="h-3 w-3 text-slate-400" />{app.expertise.slice(0, 2).join(', ')}{app.expertise.length > 2 && '...'}</span>}
                     </div>
                   </div>
                   {app.ai_score_total !== null && (
