@@ -2,7 +2,8 @@ import { createClient } from '@/lib/supabase/server';
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { notFound, redirect } from 'next/navigation';
-import { ArrowLeft, Users } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { MembersClient } from './MembersClient';
 
 export const dynamic = 'force-dynamic';
@@ -38,15 +39,7 @@ export default async function MembersPage({ params }: { params: Promise<{ slug: 
         className="group inline-flex items-center gap-1.5 mb-5 text-sm text-slate-500 hover:text-slate-900 font-medium">
         <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" /> {org.name}
       </Link>
-      <header className="mb-8">
-        <div className="flex items-center gap-2 text-violet-600 text-xs font-semibold uppercase tracking-wider mb-1">
-          <Users className="h-3.5 w-3.5" /> {safeT('empresa.members.eyebrow', 'Empresa · Membros')}
-        </div>
-        <h1 className="font-display text-3xl font-bold text-slate-900 tracking-tight">{safeT('empresa.members.title', 'Gerir membros e convites')}</h1>
-        <p className="text-sm text-slate-600 mt-1.5 max-w-2xl leading-relaxed">
-          {safeT('empresa.members.description', 'Convida colaboradores, gere roles e revoga acessos.')}
-        </p>
-      </header>
+      <AppPageHeader eyebrow={safeT('empresa.members.eyebrow', 'Empresa · Membros')} title={safeT('empresa.members.title', 'Gerir membros e convites')} description={safeT('empresa.members.description', 'Convida colaboradores, gere roles e revoga acessos.')} />
       <MembersClient
         orgId={org.id}
         orgSlug={org.slug}

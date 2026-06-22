@@ -2,7 +2,8 @@ import { createClient } from '@/lib/supabase/server';
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { notFound, redirect } from 'next/navigation';
-import { ArrowLeft, Route } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { OrgPathsClient } from './OrgPathsClient';
 
 export const dynamic = 'force-dynamic';
@@ -43,15 +44,7 @@ export default async function OrgPathsPage({ params }: { params: Promise<{ slug:
         className="group inline-flex items-center gap-1.5 mb-5 text-sm text-slate-500 hover:text-slate-900 font-medium">
         <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" /> {org.name}
       </Link>
-      <header className="mb-8">
-        <div className="flex items-center gap-2 text-violet-600 text-xs font-semibold uppercase tracking-wider mb-1">
-          <Route className="h-3.5 w-3.5" /> {safeT('empresa.paths.eyebrow', 'Empresa · Percursos')}
-        </div>
-        <h1 className="font-display text-3xl font-bold text-slate-900 tracking-tight">{safeT('empresa.paths.title', 'Percursos para a equipa')}</h1>
-        <p className="text-sm text-slate-600 mt-1.5 max-w-2xl leading-relaxed">
-          {safeT('empresa.paths.description', 'Atribui percursos de aprendizagem à tua equipa, define formação obrigatória e acompanha o progresso.')}
-        </p>
-      </header>
+      <AppPageHeader eyebrow={safeT('empresa.paths.eyebrow', 'Empresa · Percursos')} title={safeT('empresa.paths.title', 'Percursos para a equipa')} description={safeT('empresa.paths.description', 'Atribui percursos de aprendizagem à tua equipa, define formação obrigatória e acompanha o progresso.')} />
 
       <OrgPathsClient orgId={org.id} canManage={canManage} initialAssigned={assigned} catalog={catalogList} />
     </div>
