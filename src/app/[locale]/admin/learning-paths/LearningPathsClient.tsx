@@ -7,6 +7,7 @@ import { Plus, Users, BookOpen, Clock, Eye, Trash2, X, Sparkles, Edit, Package }
 import { toast } from 'sonner';
 import { SkeletonCard } from '@/components/shared/LoadingSkeleton';
 import { EmptyState } from '@/components/shared/EmptyState';
+import { AgentSuggestionsRail } from '@/components/primitives/AgentSuggestionsRail';
 
 const DIFFICULTIES = ['beginner', 'intermediate', 'advanced'];
 
@@ -91,6 +92,7 @@ export function LearningPathsClient() {
 
   return (
     <div className="space-y-4">
+      <AgentSuggestionsRail surface="courses" onAfterDecide={load} />
       <div className="flex justify-end">
         <button onClick={() => setShowCreate(true)}
           className="inline-flex items-center gap-1.5 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-medium">
