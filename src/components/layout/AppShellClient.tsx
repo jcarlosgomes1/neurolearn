@@ -243,7 +243,7 @@ export function AppShellClient({ role, pageTitle, session, nav, collapsedPref, c
             </aside>
           </div>
         ), document.body)}
-        <main className="flex-1 min-w-0 overflow-x-hidden"><div className="mx-auto w-full max-w-7xl pt-3 pb-6 sm:py-8">{children}</div></main>
+        <main className="flex-1 min-w-0 overflow-x-hidden"><div className={`mx-auto w-full ${role === 'admin' ? 'max-w-6xl' : 'max-w-7xl'} pt-3 pb-6 sm:py-8`}>{children}</div></main>
       </div>
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} items={nav} t={t} />
     </div>
