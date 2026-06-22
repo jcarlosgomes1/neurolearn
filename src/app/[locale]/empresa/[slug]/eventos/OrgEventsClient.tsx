@@ -3,7 +3,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useTranslations, useLocale } from 'next-intl';
-import { Loader2, Clock, MapPin, Video, Users, ArrowRight, CalendarDays } from 'lucide-react';
+import { Loader2, Clock, MapPin, Video, Users, ArrowRight } from 'lucide-react';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 
 type Ev = {
   id: string; title: string; description: string | null; session_kind: string; visibility: string;
@@ -38,11 +39,7 @@ export function OrgEventsClient({ slug }: { slug: string }) {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
-      <div className="flex items-center gap-3 mb-1">
-        <span className="inline-flex items-center justify-center h-10 w-10 rounded-xl bg-[var(--org-primary,#6366f1)]/10 text-[var(--org-primary,#6366f1)]"><CalendarDays className="h-5 w-5" /></span>
-        <h1 className="text-2xl font-display font-semibold text-slate-900">{t('events.org.title')}</h1>
-      </div>
-      <p className="text-sm text-slate-500 mb-6 ml-13">{t('events.org.subtitle')}</p>
+      <AppPageHeader title={t('events.org.title')} description={t('events.org.subtitle')} />
 
       {loading ? (
         <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-slate-400" /></div>

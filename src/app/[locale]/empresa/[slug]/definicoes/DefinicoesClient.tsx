@@ -4,7 +4,8 @@ import { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import { toast } from 'sonner';
-import { ArrowLeft, Building2, Loader2, Save } from 'lucide-react';
+import { ArrowLeft, Loader2, Save } from 'lucide-react';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { updateOrgAction } from './actions';
 
 type Org = {
@@ -35,13 +36,7 @@ export function DefinicoesClient({ org }: { org: Org }) {
         className="group inline-flex items-center gap-1.5 mb-5 text-sm text-slate-500 hover:text-slate-900 font-medium">
         <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" /> {org.name}
       </Link>
-      <header className="mb-8">
-        <div className="flex items-center gap-2 text-violet-600 text-xs font-semibold uppercase tracking-wider mb-1">
-          <Building2 className="h-3.5 w-3.5" /> {t('empresa.settings.eyebrow')}
-        </div>
-        <h1 className="font-display text-3xl font-bold text-slate-900 tracking-tight">{t('empresa.settings.title')}</h1>
-        <p className="text-sm text-slate-600 mt-1.5 max-w-2xl leading-relaxed">{t('empresa.settings.desc')}</p>
-      </header>
+      <AppPageHeader eyebrow={t('empresa.settings.eyebrow')} title={t('empresa.settings.title')} description={t('empresa.settings.desc')} />
       <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4">
         <div>
           <label className={label}>{t('empresa.settings.name')}</label>
