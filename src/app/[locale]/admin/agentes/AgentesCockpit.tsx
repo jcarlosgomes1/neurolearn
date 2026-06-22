@@ -293,7 +293,7 @@ export function AgentesCockpit() {
   ];
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <header className="mb-6">
         <div className="flex items-center gap-2 text-violet-600 text-xs font-semibold uppercase tracking-wider mb-1">
           <Sparkles className="h-3.5 w-3.5" /> {t('agents.cockpit.title')}
@@ -302,10 +302,10 @@ export function AgentesCockpit() {
         <p className="text-sm text-slate-600 mt-1.5">{t('agents.cockpit.subtitle')}</p>
       </header>
 
-      <div className="flex gap-1 border-b border-slate-200 mb-6">
+      <div className="flex gap-1 border-b border-slate-200 mb-6 overflow-x-auto">
         {TABS.map((tb) => (
           <button key={tb.id} onClick={() => setTab(tb.id)}
-            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
+            className={`flex items-center gap-2 px-3 sm:px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors shrink-0 whitespace-nowrap ${
               tab === tb.id ? 'border-violet-600 text-violet-700' : 'border-transparent text-slate-500 hover:text-slate-800'}`}>
             <tb.icon className="h-4 w-4" /> {tb.label}
             {tb.count != null && tb.count > 0 && (
@@ -326,61 +326,59 @@ export function AgentesCockpit() {
             const tasks = tasksByAgent[a.agent_id] || [];
             return (
               <div key={a.agent_id} className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
-                <div className="p-4 sm:p-5">
+                <div className="p-3.5 sm:p-4">
                   <div className="flex items-start gap-3">
                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center text-white flex-shrink-0">
                       <Bot className="h-5 w-5" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-semibold text-slate-900 capitalize">{a.name}</h3>
+                      <h3 className="font-semibold text-slate-900 capitalize leading-snug">{a.name}</h3>
+                      <div className="mt-1 flex flex-wrap items-center gap-1.5">
                         {a.trust.rate != null && (
-                          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                          <span className={`inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full font-medium ${
                             a.trust.rate >= 90 ? 'bg-emerald-100 text-emerald-700' :
                             a.trust.rate >= 60 ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700'}`}>
-                            <ShieldCheck className="h-3 w-3 inline mr-1" />
+                            <ShieldCheck className="h-3 w-3" />
                             {t('agents.cockpit.trust')} {a.trust.rate}% ({a.trust.sample})
                           </span>
                         )}
                         {a.pending_approvals > 0 && (
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 font-medium">
+                          <span className="text-[11px] px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 font-medium">
                             {a.pending_approvals} {t('agents.cockpit.pending')}
                           </span>
                         )}
                       </div>
-                      {a.description && <p className="text-xs text-slate-500 mt-1 line-clamp-2">{a.description}</p>}
-                      <div className="flex items-center gap-3 mt-2 text-xs text-slate-500">
-                        <span className="inline-flex items-center gap-1"><Clock className="h-3 w-3" />{a.schedule_human || '—'}</span>
-                        <span>{a.actions_24h} {t('agents.cockpit.actions_24h')}</span>
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-end gap-2">
-                      <select value={a.mode || 'supervised'} disabled={busyId === a.agent_id}
-                        onChange={(e) => updateAgent(a.agent_id, { p_mode: e.target.value })}
-                        className="text-xs rounded-lg border border-slate-200 px-2 py-1.5 bg-white focus:border-violet-400 outline-none">
-                        {MODES.map((m) => <option key={m} value={m}>{modeLabel(m)}</option>)}
-                      </select>
-                      <label className="flex items-center gap-1.5 text-xs text-slate-600 cursor-pointer">
-                        <input type="checkbox" checked={a.enabled ?? true}
-                          onChange={(e) => updateAgent(a.agent_id, { p_enabled: e.target.checked })}
-                          className="rounded" />
-                        {(a.enabled ?? true) ? t('agents.cockpit.enabled') : t('agents.cockpit.disabled')}
-                      </label>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 mt-3">
-                    <button onClick={() => toggleExpand(a.agent_id)}
-                      className="inline-flex items-center gap-1 text-xs font-medium text-slate-600 hover:text-violet-700">
-                      {isOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-                      {t('agents.cockpit.tasks')}
-                    </button>
-                    {a.pending_approvals >= 0 && (
+                  {a.description && <p className="text-xs text-slate-500 mt-2 line-clamp-2">{a.description}</p>}
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-[11px] text-slate-500">
+                    <span className="inline-flex items-center gap-1"><Clock className="h-3 w-3" />{a.schedule_human || '—'}</span>
+                    <span>{a.actions_24h} {t('agents.cockpit.actions_24h')}</span>
+                  </div>
+                  <div className="mt-3 pt-3 border-t border-slate-100 flex flex-wrap items-center gap-2">
+                    <select value={a.mode || 'supervised'} disabled={busyId === a.agent_id}
+                      onChange={(e) => updateAgent(a.agent_id, { p_mode: e.target.value })}
+                      className="text-xs rounded-lg border border-slate-200 px-2 py-1.5 bg-white focus:border-violet-400 outline-none">
+                      {MODES.map((m) => <option key={m} value={m}>{modeLabel(m)}</option>)}
+                    </select>
+                    <label className="flex items-center gap-1.5 text-xs text-slate-600 cursor-pointer">
+                      <input type="checkbox" checked={a.enabled ?? true}
+                        onChange={(e) => updateAgent(a.agent_id, { p_enabled: e.target.checked })}
+                        className="rounded" />
+                      {(a.enabled ?? true) ? t('agents.cockpit.enabled') : t('agents.cockpit.disabled')}
+                    </label>
+                    <div className="ml-auto flex items-center gap-2">
+                      <button onClick={() => toggleExpand(a.agent_id)}
+                        className="inline-flex items-center gap-1 text-xs font-medium text-slate-600 hover:text-violet-700">
+                        {isOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+                        {t('agents.cockpit.tasks')}
+                      </button>
                       <button onClick={() => runNow(a.name)} disabled={busyId === 'run-' + a.name}
                         className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-lg bg-violet-50 text-violet-700 hover:bg-violet-100">
                         {busyId === 'run-' + a.name ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Play className="h-3.5 w-3.5" />}
                         {t('agents.cockpit.run_now')}
                       </button>
-                    )}
+                    </div>
                   </div>
                 </div>
                 {isOpen && (
@@ -424,7 +422,7 @@ export function AgentesCockpit() {
             const isOpen = openProposal === p.id;
             const ActIcon = ACTION_ICON[p.action] || ClipboardList;
             return (
-              <div key={p.id} className="bg-white border border-slate-200 rounded-xl p-4">
+              <div key={p.id} className="bg-white border border-slate-200 rounded-xl p-3.5 sm:p-4">
                 <div className="flex items-start gap-3">
                   <div className="w-9 h-9 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center flex-shrink-0">
                     <ActIcon className="h-4 w-4" />
@@ -432,28 +430,27 @@ export function AgentesCockpit() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-sm font-semibold text-slate-900">{actionLabel(p.action)}</span>
-                      <span className="text-xs text-slate-400">·</span>
                       <span className="text-xs font-medium text-violet-700 capitalize">{p.agent_name}</span>
                       <span className="text-xs text-slate-400">{relTime(p.created_at)}</span>
                     </div>
-                    <p className="text-sm text-slate-600 mt-0.5 truncate">{proposalSummary(p)}</p>
+                    <p className="text-sm text-slate-600 mt-0.5">{proposalSummary(p)}</p>
                     <button onClick={() => setOpenProposal(isOpen ? null : p.id)}
                       className="inline-flex items-center gap-1 mt-1.5 text-xs font-medium text-slate-500 hover:text-violet-700">
                       {isOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
                       {isOpen ? tx('agents.review.hide', 'Ocultar') : tx('agents.review.show', 'Ver conteúdo')}
                     </button>
                   </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <button onClick={() => decide(p, true)} disabled={busyId === p.id}
-                      className="inline-flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50">
-                      {busyId === p.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
-                      {t('agents.cockpit.approve')}
-                    </button>
-                    <button onClick={() => decide(p, false)} disabled={busyId === p.id}
-                      className="inline-flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-rose-600 hover:bg-rose-50 disabled:opacity-50">
-                      <XCircle className="h-3.5 w-3.5" /> {t('agents.cockpit.reject')}
-                    </button>
-                  </div>
+                </div>
+                <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+                  <button onClick={() => decide(p, false)} disabled={busyId === p.id}
+                    className="inline-flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-rose-600 hover:bg-rose-50 disabled:opacity-50">
+                    <XCircle className="h-3.5 w-3.5" /> {t('agents.cockpit.reject')}
+                  </button>
+                  <button onClick={() => decide(p, true)} disabled={busyId === p.id}
+                    className="inline-flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50">
+                    {busyId === p.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
+                    {t('agents.cockpit.approve')}
+                  </button>
                 </div>
 
                 {isOpen && (
