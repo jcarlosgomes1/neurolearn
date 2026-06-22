@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import { upsertServiceAction } from '../corporate-actions';
 import { Plus, Edit3, Loader2, X, Briefcase, CheckCircle, AlertCircle } from 'lucide-react';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 
 const KINDS = [
   { id: 'custom_course', label: 'Curso à medida' },
@@ -54,21 +55,12 @@ export function ServicosClient({ locale, services: initialServices }: { locale: 
   
   return (
     <div className="px-4 sm:px-6 py-6 max-w-6xl mx-auto">
-      <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
-        <div>
-          <h1 className="font-display text-2xl font-bold text-slate-900 flex items-center gap-2">
-            <Briefcase className="h-6 w-6 text-brand-600" /> Serviços Corporate
-          </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Formações custom para empresas — typically 5–50x o valor de cursos pré-gravados.
-            Plataforma fica com {25}% de fee, tu ficas com {75}% do valor cotado.
-          </p>
-        </div>
+      <AppPageHeader title="Serviços Corporate" description="Formações custom para empresas — typically 5–50x o valor de cursos pré-gravados. Plataforma fica com 25% de fee, tu ficas com 75% do valor cotado." actions={
         <button onClick={openNew}
           className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-medium text-sm shadow-sm">
           <Plus className="h-4 w-4" /> Novo serviço
         </button>
-      </div>
+      } />
       
       {services.length === 0 ? (
         <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">

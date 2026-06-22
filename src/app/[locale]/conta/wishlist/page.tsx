@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { Link } from '@/i18n/routing';
 import { getTranslations } from 'next-intl/server';
 import { Heart, BookOpen } from 'lucide-react';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 
 export const metadata = { title: 'Wishlist · NeuroLearn' };
 export const dynamic = 'force-dynamic';
@@ -18,12 +19,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   return (
     <>
       <main className="bg-slate-50 min-h-screen">
-        <section className="bg-white border-b border-slate-200">
-          <div className="">
-            <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2"><Heart className="h-6 w-6 text-rose-500 fill-rose-500" /> {t('wishlist.title')}</h1>
-            <p className="text-sm text-slate-500 mt-1">{t('wishlist.count', { count: courses.length })}</p>
-          </div>
-        </section>
+        <AppPageHeader title={t('wishlist.title')} description={t('wishlist.count', { count: courses.length })} />
         <div className="">
           {courses.length === 0 ? (
             <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">

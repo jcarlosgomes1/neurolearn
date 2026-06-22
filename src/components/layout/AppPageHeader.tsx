@@ -12,7 +12,7 @@ export interface AppPageHeaderProps {
   eyebrowIcon?: LucideIcon;
   eyebrowAccent?: string;
   title: string;
-  description?: string;
+  description?: ReactNode;
   emoji?: string;
   icon?: LucideIcon;
   iconGradient?: string;

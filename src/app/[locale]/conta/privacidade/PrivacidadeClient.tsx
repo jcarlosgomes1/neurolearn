@@ -4,7 +4,8 @@ import { useState, useTransition } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { assertNotPeekClient } from '@/lib/peek-client';
 import { useTranslations } from 'next-intl';
-import { Shield, Download, Trash2, AlertCircle, CheckCircle, Loader2, Clock, RotateCcw } from 'lucide-react';
+import { Download, Trash2, AlertCircle, CheckCircle, Loader2, Clock, RotateCcw } from 'lucide-react';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 
 const STATUS_COLOR: Record<string, string> = {
   pending: 'bg-amber-100 text-amber-800', processing: 'bg-blue-100 text-blue-800',
@@ -71,12 +72,9 @@ export function PrivacidadeClient({ email, requests: initial }: { email: string;
 
   return (
     <main className="bg-slate-50 min-h-screen">
-      <section className="bg-white border-b border-slate-200">
-        <div className="max-w-3xl mx-auto px-4 py-6">
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2"><Shield className="h-6 w-6 text-emerald-600" /> {t('privacy.title')}</h1>
-          <p className="text-sm text-slate-500 mt-1">{t('privacy.subtitle_pre')}<strong>{email}</strong></p>
-        </div>
-      </section>
+      <div className="max-w-3xl mx-auto px-4 pt-6">
+        <AppPageHeader title={t('privacy.title')} description={<>{t('privacy.subtitle_pre')}<strong>{email}</strong></>} />
+      </div>
 
       <div className="max-w-3xl mx-auto px-4 py-6 space-y-4">
         {error && <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-sm text-rose-700 flex items-center gap-2"><AlertCircle className="h-4 w-4" /> {error}</div>}
