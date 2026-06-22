@@ -7,6 +7,7 @@ import { assertNotPeekClient } from '@/lib/peek-client';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Sparkles, Check, X, Loader2, ChevronDown, Route, Bot, CornerDownRight } from 'lucide-react';
+import { ProposalDossier } from '@/components/admin/ProposalDossier';
 
 type Detail = {
   kind?: string; reason?: string | null;
@@ -93,8 +94,8 @@ function ProposalDetail({ d, t }: { d: Detail; t: ReturnType<typeof useTranslati
 
 /**
  * Primitivo AgentSuggestionsRail — "agente-primeiro".
- * Topo: AGENTE primeiro, depois a area. O detalhe abre em linha (chevron no topo),
- * com conteudo legivel por tipo; em apoio mostra a RESPOSTA proposta (sem JSON).
+ * Topo: AGENTE primeiro, depois a area. Detalhe abre em linha (chevron no topo).
+ * Conceitos de curso incluem o estudo de mercado (ProposalDossier) para decisao informada.
  */
 export function AgentSuggestionsRail({ surface = 'all', limit = 8, showWhenEmpty = false, onAfterDecide }: {
   surface?: string;
@@ -174,8 +175,9 @@ export function AgentSuggestionsRail({ surface = 'all', limit = 8, showWhenEmpty
 
                 <div className={`grid transition-all duration-300 ease-out ${isOpen ? 'grid-rows-[1fr] opacity-100 mt-2.5' : 'grid-rows-[0fr] opacity-0'}`}>
                   <div className="overflow-hidden">
-                    <div className="rounded-lg bg-slate-50/80 border border-slate-100 p-3">
+                    <div className="rounded-lg bg-slate-50/80 border border-slate-100 p-3 space-y-3">
                       <ProposalDetail d={s.detail || null} t={t} />
+                      {isOpen && s.surface === 'courses' && <ProposalDossier approvalId={s.id} />}
                     </div>
                   </div>
                 </div>
