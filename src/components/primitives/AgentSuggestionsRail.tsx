@@ -6,13 +6,13 @@ import { createClient } from '@/lib/supabase/client';
 import { assertNotPeekClient } from '@/lib/peek-client';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { Sparkles, Check, X, Loader2, ChevronDown, Route, Bot } from 'lucide-react';
+import { Sparkles, Check, X, Loader2, ChevronDown, Route, Bot, CornerDownRight } from 'lucide-react';
 
 type Detail = {
   kind?: string; reason?: string | null;
   description?: string | null; path_title?: string | null; position?: string | null; level?: string | null; topics?: string[] | null;
   title?: string | null; slug?: string | null; count?: number | null;
-  subject?: string | null; to_email?: string | null; topic?: string | null;
+  subject?: string | null; to_email?: string | null; reply?: string | null; topic?: string | null;
   job_title?: string | null; headline?: string | null; score?: string | null; matched_skills?: string[] | null; missing_skills?: string[] | null;
 } | null;
 type Suggestion = { id: string; action: string; surface: string; agent_id: string | null; agent_name: string; title: string; summary: string | null; created_at: string; detail?: Detail };
@@ -62,8 +62,18 @@ function ProposalDetail({ d, t }: { d: Detail; t: ReturnType<typeof useTranslati
       </>)}
       {d.kind === 'social' && <Row label={t('rail.d.posts')}>{d.count ?? 0}</Row>}
       {d.kind === 'support' && (<>
-        {d.subject && <Row label={t('rail.d.subject')}>{d.subject}</Row>}
-        {d.to_email && <Row label={t('rail.d.to')}>{d.to_email}</Row>}
+        {d.reply
+          ? (
+            <div className="rounded-lg bg-white border border-slate-200 p-2.5 max-h-52 overflow-y-auto">
+              <div className="flex items-center gap-1 text-[10px] font-medium text-slate-400 mb-1"><CornerDownRight className="w-3 h-3" />{t('rail.d.reply')}</div>
+              <p className="text-xs text-slate-700 whitespace-pre-wrap leading-relaxed">{d.reply}</p>
+            </div>
+          )
+          : <p className="text-xs text-slate-400 italic">{t('rail.d.no_reply')}</p>}
+        <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-[11px] text-slate-400">
+          {d.subject && <span>{t('rail.d.subject')}: <span className="text-slate-600">{d.subject}</span></span>}
+          {d.to_email && <span>{t('rail.d.to')}: <span className="text-slate-600">{d.to_email}</span></span>}
+        </div>
       </>)}
       {d.kind === 'triage' && (<>
         {d.subject && <Row label={t('rail.d.subject')}>{d.subject}</Row>}
@@ -76,15 +86,15 @@ function ProposalDetail({ d, t }: { d: Detail; t: ReturnType<typeof useTranslati
         {matched.length > 0 && <Row label={t('rail.d.skills_match')}><Pills items={matched} tone="emerald" /></Row>}
         {missing.length > 0 && <Row label={t('rail.d.skills_gap')}><Pills items={missing} tone="rose" /></Row>}
       </>)}
-      {d.reason && <p className="text-[11px] text-slate-400 italic pt-1.5 border-t border-slate-100">{t('rail.d.why')}: {d.reason}</p>}
+      {d.reason && d.kind !== 'support' && <p className="text-[11px] text-slate-400 italic pt-1.5 border-t border-slate-100">{t('rail.d.why')}: {d.reason}</p>}
     </div>
   );
 }
 
 /**
  * Primitivo AgentSuggestionsRail — "agente-primeiro".
- * O chevron de detalhe vive no TOPO do cartao (longe das acoes, sem risco de toque errado).
- * O detalhe abre em linha com animacao; conteudo legivel por tipo (sem JSON).
+ * Topo: AGENTE primeiro, depois a area. O detalhe abre em linha (chevron no topo),
+ * com conteudo legivel por tipo; em apoio mostra a RESPOSTA proposta (sem JSON).
  */
 export function AgentSuggestionsRail({ surface = 'all', limit = 8, showWhenEmpty = false, onAfterDecide }: {
   surface?: string;
@@ -149,10 +159,10 @@ export function AgentSuggestionsRail({ surface = 'all', limit = 8, showWhenEmpty
               <li key={s.id} className="rounded-xl border border-slate-200/70 bg-white/90 p-3.5 shadow-sm">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0 flex flex-wrap items-center gap-1.5">
-                    <span className="text-[10px] uppercase tracking-wide font-semibold text-violet-600 bg-violet-50 rounded px-1.5 py-0.5">{surfaceLabel(s.surface)}</span>
-                    <span className="inline-flex items-center gap-1 text-[10px] font-medium text-slate-500 bg-slate-50 border border-slate-200 rounded px-1.5 py-0.5">
-                      <Bot className="w-3 h-3 text-slate-400" /><span className="capitalize truncate max-w-[120px]">{s.agent_name}</span>
+                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-violet-700 bg-violet-50 border border-violet-100 rounded px-1.5 py-0.5">
+                      <Bot className="w-3 h-3 shrink-0" /><span className="capitalize truncate max-w-[140px]">{s.agent_name}</span>
                     </span>
+                    <span className="text-[10px] uppercase tracking-wide font-medium text-slate-500 bg-slate-100 rounded px-1.5 py-0.5">{surfaceLabel(s.surface)}</span>
                   </div>
                   <button onClick={() => setOpenId(isOpen ? null : s.id)} aria-expanded={isOpen} aria-label={t('rail.details')} className="shrink-0 -mt-1 -mr-1 inline-flex items-center gap-1 text-[11px] font-medium text-violet-700 hover:text-violet-900 px-1.5 py-1 rounded-lg hover:bg-violet-50">
                     <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
