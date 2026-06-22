@@ -3,7 +3,8 @@
 import { useEffect, useState, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useTranslations } from 'next-intl';
-import { Award, Loader2, CheckCircle2, Clock, Sparkles } from 'lucide-react';
+import { Loader2, CheckCircle2, Clock, Sparkles } from 'lucide-react';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 
 type Skill = {
   skill_id: string; code: string; label_key: string; score: number; confidence: number;
@@ -37,15 +38,7 @@ export function MySkillsPanel() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center">
-          <Award className="h-5 w-5 text-white" />
-        </div>
-        <div>
-          <h1 className="text-xl font-bold text-slate-900">{t('skills.page_title')}</h1>
-          <p className="text-sm text-slate-500">{t('skills.subtitle')}</p>
-        </div>
-      </div>
+      <AppPageHeader title={t('skills.page_title')} description={t('skills.subtitle')} />
 
       {skills.length === 0 ? (
         <div className="text-center py-16 text-slate-400 flex flex-col items-center gap-3">
