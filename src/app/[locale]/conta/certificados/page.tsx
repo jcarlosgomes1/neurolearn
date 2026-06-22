@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { Link } from '@/i18n/routing';
 import { getTranslations } from 'next-intl/server';
 import { Award, ShieldCheck, ExternalLink, GraduationCap } from 'lucide-react';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 
 export const dynamic = 'force-dynamic';
 export async function generateMetadata() { return { title: 'Certificados · NeuroLearn' }; }
@@ -26,13 +27,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   return (
     <main className="bg-slate-50 min-h-screen">
       <div className="">
-        <header className="mb-8">
-          <div className="flex items-center gap-2 text-fuchsia-600 text-xs font-semibold uppercase tracking-wider mb-1">
-            <Award className="h-3.5 w-3.5" /> {t('account.home.title')}
-          </div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{t('account.home.certs_title')}</h1>
-          <p className="text-sm text-slate-600 mt-1.5">{t('certs.subtitle')}</p>
-        </header>
+        <AppPageHeader eyebrow={t('account.home.title')} title={t('account.home.certs_title')} description={t('certs.subtitle')} />
 
         {certs.length === 0 ? (
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-10 sm:p-14 text-center">

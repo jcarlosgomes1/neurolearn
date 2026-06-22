@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { Link } from '@/i18n/routing';
 import { getTranslations } from 'next-intl/server';
 import { User, Shield, Bell, Award, FileText, CreditCard, LogOut, Globe } from 'lucide-react';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { GamificationPanel } from './GamificationPanel';
 import { ReputationPanel } from './ReputationPanel';
 
@@ -20,10 +21,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2"><User className="h-6 w-6 text-brand-600" /> {t('account.home.title')}</h1>
-        <p className="text-sm text-slate-500 mt-1">{profile?.name || user.email}</p>
-      </div>
+      <AppPageHeader title={t('account.home.title')} description={profile?.name || user.email} />
 
       <GamificationPanel />
 

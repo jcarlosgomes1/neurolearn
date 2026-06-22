@@ -4,7 +4,8 @@ import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
-import { Shield, Key, Smartphone, Loader2, Eye, EyeOff, CheckCircle2, Trash2, AlertTriangle } from 'lucide-react';
+import { Key, Smartphone, Loader2, Eye, EyeOff, CheckCircle2, Trash2, AlertTriangle } from 'lucide-react';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { changePasswordAction } from '../actions';
 
 interface TotpFactor {
@@ -18,12 +19,7 @@ export function SecurityClient({ userEmail, totpFactors }: { userEmail: string; 
   const t = useTranslations();
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-          <Shield className="h-6 w-6 text-brand-600" /> {t('security.title')}
-        </h1>
-        <p className="text-sm text-slate-500 mt-1">{t('security.subtitle')}</p>
-      </div>
+      <AppPageHeader title={t('security.title')} description={t('security.subtitle')} />
 
       <PasswordChangeCard />
       <TwoFactorCard initial={totpFactors} />

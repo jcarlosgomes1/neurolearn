@@ -7,6 +7,7 @@ import { assertNotPeekClient } from '@/lib/peek-client';
 import { toast } from 'sonner';
 import { COUNTRIES, countryName } from '@/lib/utils/countries';
 import { User, Settings, CreditCard, Save } from 'lucide-react';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 
 interface AccountData {
   ok: boolean;
@@ -84,10 +85,7 @@ export function AccountClient({ initialData, initialLocale }: Props) {
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">{t('account.title')}</h1>
-        <p className="text-sm text-slate-500 mt-1">{t('account.subtitle')}</p>
-      </div>
+      <AppPageHeader title={t('account.title')} description={t('account.subtitle')} />
 
       {/* Identificação */}
       <section className="bg-white rounded-xl border border-slate-200 p-5 sm:p-6">
