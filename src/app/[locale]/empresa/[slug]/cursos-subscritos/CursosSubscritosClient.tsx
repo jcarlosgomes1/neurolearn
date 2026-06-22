@@ -28,7 +28,7 @@ export function CursosSubscritosClient({ orgId, orgSlug, memberRole, members, lo
   return (
     <main className="bg-slate-50 min-h-screen">
       <section className="bg-white border-b border-slate-200">
-        <div className="max-w-5xl mx-auto px-4 py-6 flex items-start justify-between gap-4 flex-wrap">
+        <div className="max-w-6xl mx-auto px-4 py-6 flex items-start justify-between gap-4 flex-wrap">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <BookOpen className="h-6 w-6 text-brand-600" />
@@ -43,7 +43,7 @@ export function CursosSubscritosClient({ orgId, orgSlug, memberRole, members, lo
         </div>
       </section>
 
-      <div className="max-w-5xl mx-auto px-4 py-6">
+      <div className="max-w-6xl mx-auto px-4 py-6">
         {subs.length === 0 ? (
           <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
             <BookOpen className="h-12 w-12 text-slate-300 mx-auto mb-3" />

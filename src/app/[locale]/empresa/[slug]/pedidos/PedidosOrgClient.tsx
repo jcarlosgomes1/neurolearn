@@ -52,7 +52,7 @@ export function PedidosOrgClient({ orgId, orgName, orgSlug, memberRole, locale, 
   return (
     <main className="bg-slate-50 min-h-screen">
       <section className="bg-white border-b border-slate-200">
-        <div className="max-w-5xl mx-auto px-4 py-6 flex items-start justify-between gap-4 flex-wrap">
+        <div className="max-w-6xl mx-auto px-4 py-6 flex items-start justify-between gap-4 flex-wrap">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <Inbox className="h-6 w-6 text-brand-600" />
@@ -67,7 +67,7 @@ export function PedidosOrgClient({ orgId, orgName, orgSlug, memberRole, locale, 
         </div>
       </section>
 
-      <div className="max-w-5xl mx-auto px-4 py-6">
+      <div className="max-w-6xl mx-auto px-4 py-6">
         <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
           {FILTERS.map(([k, label]) => (
             <button key={k} onClick={() => { setFilter(k); }}

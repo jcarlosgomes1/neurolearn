@@ -37,7 +37,7 @@ export function OrgEventsClient({ slug }: { slug: string }) {
   const kindLabel = (k: string) => { try { return t(`events.agent.kind_${k}` as string); } catch { return k; } };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
       <div className="flex items-center gap-3 mb-1">
         <span className="inline-flex items-center justify-center h-10 w-10 rounded-xl bg-[var(--org-primary,#6366f1)]/10 text-[var(--org-primary,#6366f1)]"><CalendarDays className="h-5 w-5" /></span>
         <h1 className="text-2xl font-display font-semibold text-slate-900">{t('events.org.title')}</h1>

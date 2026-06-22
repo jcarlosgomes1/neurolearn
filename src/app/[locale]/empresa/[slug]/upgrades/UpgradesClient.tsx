@@ -22,7 +22,7 @@ export function UpgradesClient({ orgId, orgName, orgSlug, memberRole, features, 
   return (
     <main className="bg-slate-50 min-h-screen">
       <section className="bg-gradient-to-br from-violet-600 to-brand-700 text-white">
-        <div className="max-w-5xl mx-auto px-4 py-12">
+        <div className="max-w-6xl mx-auto px-4 py-12">
           <div className="flex items-center gap-2 mb-2">
             <Sparkles className="h-6 w-6" />
             <span className="text-sm font-semibold uppercase tracking-wider">{t('org.upg.kicker')}</span>
@@ -32,7 +32,7 @@ export function UpgradesClient({ orgId, orgName, orgSlug, memberRole, features, 
         </div>
       </section>
 
-      <div className="max-w-5xl mx-auto px-4 py-8">
+      <div className="max-w-6xl mx-auto px-4 py-8">
         {active.length > 0 && (
           <section className="mb-8">
             <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-3">{t('org.upg.active_h')}</h2>

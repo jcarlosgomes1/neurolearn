@@ -57,7 +57,7 @@ export function PipelineClient({ orgId, orgSlug, memberRole, locale, placements:
   return (
     <main className="bg-slate-50 min-h-screen">
       <section className="bg-white border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 py-6 flex items-start justify-between gap-4 flex-wrap">
+        <div className="max-w-6xl mx-auto px-4 py-6 flex items-start justify-between gap-4 flex-wrap">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <Briefcase className="h-6 w-6 text-emerald-600" />
@@ -72,7 +72,7 @@ export function PipelineClient({ orgId, orgSlug, memberRole, locale, placements:
         </div>
       </section>
 
-      <div className="max-w-7xl mx-auto px-4 py-6 overflow-x-auto">
+      <div className="max-w-6xl mx-auto px-4 py-6 overflow-x-auto">
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 min-w-[900px] lg:min-w-0">
           {STAGES.map((stage) => (
             <div key={stage.id} className="bg-slate-100 rounded-xl p-3 min-h-[400px]">
