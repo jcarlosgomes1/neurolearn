@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { ReactNode } from 'react';
+import { RouteGlyphProvider } from '@/components/layout/RouteGlyphProvider';
 
 export const dynamic = 'force-dynamic';
 
@@ -74,7 +75,7 @@ export default async function OrgLayout({
         </div>
       )}
       
-      {children}
+      <RouteGlyphProvider>{children}</RouteGlyphProvider>
       
       {b?.footer_message && (
         <footer className="border-t border-slate-100 bg-white py-4 mt-8">
