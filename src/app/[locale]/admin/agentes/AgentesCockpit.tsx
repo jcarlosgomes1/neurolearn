@@ -175,6 +175,8 @@ export function AgentesCockpit() {
       case 'match': return `${pv.headline || '—'} → ${pv.job_title || '—'}`;
       case 'support_reply': return `${pv.subject || '—'}${pv.from_name ? ' · ' + pv.from_name : (pv.from_email ? ' · ' + pv.from_email : '')}`;
       case 'course_concept': return pv.title || actionLabel(p.action);
+      case 'nudge': return `${pv.student || '—'}${pv.course_title ? ' · «' + pv.course_title + '»' : ''}${pv.progress_pct != null ? ' · ' + pv.progress_pct + '%' : ''}`;
+      case 'effect': return (p.reason && p.reason !== 'event_wake') ? p.reason : actionLabel(p.action);
       default: return actionLabel(p.action);
     }
   }
@@ -182,6 +184,31 @@ export function AgentesCockpit() {
   function ProposalPreview({ p }: { p: Proposal }) {
     const pv: any = p.preview;
     if (!pv) return <p className="text-xs text-slate-400">{tx('agents.review.no_detail', 'Sem detalhe disponível para esta proposta.')}</p>;
+
+    if (pv.type === 'nudge') {
+      return (
+        <div className="space-y-2">
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-violet-600">{tx('agents.review.nudge.what', 'O que acontece ao aprovar')}</div>
+          <div className="rounded-lg border border-violet-200 bg-violet-50/60 p-2.5">
+            <p className="text-sm font-semibold text-slate-800">{pv.msg_title}</p>
+            {pv.msg_body && <p className="text-xs text-slate-600 mt-0.5 whitespace-pre-wrap">{pv.msg_body}</p>}
+          </div>
+          <p className="text-xs text-slate-600">{tx('agents.review.nudge.send', 'Enviar esta notificação ao aluno')}: <span className="font-medium text-slate-800">{pv.student}</span>{pv.course_title ? ` · «${pv.course_title}»` : ''}{pv.progress_pct != null ? ` · ${pv.progress_pct}%` : ''}</p>
+          <p className="text-[11px] text-slate-400">{tx('agents.review.nudge.channel', 'Notificação na aplicação · reversível, sem custo')}</p>
+        </div>
+      );
+    }
+
+    if (pv.type === 'effect') {
+      return (
+        <div className="space-y-2">
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">{tx('agents.review.effect.what', 'O que acontece ao aprovar')}</div>
+          {p.reason && <p className="text-sm text-slate-700">{p.reason}</p>}
+          <p className="text-xs text-slate-500">{actionLabel(p.action)}</p>
+          <pre className="text-[11px] bg-slate-50 border border-slate-100 rounded p-2 overflow-auto max-h-40">{JSON.stringify(pv.params ?? p.params, null, 2)}</pre>
+        </div>
+      );
+    }
 
     if (pv.type === 'social') {
       return (
