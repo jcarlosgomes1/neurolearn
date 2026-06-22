@@ -6,7 +6,8 @@ import { createClient } from '@/lib/supabase/client';
 import { assertNotPeekClient } from '@/lib/peek-client';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { User, Save, Loader2 } from 'lucide-react';
+import { Save, Loader2 } from 'lucide-react';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { AvatarUploader } from '@/components/account/AvatarUploader';
 
 interface Initial {
@@ -73,13 +74,7 @@ export function ProfileForm({ email, handle, initial }: { email: string; handle:
 
   return (
     <div>
-      <header className="mb-8">
-        <div className="flex items-center gap-2 text-violet-600 text-xs font-semibold uppercase tracking-wider mb-1">
-          <User className="h-3.5 w-3.5" /> {t('account.home.title')}
-        </div>
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{t('account.home.profile_title')}</h1>
-        <p className="text-sm text-slate-600 mt-1.5">{t('profile.subtitle')}</p>
-      </header>
+      <AppPageHeader eyebrow={t('account.home.title')} title={t('account.home.profile_title')} description={t('profile.subtitle')} />
 
       <AvatarUploader />
 

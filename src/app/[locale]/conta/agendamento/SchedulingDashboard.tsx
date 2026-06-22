@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import { assertNotPeekClient } from '@/lib/peek-client';
 import { toast } from 'sonner';
 import { Calendar, Link2, Clock, Plus, Trash2, Copy, ExternalLink, Save, Check } from 'lucide-react';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 
 interface Link {
   id: string; slug: string; title: string; description: string | null;
@@ -170,10 +171,7 @@ export function SchedulingDashboard({ initial }: { initial: Dashboard | null }) 
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">{t('sched.dashboard.title')}</h1>
-        <p className="text-sm text-slate-500 mt-1">{t('sched.dashboard.subtitle')}</p>
-      </div>
+      <AppPageHeader title={t('sched.dashboard.title')} description={t('sched.dashboard.subtitle')} />
 
       {publicUrl && (
         <div className="bg-gradient-to-br from-brand-50 to-violet-50 border border-brand-100 rounded-xl p-4 flex items-center justify-between gap-3 flex-wrap">

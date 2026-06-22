@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import { toast } from 'sonner';
 import { Route, Loader2, Plus, Check, Clock, X } from 'lucide-react';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 
 function safeT(t: any, k: string, fb: string): string {
   try { const v = t(k); if (v && typeof v === 'string' && v !== k) return v; } catch {}
@@ -72,11 +73,7 @@ export function PathRequestClient() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <div className="flex items-center gap-2 text-brand-600 text-xs font-semibold uppercase tracking-wider mb-1"><Route className="h-3.5 w-3.5" />{safeT(t, 'path_req.title', 'Propor percurso')}</div>
-        <h1 className="text-2xl font-bold text-slate-900">{safeT(t, 'path_req.title', 'Propor percurso')}</h1>
-        <p className="text-sm text-slate-600 mt-1">{safeT(t, 'path_req.subtitle', 'Sugere um novo percurso com os teus cursos. A equipa revê antes de publicar.')}</p>
-      </div>
+      <AppPageHeader eyebrow={safeT(t, 'path_req.title', 'Propor percurso')} title={safeT(t, 'path_req.title', 'Propor percurso')} description={safeT(t, 'path_req.subtitle', 'Sugere um novo percurso com os teus cursos. A equipa revê antes de publicar.')} />
 
       <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 space-y-3">
         <div>
