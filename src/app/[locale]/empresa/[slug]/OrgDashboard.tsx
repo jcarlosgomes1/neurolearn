@@ -110,7 +110,7 @@ export function OrgDashboard({ data }: { data: unknown }) {
   const topSkills = (academy?.skillmap || []).slice(0, 6);
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-6">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-6">
       {/* Hero: identidade da Academia */}
       <div className="relative overflow-hidden rounded-3xl p-6 sm:p-8 text-white"
         style={{ background: `linear-gradient(135deg, ${brand}, #8b5cf6)` }}>
