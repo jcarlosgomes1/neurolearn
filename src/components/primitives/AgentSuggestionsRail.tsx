@@ -1,23 +1,90 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import type { ReactNode } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { Link } from '@/i18n/routing';
 import { assertNotPeekClient } from '@/lib/peek-client';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { Sparkles, Check, X, Loader2, Info, Route } from 'lucide-react';
+import { Sparkles, Check, X, Loader2, ChevronDown, Route } from 'lucide-react';
 
-type Ctx = { path_title?: string | null; level?: string | null; position?: string | null; topics?: string[] | null } | null;
-type Suggestion = { id: string; action: string; surface: string; agent_id: string | null; agent_name: string; title: string; summary: string | null; created_at: string; context?: Ctx };
+type Detail = {
+  kind?: string; reason?: string | null;
+  description?: string | null; path_title?: string | null; position?: string | null; level?: string | null; topics?: string[] | null;
+  title?: string | null; slug?: string | null; count?: number | null;
+  subject?: string | null; to_email?: string | null; topic?: string | null;
+  job_title?: string | null; headline?: string | null; score?: string | null; matched_skills?: string[] | null; missing_skills?: string[] | null;
+} | null;
+type Suggestion = { id: string; action: string; surface: string; agent_id: string | null; agent_name: string; title: string; summary: string | null; created_at: string; detail?: Detail };
 
 const KNOWN = ['blog', 'social', 'courses', 'talent', 'support'];
 
+function Pills({ items, tone = 'slate' }: { items: string[]; tone?: 'slate' | 'emerald' | 'rose' }) {
+  const cls = tone === 'emerald' ? 'text-emerald-700 bg-emerald-50 border-emerald-100'
+    : tone === 'rose' ? 'text-rose-700 bg-rose-50 border-rose-100'
+    : 'text-slate-600 bg-white border-slate-200';
+  return (
+    <div className="flex flex-wrap gap-1">
+      {items.map((it) => (
+        <span key={it} className={`max-w-[230px] truncate text-[10px] font-medium border rounded-md px-2 py-1 whitespace-nowrap ${cls}`}>{it}</span>
+      ))}
+    </div>
+  );
+}
+
+function Row({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="flex gap-2 text-xs">
+      <span className="text-slate-400 shrink-0 w-20">{label}</span>
+      <span className="text-slate-700 min-w-0 flex-1">{children}</span>
+    </div>
+  );
+}
+
+function ProposalDetail({ d, t }: { d: Detail; t: ReturnType<typeof useTranslations> }) {
+  if (!d) return null;
+  const topics = Array.isArray(d.topics) ? d.topics : [];
+  const matched = Array.isArray(d.matched_skills) ? d.matched_skills : [];
+  const missing = Array.isArray(d.missing_skills) ? d.missing_skills : [];
+  return (
+    <div className="space-y-2.5">
+      {d.kind === 'course' && (
+        <>
+          {d.description && <p className="text-xs text-slate-600 leading-relaxed">{d.description}</p>}
+          {d.path_title && <Row label={t('rail.d.path')}><span className="inline-flex items-center gap-1"><Route className="w-3 h-3 text-indigo-500 shrink-0" />{d.path_title}{d.position ? ` · #${d.position}` : ''}</span></Row>}
+          {d.level && <Row label={t('rail.d.level')}>{d.level}</Row>}
+          {topics.length > 0 && <Row label={t('rail.d.topics')}><Pills items={topics} /></Row>}
+        </>
+      )}
+      {d.kind === 'blog' && (<>
+        {d.title && <Row label={t('rail.d.subject')}>{d.title}</Row>}
+        {d.slug && <Row label={t('rail.d.slug')}><span className="font-mono text-[11px] text-slate-500">/{d.slug}</span></Row>}
+      </>)}
+      {d.kind === 'social' && <Row label={t('rail.d.posts')}>{d.count ?? 0}</Row>}
+      {d.kind === 'support' && (<>
+        {d.subject && <Row label={t('rail.d.subject')}>{d.subject}</Row>}
+        {d.to_email && <Row label={t('rail.d.to')}>{d.to_email}</Row>}
+      </>)}
+      {d.kind === 'triage' && (<>
+        {d.subject && <Row label={t('rail.d.subject')}>{d.subject}</Row>}
+        {d.topic && <Row label={t('rail.d.topic')}>{d.topic}</Row>}
+      </>)}
+      {d.kind === 'match' && (<>
+        {d.job_title && <Row label={t('rail.d.job')}>{d.job_title}</Row>}
+        {d.headline && <Row label={t('rail.d.subject')}>{d.headline}</Row>}
+        {d.score && <Row label={t('rail.d.score')}>{d.score}</Row>}
+        {matched.length > 0 && <Row label={t('rail.d.skills_match')}><Pills items={matched} tone="emerald" /></Row>}
+        {missing.length > 0 && <Row label={t('rail.d.skills_gap')}><Pills items={missing} tone="rose" /></Row>}
+      </>)}
+      {d.reason && <p className="text-[11px] text-slate-400 italic pt-1.5 border-t border-slate-100">{t('rail.d.why')}: {d.reason}</p>}
+    </div>
+  );
+}
+
 /**
  * Primitivo AgentSuggestionsRail — "agente-primeiro".
- * Mostra propostas pendentes do agente (nl_agent_suggestions_for) com contexto de decisao
- * (percurso/nivel/posicao/topicos para conceitos de curso), Aprovar/Rejeitar e link para o dossier.
- * Cartao em pilha (titulo a largura toda, acoes no rodape) para legibilidade impecavel em mobile.
+ * Propostas pendentes do agente (nl_agent_suggestions_for). O detalhe abre EM LINHA,
+ * com animacao, dentro do proprio cartao (sem abrir paginas, sem JSON cru).
  */
 export function AgentSuggestionsRail({ surface = 'all', limit = 8, showWhenEmpty = false, onAfterDecide }: {
   surface?: string;
@@ -29,6 +96,7 @@ export function AgentSuggestionsRail({ surface = 'all', limit = 8, showWhenEmpty
   const [items, setItems] = useState<Suggestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
+  const [openId, setOpenId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -76,8 +144,7 @@ export function AgentSuggestionsRail({ surface = 'all', limit = 8, showWhenEmpty
       ) : (
         <ul className="space-y-2.5">
           {items.map((s) => {
-            const ctx = s.context || null;
-            const topics = Array.isArray(ctx?.topics) ? ctx!.topics! : [];
+            const isOpen = openId === s.id;
             return (
               <li key={s.id} className="rounded-xl border border-slate-200/70 bg-white/90 p-3.5 shadow-sm">
                 <div className="flex items-center gap-2">
@@ -85,25 +152,20 @@ export function AgentSuggestionsRail({ surface = 'all', limit = 8, showWhenEmpty
                   <span className="text-xs text-slate-400 truncate">{s.agent_name}</span>
                 </div>
                 <p className="text-[15px] font-semibold text-slate-900 leading-snug mt-1.5">{s.title}</p>
-                {s.summary && <p className="text-xs text-slate-500 line-clamp-2 mt-1">{s.summary}</p>}
-                {ctx && (ctx.path_title || ctx.level || topics.length > 0) && (
-                  <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                    {ctx.path_title && (
-                      <span className="inline-flex items-center gap-1 max-w-[230px] text-[10px] font-medium text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-md px-2 py-1">
-                        <Route className="w-3 h-3 shrink-0" /><span className="truncate">{ctx.path_title}{ctx.position ? ` · #${ctx.position}` : ''}</span>
-                      </span>
-                    )}
-                    {ctx.level && <span className="text-[10px] font-medium text-slate-600 bg-slate-100 rounded-md px-2 py-1 whitespace-nowrap">{ctx.level}</span>}
-                    {topics.slice(0, 3).map((tp) => (
-                      <span key={tp} className="max-w-[230px] truncate text-[10px] text-slate-500 bg-slate-50 border border-slate-100 rounded-md px-2 py-1 whitespace-nowrap">{tp}</span>
-                    ))}
-                    {topics.length > 3 && <span className="text-[10px] text-slate-400 self-center">+{topics.length - 3}</span>}
+                {s.summary && !isOpen && <p className="text-xs text-slate-500 line-clamp-2 mt-1">{s.summary}</p>}
+
+                <div className={`grid transition-all duration-300 ease-out ${isOpen ? 'grid-rows-[1fr] opacity-100 mt-2.5' : 'grid-rows-[0fr] opacity-0'}`}>
+                  <div className="overflow-hidden">
+                    <div className="rounded-lg bg-slate-50/80 border border-slate-100 p-3">
+                      <ProposalDetail d={s.detail || null} t={t} />
+                    </div>
                   </div>
-                )}
+                </div>
+
                 <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                  <Link href={`/admin/aprovacao/${s.id}` as any} className="inline-flex items-center gap-1 text-[11px] font-medium text-violet-700 hover:text-violet-900 shrink-0">
-                    <Info className="w-3 h-3" />{t('rail.details')}
-                  </Link>
+                  <button onClick={() => setOpenId(isOpen ? null : s.id)} aria-expanded={isOpen} className="inline-flex items-center gap-1 text-[11px] font-medium text-violet-700 hover:text-violet-900 shrink-0">
+                    {t('rail.details')}<ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                  </button>
                   <div className="flex items-center gap-1.5 shrink-0">
                     <button onClick={() => decide(s.id, false)} disabled={busy === s.id} className="inline-flex items-center gap-1 rounded-lg border border-slate-200 text-slate-600 text-xs font-medium px-3 py-1.5 disabled:opacity-50 hover:border-slate-300">
                       <X className="w-3.5 h-3.5" />{t('rail.reject')}
