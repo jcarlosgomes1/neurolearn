@@ -3,7 +3,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useTranslations, useLocale } from 'next-intl';
-import { Wallet, Building2, Loader2, TrendingUp } from 'lucide-react';
+import { Building2, Loader2, TrendingUp } from 'lucide-react';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 
 interface Sub {
   id: string;
@@ -56,16 +57,7 @@ export function EarningsClient() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="mb-8">
-        <div className="inline-flex items-center gap-2 mb-3">
-          <span className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600">
-            <Wallet className="w-5 h-5" />
-          </span>
-          <span className="text-xs font-medium uppercase tracking-wide text-emerald-600">{t('teach.earnings.eyebrow')}</span>
-        </div>
-        <h1 className="font-display text-2xl font-bold text-slate-900">{t('teach.earnings.title')}</h1>
-        <p className="mt-1 text-sm text-slate-500 max-w-2xl">{t('teach.earnings.description')}</p>
-      </div>
+      <AppPageHeader eyebrow={t('teach.earnings.eyebrow')} title={t('teach.earnings.title')} description={t('teach.earnings.description')} />
 
       {loading ? (
         <div className="flex items-center justify-center py-20 text-slate-400"><Loader2 className="w-6 h-6 animate-spin" /></div>

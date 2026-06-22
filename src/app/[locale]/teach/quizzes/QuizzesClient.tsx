@@ -5,7 +5,8 @@ import { createClient } from '@/lib/supabase/client';
 import { assertNotPeekClient } from '@/lib/peek-client';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { Loader2, Plus, Pencil, Trash2, Save, X, FileQuestion, ChevronDown } from 'lucide-react';
+import { Loader2, Plus, Pencil, Trash2, Save, X, ChevronDown } from 'lucide-react';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 
 interface Lesson { id?: string; title?: string }
 interface Module { id?: string; title?: string; lessons?: Lesson[] }
@@ -105,14 +106,7 @@ export function QuizzesClient() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="mb-6">
-        <div className="inline-flex items-center gap-2 mb-3">
-          <span className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-violet-50 text-violet-600"><FileQuestion className="w-5 h-5" /></span>
-          <span className="text-xs font-medium uppercase tracking-wide text-violet-600">{t('teach.qb.eyebrow')}</span>
-        </div>
-        <h1 className="font-display text-2xl font-bold text-slate-900">{t('teach.qb.title')}</h1>
-        <p className="mt-1 text-sm text-slate-500 max-w-2xl">{t('teach.qb.description')}</p>
-      </div>
+      <AppPageHeader eyebrow={t('teach.qb.eyebrow')} title={t('teach.qb.title')} description={t('teach.qb.description')} />
 
       {loading ? (
         <div className="flex items-center justify-center py-20 text-slate-400"><Loader2 className="w-6 h-6 animate-spin" /></div>

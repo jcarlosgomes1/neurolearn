@@ -6,6 +6,7 @@ import { assertNotPeekClient } from '@/lib/peek-client';
 import { useTranslations, useLocale } from 'next-intl';
 import { toast } from 'sonner';
 import { Star, MessageSquare, Loader2, CheckCircle2, Send } from 'lucide-react';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 
 interface Review {
   id: string;
@@ -84,16 +85,7 @@ export function ReviewsClient() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="mb-8">
-        <div className="inline-flex items-center gap-2 mb-3">
-          <span className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-amber-50 text-amber-600">
-            <MessageSquare className="w-5 h-5" />
-          </span>
-          <span className="text-xs font-medium uppercase tracking-wide text-amber-600">{t('teach.reviews.eyebrow')}</span>
-        </div>
-        <h1 className="font-display text-2xl font-bold text-slate-900">{t('teach.reviews.title')}</h1>
-        <p className="mt-1 text-sm text-slate-500 max-w-2xl">{t('teach.reviews.description')}</p>
-      </div>
+      <AppPageHeader eyebrow={t('teach.reviews.eyebrow')} title={t('teach.reviews.title')} description={t('teach.reviews.description')} />
 
       {loading ? (
         <div className="flex items-center justify-center py-20 text-slate-400"><Loader2 className="w-6 h-6 animate-spin" /></div>
