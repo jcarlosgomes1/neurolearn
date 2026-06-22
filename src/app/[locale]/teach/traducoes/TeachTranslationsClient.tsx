@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { Languages, Globe2, Plus, Trash2, Loader2, BadgeCheck } from 'lucide-react';
+import { Globe2, Plus, Trash2, Loader2, BadgeCheck } from 'lucide-react';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { toast } from 'sonner';
 
 interface Locale { code: string; name: string; }
@@ -95,13 +96,7 @@ export function TeachTranslationsClient() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-6">
-      <div>
-        <div className="flex items-center gap-2.5 mb-1">
-          <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-brand-50 text-brand-600"><Languages className="h-5 w-5" /></span>
-          <h1 className="font-display text-2xl font-bold text-slate-900">Traduções</h1>
-        </div>
-        <p className="text-sm text-slate-500">Declara os idiomas que dominas e pede a tradução dos teus cursos para alcançar novos mercados. Cada pedido é validado pela equipa.</p>
-      </div>
+      <AppPageHeader title="Traduções" description="Declara os idiomas que dominas e pede a tradução dos teus cursos para alcançar novos mercados. Cada pedido é validado pela equipa." />
 
       <section className="bg-white rounded-2xl border border-slate-200 p-5">
         <div className="flex items-center gap-2 mb-3"><Globe2 className="h-4 w-4 text-brand-600" /><h2 className="font-semibold text-slate-900">Idiomas que domino</h2></div>

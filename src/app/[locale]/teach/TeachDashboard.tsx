@@ -8,6 +8,7 @@ import { DashboardSkeleton } from '@/components/shared/DashboardSkeleton';
 import { fmtCents, relTime } from '@/lib/utils/cn';
 import { useTranslations } from 'next-intl';
 import { Plus, Briefcase, Inbox, TrendingUp } from 'lucide-react';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { InstructorQuestions } from '@/components/teach/InstructorQuestions';
 
 export function TeachDashboard() {
@@ -39,15 +40,11 @@ export function TeachDashboard() {
   const s = dash.stats;
   return (
     <div className="max-w-6xl mx-auto px-6 lg:px-8 py-8 space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="font-display text-2xl font-bold text-slate-900">{t('teach.title')}</h1>
-          <p className="text-slate-500 text-sm mt-1">{t('teach.subtitle')}</p>
-        </div>
+      <AppPageHeader title={t('teach.title')} description={t('teach.subtitle')} actions={
         <Link href={'/teach/novo' as any} className="btn-primary inline-flex items-center gap-1.5">
           <Plus className="h-4 w-4" /> {t('teach.btn_new_course')}
         </Link>
-      </div>
+      } />
 
       <div className="flex flex-wrap gap-2">
         <Link href={'/teach/servicos' as any}
