@@ -1,7 +1,7 @@
 'use client';
 
 import { Link, usePathname } from '@/i18n/routing';
-import { User, Bell, Heart, Award, Sparkles, Shield, LogOut, BookOpen, Calendar, FileText, KeyRound, BellRing, Briefcase, GraduationCap } from 'lucide-react';
+import { User, Bell, Heart, Award, Sparkles, Shield, LogOut, BookOpen, Calendar, FileText, KeyRound, BellRing, Briefcase, GraduationCap, Route } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 function safeT(t: any, key: string, fb: string): string {
@@ -39,6 +39,7 @@ export function AccountSidebar() {
         { href: '/conta/talento', labelKey: 'account.item.talent', fb: 'Perfil talento', icon: Briefcase },
         { href: '/conta/afiliado', labelKey: 'account.item.affiliate', fb: 'Programa afiliado', icon: Award },
         { href: '/conta/candidato', labelKey: 'account.item.application', fb: 'Candidatura instrutor', icon: FileText },
+        { href: '/conta/percursos', labelKey: 'account.item.path_request', fb: 'Propor percurso', icon: Route },
       ],
     },
     {
