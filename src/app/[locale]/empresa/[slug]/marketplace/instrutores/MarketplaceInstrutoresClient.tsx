@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import { browseInstructorServicesAction, createInquiryAction } from '../../corporate-actions';
 import { Search, Briefcase, Star, Users, Clock, Globe, X, Send, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 
 const KIND_KEY: Record<string, string> = {
   custom_course: 'org.mi.kind_custom_course',
@@ -60,17 +61,9 @@ export function MarketplaceInstrutoresClient({ orgId, orgName, orgSlug, memberRo
 
   return (
     <main className="bg-slate-50 min-h-screen">
-      <section className="bg-white border-b border-slate-200">
-        <div className="max-w-6xl mx-auto px-4 py-6">
-          <div className="flex items-center gap-2 mb-2">
-            <Briefcase className="h-6 w-6 text-brand-600" />
-            <h1 className="font-display text-2xl font-bold text-slate-900">{t('org.mi.title')}</h1>
-          </div>
-          <p className="text-sm text-slate-500">
-            {t('org.mi.subtitle')}
-          </p>
-        </div>
-      </section>
+      <div className="max-w-6xl mx-auto px-4 pt-6">
+        <AppPageHeader title={t('org.mi.title')} description={t('org.mi.subtitle')} />
+      </div>
 
       <div className="max-w-6xl mx-auto px-4 py-6">
         <div className="bg-white border border-slate-200 rounded-xl p-4 mb-4 grid sm:grid-cols-4 gap-3">

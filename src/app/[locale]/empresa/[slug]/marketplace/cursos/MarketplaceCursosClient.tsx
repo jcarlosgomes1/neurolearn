@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import { browseMarketplaceCoursesAction, subscribeCourseAction } from '../../marketplace-actions';
 import { Search, BookOpen, Star, Users, X, Loader2, AlertCircle, CheckCircle, ShoppingCart } from 'lucide-react';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 
 function fmt(cents: number, locale: string, currency: string) {
   return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(cents / 100);
@@ -46,15 +47,9 @@ export function MarketplaceCursosClient({ orgId, orgName, orgSlug, memberRole, f
 
   return (
     <main className="bg-slate-50 min-h-screen">
-      <section className="bg-white border-b border-slate-200">
-        <div className="max-w-6xl mx-auto px-4 py-6">
-          <div className="flex items-center gap-2 mb-2">
-            <BookOpen className="h-6 w-6 text-brand-600" />
-            <h1 className="font-display text-2xl font-bold text-slate-900">{t('org.mc.title')}</h1>
-          </div>
-          <p className="text-sm text-slate-500">{t('org.mc.subtitle')}</p>
-        </div>
-      </section>
+      <div className="max-w-6xl mx-auto px-4 pt-6">
+        <AppPageHeader title={t('org.mc.title')} description={t('org.mc.subtitle')} />
+      </div>
 
       <div className="max-w-6xl mx-auto px-4 py-6">
         <div className="bg-white border border-slate-200 rounded-xl p-4 mb-4 flex gap-3 items-center">

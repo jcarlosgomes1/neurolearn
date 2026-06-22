@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import { browseTalentAction, createPlacementAction } from '../talent-actions';
 import { Search, Users, MapPin, Briefcase, Award, X, Loader2, AlertCircle, CheckCircle, Send } from 'lucide-react';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 
 function fmt(cents: number | null | undefined, locale: string, currency = 'EUR') {
   if (!cents) return '—';
@@ -52,21 +53,14 @@ export function TalentBrowseClient({ orgId, orgName, orgSlug, memberRole, featur
 
   return (
     <main className="bg-slate-50 min-h-screen">
-      <section className="bg-white border-b border-slate-200">
-        <div className="max-w-6xl mx-auto px-4 py-6 flex items-start justify-between gap-4 flex-wrap">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <Users className="h-6 w-6 text-emerald-600" />
-              <h1 className="font-display text-2xl font-bold text-slate-900">{t('org.tb.title')}</h1>
-            </div>
-            <p className="text-sm text-slate-500">{t('org.tb.subtitle')}</p>
-          </div>
+      <div className="max-w-6xl mx-auto px-4 pt-6">
+        <AppPageHeader title={t('org.tb.title')} description={t('org.tb.subtitle')} actions={
           <Link href={`/empresa/${orgSlug}/talent/pipeline` as any}
             className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg">
             <Briefcase className="h-4 w-4" /> {t('org.tb.pipeline_btn')}
           </Link>
-        </div>
-      </section>
+        } />
+      </div>
 
       <div className="max-w-6xl mx-auto px-4 py-6">
         <div className="bg-white border border-slate-200 rounded-xl p-4 mb-4 grid sm:grid-cols-3 gap-3">
