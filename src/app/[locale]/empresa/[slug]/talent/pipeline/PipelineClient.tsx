@@ -4,7 +4,8 @@ import { useState, useTransition } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import { updatePlacementStatusAction, listOrgPlacementsAction } from '../../talent-actions';
-import { Briefcase, Users, Loader2, X, CheckCircle, Award } from 'lucide-react';
+import { Users, Loader2, X, CheckCircle, Award } from 'lucide-react';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 
 const STAGES = [
   { id: 'introduced', labelKey: 'org.pipe.stage_introduced', color: 'bg-slate-100 text-slate-700' },
@@ -56,21 +57,14 @@ export function PipelineClient({ orgId, orgSlug, memberRole, locale, placements:
 
   return (
     <main className="bg-slate-50 min-h-screen">
-      <section className="bg-white border-b border-slate-200">
-        <div className="max-w-6xl mx-auto px-4 py-6 flex items-start justify-between gap-4 flex-wrap">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <Briefcase className="h-6 w-6 text-emerald-600" />
-              <h1 className="font-display text-2xl font-bold text-slate-900">{t('org.pipe.title')}</h1>
-            </div>
-            <p className="text-sm text-slate-500">{t('org.pipe.count', { count: placements.length })}</p>
-          </div>
+      <div className="max-w-6xl mx-auto px-4 pt-6">
+        <AppPageHeader title={t('org.pipe.title')} description={t('org.pipe.count', { count: placements.length })} actions={
           <Link href={`/empresa/${orgSlug}/talent` as any}
             className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-medium rounded-lg">
             <Users className="h-4 w-4" /> {t('org.pipe.browse')}
           </Link>
-        </div>
-      </section>
+        } />
+      </div>
 
       <div className="max-w-6xl mx-auto px-4 py-6 overflow-x-auto">
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 min-w-[900px] lg:min-w-0">

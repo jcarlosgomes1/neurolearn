@@ -5,9 +5,10 @@ import { useTranslations, useLocale } from 'next-intl';
 import { toast } from 'sonner';
 import { Link } from '@/i18n/routing';
 import { 
-  Settings, Palette, FileText, Sparkles, Users, BookOpen, Briefcase,
+  Palette, FileText, Sparkles, Users, BookOpen, Briefcase,
   CreditCard, AlertCircle, Loader2, Save, ArrowLeft, Euro, ExternalLink
 } from 'lucide-react';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { updateBrandingAction, stripeCheckoutAction, stripePortalAction } from './actions';
 
 interface Data {
@@ -43,12 +44,7 @@ export function OrgAdminClient({ slug, initial }: { slug: string; initial: Data 
         <ArrowLeft className="h-3.5 w-3.5" /> {t('org.admin.back')}
       </Link>
       
-      <div>
-        <h1 className="font-display text-2xl font-bold text-slate-900 flex items-center gap-2">
-          <Settings className="h-6 w-6 text-brand-600" /> {t('org.admin.title')} · {initial.org.name}
-        </h1>
-        <p className="text-sm text-slate-500 mt-1">{t('org.admin.subtitle')}</p>
-      </div>
+      <AppPageHeader title={`${t('org.admin.title')} · ${initial.org.name}`} description={t('org.admin.subtitle')} />
       
       <div className="flex bg-slate-100 rounded-lg p-1 text-sm font-medium overflow-x-auto">
         <button onClick={() => setTab('overview')} className={`flex-1 px-3 py-2 rounded ${tab === 'overview' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'}`}>{t('org.tab.overview')}</button>

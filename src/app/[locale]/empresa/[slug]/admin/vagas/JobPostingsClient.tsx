@@ -4,7 +4,8 @@ import { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Link } from '@/i18n/routing';
-import { Briefcase, Plus, ArrowLeft, X, Save, Loader2, Users, Eye, EyeOff, ChevronRight } from 'lucide-react';
+import { Plus, ArrowLeft, X, Save, Loader2, Users, Eye, EyeOff, ChevronRight } from 'lucide-react';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { upsertJobPostingAction, listJobPostingsAction } from './actions';
 
 interface Job {
@@ -59,15 +60,11 @@ export function JobPostingsClient({ slug, initial }: { slug: string; initial: Jo
         <ArrowLeft className="h-3.5 w-3.5" /> {t('org.job.back')}
       </Link>
       
-      <div className="flex items-start justify-between gap-3 flex-wrap">
-        <div>
-          <h1 className="font-display text-2xl font-bold text-slate-900 flex items-center gap-2"><Briefcase className="h-6 w-6 text-brand-600" /> {t('org.nav.jobs_h')}</h1>
-          <p className="text-sm text-slate-500 mt-1">{t('org.nav.jobs_p')}</p>
-        </div>
+      <AppPageHeader title={t('org.nav.jobs_h')} description={t('org.nav.jobs_p')} actions={
         <button onClick={() => setEditing({ ...EMPTY })} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold">
           <Plus className="h-3.5 w-3.5" /> {t('org.job.new')}
         </button>
-      </div>
+      } />
 
       {items.length === 0 ? (
         <div className="bg-white rounded-xl border border-slate-200 p-8 text-center text-sm text-slate-500">

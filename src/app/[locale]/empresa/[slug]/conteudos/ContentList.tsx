@@ -9,6 +9,7 @@ import {
   Upload, FileText, CheckCircle2, XCircle, Loader2, Clock, 
   RefreshCw, Trash2, ChevronDown, ChevronUp, AlertCircle, Sparkles, X
 } from 'lucide-react';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from '@/lib/supabase/config';
 import { registerUploadAction, retryIngestAction, archiveContentAction, listOrgContentAction } from './actions';
 import { proposeCourseAction } from '../cursos/propostas/actions';
@@ -124,18 +125,11 @@ export function ContentList({ slug, orgId, role, initial }: { slug: string; orgI
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 pb-24">
-      <div className="flex items-start justify-between gap-3 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">{t('org.cl.title')}</h1>
-          <p className="text-sm text-slate-500 mt-1">
-            {t('org.cl.subtitle')}
-            {readyItems.length > 0 && <>{t('org.cl.subtitle_extra')}</>}
-          </p>
-        </div>
+      <AppPageHeader title={t('org.cl.title')} description={<>{t('org.cl.subtitle')}{readyItems.length > 0 && <>{t('org.cl.subtitle_extra')}</>}</>} actions={
         <button type="button" onClick={refresh} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md hover:bg-slate-100 text-slate-700 text-sm">
           <RefreshCw className="h-3.5 w-3.5" /> {t('org.cl.refresh')}
         </button>
-      </div>
+      } />
 
       {canUpload && (
         <div

@@ -5,7 +5,8 @@ import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Link } from '@/i18n/routing';
-import { Sparkles, FileText, Loader2, CheckCircle2, XCircle, Clock, Eye, RefreshCw, ChevronRight, AlertCircle } from 'lucide-react';
+import { FileText, Loader2, CheckCircle2, XCircle, Clock, Eye, RefreshCw, ChevronRight, AlertCircle } from 'lucide-react';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { listProposalsAction } from './actions';
 
 interface ProposalRow {
@@ -56,16 +57,7 @@ export function ProposalsList({ slug, initial }: { slug: string; initial: Propos
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-      <div className="flex items-start justify-between gap-3 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-            <Sparkles className="h-6 w-6 text-brand-600" />
-            {t('org.prop.title')}
-          </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            {t('org.prop.subtitle')}
-          </p>
-        </div>
+      <AppPageHeader title={t('org.prop.title')} description={t('org.prop.subtitle')} actions={
         <div className="flex gap-2">
           <button type="button" onClick={refresh} disabled={isPending} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md hover:bg-slate-100 text-slate-700 text-sm">
             {isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
@@ -76,7 +68,7 @@ export function ProposalsList({ slug, initial }: { slug: string; initial: Propos
             {t('org.prop.contents')}
           </Link>
         </div>
-      </div>
+      } />
 
       {items.length === 0 ? (
         <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
