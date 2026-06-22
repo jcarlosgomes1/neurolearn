@@ -41,6 +41,8 @@ export function CatalogClient({ courses, cats = [], initialCat = 'all', ratingMi
   useEffect(() => { setMounted(true); }, []);
   useEffect(() => {
     if (!open) return;
+    // Mobile: bottom-sheet (bloqueia scroll). Desktop: painel inline (nao bloqueia).
+    if (typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = prev; };
@@ -124,8 +126,8 @@ export function CatalogClient({ courses, cats = [], initialCat = 'all', ratingMi
             placeholder={t('catalog.search_ph')}
             className="w-full rounded-lg border border-slate-200 bg-white pl-10 pr-3 py-2.5 text-sm focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none" />
         </div>
-        <button onClick={() => setOpen(true)}
-          className="relative inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-700 hover:border-slate-300 hover:bg-slate-50 transition-colors shrink-0">
+        <button onClick={() => setOpen((v) => !v)} aria-expanded={open}
+          className={`relative inline-flex items-center gap-2 rounded-lg border px-3.5 py-2.5 text-sm font-medium transition-colors shrink-0 ${open ? 'border-brand-300 bg-brand-50 text-brand-700' : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'}`}>
           <SlidersHorizontal className="h-4 w-4" />
           <span className="hidden xs:inline">{t('catalog.filters')}</span>
           {activeFilters > 0 && (
@@ -134,15 +136,19 @@ export function CatalogClient({ courses, cats = [], initialCat = 'all', ratingMi
         </button>
       </div>
 
-      {/* Desktop: filtros inline */}
-      <div className="hidden md:flex items-center gap-3 mb-6 flex-wrap">
-        {filterControls}
-        {activeFilters > 0 && (
-          <button onClick={clearFilters} className="text-xs text-brand-600 hover:underline px-2">
-            {t('catalog.clear_filters')} ({activeFilters})
-          </button>
-        )}
-      </div>
+      {/* Desktop: painel de filtros colapsavel (abre pelo botao Filtros) */}
+      {open && (
+        <div className="hidden md:block mb-6 animate-in fade-in slide-in-from-top-1 duration-200">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+            {filterControls}
+          </div>
+          {activeFilters > 0 && (
+            <button onClick={clearFilters} className="mt-2 text-xs text-brand-600 hover:underline px-1">
+              {t('catalog.clear_filters')} ({activeFilters})
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Mobile: bottom-sheet (portal para o body: escapa a ancestrais com transform) */}
       {open && mounted && createPortal(
