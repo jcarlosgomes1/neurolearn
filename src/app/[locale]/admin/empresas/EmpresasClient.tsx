@@ -4,7 +4,7 @@ import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { useState, useTransition } from 'react';
 import { Link } from '@/i18n/routing';
 import { listOrgsAction, archiveOrgAction, extendTrialAction } from './actions';
-import { Plus, Search, Building2, MoreVertical, Archive, Clock, Eye, Edit3, AlertCircle } from 'lucide-react';
+import { Plus, Search, Building2, MoreVertical, Archive, Clock, Eye, Edit3, AlertCircle, ArrowUpRight, Users, Armchair } from 'lucide-react';
 
 interface Org {
   id: string;
@@ -72,7 +72,7 @@ export function EmpresasClient({ locale, initial }: Props) {
   }
 
   return (
-    <div className="px-4 sm:px-6 py-6 max-w-7xl mx-auto">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <AdminPageHeader
         emoji="🏢"
         title="Empresas"
@@ -95,12 +95,12 @@ export function EmpresasClient({ locale, initial }: Props) {
             placeholder="Procurar por nome ou slug…"
             className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-200" />
         </div>
-        <select value={plan} onChange={(e) => { setPlan(e.target.value); }} 
+        <select value={plan} onChange={(e) => { setPlan(e.target.value); }}
           className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white">
           <option value="">Todos os planos</option>
           {PLANS.slice(1).map((p) => <option key={p} value={p}>{p}</option>)}
         </select>
-        <select value={status} onChange={(e) => { setStatus(e.target.value); }} 
+        <select value={status} onChange={(e) => { setStatus(e.target.value); }}
           className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white">
           <option value="">Todos os estados</option>
           {STATUSES.slice(1).map((s) => <option key={s} value={s}>{s}</option>)}
@@ -115,7 +115,7 @@ export function EmpresasClient({ locale, initial }: Props) {
         </button>
       </div>
 
-      {/* Lista */}
+      {/* Lista em cartoes */}
       {orgs.length === 0 ? (
         <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
           <div className="text-5xl mb-3">🏢</div>
@@ -127,91 +127,75 @@ export function EmpresasClient({ locale, initial }: Props) {
           </Link>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-100 bg-slate-50">
-                  <th className="text-left px-4 py-3 font-medium text-slate-600 text-xs uppercase tracking-wider">Empresa</th>
-                  <th className="text-left px-4 py-3 font-medium text-slate-600 text-xs uppercase tracking-wider">Plano</th>
-                  <th className="text-left px-4 py-3 font-medium text-slate-600 text-xs uppercase tracking-wider">Membros</th>
-                  <th className="text-left px-4 py-3 font-medium text-slate-600 text-xs uppercase tracking-wider">Seats</th>
-                  <th className="text-left px-4 py-3 font-medium text-slate-600 text-xs uppercase tracking-wider">Criada</th>
-                  <th className="text-right px-4 py-3 font-medium text-slate-600 text-xs uppercase tracking-wider">Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                {orgs.map((o) => {
-                  const planBadge = o.plan === 'enterprise' ? 'bg-purple-100 text-purple-700' :
-                                    o.plan === 'growth' ? 'bg-blue-100 text-blue-700' :
-                                    o.plan === 'starter' ? 'bg-emerald-100 text-emerald-700' :
-                                    'bg-amber-100 text-amber-700';
-                  const isOpen = openMenu === o.id;
-                  return (
-                    <tr key={o.id} className={`border-b border-slate-100 hover:bg-slate-50 transition-colors ${o.archived ? 'opacity-60' : ''}`}>
-                      <td className="px-4 py-3">
-                        <Link href={`/admin/empresas/${o.id}` as any} className="flex items-center gap-3 group">
-                          {o.logo_url ? (
-                            <img src={o.logo_url} alt={o.name} className="h-10 w-10 rounded-lg object-cover" />
-                          ) : (
-                            <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-brand-500 to-violet-600 text-white flex items-center justify-center font-bold">
-                              {o.name.charAt(0).toUpperCase()}
-                            </div>
-                          )}
-                          <div>
-                            <div className="font-medium text-slate-900 group-hover:text-brand-700">{o.name}</div>
-                            <div className="text-xs text-slate-400">/{o.slug} · {o.country_code || '—'}</div>
-                          </div>
+        <div className="space-y-2.5">
+          {orgs.map((o) => {
+            const planBadge = o.plan === 'enterprise' ? 'bg-purple-100 text-purple-700' :
+                              o.plan === 'growth' ? 'bg-blue-100 text-blue-700' :
+                              o.plan === 'starter' ? 'bg-emerald-100 text-emerald-700' :
+                              'bg-amber-100 text-amber-700';
+            const isOpen = openMenu === o.id;
+            return (
+              <div key={o.id} className={`relative rounded-xl border border-slate-200/70 bg-white p-3.5 shadow-sm ${o.archived ? 'opacity-60' : ''}`}>
+                <div className="flex items-start gap-3">
+                  {o.logo_url ? (
+                    <img src={o.logo_url} alt={o.name} className="h-11 w-11 rounded-lg object-cover shrink-0" />
+                  ) : (
+                    <div className="h-11 w-11 rounded-lg bg-gradient-to-br from-brand-500 to-violet-600 text-white flex items-center justify-center font-bold shrink-0">
+                      {o.name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <Link href={`/admin/empresas/${o.id}` as any} className="font-semibold text-[15px] text-slate-900 hover:text-brand-700 inline-flex items-center gap-1 leading-snug">
+                      <span className="truncate">{o.name}</span>
+                      <ArrowUpRight className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                    </Link>
+                    <div className="text-[11px] text-slate-400 mt-0.5">/{o.slug} · {o.country_code || '—'}</div>
+                    <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                      <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide ${planBadge}`}>{o.plan}</span>
+                      {o.is_trialing && <span className="text-[10px] text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded uppercase tracking-wide font-bold">trial até {new Date(o.trial_ends_at!).toLocaleDateString(locale)}</span>}
+                      {o.trial_expired && <span className="inline-flex items-center gap-1 text-[10px] text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded uppercase tracking-wide font-bold"><AlertCircle className="h-3 w-3" />trial expirado</span>}
+                    </div>
+                  </div>
+                  <button onClick={() => setOpenMenu(isOpen ? null : o.id)}
+                    className="shrink-0 p-1.5 hover:bg-slate-100 rounded-lg" aria-label="Ações">
+                    <MoreVertical className="h-4 w-4 text-slate-500" />
+                  </button>
+                  {isOpen && (
+                    <>
+                      <div className="fixed inset-0 z-10" onClick={() => setOpenMenu(null)} />
+                      <div className="absolute right-3 top-12 w-56 bg-white border border-slate-200 rounded-lg shadow-xl z-20 py-1">
+                        <Link href={`/admin/empresas/${o.id}` as any} className="flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                          <Eye className="h-4 w-4" />Ver detalhes
                         </Link>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold ${planBadge}`}>
-                          {o.plan}
-                        </span>
-                        {o.is_trialing && <div className="text-[10px] text-amber-600 uppercase tracking-wider mt-1">trial até {new Date(o.trial_ends_at!).toLocaleDateString(locale)}</div>}
-                        {o.trial_expired && <div className="text-[10px] text-red-600 uppercase tracking-wider mt-1 flex items-center gap-1"><AlertCircle className="h-3 w-3" />trial expirado</div>}
-                      </td>
-                      <td className="px-4 py-3 text-slate-700">{o.members_count}</td>
-                      <td className="px-4 py-3 text-slate-700">{o.seats_used} / {o.seats_purchased || '∞'}</td>
-                      <td className="px-4 py-3 text-slate-500 text-xs">{new Date(o.created_at).toLocaleDateString(locale)}</td>
-                      <td className="px-4 py-3 text-right relative">
-                        <button onClick={() => setOpenMenu(isOpen ? null : o.id)}
-                          className="p-1.5 hover:bg-slate-100 rounded-lg" aria-label="Ações">
-                          <MoreVertical className="h-4 w-4 text-slate-500" />
-                        </button>
-                        {isOpen && (
-                          <>
-                            <div className="fixed inset-0 z-10" onClick={() => setOpenMenu(null)} />
-                            <div className="absolute right-0 top-full mt-1 w-56 bg-white border border-slate-200 rounded-lg shadow-xl z-20 py-1">
-                              <Link href={`/admin/empresas/${o.id}` as any} className="flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
-                                <Eye className="h-4 w-4" />Ver detalhes
-                              </Link>
-                              <Link href={`/admin/empresas/${o.id}/editar` as any} className="flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
-                                <Edit3 className="h-4 w-4" />Editar + Features
-                              </Link>
-                              <Link href={`/empresa/${o.slug}` as any} target="_blank" className="flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
-                                <Building2 className="h-4 w-4" />Abrir workspace
-                              </Link>
-                              {o.is_trialing && (
-                                <button onClick={() => handleExtendTrial(o.id)} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 text-left">
-                                  <Clock className="h-4 w-4" />Estender trial
-                                </button>
-                              )}
-                              {!o.archived && (
-                                <button onClick={() => handleArchive(o.id)} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 text-left">
-                                  <Archive className="h-4 w-4" />Arquivar
-                                </button>
-                              )}
-                            </div>
-                          </>
+                        <Link href={`/admin/empresas/${o.id}/editar` as any} className="flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                          <Edit3 className="h-4 w-4" />Editar + Features
+                        </Link>
+                        <Link href={`/empresa/${o.slug}` as any} target="_blank" className="flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                          <Building2 className="h-4 w-4" />Abrir workspace
+                        </Link>
+                        {o.is_trialing && (
+                          <button onClick={() => handleExtendTrial(o.id)} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 text-left">
+                            <Clock className="h-4 w-4" />Estender trial
+                          </button>
                         )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                        {!o.archived && (
+                          <button onClick={() => handleArchive(o.id)} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 text-left">
+                            <Archive className="h-4 w-4" />Arquivar
+                          </button>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-lg bg-slate-50 border border-slate-100 px-2.5 py-1.5 text-[11px] text-slate-600">
+                  <span className="inline-flex items-center gap-1"><Users className="h-3 w-3 text-slate-400" /><b className="text-slate-800">{o.members_count}</b> membros</span>
+                  <span className="inline-flex items-center gap-1"><Armchair className="h-3 w-3 text-slate-400" />Seats <b className="text-slate-800">{o.seats_used}</b> / {o.seats_purchased || '∞'}</span>
+                  <span className="text-slate-400">Criada {new Date(o.created_at).toLocaleDateString(locale)}</span>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
