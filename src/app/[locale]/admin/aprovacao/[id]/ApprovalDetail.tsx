@@ -5,6 +5,7 @@ import { Link, useRouter } from '@/i18n/routing';
 import { callAgentOps } from '@/lib/api/client';
 import { DashboardSkeleton } from '@/components/shared/DashboardSkeleton';
 import { Markdown } from '@/components/shared/Markdown';
+import { createClient } from '@/lib/supabase/client';
 import { relTime } from '@/lib/utils/cn';
 import { toast } from 'sonner';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
@@ -22,12 +23,20 @@ export function ApprovalDetail({ approvalId }: { approvalId: string }) {
   const [err, setErr] = useState<string | null>(null);
   const [deciding, setDeciding] = useState(false);
   const [selectedLang, setSelectedLang] = useState<string>('pt');
+  const [supportDetail, setSupportDetail] = useState<any>(null);
 
   useEffect(() => {
     callAgentOps<any>('admin_approval_detail', { approval_id: approvalId })
       .then((r) => setData(r))
       .catch((e) => setErr(e.message));
   }, [approvalId]);
+
+  useEffect(() => {
+    if (data?.approval?.action === 'send_support_reply') {
+      const sb = createClient();
+      sb.rpc('nl_admin_support_reply_detail', { p_approval_id: approvalId }).then(({ data: d }: any) => { if (d?.ok) setSupportDetail(d); });
+    }
+  }, [data, approvalId]);
 
   async function decide(decision: 'approved' | 'rejected') {
     if (decision === 'rejected' && !confirm(t('approval.confirm_reject'))) return;
@@ -186,7 +195,41 @@ export function ApprovalDetail({ approvalId }: { approvalId: string }) {
         </div>
       )}
 
-      {kind === 'other' && approval.action !== 'generate_course_concept' && (
+      {approval.action === 'send_support_reply' && (
+        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 space-y-3">
+          <div className="rounded-lg bg-slate-50 border border-slate-200 p-3">
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Mensagem do cliente</div>
+            <p className="text-xs text-slate-500">{[supportDetail?.from_name, supportDetail?.to_email].filter(Boolean).join(' · ')}</p>
+            {(supportDetail?.subject || (approval.params as any)?.subject) && <p className="text-sm font-semibold text-slate-800 mt-0.5">{supportDetail?.subject || (approval.params as any)?.subject}</p>}
+            {supportDetail?.message && <p className="text-xs text-slate-600 mt-0.5 whitespace-pre-wrap">{supportDetail.message}</p>}
+          </div>
+          <div className="rounded-lg bg-violet-50/60 border border-violet-200 p-3">
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-violet-500 mb-1">Resposta proposta</div>
+            {supportDetail?.reply
+              ? <p className="text-sm text-slate-700 whitespace-pre-wrap">{supportDetail.reply}</p>
+              : <p className="text-xs text-slate-400 italic">A carregar…</p>}
+          </div>
+        </div>
+      )}
+
+      {approval.action === 'triage_messages' && (
+        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 space-y-1.5">
+          {(approval.params as any)?.subject && <p className="text-sm font-semibold text-slate-800">{(approval.params as any).subject}</p>}
+          {(approval.params as any)?.topic && <p className="text-xs text-slate-500">{(approval.params as any).topic}</p>}
+        </div>
+      )}
+
+      {approval.action === 'match_candidates' && (
+        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 space-y-1.5">
+          {(approval.params as any)?.headline && <p className="text-sm font-semibold text-slate-800">{(approval.params as any).headline}</p>}
+          <p className="text-xs text-slate-500">→ {(approval.params as any)?.job_title}{(approval.params as any)?.score != null ? ` · ${(approval.params as any).score}%` : ''}</p>
+          {Array.isArray((approval.params as any)?.matched_skills) && (approval.params as any).matched_skills.length > 0 && (
+            <div className="flex flex-wrap gap-1 pt-1">{(approval.params as any).matched_skills.map((s: string, i: number) => <span key={i} className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700">{s}</span>)}</div>
+          )}
+        </div>
+      )}
+
+      {kind === 'other' && !['generate_course_concept','send_support_reply','triage_messages','match_candidates'].includes(approval.action) && (
         <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6">
           <p className="text-sm text-slate-500">{t('approval.other_detail')}</p>
           <pre className="mt-3 text-xs bg-slate-50 p-3 rounded overflow-auto">{JSON.stringify(approval.params, null, 2)}</pre>
