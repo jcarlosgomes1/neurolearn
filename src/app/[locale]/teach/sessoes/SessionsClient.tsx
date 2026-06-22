@@ -7,6 +7,7 @@ import { assertNotPeekClient } from '@/lib/peek-client';
 import { useTranslations, useLocale } from 'next-intl';
 import { toast } from 'sonner';
 import { Loader2, Plus, Pencil, Video, Radio, Calendar, Users, Link2, ExternalLink, Save, X, Copy, Eye, EyeOff, Globe2, Megaphone } from 'lucide-react';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 
 type Sess = {
   id: string; title: string; description: string | null; session_kind: string; visibility: string; status: string;
@@ -145,15 +146,11 @@ export function SessionsClient() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
-      <div className="flex items-start justify-between gap-3 mb-6">
-        <div>
-          <h1 className="text-2xl font-display font-semibold text-neutral-900">{t('teach.live.title')}</h1>
-          <p className="text-sm text-neutral-500 mt-1">{t('teach.live.subtitle')}</p>
-        </div>
+      <AppPageHeader title={t('teach.live.title')} description={t('teach.live.subtitle')} actions={
         <button onClick={openNew} className="inline-flex items-center gap-2 rounded-xl bg-neutral-900 text-white px-4 py-2 text-sm font-medium hover:bg-neutral-800 shrink-0">
           <Plus className="w-4 h-4" /> {t('teach.live.new')}
         </button>
-      </div>
+      } />
 
       {loading ? (
         <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-neutral-400" /></div>

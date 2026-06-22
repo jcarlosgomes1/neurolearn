@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import { quoteInquiryAction, completeInquiryAction, listInquiriesForInstructorAction } from '../corporate-actions';
 import { Inbox, Clock, CheckCircle, XCircle, Send, Loader2, X, Building2, Calendar, Users, MapPin } from 'lucide-react';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 
 const STATUS_BADGES: Record<string, { label: string; className: string; icon: any }> = {
   pending: { label: 'Aguarda orçamento', className: 'bg-amber-100 text-amber-800', icon: Clock },
@@ -45,12 +46,7 @@ export function PedidosInstructorClient({ locale, inquiries: initial }: { locale
 
   return (
     <div className="px-4 sm:px-6 py-6 max-w-5xl mx-auto">
-      <div className="mb-6">
-        <h1 className="font-display text-2xl font-bold text-slate-900 flex items-center gap-2">
-          <Inbox className="h-6 w-6 text-brand-600" /> Pedidos Corporate
-        </h1>
-        <p className="text-sm text-slate-500 mt-1">Empresas que pediram orçamento para os teus serviços.</p>
-      </div>
+      <AppPageHeader title="Pedidos Corporate" description="Empresas que pediram orçamento para os teus serviços." />
 
       <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
         {[['', 'Todos'], ['pending', 'Pendentes'], ['quoted', 'Cotados'], ['accepted', 'Aceites'], ['completed', 'Concluídos']].map(([k, label]) => (

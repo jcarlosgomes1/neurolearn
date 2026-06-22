@@ -3,7 +3,8 @@ import { createClient } from '@/lib/supabase/server';
 import { instructorB2BEarningsAction } from '../../empresa/[slug]/marketplace-actions';
 import { Link } from '@/i18n/routing';
 import { getTranslations } from 'next-intl/server';
-import { ArrowLeft, TrendingUp, Building2 } from 'lucide-react';
+import { ArrowLeft, Building2 } from 'lucide-react';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 
 export const metadata = { title: 'B2B Earnings · Teach' };
 export const dynamic = 'force-dynamic';
@@ -31,9 +32,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
       <Link href={'/teach' as any} className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-brand-700 mb-4">
         <ArrowLeft className="h-4 w-4" /> {t('btn.back')}
       </Link>
-      <h1 className="font-display text-2xl font-bold text-slate-900 flex items-center gap-2 mb-6">
-        <TrendingUp className="h-6 w-6 text-emerald-600" /> {t('tea.b2b_h1')}
-      </h1>
+      <AppPageHeader title={t('tea.b2b_h1')} />
       
       <div className="grid grid-cols-2 gap-3 mb-6">
         <div className="bg-white border border-slate-200 rounded-xl p-4">

@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { UsersRound, Loader2, Clock, Check } from 'lucide-react';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { toast } from 'sonner';
 
 interface Item { course_id: string; title: string; status: string; note: string | null; }
@@ -38,11 +39,7 @@ export function TeachPeerReview() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
-      <div className="flex items-center gap-2.5 mb-1">
-        <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-brand-50 text-brand-600"><UsersRound className="h-5 w-5" /></span>
-        <h1 className="font-display text-2xl font-bold text-slate-900">Avaliação por pares</h1>
-      </div>
-      <p className="text-sm text-slate-500 mb-6">Pede para ativar avaliação por pares nos teus cursos. Depois de aprovado, os exercícios abertos passam a ser revistos entre alunos.</p>
+      <AppPageHeader title="Avaliação por pares" description="Pede para ativar avaliação por pares nos teus cursos. Depois de aprovado, os exercícios abertos passam a ser revistos entre alunos." />
 
       {items === null ? (
         <div className="text-sm text-slate-400">A carregar…</div>

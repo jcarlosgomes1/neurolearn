@@ -5,7 +5,8 @@ import { createClient } from '@/lib/supabase/client';
 import { assertNotPeekClient } from '@/lib/peek-client';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { Loader2, ChevronDown, Sparkles, Tag, Check } from 'lucide-react';
+import { Loader2, ChevronDown, Sparkles, Check } from 'lucide-react';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 
 interface Item {
   id: string; title: string; emoji?: string | null; currency: string;
@@ -76,12 +77,7 @@ export function PricingClient() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
       <div className="mb-6">
-        <div className="inline-flex items-center gap-2 mb-3">
-          <span className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600"><Tag className="w-5 h-5" /></span>
-          <span className="text-xs font-medium uppercase tracking-wide text-emerald-600">{t('teach.pricing.eyebrow')}</span>
-        </div>
-        <h1 className="font-display text-2xl font-bold text-slate-900">{t('teach.pricing.title')}</h1>
-        <p className="mt-1 text-sm text-slate-500 max-w-2xl">{t('teach.pricing.description')}</p>
+        <AppPageHeader eyebrow={t('teach.pricing.eyebrow')} title={t('teach.pricing.title')} description={t('teach.pricing.description')} />
       </div>
 
       <div className="mb-6 rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-teal-50 p-4">
