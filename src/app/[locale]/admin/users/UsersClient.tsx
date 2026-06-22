@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useRouter, Link } from '@/i18n/routing';
 import { fmtCents } from '@/lib/utils/cn';
 import { toast } from 'sonner';
-import { Search, Filter, Crown, ShieldCheck, GraduationCap, User as UserIcon, CheckCircle2, XCircle, Loader2, ChevronLeft, ChevronRight, Mail, Calendar, Activity, X, Wallet, ArrowUpRight } from 'lucide-react';
+import { Search, Crown, ShieldCheck, GraduationCap, User as UserIcon, CheckCircle2, XCircle, Loader2, ChevronLeft, ChevronRight, Mail, Calendar, Activity, X, Wallet, ArrowUpRight } from 'lucide-react';
 
 interface User {
   id: string; name: string | null; email: string | null; handle: string | null;
@@ -55,7 +55,6 @@ export function UsersClient({ currentUserId, kpis, initialPage }: { currentUserI
     finally { setBusy(false); }
   }, [offset, search, filterRole, filterActive]);
 
-  // debounce search
   useEffect(() => {
     const id = setTimeout(() => {
       if (searchInput !== search) {
@@ -111,7 +110,7 @@ export function UsersClient({ currentUserId, kpis, initialPage }: { currentUserI
     <div className="space-y-5">
       {/* KPI cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <KpiCard label="Total" value={kpis.total ?? 0} icon={Users2 as any} cls="from-slate-600 to-slate-800" />
+        <KpiCard label="Total" value={kpis.total ?? 0} icon={Crown as any} cls="from-slate-600 to-slate-800" />
         <KpiCard label="Activos" value={kpis.active ?? 0} icon={CheckCircle2} cls="from-emerald-500 to-teal-600" />
         <KpiCard label="Admins" value={kpis.admins ?? 0} icon={Crown} cls="from-amber-500 to-orange-600" />
         <KpiCard label="Instrutores" value={kpis.instructors ?? 0} icon={GraduationCap} cls="from-violet-500 to-indigo-600" />
@@ -151,104 +150,106 @@ export function UsersClient({ currentUserId, kpis, initialPage }: { currentUserI
         )}
       </div>
 
-      {/* Table */}
-      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-        {busy ? (
-          <div className="p-10 text-center"><Loader2 className="h-6 w-6 text-violet-600 mx-auto animate-spin" /></div>
-        ) : page.items.length === 0 ? (
-          <div className="p-10 text-center text-sm text-slate-500">Sem utilizadores que correspondam aos filtros.</div>
-        ) : (
-          <div className="divide-y divide-slate-100">
-            {page.items.map((u) => {
-              const roleMeta = ROLE_META[u.role] || ROLE_META.student;
-              const RoleIcon = roleMeta.icon;
-              const isMe = u.id === currentUserId;
-              const saving = rowBusy === u.id;
-              const isInstr = !!u.is_instructor_record;
-              return (
-                <div key={u.id} className={`p-3 sm:p-4 flex items-center gap-3 hover:bg-slate-50/40 ${!u.is_active ? 'opacity-60' : ''}`}>
+      {/* List of user cards */}
+      {busy ? (
+        <div className="bg-white border border-slate-200 rounded-xl p-10 text-center"><Loader2 className="h-6 w-6 text-violet-600 mx-auto animate-spin" /></div>
+      ) : page.items.length === 0 ? (
+        <div className="bg-white border border-slate-200 rounded-xl p-10 text-center text-sm text-slate-500">Sem utilizadores que correspondam aos filtros.</div>
+      ) : (
+        <div className="space-y-2.5">
+          {page.items.map((u) => {
+            const roleMeta = ROLE_META[u.role] || ROLE_META.student;
+            const RoleIcon = roleMeta.icon;
+            const isMe = u.id === currentUserId;
+            const saving = rowBusy === u.id;
+            const isInstr = !!u.is_instructor_record;
+            const toPay = Math.max(0, (u.instr_revenue_cents || 0) - (u.instr_payouts_cents || 0));
+            return (
+              <div key={u.id} className={`rounded-xl border border-slate-200/70 bg-white p-3.5 shadow-sm ${!u.is_active ? 'opacity-60' : ''}`}>
+                {/* header: avatar + name + meta */}
+                <div className="flex items-start gap-3">
                   {u.avatar_url ? (
-                    <img src={u.avatar_url} alt="" className="h-10 w-10 rounded-full object-cover flex-shrink-0" />
+                    <img src={u.avatar_url} alt="" className="h-11 w-11 rounded-full object-cover shrink-0" />
                   ) : (
-                    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-violet-400 to-indigo-600 text-white flex items-center justify-center font-bold text-sm flex-shrink-0">
+                    <div className="h-11 w-11 rounded-full bg-gradient-to-br from-violet-400 to-indigo-600 text-white flex items-center justify-center font-bold text-sm shrink-0">
                       {(u.name || u.email || '?').charAt(0).toUpperCase()}
                     </div>
                   )}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Link href={`/admin/users/${u.id}` as any} className="font-semibold text-sm text-slate-900 truncate hover:text-violet-700 hover:underline inline-flex items-center gap-1">
-                        {u.name || u.email || 'Sem nome'}
-                        <ArrowUpRight className="h-3 w-3 text-slate-400 flex-shrink-0" />
-                      </Link>
-                      {isInstr && (
-                        <Link href={`/admin/instrutor/${u.id}` as any} title="Painel do instrutor" className="inline-flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-1.5 py-0.5 rounded">
-                          <GraduationCap className="h-2.5 w-2.5" /> Painel
-                        </Link>
-                      )}
-                      {isMe && <span className="text-[9px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded uppercase font-bold">Tu</span>}
-                      {!u.is_active && <span className="text-[9px] bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded uppercase font-bold">Inactivo</span>}
-                      <span className={`inline-flex items-center gap-0.5 text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider ${roleMeta.cls}`}>
-                        <RoleIcon className="h-2.5 w-2.5" /> {roleMeta.label}
-                      </span>
-                      {u.subscription_status && (
-                        <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase ${u.subscription_status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
-                          {u.subscription_status}{u.subscription_plan ? ` · ${u.subscription_plan}` : ''}
-                        </span>
-                      )}
+                  <div className="min-w-0 flex-1">
+                    <Link href={`/admin/users/${u.id}` as any} className="font-semibold text-[15px] text-slate-900 hover:text-violet-700 inline-flex items-center gap-1 leading-snug">
+                      <span className="truncate">{u.name || u.email || 'Sem nome'}</span>
+                      <ArrowUpRight className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                    </Link>
+                    <div className="mt-0.5 text-[11px] text-slate-500 flex items-center gap-1.5 flex-wrap">
+                      {u.email && <span className="inline-flex items-center gap-1 min-w-0"><Mail className="h-3 w-3 shrink-0" /><span className="truncate max-w-[180px]">{u.email}</span></span>}
+                      {u.email_confirmed ? <CheckCircle2 className="h-3 w-3 text-emerald-600 shrink-0" /> : <XCircle className="h-3 w-3 text-amber-600 shrink-0" />}
+                      {u.handle && <span className="text-slate-400">@{u.handle}</span>}
+                      {u.country_code && <span className="uppercase text-slate-400">{u.country_code}</span>}
                     </div>
-                    <div className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-2 flex-wrap">
-                      {u.email && <span className="inline-flex items-center gap-1 truncate"><Mail className="h-3 w-3" />{u.email}</span>}
-                      {u.email_confirmed ? <CheckCircle2 className="h-3 w-3 text-emerald-600" /> : <XCircle className="h-3 w-3 text-amber-600" />}
-                      {u.handle && <span>@{u.handle}</span>}
-                      {u.country_code && <span className="uppercase">{u.country_code}</span>}
-                    </div>
-                    <div className="text-[10px] text-slate-400 mt-0.5">
-                      {u.joined_at && <>Entrou {new Date(u.joined_at).toLocaleDateString('pt-PT')}</>}
-                      {u.last_login && <> · login {new Date(u.last_login).toLocaleDateString('pt-PT')}</>}
-                      {u.enrolled_count > 0 && <> · {u.enrolled_count} curso(s)</>}
-                    </div>
-                    {isInstr && (
-                      <div className="text-[10px] text-slate-500 mt-1 inline-flex items-center gap-2 flex-wrap bg-emerald-50/60 border border-emerald-100 rounded-md px-2 py-0.5">
-                        <span className="inline-flex items-center gap-1 font-medium text-emerald-800"><Wallet className="h-3 w-3" /> Ganhos {fmtCents(u.instr_revenue_cents || 0)}</span>
-                        <span className="text-slate-500">· Pago {fmtCents(u.instr_payouts_cents || 0)}</span>
-                        <span className="text-emerald-700 font-semibold">· A pagar {fmtCents(Math.max(0, (u.instr_revenue_cents || 0) - (u.instr_payouts_cents || 0)))}</span>
-                        {u.instr_revshare_pct != null && <span className="text-slate-500">· {u.instr_revshare_pct}% partilha</span>}
-                      </div>
-                    )}
                   </div>
+                </div>
 
-                  {/* Inline actions: role + estado (sem modal) */}
-                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                {/* badges */}
+                <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                  <span className={`inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wide ${roleMeta.cls}`}>
+                    <RoleIcon className="h-2.5 w-2.5" />{roleMeta.label}
+                  </span>
+                  {isInstr && (
+                    <Link href={`/admin/instrutor/${u.id}` as any} title="Painel do instrutor" className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-1.5 py-0.5 rounded">
+                      <GraduationCap className="h-2.5 w-2.5" />Painel
+                    </Link>
+                  )}
+                  {isMe && <span className="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded uppercase font-bold tracking-wide">Tu</span>}
+                  {!u.is_active && <span className="text-[10px] bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded uppercase font-bold tracking-wide">Inactivo</span>}
+                  {u.subscription_status && (
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase ${u.subscription_status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
+                      {u.subscription_status}{u.subscription_plan ? ` · ${u.subscription_plan}` : ''}
+                    </span>
+                  )}
+                </div>
+
+                {/* dates */}
+                {(u.joined_at || u.last_login || u.enrolled_count > 0) && (
+                  <div className="mt-1.5 text-[11px] text-slate-400">
+                    {u.joined_at && <>Entrou {new Date(u.joined_at).toLocaleDateString('pt-PT')}</>}
+                    {u.last_login && <> · login {new Date(u.last_login).toLocaleDateString('pt-PT')}</>}
+                    {u.enrolled_count > 0 && <> · {u.enrolled_count} curso(s)</>}
+                  </div>
+                )}
+
+                {/* instructor earnings */}
+                {isInstr && (
+                  <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg bg-emerald-50/60 border border-emerald-100 px-2.5 py-1.5 text-[11px]">
+                    <span className="inline-flex items-center gap-1 font-semibold text-emerald-800"><Wallet className="h-3 w-3" />Ganhos {fmtCents(u.instr_revenue_cents || 0)}</span>
+                    <span className="text-slate-500">Pago {fmtCents(u.instr_payouts_cents || 0)}</span>
+                    <span className="text-emerald-700 font-semibold">A pagar {fmtCents(toPay)}</span>
+                    {u.instr_revshare_pct != null && <span className="text-slate-500">{u.instr_revshare_pct}% partilha</span>}
+                  </div>
+                )}
+
+                {/* actions footer */}
+                <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                  <span className="text-[11px] font-medium text-slate-400">Gerir</span>
+                  <div className="flex items-center gap-1.5 shrink-0">
                     {saving && <Loader2 className="h-3.5 w-3.5 text-violet-500 animate-spin" />}
-                    <select
-                      value={u.role}
-                      onChange={(e) => setRole(u.id, e.target.value)}
-                      disabled={saving || busy}
-                      aria-label="Role"
-                      title="Alterar role"
-                      className="text-xs border border-slate-200 rounded-lg pl-2 pr-6 py-1.5 bg-white hover:border-violet-300 focus:border-violet-500 outline-none cursor-pointer disabled:opacity-50"
-                    >
+                    <select value={u.role} onChange={(e) => setRole(u.id, e.target.value)} disabled={saving || busy} aria-label="Role" title="Alterar role"
+                      className="text-xs border border-slate-200 rounded-lg pl-2.5 pr-7 py-1.5 bg-white hover:border-violet-300 focus:border-violet-500 outline-none cursor-pointer disabled:opacity-50">
                       <option value="student">Aluno</option>
                       <option value="instructor">Instrutor</option>
                       <option value="admin">Admin</option>
                       <option value="super_admin">Super</option>
                     </select>
-                    <button
-                      onClick={() => setActive(u.id, !u.is_active)}
-                      disabled={saving || busy}
-                      title={u.is_active ? 'Desactivar conta' : 'Activar conta'}
-                      aria-label={u.is_active ? 'Desactivar conta' : 'Activar conta'}
-                      className={`p-1.5 rounded-lg transition-colors disabled:opacity-50 ${u.is_active ? 'text-rose-600 hover:bg-rose-50' : 'text-emerald-600 hover:bg-emerald-50'}`}
-                    >
+                    <button onClick={() => setActive(u.id, !u.is_active)} disabled={saving || busy} title={u.is_active ? 'Desactivar conta' : 'Activar conta'} aria-label={u.is_active ? 'Desactivar conta' : 'Activar conta'}
+                      className={`p-2 rounded-lg transition-colors disabled:opacity-50 ${u.is_active ? 'text-rose-600 hover:bg-rose-50' : 'text-emerald-600 hover:bg-emerald-50'}`}>
                       {u.is_active ? <XCircle className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
                     </button>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Pagination */}
       {page.total > 50 && (
@@ -265,11 +266,6 @@ export function UsersClient({ currentUserId, kpis, initialPage }: { currentUserI
     </div>
   );
 }
-
-// Inline Users icon (lucide already loaded but we want Users2 alias)
-const Users2 = function Users2({ className }: { className?: string }) {
-  return <Crown className={className} />;
-};
 
 function KpiCard({ label, value, icon: Icon, cls }: { label: string; value: number; icon: any; cls: string }) {
   return (
