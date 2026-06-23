@@ -27,7 +27,7 @@ const LEADING_EMOJI = /^(\p{Extended_Pictographic}(?:\uFE0F)?(?:\u200D\p{Extende
  * Cabecalho canonico de TODAS as areas in-app (admin, aluno, instrutor, empresa) — homogeneo, sem excecao.
  * Glifo central via PageGlyph (resolvido por rota: nl_page_glyphs). Eyebrow e sempre so texto.
  */
-export function AppPageHeader({ backHref, backLabel, eyebrow, eyebrowAccent = 'text-violet-600', title, description, emoji, actions, related }: AppPageHeaderProps) {
+export function AppPageHeader({ backHref, backLabel, title, description, emoji, actions, related }: AppPageHeaderProps) {
   const trimmedTitle = (title || '').trim();
   const m = trimmedTitle.match(LEADING_EMOJI);
   const titleEmoji = m ? m[1] : undefined;
@@ -55,11 +55,7 @@ export function AppPageHeader({ backHref, backLabel, eyebrow, eyebrowAccent = 't
           <PageGlyph fallback={glyphEmoji} />
         </div>
         <div className="flex-1 min-w-0">
-          {eyebrow && (
-            <div className={`t-eyebrow ${eyebrowAccent} mb-1 truncate`}>
-              {eyebrow}
-            </div>
-          )}
+          
           <h1 className="t-h1 text-slate-900 text-balance">{cleanTitle}</h1>
           {description && <p className="text-sm text-slate-600 mt-1.5 max-w-2xl leading-relaxed">{description}</p>}
         </div>
