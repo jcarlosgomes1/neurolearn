@@ -21,7 +21,7 @@ export default async function CategoriasPage({ params }: { params: { locale: str
   const { data } = await sb.rpc('nl_admin_categories_list', { p_lang: params.locale || 'pt' });
   const cats: Cat[] = Array.isArray(data) ? (data as Cat[]) : [];
   return (
-    <div>
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <AdminPageHeader
         emoji="🗂️"
         eyebrow="Catálogo"

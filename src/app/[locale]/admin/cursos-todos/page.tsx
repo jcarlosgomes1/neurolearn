@@ -15,9 +15,9 @@ export default async function Page() {
   const { data: rows } = await sb.rpc('nl_admin_all_courses');
 
   return (
-    <>
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <AdminPageHeader emoji="👁️" title="Todos os cursos" description="Todos os cursos da plataforma e de tenants. Acesso de superadmin — vês tudo por defeito." />
       <CursosTodosClient rows={(rows ?? []) as never} />
-    </>
+    </div>
   );
 }

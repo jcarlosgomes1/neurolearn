@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 
 export default function AdminPathDemandPage() {
   return (
-    <>
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <AdminPageHeader
         backHref="/admin/learning-paths"
         backLabel="Percursos"
@@ -18,6 +18,6 @@ export default function AdminPathDemandPage() {
         description="Lacunas de percursos com procura real. Decide: gerar a formação por IA ou atribuir a um instrutor candidato."
       />
       <DemandQueueClient />
-    </>
+    </div>
   );
 }

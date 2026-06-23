@@ -23,7 +23,7 @@ export default async function Page() {
   try { const cfg = ccsRaw ? JSON.parse(ccsRaw as string) : null; if (cfg) { ccsVariant = cfg.variant || ccsVariant; ccsArrow = cfg.arrow_on_clickable !== false; } } catch {}
 
   return (
-    <div className="">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <AdminPageHeader
         emoji="🎨"
         eyebrow="Sistema · Aparência"

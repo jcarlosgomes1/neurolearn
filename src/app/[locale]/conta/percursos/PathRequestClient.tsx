@@ -72,7 +72,7 @@ export function PathRequestClient() {
   const STICON: Record<string, any> = { pending: Clock, approved: Check, rejected: X };
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
       <AppPageHeader eyebrow={safeT(t, 'path_req.title', 'Propor percurso')} title={safeT(t, 'path_req.title', 'Propor percurso')} description={safeT(t, 'path_req.subtitle', 'Sugere um novo percurso com os teus cursos. A equipa revê antes de publicar.')} />
 
       <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 space-y-3">

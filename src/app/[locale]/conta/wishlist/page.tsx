@@ -17,7 +17,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   const { data } = await sb.rpc('nl_wishlist_list');
   const courses = (data as any)?.courses || [];
   return (
-    <>
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <main className="bg-slate-50 min-h-screen">
         <AppPageHeader title={t('wishlist.title')} description={t('wishlist.count', { count: courses.length })} />
         <div className="">
@@ -48,6 +48,6 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
           )}
         </div>
       </main>
-    </>
+    </div>
   );
 }

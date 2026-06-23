@@ -73,7 +73,7 @@ export function ProfileForm({ email, handle, initial }: { email: string; handle:
   }
 
   return (
-    <div>
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <AppPageHeader eyebrow={t('account.home.title')} title={t('account.home.profile_title')} description={t('profile.subtitle')} />
 
       <AvatarUploader />

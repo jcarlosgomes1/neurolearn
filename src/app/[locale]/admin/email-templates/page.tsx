@@ -9,7 +9,7 @@ export default async function AdminEmailTemplatesPage() {
   const { data: templates } = await sb.rpc('nl_admin_email_templates_list');
 
   return (
-    <div className="">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <AdminPageHeader
         emoji="✉️"
         eyebrow="Comunicação"

@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   return (
-    <>
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <AdminPageHeader
         emoji="📊"
         title="Financeiro"
@@ -21,6 +21,6 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
         </a>
       </div>
       <FinanceConsole locale={locale} />
-    </>
+    </div>
   );
 }

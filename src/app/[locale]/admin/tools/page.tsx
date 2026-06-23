@@ -20,9 +20,9 @@ export default async function Page() {
     .order('sort_order', { ascending: true });
 
   return (
-    <>
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <AdminPageHeader emoji="🧭" title="Todas as ferramentas" description="Tudo o que existe no admin, num só sítio. Pesquisa por nome ou secção." />
       <ToolsClient items={(items ?? []) as never} />
-    </>
+    </div>
   );
 }
