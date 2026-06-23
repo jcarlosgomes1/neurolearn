@@ -88,7 +88,7 @@ function ProposalCard({ item, slug, onClick }: { item: ProposalRow; slug: string
   const locale = useLocale();
   return (
     <button type="button" onClick={onClick} className="w-full text-left bg-white rounded-xl border border-slate-200 hover:border-brand-300 hover:shadow-sm transition-all p-4 sm:p-5 group">
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap mb-1">
             <StatusBadge status={item.status} />

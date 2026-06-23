@@ -214,7 +214,7 @@ export function AiModelsClient() {
             <div className="rounded-2xl border border-slate-200 bg-white divide-y divide-slate-100">
               {list.map((m) => (
                 <div key={m.model} className="p-4 sm:p-5">
-                  <div className="flex items-start justify-between gap-3 flex-wrap">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 flex-wrap">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-semibold text-slate-900">{m.label || m.model}</span>

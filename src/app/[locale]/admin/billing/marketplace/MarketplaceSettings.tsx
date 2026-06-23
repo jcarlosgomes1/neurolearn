@@ -101,7 +101,7 @@ export function MarketplaceSettings({ initial }: { initial: Setting[] }) {
               const dirty = s.key in edits;
               return (
                 <div key={s.key} className="p-3 sm:p-4">
-                  <div className="flex items-start gap-3 flex-wrap">
+                  <div className="flex flex-col sm:flex-row sm:items-start gap-3 flex-wrap">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
                         <code className="text-xs font-mono text-slate-800">{s.key}</code>

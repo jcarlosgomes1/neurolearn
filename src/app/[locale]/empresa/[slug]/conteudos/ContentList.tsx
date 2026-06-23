@@ -249,7 +249,7 @@ function ContentCard({ item, slug, canArchive, canSelect, isSelected, onToggleSe
   return (
     <div className={`bg-white rounded-xl border ${isSelected ? 'border-brand-400 ring-2 ring-brand-100' : 'border-slate-200'} overflow-hidden transition-colors`}>
       <div className="p-4 sm:p-5">
-        <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 flex-wrap">
           <div className="min-w-0 flex-1 flex items-start gap-3">
             {canSelect && (
               <input type="checkbox" checked={isSelected} onChange={onToggleSelect}

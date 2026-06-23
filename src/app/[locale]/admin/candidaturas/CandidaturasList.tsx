@@ -130,7 +130,7 @@ export function CandidaturasList() {
             const scoreColor = (app.ai_score_total ?? 0) >= 80 ? 'text-emerald-600' : (app.ai_score_total ?? 0) >= 60 ? 'text-amber-600' : 'text-rose-600';
             return (
               <button key={app.id} onClick={() => setSelected(app)} className="bg-white border border-slate-200 hover:border-brand-300 hover:shadow-md rounded-xl p-4 sm:p-5 text-left transition-all">
-                <div className="flex items-start justify-between gap-3 flex-wrap">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 flex-wrap">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="font-semibold text-slate-900 text-base sm:text-lg">{app.full_name}</h3>
