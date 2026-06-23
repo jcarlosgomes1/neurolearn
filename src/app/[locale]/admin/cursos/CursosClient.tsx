@@ -172,7 +172,7 @@ export function CursosClient() {
             const tx = translations[c.id] || [];
             return (
               <div key={c.id} className={`bg-white rounded-xl border border-slate-200 p-4 ${c.archived ? 'opacity-60' : ''}`}>
-                <div className="flex items-start gap-3 flex-wrap">
+                <div className="flex flex-col sm:flex-row sm:items-start gap-3">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="font-semibold text-slate-900 text-sm">{c.title}</h3>
