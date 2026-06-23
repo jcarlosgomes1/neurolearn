@@ -49,7 +49,8 @@ export function AppPageHeader({ backHref, backLabel, eyebrow, eyebrowAccent = 't
           </ol>
         </nav>
       )}
-      <div className="flex items-start gap-2.5 sm:gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-3">
+        <div className="flex items-start gap-2.5 sm:gap-3 min-w-0 flex-1">
         <div className="flex-shrink-0 leading-none mt-0.5 sm:mt-1">
           <PageGlyph fallback={glyphEmoji} />
         </div>
@@ -61,6 +62,7 @@ export function AppPageHeader({ backHref, backLabel, eyebrow, eyebrowAccent = 't
           )}
           <h1 className="t-h1 text-slate-900 text-balance">{cleanTitle}</h1>
           {description && <p className="text-sm text-slate-600 mt-1.5 max-w-2xl leading-relaxed">{description}</p>}
+        </div>
         </div>
         {actions && <div className="flex-shrink-0">{actions}</div>}
       </div>
