@@ -55,11 +55,11 @@ export function AppPageHeader({ backHref, backLabel, eyebrow, eyebrowAccent = 't
         </div>
         <div className="flex-1 min-w-0">
           {eyebrow && (
-            <div className={`${eyebrowAccent} text-[11px] sm:text-xs font-semibold uppercase tracking-wider mb-1 truncate`}>
+            <div className={`t-eyebrow ${eyebrowAccent} mb-1 truncate`}>
               {eyebrow}
             </div>
           )}
-          <h1 className="font-display text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight text-balance">{cleanTitle}</h1>
+          <h1 className="t-h1 text-slate-900 text-balance">{cleanTitle}</h1>
           {description && <p className="text-sm text-slate-600 mt-1.5 max-w-2xl leading-relaxed">{description}</p>}
         </div>
         {actions && <div className="flex-shrink-0">{actions}</div>}
