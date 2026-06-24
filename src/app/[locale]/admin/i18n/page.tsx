@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { getTranslations } from 'next-intl/server';
 import { I18nClient } from './I18nClient';
-import { Globe } from 'lucide-react';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,16 +22,11 @@ export default async function AdminI18nPage() {
   }
 
   return (
-    <div className="">
-      <header className="mb-8">
-        <div className="flex items-center gap-2 text-sky-600 text-xs font-semibold uppercase tracking-wider mb-1">
-          <Globe className="h-3.5 w-3.5" /> {safeT('admin.i18n.eyebrow', 'Sistema · Traduções')}
-        </div>
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{safeT('admin.i18n.title', 'Traduções')}</h1>
-        <p className="text-sm text-slate-600 mt-1.5 max-w-3xl leading-relaxed">
-          {safeT('admin.i18n.description', 'Edita as traduções em PT, EN, ES, FR. As alterações são imediatas.')}
-        </p>
-      </header>
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <AdminPageHeader
+        title={safeT('admin.i18n.title', 'Traduções')}
+        description={safeT('admin.i18n.description', 'Edita as traduções em PT, EN, ES, FR. As alterações são imediatas.')}
+      />
       <I18nClient
         namespaces={Array.isArray(namespaces) ? namespaces : []}
         initialItems={Array.isArray(initial) ? initial : []}
