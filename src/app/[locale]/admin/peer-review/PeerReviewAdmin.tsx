@@ -48,7 +48,7 @@ export function PeerReviewAdmin() {
   return (
     <div>
       <AdminPageHeader eyebrow="Cursos · Qualidade" title="Avaliação por pares" description="Aprova os pedidos dos instrutores para ativar avaliação por pares nos seus cursos. Só cursos ativos atribuem revisões entre alunos." />
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 pb-12">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-12">
         {pending > 0 && <p className="text-sm text-amber-700 font-medium mb-3">{pending} pedido(s) pendente(s)</p>}
         {items === null ? (
           <div className="p-6 text-sm text-slate-400">A carregar…</div>

@@ -65,7 +65,7 @@ export function ContactosClient({ initial }: { initial: Partial<Msg>[] }) {
   const fmt = (iso: string) => new Date(iso).toLocaleString();
 
   return (
-    <div className="px-4 sm:px-6 py-6 max-w-4xl mx-auto">
+    <div className="px-4 sm:px-6 py-6 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <AdminPageHeader
         emoji="📨"
         title={t('admin.contacts.title')}

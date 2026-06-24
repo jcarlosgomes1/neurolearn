@@ -56,7 +56,7 @@ export function EarningsClient() {
   const subs = data?.subscriptions || [];
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <AppPageHeader eyebrow={t('teach.earnings.eyebrow')} title={t('teach.earnings.title')} description={t('teach.earnings.description')} />
 
       {loading ? (

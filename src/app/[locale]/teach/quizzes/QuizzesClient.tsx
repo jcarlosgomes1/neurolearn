@@ -105,7 +105,7 @@ export function QuizzesClient() {
   const qFor = (mi: number, li: number) => questions.filter((q) => q.module_index === mi && q.lesson_index === li);
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <AppPageHeader eyebrow={t('teach.qb.eyebrow')} title={t('teach.qb.title')} description={t('teach.qb.description')} />
 
       {loading ? (

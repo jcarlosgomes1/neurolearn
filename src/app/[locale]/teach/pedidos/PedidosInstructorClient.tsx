@@ -45,7 +45,7 @@ export function PedidosInstructorClient({ locale, inquiries: initial }: { locale
   }
 
   return (
-    <div className="px-4 sm:px-6 py-6 max-w-5xl mx-auto">
+    <div className="px-4 sm:px-6 py-6 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <AppPageHeader title="Pedidos Corporate" description="Empresas que pediram orçamento para os teus serviços." />
 
       <div className="flex gap-2 mb-4 overflow-x-auto pb-1">

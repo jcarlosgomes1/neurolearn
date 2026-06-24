@@ -56,7 +56,7 @@ export function ProposalsList({ slug, initial }: { slug: string; initial: Propos
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
       <AppPageHeader title={t('org.prop.title')} description={t('org.prop.subtitle')} actions={
         <div className="flex gap-2">
           <button type="button" onClick={refresh} disabled={isPending} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md hover:bg-slate-100 text-slate-700 text-sm">

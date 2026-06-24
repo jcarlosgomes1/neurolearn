@@ -33,7 +33,7 @@ export function MarketplaceCursosClient({ orgId, orgName, orgSlug, memberRole, f
   if (!featureEnabled) {
     return (
       <main className="bg-slate-50 min-h-screen">
-        <div className="max-w-4xl mx-auto px-4 py-12">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           <div className="bg-amber-50 border border-amber-200 rounded-2xl p-8 text-center">
             <AlertCircle className="h-12 w-12 text-amber-500 mx-auto mb-3" />
             <h2 className="font-bold text-slate-900 text-lg mb-1">{t('org.mc.unavailable_h')}</h2>

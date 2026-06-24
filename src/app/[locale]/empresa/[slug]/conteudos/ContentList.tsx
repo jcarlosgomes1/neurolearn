@@ -124,7 +124,7 @@ export function ContentList({ slug, orgId, role, initial }: { slug: string; orgI
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 pb-24">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 pb-24">
       <AppPageHeader title={t('org.cl.title')} description={<>{t('org.cl.subtitle')}{readyItems.length > 0 && <>{t('org.cl.subtitle_extra')}</>}</>} actions={
         <button type="button" onClick={refresh} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md hover:bg-slate-100 text-slate-700 text-sm">
           <RefreshCw className="h-3.5 w-3.5" /> {t('org.cl.refresh')}
@@ -181,7 +181,7 @@ export function ContentList({ slug, orgId, role, initial }: { slug: string; orgI
       {/* Sticky propose bar */}
       {canPropose && selected.size > 0 && (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-2xl z-50 p-3 sm:p-4">
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
             <div className="flex items-center gap-2 mb-2 flex-wrap">
               <Sparkles className="h-4 w-4 text-brand-600 flex-shrink-0" />
               <span className="font-semibold text-slate-900 text-sm">

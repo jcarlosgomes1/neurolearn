@@ -39,7 +39,7 @@ export function OrgAdminClient({ slug, initial }: { slug: string; initial: Data 
   const [tab, setTab] = useState<'overview'|'usage'|'billing'|'branding'>('overview');
   
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
       <Link href={`/empresa/${slug}` as any} className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700">
         <ArrowLeft className="h-3.5 w-3.5" /> {t('org.admin.back')}
       </Link>

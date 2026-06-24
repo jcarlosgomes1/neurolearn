@@ -84,7 +84,7 @@ export function ReviewsClient() {
   const fmtDate = (s: string) => { try { return new Date(s).toLocaleDateString(locale); } catch { return ''; } };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <AppPageHeader eyebrow={t('teach.reviews.eyebrow')} title={t('teach.reviews.title')} description={t('teach.reviews.description')} />
 
       {loading ? (

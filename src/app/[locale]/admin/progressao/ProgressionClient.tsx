@@ -74,7 +74,7 @@ export function ProgressionClient() {
     <div>
       <AdminPageHeader emoji="🔓" title="Progressão de aulas" description="Define se os alunos avançam livremente ou de forma sequencial (cada aula desbloqueia a seguinte). Aplica-se a toda a plataforma, com exceções por curso." />
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-6 pb-12">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 pb-12">
         <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
           <div className="flex items-center gap-2 mb-1">
             <ArrowDownUp className="h-4 w-4 text-brand-600" />
