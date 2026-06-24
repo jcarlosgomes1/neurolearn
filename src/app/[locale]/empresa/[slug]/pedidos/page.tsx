@@ -1,7 +1,6 @@
 import { redirect, notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { listInquiriesForOrgAction } from '../corporate-actions';
-import { Header } from '@/components/layout/Header';
 import { PedidosOrgClient } from './PedidosOrgClient';
 
 export const metadata = { title: 'Pedidos · Empresa' };
@@ -20,7 +19,6 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   const r = await listInquiriesForOrgAction(org.id);
   return (
     <>
-      <Header />
       <PedidosOrgClient orgId={org.id} orgName={org.name} orgSlug={slug} memberRole={member.role}
         locale={locale} inquiries={r.ok ? r.inquiries : []} />
     </>

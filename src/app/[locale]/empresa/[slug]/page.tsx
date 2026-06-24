@@ -1,7 +1,6 @@
 import { redirect } from '@/i18n/routing';
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { Header } from '@/components/layout/Header';
 import { OrgDashboard } from './OrgDashboard';
 
 export const metadata = { title: 'Workspace' };
@@ -17,7 +16,6 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
 
   return (
     <>
-      <Header />
       <main className="min-h-screen bg-slate-50">
         <OrgDashboard data={details} />
       </main>

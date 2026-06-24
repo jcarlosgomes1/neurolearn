@@ -1,7 +1,6 @@
 import { redirect, notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { browseTalentAction } from '../talent-actions';
-import { Header } from '@/components/layout/Header';
 import { TalentBrowseClient } from './TalentBrowseClient';
 
 export const metadata = { title: 'Talent · Empresa' };
@@ -22,7 +21,6 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   const initial = await browseTalentAction(org.id, {});
   return (
     <>
-      <Header />
       <TalentBrowseClient orgId={org.id} orgName={org.name} orgSlug={slug} memberRole={member.role}
         featureEnabled={!!features?.enable_talent_hire} jobs={jobs || []}
         locale={locale} initial={initial.ok ? initial : { total: 0, talents: [] }} />

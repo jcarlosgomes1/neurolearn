@@ -1,7 +1,6 @@
 import { redirect, notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { listOrgPlacementsAction } from '../../talent-actions';
-import { Header } from '@/components/layout/Header';
 import { PipelineClient } from './PipelineClient';
 
 export const metadata = { title: 'Pipeline Talent · Empresa' };
@@ -20,7 +19,6 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   const r = await listOrgPlacementsAction(org.id);
   return (
     <>
-      <Header />
       <PipelineClient orgId={org.id} orgSlug={slug} memberRole={member.role}
         locale={locale} placements={r.ok ? r.placements : []} />
     </>

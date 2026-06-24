@@ -1,7 +1,6 @@
 import { redirect, notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { browseInstructorServicesAction } from '../../corporate-actions';
-import { Header } from '@/components/layout/Header';
 import { MarketplaceInstrutoresClient } from './MarketplaceInstrutoresClient';
 
 export const metadata = { title: 'Marketplace Instrutores · Empresa' };
@@ -26,7 +25,6 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   
   return (
     <>
-      <Header />
       <MarketplaceInstrutoresClient 
         orgId={org.id} 
         orgName={org.name}

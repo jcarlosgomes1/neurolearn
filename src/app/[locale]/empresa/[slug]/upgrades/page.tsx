@@ -1,6 +1,5 @@
 import { redirect, notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { Header } from '@/components/layout/Header';
 import { UpgradesClient } from './UpgradesClient';
 
 export const metadata = { title: 'Upgrades · Empresa' };
@@ -21,7 +20,6 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   
   return (
     <>
-      <Header />
       <UpgradesClient orgId={org.id} orgName={org.name} orgSlug={slug} memberRole={member.role}
         features={features || {}} addons={(addonsRpc as any)?.addons || []}
         active={subscriptions || []} locale={locale} />

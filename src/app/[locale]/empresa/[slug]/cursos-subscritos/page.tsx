@@ -1,7 +1,6 @@
 import { redirect, notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { listOrgSubscriptionsAction } from '../marketplace-actions';
-import { Header } from '@/components/layout/Header';
 import { CursosSubscritosClient } from './CursosSubscritosClient';
 
 export const metadata = { title: 'Cursos Subscritos · Empresa' };
@@ -22,7 +21,6 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   const r = await listOrgSubscriptionsAction(org.id);
   return (
     <>
-      <Header />
       <CursosSubscritosClient orgId={org.id} orgSlug={slug} memberRole={member.role}
         members={(members || []).map((m: any) => ({ user_id: m.user_id, name: m.nl_profiles?.name, avatar_url: m.nl_profiles?.avatar_url }))}
         locale={locale} subscriptions={r.ok ? r.subscriptions : []} />

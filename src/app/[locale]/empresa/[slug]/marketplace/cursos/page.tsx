@@ -1,7 +1,6 @@
 import { redirect, notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { browseMarketplaceCoursesAction } from '../../marketplace-actions';
-import { Header } from '@/components/layout/Header';
 import { MarketplaceCursosClient } from './MarketplaceCursosClient';
 
 export const metadata = { title: 'Marketplace de Cursos · Empresa' };
@@ -21,7 +20,6 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   const initial = await browseMarketplaceCoursesAction({});
   return (
     <>
-      <Header />
       <MarketplaceCursosClient orgId={org.id} orgName={org.name} orgSlug={slug} memberRole={member.role}
         featureEnabled={!!features?.enable_marketplace_b2c} maxSeats={features?.max_marketplace_seats || 0}
         locale={locale} initial={initial.ok ? initial : { total: 0, courses: [] }} />
