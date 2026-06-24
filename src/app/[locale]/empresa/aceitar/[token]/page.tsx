@@ -1,3 +1,4 @@
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { createClient } from '@/lib/supabase/server';
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
@@ -23,17 +24,7 @@ export default async function AcceptPage({ params }: { params: Promise<{ token: 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 text-white shadow-lg mb-3">
-            <Building2 className="h-7 w-7" />
-          </div>
-          <div className="text-xs font-semibold uppercase tracking-wider text-violet-600">
-            {safeT('empresa.aceitar.eyebrow', 'Convite recebido')}
-          </div>
-          <h1 className="text-2xl font-bold text-slate-900 mt-1">
-            {safeT('empresa.aceitar.title', 'Aceitar convite')}
-          </h1>
-        </div>
+        <AppPageHeader title={safeT('empresa.aceitar.title', 'Aceitar convite')} emoji="🏢" />
 
         {!invitation ? (
           <StatusCard
