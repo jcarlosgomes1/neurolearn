@@ -17,9 +17,5 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
 
   const { data: dash } = await sb.rpc('nl_scheduling_my_dashboard');
 
-  return (
-    <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-      <SchedulingDashboard initial={dash || null} />
-    </div>
-  );
+  return <SchedulingDashboard initial={dash || null} />;
 }
