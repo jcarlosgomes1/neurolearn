@@ -1,3 +1,4 @@
+import { PageHero } from '@/components/shared/PageHero';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/sections/Footer';
 import { Link } from '@/i18n/routing';
@@ -28,15 +29,12 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
     <>
       <Header />
       <main className="min-h-screen bg-slate-50">
-        <section className="bg-gradient-to-b from-white to-slate-50 border-b border-slate-100">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-16 text-center">
-            <p className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-brand-600">
-              <Sparkles className="h-3.5 w-3.5" /> {t('sched.dir.eyebrow')}
-            </p>
-            <h1 className="font-display text-3xl sm:text-4xl font-bold text-slate-900 mt-3 text-balance">{t('sched.dir.title')}</h1>
-            <p className="text-slate-600 mt-3 max-w-xl mx-auto text-pretty">{t('sched.dir.subtitle')}</p>
-          </div>
-        </section>
+        <PageHero
+          variant="plain"
+          badge={t('sched.dir.eyebrow')}
+          title={t('sched.dir.title')}
+          subtitle={t('sched.dir.subtitle')}
+        />
 
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-12">
           {mentors.length === 0 ? (
