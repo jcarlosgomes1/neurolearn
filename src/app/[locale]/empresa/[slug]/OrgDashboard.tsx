@@ -1,5 +1,6 @@
 'use client';
 
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
@@ -112,20 +113,7 @@ export function OrgDashboard({ data }: { data: unknown }) {
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-6">
       {/* Hero: identidade da Academia */}
-      <div className="relative overflow-hidden rounded-3xl p-6 sm:p-8 text-white"
-        style={{ background: `linear-gradient(135deg, ${brand}, #8b5cf6)` }}>
-        <div className="absolute -right-8 -top-8 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
-        <div className="relative flex items-start gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center flex-shrink-0">
-            {org.logo_url ? <img src={org.logo_url} alt="" className="w-full h-full object-cover rounded-2xl" /> : <Building2 className="h-6 w-6" />}
-          </div>
-          <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-wider text-white/70">{t('academy.eyebrow')}</p>
-            <h1 className="text-2xl sm:text-3xl font-bold truncate">{org.name}</h1>
-            <p className="text-sm text-white/80 mt-1">{t('academy.hero_sub')}</p>
-          </div>
-        </div>
-      </div>
+      <AppPageHeader title={org.name} description={t('academy.hero_sub')} />
 
       {/* CTA mágico adaptativo */}
       {cta && (

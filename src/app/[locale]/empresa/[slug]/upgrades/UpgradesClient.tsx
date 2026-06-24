@@ -1,5 +1,6 @@
 'use client';
 
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
@@ -21,16 +22,7 @@ export function UpgradesClient({ orgId, orgName, orgSlug, memberRole, features, 
 
   return (
     <main className="bg-slate-50 min-h-screen">
-      <section className="bg-gradient-to-br from-violet-600 to-brand-700 text-white">
-        <div className="max-w-6xl mx-auto px-4 py-12">
-          <div className="flex items-center gap-2 mb-2">
-            <Sparkles className="h-6 w-6" />
-            <span className="text-sm font-semibold uppercase tracking-wider">{t('org.upg.kicker')}</span>
-          </div>
-          <h1 className="font-display text-3xl sm:text-4xl font-bold mb-2">{t('org.upg.title', { org: orgName })}</h1>
-          <p className="text-lg text-violet-100 max-w-2xl">{t('org.upg.subtitle')}</p>
-        </div>
-      </section>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8"><AppPageHeader title={t('org.upg.title', { org: orgName })} description={t('org.upg.subtitle')} /></div>
 
       <div className="max-w-6xl mx-auto px-4 py-8">
         {active.length > 0 && (

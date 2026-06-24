@@ -1,5 +1,6 @@
 'use client';
 
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import { ArrowLeft, Users, Award, MapPin, Briefcase, Euro, TrendingUp, Sparkles } from 'lucide-react';
@@ -31,14 +32,10 @@ export function CandidatesClient({ slug, initial }: { slug: string; initial: Dat
   
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-      <Link href={`/empresa/${slug}/admin/vagas` as any} className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700">
-        <ArrowLeft className="h-3.5 w-3.5" /> {t('org.cand.back')}
-      </Link>
+      <AppPageHeader backHref={`/empresa/${slug}/admin/vagas`} backLabel={t('org.cand.back')} title={`${t('org.cand.title')} · ${job.title}`} />
       
       <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-5">
-        <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-          <Users className="h-5 w-5 text-brand-600" /> {t('org.cand.title')} · {job.title}
-        </h1>
+        
         <div className="mt-2 flex flex-wrap gap-1.5">
           {(job.required_skills || []).map((s, i) => (
             <span key={i} className="text-[10px] uppercase font-bold tracking-wider bg-rose-50 text-rose-700 px-1.5 py-0.5 rounded">{t('org.cand.req_label')}: {s}</span>
