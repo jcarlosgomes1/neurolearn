@@ -32,7 +32,7 @@ html, body {
     --t-caption: clamp(.75rem, .72rem + .13vw, .8125rem);
     --t-h3: clamp(1.0625rem, 1rem + .28vw, 1.25rem);
     --t-h2: clamp(1.375rem, 1.2rem + .78vw, 1.75rem);
-    --t-h1: clamp(1.75rem, 1.43rem + 1.42vw, 2.5rem);
+    --t-h1: clamp(1.5rem, 1.32rem + 0.78vw, 1.875rem);
     --t-display: clamp(2.5rem, 1.7rem + 3.55vw, 4.25rem);
   }
 

@@ -18,5 +18,5 @@ export function PageGlyphProvider({ value, children }: { value: string; children
 export function PageGlyph({ fallback, className }: { fallback?: string; className?: string }) {
   const ctx = useContext(PageGlyphContext);
   const emoji = (ctx && ctx.trim()) || (fallback && fallback.trim()) || '📄';
-  return <span className={className || 'text-3xl sm:text-4xl leading-none'}>{emoji}</span>;
+  return <span className={className || 'text-2xl sm:text-3xl leading-none'}>{emoji}</span>;
 }
