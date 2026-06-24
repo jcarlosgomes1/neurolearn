@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { createClient } from '@/lib/supabase/client';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
@@ -43,11 +44,7 @@ export function PathRequestsAdmin() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-      <header className="mb-6">
-        <div className="flex items-center gap-2 text-brand-600 text-xs font-semibold uppercase tracking-wider mb-1"><Route className="h-3.5 w-3.5" />{safeT(t, 'shell.admin.path_requests', 'Pedidos de percurso')}</div>
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{safeT(t, 'shell.admin.path_requests', 'Pedidos de percurso')}</h1>
-        <p className="text-sm text-slate-600 mt-1.5">{safeT(t, 'path_req.admin_sub', 'Pedidos de percurso submetidos por instrutores.')}</p>
-      </header>
+      <AdminPageHeader title={safeT(t, 'shell.admin.path_requests', 'Pedidos de percurso')} description={safeT(t, 'path_req.admin_sub', 'Pedidos de percurso submetidos por instrutores.')} />
 
       <div className="flex gap-1 border-b border-slate-200 mb-6 overflow-x-auto">
         {TABS.map(([id, k]) => (

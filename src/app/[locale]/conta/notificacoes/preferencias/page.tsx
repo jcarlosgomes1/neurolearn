@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { redirect } from '@/i18n/routing';
 import { NotifPrefsClient } from './NotifPrefsClient';
 import { Bell } from 'lucide-react';
@@ -14,16 +15,8 @@ export default async function NotifPrefsPage({ params }: { params: Promise<{ loc
   const whatsappEnabled = (await sb.rpc('nl_platform_config_get', { p_key: 'feature.whatsapp_notifications' })).data === 'true';
 
   return (
-    <div className="">
-      <div className="mb-8">
-        <div className="flex items-center gap-2 text-blue-600 text-xs font-semibold uppercase tracking-wider mb-1">
-          <Bell className="h-3.5 w-3.5" /> Notificações
-        </div>
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Preferências de notificação</h1>
-        <p className="text-sm text-slate-600 mt-1.5 max-w-2xl">
-          Escolhe como e quando queres ser notificado. Canais e tipos individuais.
-        </p>
-      </div>
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <AdminPageHeader title="Preferências de notificação" description="Escolhe como e quando queres ser notificado. Canais e tipos individuais." />
       <NotifPrefsClient initial={prefs as any} whatsappEnabled={whatsappEnabled} />
     </div>
   );

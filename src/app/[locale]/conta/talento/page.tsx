@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 import { Briefcase } from 'lucide-react';
@@ -19,16 +20,8 @@ export default async function TalentPage() {
   }
 
   return (
-    <div className="">
-      <header className="mb-8">
-        <div className="flex items-center gap-2 text-violet-600 text-xs font-semibold uppercase tracking-wider mb-1">
-          <Briefcase className="h-3.5 w-3.5" /> {safeT('account.talent.eyebrow', 'Carreira · Perfil talento')}
-        </div>
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{safeT('account.talent.title', 'Perfil de talento')}</h1>
-        <p className="text-sm text-slate-600 mt-1.5 max-w-2xl leading-relaxed">
-          {safeT('account.talent.description', 'Disponibiliza o teu perfil às empresas para oportunidades de carreira. Controlas o que partilhas e a quem.')}
-        </p>
-      </header>
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <AdminPageHeader title={safeT('account.talent.title', 'Perfil de talento')} description={safeT('account.talent.description', 'Disponibiliza o teu perfil às empresas para oportunidades de carreira. Controlas o que partilhas e a quem.')} />
       <TalentClient initial={(profile as any) || {}} />
     </div>
   );

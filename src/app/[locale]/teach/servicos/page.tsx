@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 import { Handshake } from 'lucide-react';
@@ -20,15 +21,7 @@ export default async function ServicesPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <header className="mb-8">
-        <div className="flex items-center gap-2 text-amber-600 text-xs font-semibold uppercase tracking-wider mb-1">
-          <Handshake className="h-3.5 w-3.5" /> {safeT('teach.services.eyebrow', 'Instrutor · Serviços corporativos')}
-        </div>
-        <h1 className="font-display text-3xl font-bold text-slate-900 tracking-tight">{safeT('teach.services.title', 'Os meus serviços')}</h1>
-        <p className="text-sm text-slate-600 mt-1.5 max-w-2xl leading-relaxed">
-          {safeT('teach.services.description', 'Workshops, formações in-company, mentorias. As empresas podem contactar-te através destes serviços.')}
-        </p>
-      </header>
+      <AdminPageHeader title={safeT('teach.services.title', 'Os meus serviços')} description={safeT('teach.services.description', 'Workshops, formações in-company, mentorias. As empresas podem contactar-te através destes serviços.')} />
       <ServicesClient initial={Array.isArray(services) ? services : []} />
     </div>
   );
