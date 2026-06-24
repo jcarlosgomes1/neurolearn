@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { getTranslations } from 'next-intl/server';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { redirect } from '@/i18n/routing';
 import { CandidatoClient } from './CandidatoClient';
@@ -10,6 +11,11 @@ export const metadata = { title: 'Candidatura · Documentos' };
 export default async function CandidatoPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const sb = await createClient();
+  const t = await getTranslations();
+  function safeT(key: string, fb: string): string {
+    try { const v = t(key as any); if (v && typeof v === 'string' && v !== key) return v; } catch {}
+    return fb;
+  }
   const { data: { user } } = await sb.auth.getUser();
   if (!user) redirect({ href: '/login', locale });
 
@@ -18,7 +24,7 @@ export default async function CandidatoPage({ params }: { params: Promise<{ loca
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-      <AdminPageHeader title="Os meus documentos" description="Faz upload de CV, certificados e materiais. Ficam sempre acessíveis para atualizares." />
+      <AdminPageHeader title={safeT('account.candidato.title', 'Os meus documentos')} description={safeT('account.candidato.description', 'Faz upload de CV, certificados e materiais. Ficam sempre acessíveis para atualizares.')} />
 
       <CandidatoClient
         application={appData || null}
