@@ -1,5 +1,6 @@
 'use client';
 
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { useEffect, useState, useTransition } from 'react';
 import { Link } from '@/i18n/routing';
 import { createClient } from '@/lib/supabase/client';
@@ -75,14 +76,7 @@ export function LearningPathEditorClient({ pathId }: { pathId: string }) {
     <div className="space-y-4">
       <div className="flex items-start justify-between">
         <div>
-          <Link href={'/admin/learning-paths' as any} className="group inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900 font-medium transition-colors mb-2">
-            <ChevronLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" /> Percursos
-          </Link>
-          <h1 className="text-2xl font-bold text-slate-900">
-            <span className="text-3xl mr-2">{path.emoji}</span>
-            {path.title}
-          </h1>
-          {path.subtitle && <p className="text-sm text-slate-500 mt-1">{path.subtitle}</p>}
+          <AdminPageHeader backHref="/admin/learning-paths" backLabel="Percursos" title={path.title} description={path.subtitle || undefined} />
         </div>
         <button onClick={save} disabled={saving}
           className="inline-flex items-center gap-1.5 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-medium disabled:opacity-50">

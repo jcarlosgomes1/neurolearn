@@ -1,5 +1,6 @@
 'use client';
 
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { useState, useTransition } from 'react';
 import { Link, useRouter } from '@/i18n/routing';
 import { updateOrgBasicAction, updateOrgFeaturesAction } from '../../actions';
@@ -58,7 +59,7 @@ export function EditOrgClient({ orgId, org, features: initialFeatures }: { orgId
       <Link href={`/admin/empresas/${orgId}` as any} className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-brand-700 mb-4">
         <ArrowLeft className="h-4 w-4" /> Voltar aos detalhes
       </Link>
-      <h1 className="text-2xl font-bold text-slate-900 mb-6">Editar {org.name}</h1>
+      <AdminPageHeader title={`Editar ${org.name}`} />
       
       {saved && (
         <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-sm text-emerald-700 flex items-center gap-2">

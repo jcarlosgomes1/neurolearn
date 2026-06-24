@@ -1,3 +1,4 @@
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { Link } from '@/i18n/routing';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
@@ -22,12 +23,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Billing & Planos</h1>
-        <p className="text-sm text-slate-500 mt-1">
-          Tudo configurável: preços, features, quotas, addons, marketplace. Nada hardcoded.
-        </p>
-      </div>
+      <AdminPageHeader title="Billing & Planos" description="Tudo configurável: preços, features, quotas, addons e marketplace." />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <Stat icon={<Package className="h-4 w-4" />} label="Planos" value={(plans as any[] || []).length} color="text-brand-700" />
