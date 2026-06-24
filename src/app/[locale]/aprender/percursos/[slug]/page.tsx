@@ -1,3 +1,4 @@
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { createClient } from '@/lib/supabase/server';
 import { Link } from '@/i18n/routing';
 import { notFound } from 'next/navigation';
@@ -49,27 +50,7 @@ export default async function LearningPathDetailPage({ params }: { params: Promi
       </Link>
 
       {/* HERO */}
-      <header className="relative overflow-hidden rounded-3xl border border-violet-100 bg-gradient-to-br from-violet-600 via-fuchsia-600 to-indigo-700 text-white p-7 sm:p-10 mb-8 shadow-xl">
-        <div className="absolute -top-16 -right-16 w-64 h-64 rounded-full bg-white/10 blur-2xl animate-pulse" />
-        <div className="relative">
-          <div className="flex flex-wrap items-center gap-2 mb-4">
-            <span className="text-5xl">{path.emoji || '🎓'}</span>
-            <span className={`text-[10px] uppercase px-2 py-0.5 rounded font-bold ${diffClass}`}>
-              {DIFF_KEY[path.difficulty] ? t(DIFF_KEY[path.difficulty]) : path.difficulty}
-            </span>
-            {path.category && <span className="text-[10px] uppercase bg-white/20 px-2 py-0.5 rounded font-semibold">{path.category}</span>}
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-balance">{path.title}</h1>
-          {n.tagline && <p className="mt-3 text-lg sm:text-xl font-medium text-white/90 text-pretty">{n.tagline}</p>}
-          {!n.tagline && path.subtitle && <p className="mt-3 text-lg text-white/90">{path.subtitle}</p>}
-          <div className="mt-5 flex flex-wrap items-center gap-4 text-sm text-white/80">
-            <span className="flex items-center gap-1.5"><BookOpen className="h-4 w-4" /> {t('bn.courses', { count: courses.length })}</span>
-            <span className="flex items-center gap-1.5"><Clock className="h-4 w-4" /> ~{path.estimated_hours}h</span>
-            <span className="flex items-center gap-1.5"><Users className="h-4 w-4" /> {t('path.enrolled_count', { count: path.enrollments_count })}</span>
-          </div>
-          <div className="mt-6"><EnrollPathButton pathId={path.id} isEnrolled={isEnrolled} /></div>
-        </div>
-      </header>
+      <AppPageHeader title={path.title} description={n.tagline || path.subtitle || undefined} />
 
       {/* OUTCOMES — the payoff */}
       {outcomes.length > 0 && (

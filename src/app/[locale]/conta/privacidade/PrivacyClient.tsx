@@ -1,5 +1,6 @@
 'use client';
 
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { Link } from '@/i18n/routing';
@@ -86,9 +87,7 @@ export function PrivacyClient({ initial, userEmail }: { initial: GdprRequest[]; 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-          <Shield className="h-6 w-6 text-brand-600" /> Privacidade e dados
-        </h1>
+        <AppPageHeader title="Privacidade e dados" />
         <p className="text-sm text-slate-500 mt-1">Os teus direitos GDPR/RGPD: aceder, exportar e eliminar.</p>
       </div>
       

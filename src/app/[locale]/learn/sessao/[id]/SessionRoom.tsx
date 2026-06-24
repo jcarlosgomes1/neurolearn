@@ -1,5 +1,6 @@
 'use client';
 
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useTranslations, useLocale } from 'next-intl';
@@ -120,11 +121,7 @@ export function SessionRoom({ sessionId }: { sessionId: string }) {
     <div className="max-w-2xl mx-auto px-4 py-8">
       <a href={`/${locale}/learn`} className="inline-flex items-center gap-1.5 text-sm text-neutral-500 hover:text-neutral-800 mb-4"><ArrowLeft className="w-4 h-4" /> {t('learn.session.back')}</a>
       <div className="rounded-2xl border border-neutral-200 bg-white overflow-hidden">
-        <div className="bg-gradient-to-br from-neutral-900 to-neutral-700 p-6 text-white">
-          <div className="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full bg-white/15 mb-3"><Video className="w-3.5 h-3.5" /> {t(`teach.live.kind.${sess.session_kind}`)}</div>
-          <h1 className="text-2xl font-display font-semibold">{sess.title}</h1>
-          {sess.instructor && <p className="text-white/70 text-sm mt-1">{sess.instructor}</p>}
-        </div>
+        <AppPageHeader title={sess.title} description={sess.instructor || undefined} />
         <div className="p-6 space-y-4">
           {sess.description && <p className="text-neutral-600 text-sm whitespace-pre-wrap">{sess.description}</p>}
           <div className="flex items-center gap-4 text-sm text-neutral-500 flex-wrap">

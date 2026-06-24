@@ -1,5 +1,6 @@
 'use client';
 
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { CodeBlock } from '@/components/lesson/CodeBlock';
@@ -189,12 +190,7 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
               ☰ {t('curriculum_btn')}
             </button>
             <header className="mb-6">
-              <div className="text-xs text-slate-400 font-medium uppercase tracking-wider flex items-center gap-2 flex-wrap">
-                <span>{course.emoji} {course.title}</span>
-                <span>›</span>
-                <span className="text-slate-500">{mod.title}</span>
-              </div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 mt-2 leading-[1.15] tracking-tight text-balance">{lesson.title}</h1>
+              <AppPageHeader description={`${course.title} › ${mod.title}`} title={lesson.title} />
               <div className="mt-4 flex items-center gap-2 flex-wrap text-sm">
                 <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${typeMeta.color}`}>{typeMeta.emoji} {typeMeta.label}</span>
                 {lesson.duration_minutes && <span className="text-slate-500">⏱ {t('minutes', { n: lesson.duration_minutes })}</span>}

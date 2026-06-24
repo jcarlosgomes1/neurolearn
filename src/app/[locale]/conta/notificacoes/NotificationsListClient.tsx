@@ -1,5 +1,6 @@
 'use client';
 
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { Link } from '@/i18n/routing';
@@ -52,7 +53,7 @@ export function NotificationsListClient({ initial, locale }: { initial: Notifica
 
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2"><Bell className="h-6 w-6 text-brand-600" /> {t('notifs.title')}</h1>
+          <AppPageHeader title={t('notifs.title')} />
           <p className="text-sm text-slate-500 mt-1">{unread > 0 ? t('notifs.unread_count', { count: unread }) : t('notifs.all_caught_up')}</p>
         </div>
         {unread > 0 && (
