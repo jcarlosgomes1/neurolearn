@@ -1,3 +1,4 @@
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { redirect, notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getOrgDetailsAction } from '../actions';
@@ -24,41 +25,24 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   
   return (
     <div className="">
-      <a href={`/${locale}/admin/empresas`} className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-brand-700 mb-4">
-        <ArrowLeft className="h-4 w-4" /> Voltar
-      </a>
-      
-      <div className="flex items-start justify-between gap-4 flex-wrap mb-6">
-        <div className="flex items-center gap-4">
-          {org.logo_url ? (
-            <img src={org.logo_url} alt={org.name} className="h-16 w-16 rounded-xl object-cover" />
-          ) : (
-            <div className="h-16 w-16 rounded-xl bg-gradient-to-br from-brand-500 to-violet-600 text-white flex items-center justify-center font-bold text-2xl">
-              {org.name.charAt(0).toUpperCase()}
-            </div>
-          )}
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">{org.name}</h1>
-            <div className="text-sm text-slate-500 flex items-center gap-2 mt-0.5">
-              <span>/empresa/{org.slug}</span>
-              <span>·</span>
-              <span>{org.country_code || '—'}</span>
-              <span>·</span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100">{org.plan}</span>
-            </div>
+      <AdminPageHeader
+        backHref="/admin/empresas"
+        backLabel="Voltar"
+        title={org.name}
+        description={`/empresa/${org.slug} · ${org.country_code || '—'} · ${org.plan}`}
+        actions={
+          <div className="flex gap-2">
+            <a href={`/${locale}/empresa/${org.slug}`} target="_blank"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-medium rounded-lg">
+              <ExternalLink className="h-4 w-4" /> Workspace
+            </a>
+            <a href={`/${locale}/admin/empresas/${org.id}/editar`}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-lg">
+              <Edit3 className="h-4 w-4" /> Editar
+            </a>
           </div>
-        </div>
-        <div className="flex gap-2">
-          <a href={`/${locale}/empresa/${org.slug}`} target="_blank"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-medium rounded-lg">
-            <ExternalLink className="h-4 w-4" /> Workspace
-          </a>
-          <a href={`/${locale}/admin/empresas/${org.id}/editar`}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-lg">
-            <Edit3 className="h-4 w-4" /> Editar
-          </a>
-        </div>
-      </div>
+        }
+      />
 
       {/* Quick actions — sub-páginas administrativas */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-6">

@@ -1,5 +1,6 @@
 'use client';
 
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Link } from '@/i18n/routing';
@@ -47,9 +48,7 @@ export function UserDetailClient({ userId }: { userId: string }) {
 
   return (
     <div className="max-w-5xl mx-auto space-y-5 pb-16">
-      <Link href={'/admin/users' as any} className="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900">
-        <ArrowLeft className="h-4 w-4" /> Utilizadores
-      </Link>
+      <AdminPageHeader backHref="/admin/users" backLabel="Utilizadores" title={p.name || 'Sem nome'} />
 
       <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6">
         <div className="flex items-start gap-4">
@@ -62,7 +61,7 @@ export function UserDetailClient({ userId }: { userId: string }) {
           )}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-xl font-bold text-slate-900 truncate">{p.name || 'Sem nome'}</h1>
+              
               <span className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider ${roleMeta.cls}`}><RoleIcon className="h-3 w-3" /> {roleMeta.label}</span>
               {p.is_active
                 ? <span className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded font-bold uppercase">Activo</span>
