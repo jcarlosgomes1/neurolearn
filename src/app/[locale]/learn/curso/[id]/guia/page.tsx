@@ -1,9 +1,9 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getTranslations } from 'next-intl/server';
-import { Link } from '@/i18n/routing';
-import { ArrowLeft, Target, Lightbulb, ListChecks, Library, HelpCircle, ChevronDown, Route } from 'lucide-react';
+import { Target, Lightbulb, ListChecks, Library, HelpCircle, ChevronDown, Route } from 'lucide-react';
 import { CourseQA } from '@/components/lesson/CourseQA';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 
 export const metadata = { title: 'Guia de estudo' };
 
@@ -40,16 +40,8 @@ export default async function Page({ params }: { params: Promise<{ id: string; l
   const terms: Term[] = gr?.ok && Array.isArray(gr.terms) ? gr.terms : [];
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <Link href={`/learn/curso/${id}/aula/0/0` as any} className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-brand-600 mb-6">
-        <ArrowLeft className="h-4 w-4" /> {t('back')}
-      </Link>
-
-      <header className="mb-10">
-        <p className="text-xs font-semibold uppercase tracking-wider text-brand-600">{t('eyebrow')}</p>
-        <h1 className="font-display text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight mt-1 text-balance">{r?.title}</h1>
-        <p className="text-slate-500 mt-2">{t('subtitle')}</p>
-      </header>
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <AppPageHeader backHref={`/learn/curso/${id}/aula/0/0`} backLabel={t('back')} title={r?.title || ''} description={t('subtitle')} />
 
       <div className="space-y-10">
         <CourseQA courseId={id} />

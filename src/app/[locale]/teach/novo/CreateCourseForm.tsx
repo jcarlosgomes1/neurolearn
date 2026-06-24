@@ -1,5 +1,6 @@
 'use client';
 
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
@@ -192,12 +193,8 @@ export function CreateCourseForm() {
   if (phase === 'prompt') {
     return (
       <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-10 pb-16">
-        <div className="text-center mb-8">
-          <span className="inline-block text-xs font-semibold uppercase tracking-widest text-brand-700 bg-brand-50 px-3 py-1 rounded-full mb-4">{t('badge_create')}</span>
-          <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">{t('heading')}</h1>
-          <p className="mt-3 text-slate-600 max-w-xl mx-auto">{t('subheading')}</p>
-          <p className="mt-4 text-sm text-slate-500 max-w-xl mx-auto bg-slate-50 border border-slate-100 rounded-xl px-4 py-2.5 leading-relaxed">💡 {t('tip_intro')}</p>
-        </div>
+        <AppPageHeader title={t('heading')} description={t('subheading')} />
+        <p className="mb-6 text-sm text-slate-500 bg-slate-50 border border-slate-100 rounded-xl px-4 py-2.5 leading-relaxed">💡 {t('tip_intro')}</p>
 
         <textarea
           value={prompt} onChange={(e) => setPrompt(e.target.value)}
