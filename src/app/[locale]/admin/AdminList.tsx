@@ -177,7 +177,34 @@ export function AdminList({
         </div>
       ) : (
         <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-          <div className="overflow-x-auto">
+          {/* Mobile: cartoes */}
+          <div className="md:hidden divide-y divide-slate-100">
+            {(filtered ?? rows).map((row, i) => (
+              <div key={row.id || i} className="p-4 space-y-3">
+                <div className="space-y-1.5">
+                  {columns.map((c) => (
+                    c.primary ? (
+                      <div key={c.key} className="font-semibold text-slate-900">{renderCell(row, c)}</div>
+                    ) : (
+                      <div key={c.key} className="flex items-center justify-between gap-3">
+                        <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400 shrink-0">{c.label}</span>
+                        <span className="text-sm text-slate-700 text-right min-w-0 truncate">{renderCell(row, c)}</span>
+                      </div>
+                    )
+                  ))}
+                </div>
+                {linkPrefix && linkKey && (
+                  <Link href={`${linkPrefix}${row[linkKey]}${linkSuffix || ''}` as any}
+                    className={`flex items-center justify-center gap-1 text-xs bg-gradient-to-br ${accentGradient} hover:opacity-90 text-white w-full py-2 rounded-lg font-semibold shadow-sm`}>
+                    {linkLabel || safeT('acom.btn_open', 'Abrir')}
+                    <ChevronRight className="h-3 w-3" />
+                  </Link>
+                )}
+              </div>
+            ))}
+          </div>
+          {/* Desktop: tabela */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-gradient-to-r from-slate-50 to-slate-100/50 text-slate-600 text-[10px] uppercase tracking-wider border-b border-slate-200">
                 <tr>
