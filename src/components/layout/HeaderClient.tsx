@@ -63,7 +63,7 @@ export function HeaderClient({ session, nav }: { session: Session | null; nav: N
 
   return (
     <>
-      <header className={`sticky top-0 z-40 bg-white border-b border-slate-200 transition-transform duration-300 will-change-transform ${(hidden && !open) ? 'max-md:-translate-y-full' : 'translate-y-0'}`}>
+      <header className={`sticky top-0 z-40 bg-white border-b border-slate-200 transition-transform duration-300 will-change-transform translate-y-0`}>
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-3">
           <Link href="/" className="flex items-center gap-2 text-slate-900 group shrink-0">
             <BrandLogo iconClassName="transition-transform group-hover:scale-110" textClassName="text-lg tracking-tight" />
