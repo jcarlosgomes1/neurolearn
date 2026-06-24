@@ -1,5 +1,6 @@
 'use client';
 
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
@@ -52,7 +53,7 @@ export function AdminInstructorDetail({ instructorId, embedded = false }: { inst
             <div className="w-12 h-12 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center font-bold text-lg">{(inst?.display_name || '?')[0]?.toUpperCase()}</div>
           )}
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">{inst?.display_name || t('fallback_title')}</h1>
+            <AdminPageHeader title={inst?.display_name || t('fallback_title')} />
             <p className="text-slate-500 text-sm">{t('admin_view', { s: inst?.status || '' })}</p>
           </div>
         </div>

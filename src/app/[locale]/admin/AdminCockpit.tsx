@@ -1,5 +1,6 @@
 'use client';
 
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { useEffect, useState } from 'react';
 import { Link } from '@/i18n/routing';
 import { callAgentOps } from '@/lib/api/client';
@@ -74,8 +75,7 @@ export function AdminCockpit() {
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 animate-fade-in">
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">{t('cockpit.title')}</h1>
-        <p className="text-slate-500 text-sm mt-1">{t('cockpit.subtitle')}</p>
+        <AdminPageHeader title={t('cockpit.title')} description={t('cockpit.subtitle')} />
       </div>
 
       {/* KPIs */}

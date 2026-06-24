@@ -1,5 +1,6 @@
 'use client';
 
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { useState, useTransition, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -157,8 +158,7 @@ export function ProposalReview({ slug, initial }: { slug: string; initial: Propo
             <h2 className="text-[10px] uppercase font-bold tracking-wider text-slate-500">{t('org.pr.proposal_h')}</h2>
           </div>
           
-          <h1 className="text-2xl font-bold text-slate-900">{proposal.title}</h1>
-          {proposal.subtitle && <p className="text-base text-slate-600 mt-1">{proposal.subtitle}</p>}
+          <AppPageHeader title={proposal.title} description={proposal.subtitle || undefined} />
           
           {proposal.description && (
             <div className="mt-4 text-sm text-slate-700 whitespace-pre-wrap">{proposal.description}</div>

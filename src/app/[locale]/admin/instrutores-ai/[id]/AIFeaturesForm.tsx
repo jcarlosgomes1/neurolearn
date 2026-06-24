@@ -1,5 +1,6 @@
 'use client';
 
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link, useRouter } from '@/i18n/routing';
@@ -126,7 +127,7 @@ export function AIFeaturesForm({ instructorId }: { instructorId: string }) {
           <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-2xl text-slate-400 flex-shrink-0">{instructor.display_name.charAt(0).toUpperCase()}</div>
         )}
         <div className="min-w-0">
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 truncate">{instructor.display_name}</h1>
+          <AdminPageHeader title={instructor.display_name} />
           <div className="text-sm text-slate-500 mt-0.5">{activeCount} {activeCount === 1 ? t('features_active_singular') : t('features_active_plural')}</div>
         </div>
       </div>

@@ -1,5 +1,6 @@
 'use client';
 
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { useState, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from '@/i18n/routing';
@@ -71,13 +72,7 @@ export function PageEditor({ initial }: { initial: { page: any; translations: an
   return (
     <>
       <div className="flex items-center justify-between mb-5">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-            <span className="text-3xl">{page.emoji || '📄'}</span>
-            {translations.find((t) => t.lang === 'pt')?.title || page.slug}
-          </h1>
-          <p className="text-xs text-slate-500 font-mono mt-0.5">/p/{page.slug}</p>
-        </div>
+        <AdminPageHeader title={translations.find((t) => t.lang === 'pt')?.title || page.slug} description={`/p/${page.slug}`} emoji={page.emoji || '📄'} />
         <button
           onClick={saveAll}
           disabled={busy}

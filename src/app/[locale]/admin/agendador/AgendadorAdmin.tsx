@@ -1,5 +1,6 @@
 'use client';
 
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { useEffect, useMemo, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
@@ -104,7 +105,7 @@ export function AgendadorAdmin({ locale }: { locale: string }) {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-5">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2"><Clock className="h-6 w-6 text-violet-600" /> {t('agendador.title')}</h1>
+        <AdminPageHeader title={t('agendador.title')} />
         <p className="text-sm text-slate-500 mt-1">{t('agendador.subtitle')}</p>
       </div>
 

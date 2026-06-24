@@ -1,5 +1,6 @@
 'use client';
 
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { useState, useTransition } from 'react';
 import { useRouter } from '@/i18n/routing';
 import { Link } from '@/i18n/routing';
@@ -117,7 +118,7 @@ export function NovaEmpresaWizard({ locale }: { locale: string }) {
       <div className="px-4 sm:px-6 py-12 max-w-2xl mx-auto">
         <div className="bg-white border border-emerald-200 rounded-2xl p-8 text-center">
           <CheckCircle className="h-16 w-16 text-emerald-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">Empresa criada com sucesso</h1>
+          <p className="text-2xl font-bold text-slate-900 mb-2">Empresa criada com sucesso</p>
           <p className="text-slate-600 mb-6">
             <strong>{name}</strong> está pronta. {ownerEmail} {createdSlug ? 'foi adicionado/a como owner' : 'recebeu invitation pendente'}.
           </p>
@@ -138,13 +139,7 @@ export function NovaEmpresaWizard({ locale }: { locale: string }) {
 
   return (
     <div className="px-4 sm:px-6 py-6 max-w-3xl mx-auto">
-      <Link href={'/admin/empresas' as any} className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-brand-700 mb-4">
-        <ArrowLeft className="h-4 w-4" /> Voltar
-      </Link>
-      <div className="flex items-center gap-2 mb-6">
-        <Building2 className="h-6 w-6 text-brand-600" />
-        <h1 className="text-2xl font-bold text-slate-900">Criar Empresa</h1>
-      </div>
+      <AdminPageHeader backHref="/admin/empresas" backLabel="Voltar" title="Criar Empresa" />
       
       {/* Steps progress */}
       <div className="flex items-center gap-2 mb-8">
