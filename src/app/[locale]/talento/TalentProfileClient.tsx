@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { createClient } from '@/lib/supabase/client';
 import { Briefcase, Award, MapPin, Euro, Loader2, Save, Eye, EyeOff } from 'lucide-react';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 
 interface Profile {
   available?: boolean; headline?: string; bio?: string; desired_roles?: string[];
@@ -53,14 +54,7 @@ export function TalentProfileClient({ initial }: { initial: { ok: boolean; profi
   
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-          <Briefcase className="h-6 w-6 text-brand-600" /> {t('tal.profile_h')}
-        </h1>
-        <p className="text-sm text-slate-500 mt-1">
-          {t('tal.profile_sub')}
-        </p>
-      </div>
+      <AppPageHeader title={t('tal.profile_h')} description={t('tal.profile_sub')} />
       
       {/* Available toggle */}
       <div className={`rounded-xl border p-4 ${form.available ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-200'}`}>
