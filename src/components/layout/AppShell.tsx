@@ -91,6 +91,13 @@ export async function AppShell({ role, pageTitle, children }: AppShellProps) {
     if (typeof data === 'string' && data) pageGlyph = data;
   } catch {}
 
+  let glyphMap: { route: string; emoji: string }[] = [];
+  try {
+    const sb = await createClient();
+    const { data } = await sb.from('nl_page_glyphs').select('route,emoji');
+    if (Array.isArray(data)) glyphMap = data as { route: string; emoji: string }[];
+  } catch {}
+
   let collapsedPref: boolean | null = null;
   try {
     const c = (await cookies()).get('nl_sb')?.value;
@@ -103,6 +110,7 @@ export async function AppShell({ role, pageTitle, children }: AppShellProps) {
       role={role}
       pageTitle={pageTitle}
       nav={nav}
+      glyphMap={glyphMap}
       pageGlyph={pageGlyph}
       collapsedPref={collapsedPref}
       session={session ? { email: session.user.email!, area: session.area, areas: session.areas } : null}
