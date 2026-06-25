@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useTranslations, useLocale } from 'next-intl';
 import { toast } from 'sonner';
-import { Camera, Loader2, Trash2, Check, X, ZoomIn } from 'lucide-react';
+import { Camera, Loader2, Trash2, Check, X, ZoomIn, Eraser } from 'lucide-react';
 import { UserAvatar } from '@/components/account/UserAvatar';
 
 type Lang = 'pt' | 'en' | 'es' | 'fr';
@@ -13,11 +13,68 @@ const L: Record<string, Record<Lang, string>> = {
   drag: { pt: 'Arrasta para mover · usa o cursor para aproximar', en: 'Drag to move · use the slider to zoom', es: 'Arrastra para mover · usa el control para acercar', fr: 'Glisse pour déplacer · utilise le curseur pour zoomer' },
   confirm: { pt: 'Guardar foto', en: 'Save photo', es: 'Guardar foto', fr: 'Enregistrer' },
   cancel: { pt: 'Cancelar', en: 'Cancel', es: 'Cancelar', fr: 'Annuler' },
+  removebg: { pt: 'Remover fundo (beta)', en: 'Remove background (beta)', es: 'Quitar fondo (beta)', fr: 'Supprimer l’arrière-plan (bêta)' },
+  bg_failed: { pt: 'Não foi possível remover o fundo; guardei a foto original.', en: 'Could not remove background; saved the original photo.', es: 'No se pudo quitar el fondo; guardé la foto original.', fr: 'Impossible de supprimer l’arrière-plan ; photo originale enregistrée.' },
+  bg_working: { pt: 'A processar a imagem…', en: 'Processing image…', es: 'Procesando imagen…', fr: 'Traitement de l’image…' },
 };
 const VP = 256;
 
 type FaceBox = { boundingBox: { x: number; y: number; width: number; height: number } };
 type FaceDetectorLike = { detect: (i: HTMLImageElement) => Promise<FaceBox[]> };
+
+/* Lazy background removal — MediaPipe Selfie Segmentation (Apache-2.0), loaded from CDN
+   only when used. Never bundled (loaded via a runtime module script), fully optional. */
+async function loadVision(): Promise<unknown> {
+  const w = window as unknown as { __mpVision?: unknown };
+  if (w.__mpVision) return w.__mpVision;
+  await new Promise<void>((resolve, reject) => {
+    const s = document.createElement('script');
+    s.type = 'module';
+    s.textContent = "import * as V from 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs'; window.__mpVision = V; window.dispatchEvent(new Event('mpvision-ready'));";
+    const onReady = () => { cleanup(); resolve(); };
+    const onErr = () => { cleanup(); reject(new Error('vision_load_failed')); };
+    const cleanup = () => { window.removeEventListener('mpvision-ready', onReady); s.removeEventListener('error', onErr); };
+    window.addEventListener('mpvision-ready', onReady, { once: true });
+    s.addEventListener('error', onErr);
+    document.head.appendChild(s);
+    setTimeout(() => { if (!(window as unknown as { __mpVision?: unknown }).__mpVision) onErr(); }, 15000);
+  });
+  return (window as unknown as { __mpVision?: unknown }).__mpVision;
+}
+
+async function removeBackground(canvas: HTMLCanvasElement): Promise<boolean> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const V = await loadVision() as any;
+  if (!V) return false;
+  const fileset = await V.FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm');
+  const segmenter = await V.ImageSegmenter.createFromOptions(fileset, {
+    baseOptions: { modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite' },
+    runningMode: 'IMAGE', outputConfidenceMasks: true, outputCategoryMask: false,
+  });
+  try {
+    const ctx = canvas.getContext('2d'); if (!ctx) return false;
+    const W = canvas.width, H = canvas.height;
+    const result = segmenter.segment(canvas);
+    const mask = result.confidenceMasks && result.confidenceMasks[0];
+    if (!mask) return false;
+    const mW: number = mask.width, mH: number = mask.height;
+    const conf: Float32Array = mask.getAsFloat32Array();
+    const centerFg = conf[Math.floor(mH / 2) * mW + Math.floor(mW / 2)] >= 0.5;
+    const img = ctx.getImageData(0, 0, W, H);
+    for (let y = 0; y < H; y++) {
+      const my = Math.min(mH - 1, (y * mH / H) | 0);
+      for (let x = 0; x < W; x++) {
+        const mx = Math.min(mW - 1, (x * mW / W) | 0);
+        const keep = (conf[my * mW + mx] >= 0.5) === centerFg;
+        if (!keep) img.data[(y * W + x) * 4 + 3] = 0;
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+    return true;
+  } finally {
+    try { segmenter.close(); } catch { /* noop */ }
+  }
+}
 
 export function AvatarUploader() {
   const t = useTranslations('profile');
@@ -36,6 +93,7 @@ export function AvatarUploader() {
   const [nat, setNat] = useState<{ w: number; h: number }>({ w: 0, h: 0 });
   const [zoom, setZoom] = useState(1);
   const [off, setOff] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [noBg, setNoBg] = useState(false);
   const drag = useRef<{ x: number; y: number; ox: number; oy: number } | null>(null);
 
   useEffect(() => {
@@ -103,12 +161,22 @@ export function AvatarUploader() {
       const out = document.createElement('canvas'); out.width = 512; out.height = 512;
       const ctx = out.getContext('2d')!; ctx.imageSmoothingQuality = 'high';
       ctx.drawImage(img, sx, sy, sSize, sSize, 0, 0, 512, 512);
-      const blob = await new Promise<Blob>((res) => out.toBlob((b) => res(b as Blob), 'image/jpeg', 0.85));
+
+      let ext = 'jpg', type = 'image/jpeg';
+      let quality: number | undefined = 0.85;
+      if (noBg) {
+        let ok = false;
+        try { ok = await removeBackground(out); } catch { ok = false; }
+        if (ok) { ext = 'png'; type = 'image/png'; quality = undefined; }
+        else { toast(tl('bg_failed')); }
+      }
+
+      const blob = await new Promise<Blob>((res) => out.toBlob((b) => res(b as Blob), type, quality));
       const sb = createClient();
       const { data: { user } } = await sb.auth.getUser();
       if (!user) throw new Error('unauthenticated');
-      const path = `avatars/${user.id}-${Date.now()}.jpg`;
-      const { error: upErr } = await sb.storage.from('app').upload(path, blob, { upsert: true, contentType: 'image/jpeg' });
+      const path = `avatars/${user.id}-${Date.now()}.${ext}`;
+      const { error: upErr } = await sb.storage.from('app').upload(path, blob, { upsert: true, contentType: type });
       if (upErr) throw upErr;
       const pub = sb.storage.from('app').getPublicUrl(path).data.publicUrl;
       const { data, error } = await sb.rpc('nl_set_avatar', { p_url: pub });
@@ -143,7 +211,11 @@ export function AvatarUploader() {
             <ZoomIn className="h-4 w-4 text-slate-400 shrink-0" />
             <input type="range" min={1} max={3} step={0.01} value={zoom} onChange={(e) => setZoom(parseFloat(e.target.value))} className="w-full accent-violet-600" />
           </div>
-          <p className="text-xs text-slate-500">{tl('drag')}</p>
+          <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer select-none">
+            <input type="checkbox" checked={noBg} onChange={(e) => setNoBg(e.target.checked)} className="accent-violet-600" />
+            <Eraser className="h-3.5 w-3.5 text-slate-400" /> {tl('removebg')}
+          </label>
+          <p className="text-xs text-slate-500">{busy && noBg ? tl('bg_working') : tl('drag')}</p>
           <div className="flex gap-2">
             <button onClick={confirmCrop} disabled={busy} className="inline-flex items-center gap-1.5 rounded-lg bg-violet-600 text-white px-4 py-2 text-sm font-semibold hover:bg-violet-700 disabled:opacity-50">
               {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />} {tl('confirm')}
