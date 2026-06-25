@@ -6,7 +6,8 @@ import { CategoryStyleControl } from './CategoryStyleControl';
 
 export const dynamic = 'force-dynamic';
 
-interface Direction { id: string; name: string; tagline: string; file: string; accent: string; sort_order: number; motion: boolean; surface: string; }
+interface Surface { depth: number; emboss: boolean; }
+interface Direction { id: string; name: string; tagline: string; file: string; accent: string; sort_order: number; motion: boolean; surface: Surface; }
 
 export default async function Page() {
   const sb = await createClient();
@@ -28,7 +29,7 @@ export default async function Page() {
         emoji="🎨"
         eyebrow="Sistema · Aparência"
         title="Direção de design"
-        description="Pré-visualiza qualquer direção e define a ativa — a escolha re-tematiza o site inteiro (público incluído): cor de acento, tipografia e superfície mudam em todas as páginas. O movimento (animações) e o relevo dos cartões ligam/configuram por direção."
+        description="Pré-visualiza qualquer direção e define a ativa — a escolha re-tematiza o site inteiro (público incluído): cor de acento, tipografia e superfície mudam em todas as páginas. Movimento e relevo dos cartões configuram-se por direção."
       />
       <DesignClient initialActive={active} directions={directions} />
       <CategoryStyleControl initialVariant={ccsVariant} initialArrow={ccsArrow} />

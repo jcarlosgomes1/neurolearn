@@ -1,19 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from '@/i18n/routing';
 import { toast } from 'sonner';
 import { Check, Loader2, ExternalLink, Eye, Sparkles, Layers } from 'lucide-react';
 
-interface Direction { id: string; name: string; tagline: string; file: string; accent: string; sort_order: number; motion: boolean; surface: string; }
+interface Surface { depth: number; emboss: boolean; }
+interface Direction { id: string; name: string; tagline: string; file: string; accent: string; sort_order: number; motion: boolean; surface: Surface; }
 
-const SURFACE_PRESETS: { id: string; label: string }[] = [
-  { id: 'flat', label: 'Plano' },
-  { id: 'soft', label: 'Suave' },
-  { id: 'linkedin', label: 'LinkedIn' },
-  { id: 'strong', label: 'Forte' },
-];
+function shadowFor(depth: number, emboss: boolean) {
+  const f = Math.max(0, Math.min(100, depth)) / 100;
+  const base = `0 ${Math.round(1 + f * 5)}px ${Math.round(2 + f * 22)}px rgba(15,23,42,${(0.05 + f * 0.1).toFixed(3)}),0 1px 2px rgba(15,23,42,0.04)`;
+  return emboss ? `inset 0 1px 0 rgba(255,255,255,.85),${base}` : base;
+}
 
 export function DesignClient({ initialActive, directions }: { initialActive: string; directions: Direction[] }) {
   const router = useRouter();
@@ -23,10 +23,14 @@ export function DesignClient({ initialActive, directions }: { initialActive: str
     () => Object.fromEntries(directions.map((d) => [d.id, d.motion !== false]))
   );
   const [togglingMotion, setTogglingMotion] = useState<string | null>(null);
-  const [surf, setSurf] = useState<Record<string, string>>(
-    () => Object.fromEntries(directions.map((d) => [d.id, d.surface || 'soft']))
+  const [depth, setDepth] = useState<Record<string, number>>(
+    () => Object.fromEntries(directions.map((d) => [d.id, d.surface?.depth ?? 35]))
   );
-  const [settingSurf, setSettingSurf] = useState<string | null>(null);
+  const [emboss, setEmboss] = useState<Record<string, boolean>>(
+    () => Object.fromEntries(directions.map((d) => [d.id, d.surface?.emboss !== false]))
+  );
+  const [savingSurf, setSavingSurf] = useState<string | null>(null);
+  const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   async function activate(id: string) {
     if (id === active) return;
@@ -64,22 +68,30 @@ export function DesignClient({ initialActive, directions }: { initialActive: str
     }
   }
 
-  async function setSurface(id: string, preset: string) {
-    if ((surf[id] || 'soft') === preset) return;
-    setSettingSurf(id);
+  async function saveSurface(id: string, d: number, e: boolean) {
+    setSavingSurf(id);
     try {
       const sb = createClient();
-      const { data, error } = await sb.rpc('nl_design_set_surface', { p_id: id, p_preset: preset });
+      const { data, error } = await sb.rpc('nl_design_set_surface', { p_id: id, p_depth: d, p_emboss: e });
       if (error) throw error;
       if (!data?.ok) throw new Error(data?.error === 'forbidden' ? 'Sem permissão' : 'Inválido');
-      setSurf((s) => ({ ...s, [id]: preset }));
-      toast.success(`${directions.find((d) => d.id === id)?.name ?? id}: relevo ${SURFACE_PRESETS.find((p) => p.id === preset)?.label ?? preset}`);
       if (id === active) router.refresh();
-    } catch (e: any) {
-      toast.error(e?.message || 'Erro');
+    } catch (err: any) {
+      toast.error(err?.message || 'Erro');
     } finally {
-      setSettingSurf(null);
+      setSavingSurf(null);
     }
+  }
+
+  function onDepth(id: string, value: number) {
+    setDepth((s) => ({ ...s, [id]: value }));
+    if (timers.current[id]) clearTimeout(timers.current[id]);
+    timers.current[id] = setTimeout(() => saveSurface(id, value, emboss[id] !== false), 450);
+  }
+
+  function onEmboss(id: string, value: boolean) {
+    setEmboss((s) => ({ ...s, [id]: value }));
+    saveSurface(id, depth[id] ?? 35, value);
   }
 
   return (
@@ -88,7 +100,8 @@ export function DesignClient({ initialActive, directions }: { initialActive: str
         const isActive = d.id === active;
         const isSaving = saving === d.id;
         const motionOn = motion[d.id] ?? true;
-        const surfSel = surf[d.id] || 'soft';
+        const dDepth = depth[d.id] ?? 35;
+        const dEmboss = emboss[d.id] !== false;
         return (
           <div
             key={d.id}
@@ -166,23 +179,39 @@ export function DesignClient({ initialActive, directions }: { initialActive: str
                   <span className="inline-flex items-center gap-1.5 text-sm text-slate-600">
                     <Layers className="h-4 w-4 text-slate-400" /> Relevo dos cartões
                   </span>
-                  {settingSurf === d.id && <Loader2 className="h-3.5 w-3.5 animate-spin text-slate-400" />}
+                  {savingSurf === d.id && <Loader2 className="h-3.5 w-3.5 animate-spin text-slate-400" />}
                 </div>
-                <div className="mt-2 grid grid-cols-4 gap-1 rounded-xl bg-slate-100 p-1">
-                  {SURFACE_PRESETS.map((p) => {
-                    const sel = surfSel === p.id;
-                    return (
-                      <button
-                        key={p.id}
-                        onClick={() => setSurface(d.id, p.id)}
-                        disabled={settingSurf === d.id}
-                        className={`text-xs font-semibold py-1.5 rounded-lg transition-all disabled:opacity-60 ${sel ? 'bg-white text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}
-                        style={sel ? { boxShadow: '0 1px 2px rgba(15,23,42,.14)' } : undefined}
-                      >
-                        {p.label}
-                      </button>
-                    );
-                  })}
+                <div className="mt-3 flex items-center gap-4">
+                  <div
+                    className="h-14 w-20 flex-shrink-0 rounded-xl bg-white border border-slate-200/70"
+                    style={{ boxShadow: shadowFor(dDepth, dEmboss) }}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between text-xs text-slate-500">
+                      <span>Profundidade</span>
+                      <span className="font-mono">{dDepth}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      step={1}
+                      value={dDepth}
+                      onChange={(ev) => onDepth(d.id, Number(ev.target.value))}
+                      className="w-full mt-1"
+                      style={{ accentColor: d.accent }}
+                    />
+                    <label className="mt-2 inline-flex items-center gap-2 text-xs text-slate-600 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={dEmboss}
+                        onChange={(ev) => onEmboss(d.id, ev.target.checked)}
+                        className="h-3.5 w-3.5 rounded"
+                        style={{ accentColor: d.accent }}
+                      />
+                      Brilho no topo (alto-relevo)
+                    </label>
+                  </div>
                 </div>
               </div>
             </div>
