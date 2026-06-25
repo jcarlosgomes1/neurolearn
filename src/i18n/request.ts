@@ -41,6 +41,10 @@ export default getRequestConfig(async ({ requestLocale }) => {
 
   return {
     locale,
+    // Default global de fuso para formatação (igual ao cliente em
+    // ClientIntlProvider) — evita ENVIRONMENT_FALLBACK e mismatches de
+    // hidratação. Sobreponível por chamada quando necessário.
+    timeZone: 'Europe/Lisbon',
     messages,
     // Resiliência: uma tradução em falta NUNCA deve derrubar a página inteira
     // (boundary "Algo correu mal"). Degrada graciosamente — regista apenas erros

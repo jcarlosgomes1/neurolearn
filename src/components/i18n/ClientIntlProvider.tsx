@@ -10,6 +10,11 @@ import type { ReactNode } from 'react';
  * dinamicamente — NUNCA derruba a página no cliente. Degrada para o texto da
  * própria chave. onError/getMessageFallback têm de viver num componente
  * 'use client' porque funções não atravessam a fronteira server→client.
+ *
+ * timeZone: default global de formatação (igual ao servidor em request.ts) para
+ * evitar o aviso ENVIRONMENT_FALLBACK do next-intl e mismatches de hidratação.
+ * Pode ser sobreposto por chamada (ex.: no fluxo de marcação usa-se o fuso do
+ * anfitrião). É um default de plataforma, equivalente ao defaultLocale.
  */
 export function ClientIntlProvider({
   locale,
@@ -23,6 +28,7 @@ export function ClientIntlProvider({
   return (
     <NextIntlClientProvider
       locale={locale}
+      timeZone="Europe/Lisbon"
       messages={messages}
       onError={(error) => {
         if ((error as { code?: string })?.code !== 'MISSING_MESSAGE') {
