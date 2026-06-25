@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import {
   Clock, Globe2, Plus, Trash2, Pencil, Copy, Check, Calendar, Video, Phone,
-  MapPin, Eye, EyeOff, Sparkles, Link2, X, Loader2, CalendarDays, Hourglass,
+  MapPin, Eye, EyeOff, Link2, X, Loader2, CalendarDays, Hourglass,
 } from 'lucide-react';
 
 type Lang = 'pt' | 'en' | 'es' | 'fr';
@@ -20,12 +20,7 @@ const STR: Record<string, Record<Lang, string>> = {
   },
   active: { pt: 'Disponível para marcações', en: 'Available for bookings', es: 'Disponible para reservas', fr: 'Disponible aux réservations' },
   active_hint: { pt: 'Gera horários reserváveis a partir da tua disponibilidade.', en: 'Generates bookable slots from your availability.', es: 'Genera horarios reservables desde tu disponibilidad.', fr: 'Génère des créneaux réservables.' },
-  mentor: { pt: 'Mentoria', en: 'Mentoring', es: 'Mentoría', fr: 'Mentorat' },
-  mentor_on: { pt: 'Mentor aprovado', en: 'Approved mentor', es: 'Mentor aprobado', fr: 'Mentor approuvé' },
-  mentor_off: { pt: 'Mentoria por aprovação', en: 'Mentoring pending approval', es: 'Mentoría por aprobación', fr: 'Mentorat en attente' },
-  in_directory: { pt: 'Aparecer no diretório de mentoria', en: 'Show in mentoring directory', es: 'Aparecer en el directorio', fr: 'Afficher dans annuaire' },
-  in_directory_hint: { pt: 'Quando ligado, apareces na página pública de mentores.', en: 'When on, you appear on the public mentors page.', es: 'Cuando está activo, apareces en la página pública.', fr: 'Activé, tu apparais sur la page publique.' },
-  mentor_locked: { pt: 'Disponível após aprovação como mentor.', en: 'Available once approved as a mentor.', es: 'Disponible tras la aprobación.', fr: 'Disponible après approbation.' },
+  mentor_badge: { pt: 'Mentor', en: 'Mentor', es: 'Mentor', fr: 'Mentor' },
   public_link: { pt: 'A tua página', en: 'Your page', es: 'Tu página', fr: 'Ta page' },
   copy: { pt: 'Copiar', en: 'Copy', es: 'Copiar', fr: 'Copier' },
   copied: { pt: 'Copiado', en: 'Copied', es: 'Copiado', fr: 'Copié' },
@@ -42,9 +37,9 @@ const STR: Record<string, Record<Lang, string>> = {
   new_type: { pt: 'Novo tipo', en: 'New type', es: 'Nuevo tipo', fr: 'Nouveau type' },
   no_types: { pt: 'Ainda não tens tipos de sessão. Cria o primeiro.', en: 'No session types yet. Create your first.', es: 'Aún no tienes tipos de sesión.', fr: 'Aucun type de séance pour instant.' },
   free: { pt: 'Gratuita', en: 'Free', es: 'Gratuita', fr: 'Gratuite' },
-  visible: { pt: 'Visível', en: 'Visible', es: 'Visible', fr: 'Visible' },
+  visible: { pt: 'Visível na tua página', en: 'Visible on your page', es: 'Visible en tu página', fr: 'Visible sur ta page' },
+  visible_short: { pt: 'Visível', en: 'Visible', es: 'Visible', fr: 'Visible' },
   hidden: { pt: 'Oculto', en: 'Hidden', es: 'Oculto', fr: 'Masqué' },
-  listed: { pt: 'No diretório', en: 'Listed', es: 'En directorio', fr: 'Listé' },
   edit: { pt: 'Editar', en: 'Edit', es: 'Editar', fr: 'Modifier' },
   del: { pt: 'Eliminar', en: 'Delete', es: 'Eliminar', fr: 'Supprimer' },
   ttl: { pt: 'Título', en: 'Title', es: 'Título', fr: 'Titre' },
@@ -69,6 +64,11 @@ const PURPOSE_LABEL: Record<string, Record<Lang, string>> = {
   other: { pt: 'Outro', en: 'Other', es: 'Otro', fr: 'Autre' },
 };
 const LOCATIONS = ['video', 'phone', 'in_person'] as const;
+const LOC_LABEL: Record<string, Record<Lang, string>> = {
+  video: { pt: 'Vídeo', en: 'Video', es: 'Vídeo', fr: 'Vidéo' },
+  phone: { pt: 'Telefone', en: 'Phone', es: 'Teléfono', fr: 'Téléphone' },
+  in_person: { pt: 'Presencial', en: 'In person', es: 'Presencial', fr: 'En personne' },
+};
 const LOC_ICON: Record<string, any> = { video: Video, phone: Phone, in_person: MapPin };
 const TZS = ['Europe/Lisbon', 'Europe/London', 'Europe/Madrid', 'Europe/Paris', 'Europe/Berlin', 'UTC', 'America/New_York', 'America/Sao_Paulo'];
 const DOW: { key: string; label: Record<Lang, string> }[] = [
@@ -112,7 +112,6 @@ export function SchedulingDashboard({ initial }: { initial: any }) {
   const [minNotice, setMinNotice] = useState<number>(cal.min_notice_hours ?? 12);
   const [maxAdvance, setMaxAdvance] = useState<number>(cal.max_advance_days ?? 30);
   const [active, setActive] = useState<boolean>(cal.enabled ?? true);
-  const [inDir, setInDir] = useState<boolean>(cal.list_in_directory ?? false);
 
   const [savingCal, setSavingCal] = useState(false);
   const [savedCal, setSavedCal] = useState(false);
@@ -129,12 +128,12 @@ export function SchedulingDashboard({ initial }: { initial: any }) {
     if (d) setData(d);
   }
 
-  async function saveCalendar(extra?: Partial<{ active: boolean; inDir: boolean }>) {
+  async function saveCalendar(extra?: Partial<{ active: boolean }>) {
     setSavingCal(true);
     const payload = {
       p_timezone: tz, p_weekly_availability: weekly, p_buffer_minutes: buffer,
       p_min_notice_hours: minNotice, p_max_advance_days: maxAdvance,
-      p_enabled: extra?.active ?? active, p_list_in_directory: extra?.inDir ?? inDir,
+      p_enabled: extra?.active ?? active,
     };
     await sb.rpc('nl_scheduling_update_calendar', payload as any);
     setSavingCal(false);
@@ -160,7 +159,7 @@ export function SchedulingDashboard({ initial }: { initial: any }) {
       p_id: form.id || null, p_slug: form.slug, p_title: form.title, p_description: form.description || '',
       p_duration_min: Number(form.duration_min) || 30, p_price_cents: Number(form.price_cents) || 0,
       p_currency: 'EUR', p_location_type: form.location_type || 'video', p_location_details: form.location_details || '',
-      p_visible: form.visible ?? true, p_purpose: form.purpose || 'mentoring', p_listed: form.listed ?? true,
+      p_visible: form.visible ?? true, p_purpose: form.purpose || 'mentoring',
     } as any);
     setBusy(false);
     if ((res as any)?.ok) { setEditing(null); refresh(); }
@@ -176,39 +175,25 @@ export function SchedulingDashboard({ initial }: { initial: any }) {
     <div className="space-y-6">
       <AppPageHeader backHref="/conta" title={`📅 ${t('title')}`} description={t('subtitle')} />
 
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2">
         <Card className="!p-4 flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <div className="flex items-center gap-2 text-sm font-semibold text-slate-900"><Calendar className="h-4 w-4 text-violet-600" />{t('active')}</div>
+            <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+              <Calendar className="h-4 w-4 text-violet-600 shrink-0" />{t('active')}
+              {isMentor && <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-violet-100 text-violet-700">{t('mentor_badge')}</span>}
+            </div>
             <p className="text-xs text-slate-500 mt-0.5 leading-snug">{t('active_hint')}</p>
           </div>
           <Toggle on={active} onChange={() => { const v = !active; setActive(v); saveCalendar({ active: v }); }} />
         </Card>
 
-        <Card className="!p-4">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2 text-sm font-semibold text-slate-900"><Sparkles className="h-4 w-4 text-violet-600" />{t('mentor')}</div>
-            <span className={cx('text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full',
-              isMentor ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500')}>
-              {isMentor ? t('mentor_on') : t('mentor_off')}
-            </span>
-          </div>
-          <div className="mt-3 flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <div className="text-sm text-slate-800">{t('in_directory')}</div>
-              <p className="text-xs text-slate-500 mt-0.5 leading-snug">{isMentor ? t('in_directory_hint') : t('mentor_locked')}</p>
-            </div>
-            <Toggle on={inDir && isMentor} disabled={!isMentor} onChange={() => { const v = !inDir; setInDir(v); saveCalendar({ inDir: v }); }} />
-          </div>
-        </Card>
-
         <Card className="!p-4 flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <div className="flex items-center gap-2 text-sm font-semibold text-slate-900"><Link2 className="h-4 w-4 text-violet-600" />{t('public_link')}</div>
+            <div className="flex items-center gap-2 text-sm font-semibold text-slate-900"><Link2 className="h-4 w-4 text-violet-600 shrink-0" />{t('public_link')}</div>
             <p className="text-xs text-slate-500 mt-0.5 truncate">/agendar/{handle || '—'}</p>
           </div>
           <button onClick={copyLink} disabled={!handle}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-violet-700 bg-violet-50 hover:bg-violet-100 disabled:opacity-50 rounded-full px-3 py-1.5 transition-colors">
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-violet-700 bg-violet-50 hover:bg-violet-100 disabled:opacity-50 rounded-full px-3 py-1.5 transition-colors shrink-0">
             {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}{copied ? t('copied') : t('copy')}
           </button>
         </Card>
@@ -216,10 +201,10 @@ export function SchedulingDashboard({ initial }: { initial: any }) {
 
       <div className="grid gap-6 lg:grid-cols-5">
         <Card className="lg:col-span-3">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-display text-lg font-bold text-slate-900 flex items-center gap-2"><Clock className="h-5 w-5 text-violet-600" />{t('availability')}</h2>
+          <div className="flex items-center justify-between mb-4 gap-3">
+            <h2 className="font-display text-lg font-bold text-slate-900 flex items-center gap-2 min-w-0"><Clock className="h-5 w-5 text-violet-600 shrink-0" /><span className="truncate">{t('availability')}</span></h2>
             <button onClick={() => saveCalendar()} disabled={savingCal}
-              className="inline-flex items-center gap-1.5 text-sm font-semibold text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:opacity-90 rounded-full px-4 py-1.5 transition-opacity disabled:opacity-60">
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:opacity-90 rounded-full px-4 py-1.5 transition-opacity disabled:opacity-60 shrink-0">
               {savingCal ? <Loader2 className="h-4 w-4 animate-spin" /> : savedCal ? <Check className="h-4 w-4" /> : null}{savedCal ? t('saved') : t('save')}
             </button>
           </div>
@@ -229,29 +214,29 @@ export function SchedulingDashboard({ initial }: { initial: any }) {
               const windows = weekly[d.key] || [];
               const on = windows.length > 0;
               return (
-                <div key={d.key} className="flex items-start gap-3 rounded-2xl border border-slate-100 p-3">
-                  <div className="flex items-center gap-2 w-20 shrink-0 pt-1.5">
+                <div key={d.key} className="rounded-2xl border border-slate-100 p-3">
+                  <div className="flex items-center gap-2.5">
                     <Toggle on={on} onChange={() => setDayWindows(d.key, on ? [] : [['09:00', '17:00']])} />
-                    <span className="text-sm font-semibold text-slate-700">{d.label[locale]}</span>
+                    <span className="text-sm font-semibold text-slate-700 w-9">{d.label[locale]}</span>
+                    {!on && <span className="text-xs text-slate-400">{t('unavailable')}</span>}
                   </div>
-                  <div className="flex-1 min-w-0 space-y-2">
-                    {!on && <div className="text-xs text-slate-400 pt-2">{t('unavailable')}</div>}
-                    {windows.map((win, i) => (
-                      <div key={i} className="flex items-center gap-2">
-                        <input type="time" value={win[0]} onChange={(e) => { const n = [...windows] as [string, string][]; n[i] = [e.target.value, n[i][1]]; setDayWindows(d.key, n); }}
-                          className="rounded-lg border border-slate-200 px-2 py-1 text-sm focus:ring-2 focus:ring-violet-300 outline-none" />
-                        <span className="text-slate-400">–</span>
-                        <input type="time" value={win[1]} onChange={(e) => { const n = [...windows] as [string, string][]; n[i] = [n[i][0], e.target.value]; setDayWindows(d.key, n); }}
-                          className="rounded-lg border border-slate-200 px-2 py-1 text-sm focus:ring-2 focus:ring-violet-300 outline-none" />
-                        <button onClick={() => { const n = windows.filter((_, j) => j !== i); setDayWindows(d.key, n); }} className="text-slate-300 hover:text-rose-500"><X className="h-4 w-4" /></button>
-                      </div>
-                    ))}
-                    {on && (
+                  {on && (
+                    <div className="space-y-2 mt-2">
+                      {windows.map((win, i) => (
+                        <div key={i} className="flex items-center gap-2">
+                          <input type="time" value={win[0]} onChange={(e) => { const n = [...windows] as [string, string][]; n[i] = [e.target.value, n[i][1]]; setDayWindows(d.key, n); }}
+                            className="flex-1 min-w-0 rounded-lg border border-slate-200 px-2 py-1.5 text-sm focus:ring-2 focus:ring-violet-300 outline-none" />
+                          <span className="text-slate-400 shrink-0">–</span>
+                          <input type="time" value={win[1]} onChange={(e) => { const n = [...windows] as [string, string][]; n[i] = [n[i][0], e.target.value]; setDayWindows(d.key, n); }}
+                            className="flex-1 min-w-0 rounded-lg border border-slate-200 px-2 py-1.5 text-sm focus:ring-2 focus:ring-violet-300 outline-none" />
+                          <button onClick={() => setDayWindows(d.key, windows.filter((_, j) => j !== i))} className="shrink-0 p-1 text-slate-300 hover:text-rose-500"><X className="h-4 w-4" /></button>
+                        </div>
+                      ))}
                       <button onClick={() => setDayWindows(d.key, [...windows, ['09:00', '17:00']])} className="inline-flex items-center gap-1 text-xs font-medium text-violet-600 hover:text-violet-800">
                         <Plus className="h-3.5 w-3.5" />{t('add_window')}
                       </button>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -265,15 +250,15 @@ export function SchedulingDashboard({ initial }: { initial: any }) {
               </select>
             </label>
             <label className="text-xs font-medium text-slate-500">
-              <span className="block mb-1">{t('buffer')}</span>
+              <span className="block mb-1 leading-tight">{t('buffer')}</span>
               <input type="number" min={0} value={buffer} onChange={(e) => setBuffer(+e.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-violet-300 outline-none" />
             </label>
             <label className="text-xs font-medium text-slate-500">
-              <span className="block mb-1">{t('min_notice')}</span>
+              <span className="block mb-1 leading-tight">{t('min_notice')}</span>
               <input type="number" min={0} value={minNotice} onChange={(e) => setMinNotice(+e.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-violet-300 outline-none" />
             </label>
             <label className="text-xs font-medium text-slate-500">
-              <span className="block mb-1">{t('max_advance')}</span>
+              <span className="block mb-1 leading-tight">{t('max_advance')}</span>
               <input type="number" min={1} value={maxAdvance} onChange={(e) => setMaxAdvance(+e.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-violet-300 outline-none" />
             </label>
           </div>
@@ -281,10 +266,10 @@ export function SchedulingDashboard({ initial }: { initial: any }) {
 
         <div className="lg:col-span-2 space-y-6">
           <Card>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-display text-lg font-bold text-slate-900 flex items-center gap-2"><Video className="h-5 w-5 text-violet-600" />{t('session_types')}</h2>
-              <button onClick={() => setEditing({ purpose: 'mentoring', location_type: 'video', visible: true, listed: true, duration_min: 30, price_cents: 0 })}
-                className="inline-flex items-center gap-1.5 text-sm font-semibold text-violet-700 bg-violet-50 hover:bg-violet-100 rounded-full px-3 py-1.5 transition-colors">
+            <div className="flex items-center justify-between mb-4 gap-3">
+              <h2 className="font-display text-lg font-bold text-slate-900 flex items-center gap-2 min-w-0"><Video className="h-5 w-5 text-violet-600 shrink-0" /><span className="truncate">{t('session_types')}</span></h2>
+              <button onClick={() => setEditing({ purpose: 'mentoring', location_type: 'video', visible: true, duration_min: 30, price_cents: 0 })}
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-violet-700 bg-violet-50 hover:bg-violet-100 rounded-full px-3 py-1.5 transition-colors shrink-0">
                 <Plus className="h-4 w-4" />{t('new_type')}
               </button>
             </div>
@@ -301,15 +286,14 @@ export function SchedulingDashboard({ initial }: { initial: any }) {
                           <div className="font-semibold text-slate-900 text-sm truncate">{l.title}</div>
                           <div className="flex items-center gap-2 mt-1 text-xs text-slate-500 flex-wrap">
                             <span className="inline-flex items-center gap-1"><Hourglass className="h-3 w-3" />{l.duration_min}m</span>
-                            <span className="inline-flex items-center gap-1"><Icon className="h-3 w-3" /></span>
+                            <span className="inline-flex items-center gap-1"><Icon className="h-3 w-3" />{LOC_LABEL[l.location_type]?.[locale] || l.location_type}</span>
                             <span className={l.price_cents > 0 ? 'text-slate-700 font-semibold' : 'text-emerald-700 font-semibold'}>{l.price_cents > 0 ? `${(l.price_cents / 100).toFixed(2)} €` : t('free')}</span>
-                            <span className="inline-flex items-center gap-1 text-violet-600">{PURPOSE_LABEL[l.purpose]?.[locale] || l.purpose}</span>
+                            <span className="text-violet-600">{PURPOSE_LABEL[l.purpose]?.[locale] || l.purpose}</span>
                           </div>
-                          <div className="flex items-center gap-1.5 mt-1.5">
+                          <div className="mt-1.5">
                             <span className={cx('text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full inline-flex items-center gap-1', l.visible ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500')}>
-                              {l.visible ? <Eye className="h-2.5 w-2.5" /> : <EyeOff className="h-2.5 w-2.5" />}{l.visible ? t('visible') : t('hidden')}
+                              {l.visible ? <Eye className="h-2.5 w-2.5" /> : <EyeOff className="h-2.5 w-2.5" />}{l.visible ? t('visible_short') : t('hidden')}
                             </span>
-                            {l.listed && <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-violet-50 text-violet-700">{t('listed')}</span>}
                           </div>
                         </div>
                         <div className="flex items-center gap-1 shrink-0">
@@ -325,7 +309,7 @@ export function SchedulingDashboard({ initial }: { initial: any }) {
           </Card>
 
           <Card>
-            <h2 className="font-display text-lg font-bold text-slate-900 flex items-center gap-2 mb-3"><CalendarDays className="h-5 w-5 text-violet-600" />{t('bookings')}</h2>
+            <h2 className="font-display text-lg font-bold text-slate-900 flex items-center gap-2 mb-3"><CalendarDays className="h-5 w-5 text-violet-600 shrink-0" />{t('bookings')}</h2>
             <div className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">{t('upcoming')}</div>
             {upcoming.length === 0 ? <p className="text-sm text-slate-400">{t('no_bookings')}</p> : (
               <div className="space-y-2">
@@ -347,7 +331,7 @@ export function SchedulingDashboard({ initial }: { initial: any }) {
                   {past.slice(0, 5).map((b) => (
                     <div key={b.id} className="flex items-center justify-between text-xs text-slate-500 px-1">
                       <span className="truncate">{b.guest_name}</span>
-                      <span>{new Date(b.scheduled_at).toLocaleDateString(locale)}</span>
+                      <span className="shrink-0 ml-2">{new Date(b.scheduled_at).toLocaleDateString(locale)}</span>
                     </div>
                   ))}
                 </div>
@@ -373,7 +357,7 @@ export function SchedulingDashboard({ initial }: { initial: any }) {
                 <Field label={t('price')}><input type="number" value={editing.price_cents ?? 0} onChange={(e) => setEditing({ ...editing, price_cents: +e.target.value })} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-violet-300 outline-none" /></Field>
                 <Field label={t('location')}>
                   <select value={editing.location_type || 'video'} onChange={(e) => setEditing({ ...editing, location_type: e.target.value })} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-violet-300 outline-none">
-                    {LOCATIONS.map((l) => <option key={l} value={l}>{l}</option>)}
+                    {LOCATIONS.map((l) => <option key={l} value={l}>{LOC_LABEL[l][locale]}</option>)}
                   </select>
                 </Field>
                 <Field label={t('purpose')}>
@@ -382,10 +366,7 @@ export function SchedulingDashboard({ initial }: { initial: any }) {
                   </select>
                 </Field>
               </div>
-              <div className="flex items-center gap-4 pt-1">
-                <label className="flex items-center gap-2 text-sm text-slate-700"><Toggle on={editing.visible ?? true} onChange={() => setEditing({ ...editing, visible: !(editing.visible ?? true) })} />{t('visible')}</label>
-                <label className="flex items-center gap-2 text-sm text-slate-700"><Toggle on={editing.listed ?? true} onChange={() => setEditing({ ...editing, listed: !(editing.listed ?? true) })} />{t('listed')}</label>
-              </div>
+              <label className="flex items-center gap-2 text-sm text-slate-700 pt-1"><Toggle on={editing.visible ?? true} onChange={() => setEditing({ ...editing, visible: !(editing.visible ?? true) })} />{t('visible')}</label>
             </div>
             <div className="flex items-center justify-end gap-2 mt-5">
               <button onClick={() => setEditing(null)} className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900">{t('cancel')}</button>
