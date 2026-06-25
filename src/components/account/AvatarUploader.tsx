@@ -16,6 +16,9 @@ const L: Record<string, Record<Lang, string>> = {
 };
 const VP = 256;
 
+type FaceBox = { boundingBox: { x: number; y: number; width: number; height: number } };
+type FaceDetectorLike = { detect: (i: HTMLImageElement) => Promise<FaceBox[]> };
+
 export function AvatarUploader() {
   const t = useTranslations('profile');
   const locale = (useLocale() as Lang) || 'pt';
@@ -68,10 +71,9 @@ export function AvatarUploader() {
     const cs = VP / Math.min(img.naturalWidth, img.naturalHeight);
     let z = 1, cx = img.naturalWidth / 2, cy = img.naturalHeight / 2;
     try {
-      // @ts-expect-error FaceDetector is experimental (Chromium/Android)
-      if (typeof window !== 'undefined' && 'FaceDetector' in window) {
-        // @ts-expect-error experimental constructor
-        const fd = new window.FaceDetector({ fastMode: true, maxDetectedFaces: 1 });
+      const w = window as unknown as { FaceDetector?: new (o: { fastMode?: boolean; maxDetectedFaces?: number }) => FaceDetectorLike };
+      if (w.FaceDetector) {
+        const fd = new w.FaceDetector({ fastMode: true, maxDetectedFaces: 1 });
         const faces = await fd.detect(img);
         if (faces && faces[0]) {
           const b = faces[0].boundingBox;
