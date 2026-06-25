@@ -7,7 +7,7 @@ export default async function ContaLayout({ children, params }: { children: Reac
   const sb = await createClient();
   const { data: { user } } = await sb.auth.getUser();
   if (!user) redirect({ href: '/login', locale });
-  const { data: profile } = await sb.from('nl_profiles').select('role').eq('id', user.id).single();
+  const { data: profile } = await sb.from('nl_profiles').select('role').eq('id', user!.id).single();
   const role: 'admin' | 'instructor' | 'student' =
     (profile?.role === 'admin' || profile?.role === 'super_admin') ? 'admin'
     : profile?.role === 'instructor' ? 'instructor' : 'student';
