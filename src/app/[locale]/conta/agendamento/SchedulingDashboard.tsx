@@ -1,349 +1,405 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useTranslations, useLocale } from 'next-intl';
+import { useMemo, useState } from 'react';
+import { useLocale } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
-import { assertNotPeekClient } from '@/lib/peek-client';
-import { toast } from 'sonner';
-import { Calendar, Link2, Clock, Plus, Trash2, Copy, ExternalLink, Save, Check } from 'lucide-react';
 import { AppPageHeader } from '@/components/layout/AppPageHeader';
+import {
+  Clock, Globe2, Plus, Trash2, Pencil, Copy, Check, Calendar, Video, Phone,
+  MapPin, Eye, EyeOff, Sparkles, Link2, X, Loader2, CalendarDays, Hourglass,
+} from 'lucide-react';
 
-interface Link {
-  id: string; slug: string; title: string; description: string | null;
-  duration_min: number; price_cents: number; currency: string;
-  location_type: string; location_details: string | null; visible: boolean;
+type Lang = 'pt' | 'en' | 'es' | 'fr';
+const STR: Record<string, Record<Lang, string>> = {
+  title: { pt: 'Agendamento', en: 'Scheduling', es: 'Agenda', fr: 'Planification' },
+  subtitle: {
+    pt: 'A tua disponibilidade, tipos de sessão e reservas — num só sítio.',
+    en: 'Your availability, session types and bookings — in one place.',
+    es: 'Tu disponibilidad, tipos de sesión y reservas — en un solo lugar.',
+    fr: 'Ta disponibilité, types de séance et réservations — au même endroit.',
+  },
+  active: { pt: 'Disponível para marcações', en: 'Available for bookings', es: 'Disponible para reservas', fr: 'Disponible aux réservations' },
+  active_hint: { pt: 'Gera horários reserváveis a partir da tua disponibilidade.', en: 'Generates bookable slots from your availability.', es: 'Genera horarios reservables desde tu disponibilidad.', fr: 'Génère des créneaux réservables.' },
+  mentor: { pt: 'Mentoria', en: 'Mentoring', es: 'Mentoría', fr: 'Mentorat' },
+  mentor_on: { pt: 'Mentor aprovado', en: 'Approved mentor', es: 'Mentor aprobado', fr: 'Mentor approuvé' },
+  mentor_off: { pt: 'Mentoria por aprovação', en: 'Mentoring pending approval', es: 'Mentoría por aprobación', fr: 'Mentorat en attente' },
+  in_directory: { pt: 'Aparecer no diretório de mentoria', en: 'Show in mentoring directory', es: 'Aparecer en el directorio', fr: 'Afficher dans annuaire' },
+  in_directory_hint: { pt: 'Quando ligado, apareces na página pública de mentores.', en: 'When on, you appear on the public mentors page.', es: 'Cuando está activo, apareces en la página pública.', fr: 'Activé, tu apparais sur la page publique.' },
+  mentor_locked: { pt: 'Disponível após aprovação como mentor.', en: 'Available once approved as a mentor.', es: 'Disponible tras la aprobación.', fr: 'Disponible après approbation.' },
+  public_link: { pt: 'A tua página', en: 'Your page', es: 'Tu página', fr: 'Ta page' },
+  copy: { pt: 'Copiar', en: 'Copy', es: 'Copiar', fr: 'Copier' },
+  copied: { pt: 'Copiado', en: 'Copied', es: 'Copiado', fr: 'Copié' },
+  availability: { pt: 'Disponibilidade semanal', en: 'Weekly availability', es: 'Disponibilidad semanal', fr: 'Disponibilité hebdomadaire' },
+  add_window: { pt: 'Adicionar intervalo', en: 'Add window', es: 'Añadir intervalo', fr: 'Ajouter un créneau' },
+  unavailable: { pt: 'Indisponível', en: 'Unavailable', es: 'No disponible', fr: 'Indisponible' },
+  timezone: { pt: 'Fuso horário', en: 'Time zone', es: 'Zona horaria', fr: 'Fuseau horaire' },
+  buffer: { pt: 'Intervalo entre sessões (min)', en: 'Buffer between sessions (min)', es: 'Margen entre sesiones (min)', fr: 'Marge entre séances (min)' },
+  min_notice: { pt: 'Antecedência mínima (h)', en: 'Minimum notice (h)', es: 'Antelación mínima (h)', fr: 'Préavis minimum (h)' },
+  max_advance: { pt: 'Janela máxima (dias)', en: 'Booking window (days)', es: 'Ventana máxima (días)', fr: 'Fenêtre max (jours)' },
+  save: { pt: 'Guardar', en: 'Save', es: 'Guardar', fr: 'Enregistrer' },
+  saved: { pt: 'Guardado', en: 'Saved', es: 'Guardado', fr: 'Enregistré' },
+  session_types: { pt: 'Tipos de sessão', en: 'Session types', es: 'Tipos de sesión', fr: 'Types de séance' },
+  new_type: { pt: 'Novo tipo', en: 'New type', es: 'Nuevo tipo', fr: 'Nouveau type' },
+  no_types: { pt: 'Ainda não tens tipos de sessão. Cria o primeiro.', en: 'No session types yet. Create your first.', es: 'Aún no tienes tipos de sesión.', fr: 'Aucun type de séance pour instant.' },
+  free: { pt: 'Gratuita', en: 'Free', es: 'Gratuita', fr: 'Gratuite' },
+  visible: { pt: 'Visível', en: 'Visible', es: 'Visible', fr: 'Visible' },
+  hidden: { pt: 'Oculto', en: 'Hidden', es: 'Oculto', fr: 'Masqué' },
+  listed: { pt: 'No diretório', en: 'Listed', es: 'En directorio', fr: 'Listé' },
+  edit: { pt: 'Editar', en: 'Edit', es: 'Editar', fr: 'Modifier' },
+  del: { pt: 'Eliminar', en: 'Delete', es: 'Eliminar', fr: 'Supprimer' },
+  ttl: { pt: 'Título', en: 'Title', es: 'Título', fr: 'Titre' },
+  slug: { pt: 'Identificador (URL)', en: 'Slug (URL)', es: 'Identificador (URL)', fr: 'Identifiant (URL)' },
+  desc: { pt: 'Descrição', en: 'Description', es: 'Descripción', fr: 'Description' },
+  duration: { pt: 'Duração (min)', en: 'Duration (min)', es: 'Duración (min)', fr: 'Durée (min)' },
+  price: { pt: 'Preço (cêntimos, 0 = grátis)', en: 'Price (cents, 0 = free)', es: 'Precio (céntimos, 0 = gratis)', fr: 'Prix (centimes, 0 = gratuit)' },
+  location: { pt: 'Local', en: 'Location', es: 'Ubicación', fr: 'Lieu' },
+  purpose: { pt: 'Propósito', en: 'Purpose', es: 'Propósito', fr: 'Objet' },
+  cancel: { pt: 'Cancelar', en: 'Cancel', es: 'Cancelar', fr: 'Annuler' },
+  bookings: { pt: 'Reservas', en: 'Bookings', es: 'Reservas', fr: 'Réservations' },
+  upcoming: { pt: 'Próximas', en: 'Upcoming', es: 'Próximas', fr: 'À venir' },
+  past: { pt: 'Anteriores', en: 'Past', es: 'Anteriores', fr: 'Passées' },
+  no_bookings: { pt: 'Sem reservas ainda.', en: 'No bookings yet.', es: 'Sin reservas aún.', fr: 'Aucune réservation.' },
+};
+
+const PURPOSES = ['mentoring', 'office_hours', 'consultation', 'other'] as const;
+const PURPOSE_LABEL: Record<string, Record<Lang, string>> = {
+  mentoring: { pt: 'Mentoria', en: 'Mentoring', es: 'Mentoría', fr: 'Mentorat' },
+  office_hours: { pt: 'Horário de dúvidas', en: 'Office hours', es: 'Horario de consultas', fr: 'Permanence' },
+  consultation: { pt: 'Consultoria', en: 'Consultation', es: 'Consultoría', fr: 'Consultation' },
+  other: { pt: 'Outro', en: 'Other', es: 'Otro', fr: 'Autre' },
+};
+const LOCATIONS = ['video', 'phone', 'in_person'] as const;
+const LOC_ICON: Record<string, any> = { video: Video, phone: Phone, in_person: MapPin };
+const TZS = ['Europe/Lisbon', 'Europe/London', 'Europe/Madrid', 'Europe/Paris', 'Europe/Berlin', 'UTC', 'America/New_York', 'America/Sao_Paulo'];
+const DOW: { key: string; label: Record<Lang, string> }[] = [
+  { key: '1', label: { pt: 'Seg', en: 'Mon', es: 'Lun', fr: 'Lun' } },
+  { key: '2', label: { pt: 'Ter', en: 'Tue', es: 'Mar', fr: 'Mar' } },
+  { key: '3', label: { pt: 'Qua', en: 'Wed', es: 'Mié', fr: 'Mer' } },
+  { key: '4', label: { pt: 'Qui', en: 'Thu', es: 'Jue', fr: 'Jeu' } },
+  { key: '5', label: { pt: 'Sex', en: 'Fri', es: 'Vie', fr: 'Ven' } },
+  { key: '6', label: { pt: 'Sáb', en: 'Sat', es: 'Sáb', fr: 'Sam' } },
+  { key: '0', label: { pt: 'Dom', en: 'Sun', es: 'Dom', fr: 'Dim' } },
+];
+
+const cx = (...c: (string | false | null | undefined)[]) => c.filter(Boolean).join(' ');
+
+function Toggle({ on, onChange, disabled }: { on: boolean; onChange: () => void; disabled?: boolean }) {
+  return (
+    <button type="button" disabled={disabled} onClick={onChange}
+      className={cx('relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors',
+        disabled ? 'bg-slate-200 cursor-not-allowed' : on ? 'bg-gradient-to-r from-violet-500 to-indigo-600' : 'bg-slate-300')}>
+      <span className={cx('inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform', on ? 'translate-x-5' : 'translate-x-0.5')} />
+    </button>
+  );
 }
-interface Booking {
-  id: string; guest_name: string; guest_email: string; guest_phone: string | null;
-  scheduled_at: string; duration_min: number; status: string;
-  link_title: string | null; guest_notes: string | null; meeting_url: string | null;
-  price_cents: number; paid_at: string | null;
-}
-interface Calendar {
-  timezone: string;
-  weekly_availability: Record<string, [string, string][]>;
-  buffer_minutes: number; min_notice_hours: number; max_advance_days: number;
-  enabled: boolean;
-}
-interface Dashboard {
-  ok: true; handle: string; calendar: Calendar; links: Link[];
-  upcoming_bookings: Booking[]; past_bookings: Booking[];
+function Card({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <div className={cx('rounded-3xl border border-slate-200 bg-white/80 backdrop-blur p-5 sm:p-6', className)}>{children}</div>;
 }
 
-const DOW = ['0','1','2','3','4','5','6'];
-const DEFAULT_LINK: Partial<Link> = { slug: '', title: '', description: '', duration_min: 30, price_cents: 0, currency: 'EUR', location_type: 'video', visible: true };
+export function SchedulingDashboard({ initial }: { initial: any }) {
+  const locale = (useLocale() as Lang) || 'pt';
+  const t = (k: string) => STR[k]?.[locale] ?? STR[k]?.pt ?? k;
+  const sb = useMemo(() => createClient(), []);
 
-export function SchedulingDashboard({ initial }: { initial: Dashboard | null }) {
-  const t = useTranslations();
-  const locale = useLocale();
-  const [data, setData] = useState<Dashboard | null>(initial);
-  const [tab, setTab] = useState<'availability' | 'links' | 'bookings'>('availability');
-  const [cal, setCal] = useState<Calendar | null>(initial?.calendar || null);
+  const [data, setData] = useState<any>(initial || {});
+  const cal = data?.calendar || {};
+  const isMentor = !!data?.is_mentor;
+  const handle = data?.handle as string | undefined;
+
+  const [tz, setTz] = useState<string>(cal.timezone || 'Europe/Lisbon');
+  const [weekly, setWeekly] = useState<Record<string, [string, string][]>>(cal.weekly_availability || {});
+  const [buffer, setBuffer] = useState<number>(cal.buffer_minutes ?? 0);
+  const [minNotice, setMinNotice] = useState<number>(cal.min_notice_hours ?? 12);
+  const [maxAdvance, setMaxAdvance] = useState<number>(cal.max_advance_days ?? 30);
+  const [active, setActive] = useState<boolean>(cal.enabled ?? true);
+  const [inDir, setInDir] = useState<boolean>(cal.list_in_directory ?? false);
+
   const [savingCal, setSavingCal] = useState(false);
-  const [editingLink, setEditingLink] = useState<Partial<Link> | null>(null);
-  const [savingLink, setSavingLink] = useState(false);
+  const [savedCal, setSavedCal] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [editing, setEditing] = useState<any | null>(null);
+  const [busy, setBusy] = useState(false);
 
-  // OAuth state
-  const [gcal, setGcal] = useState<{ connected: boolean; email?: string; last_sync_at?: string } | null>(null);
-
-  useEffect(() => { loadOAuthStatus(); checkUrlParams(); }, []);
-
-  function checkUrlParams() {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('gcal') === 'connected') {
-      toast.success(t('sched.toast.gcal_connected'));
-      window.history.replaceState({}, '', window.location.pathname);
-    }
-    const err = params.get('gcal_error');
-    if (err) {
-      toast.error(t('sched.toast.gcal_error', { err }));
-      window.history.replaceState({}, '', window.location.pathname);
-    }
-  }
-
-  async function loadOAuthStatus() {
-    const sb = createClient();
-    const { data: status } = await sb.rpc('nl_scheduling_oauth_status');
-    if (status?.google) setGcal(status.google);
-  }
-
-  async function connectGoogle() {
-    // Buscar Client ID via Supabase (fica em nl_secrets, mas precisamos para gerar URL)
-    const sb = createClient();
-    const { data: { user } } = await sb.auth.getUser();
-    if (!user) return;
-
-    // O Client ID deve estar disponível como NEXT_PUBLIC env var OU é melhor uma RPC que devolve a auth URL
-    const { data: cidData } = await sb.from('nl_platform_config').select('value').eq('key', 'google_oauth_client_id').maybeSingle();
-    const clientId = cidData?.value;
-    if (!clientId) {
-      toast.error(t('sched.toast.oauth_not_configured'));
-      return;
-    }
-
-    const supabaseUrl = (sb as any).supabaseUrl || 'https://obpezocujzdaznrdgwoo.supabase.co';
-    const redirectUri = `${supabaseUrl}/functions/v1/oauth-google-callback`;
-    const scope = 'https://www.googleapis.com/auth/calendar.events email';
-    const url = `https://accounts.google.com/o/oauth2/v2/auth?` + new URLSearchParams({
-      client_id: clientId, redirect_uri: redirectUri, response_type: 'code',
-      scope, access_type: 'offline', prompt: 'consent', state: user.id,
-    }).toString();
-    window.location.href = url;
-  }
-
-  async function disconnectGoogle() {
-    if (!confirm(t('sched.confirm.disconnect_gcal'))) return;
-    const sb = createClient();
-    assertNotPeekClient();
-    await sb.rpc('nl_scheduling_oauth_disconnect', { p_provider: 'google' });
-    setGcal({ connected: false });
-    toast.success(t('sched.toast.disconnected'));
-  }
-
-  if (!data || !cal) {
-    return <div className="max-w-3xl mx-auto px-4 py-10 text-center text-slate-500">{t('sched.loading')}</div>;
-  }
-
-  const publicUrl = typeof window !== 'undefined' ? `${window.location.origin}/${locale}/agendar/${data.handle}` : '';
+  const links: any[] = data?.links || [];
+  const upcoming: any[] = data?.upcoming_bookings || [];
+  const past: any[] = data?.past_bookings || [];
 
   async function refresh() {
-    const sb = createClient();
-    const { data: fresh } = await sb.rpc('nl_scheduling_my_dashboard');
-    if (fresh) { setData(fresh as Dashboard); setCal((fresh as Dashboard).calendar); }
-  }
-  async function saveCalendar() {
-    if (savingCal) return;
-    setSavingCal(true);
-    try {
-      const sb = createClient();
-      assertNotPeekClient();
-      const { error } = await sb.rpc('nl_scheduling_update_calendar', {
-        p_timezone: cal!.timezone, p_weekly_availability: cal!.weekly_availability,
-        p_buffer_minutes: cal!.buffer_minutes, p_min_notice_hours: cal!.min_notice_hours,
-        p_max_advance_days: cal!.max_advance_days, p_enabled: cal!.enabled,
-      });
-      if (error) { toast.error(error.message); return; }
-      toast.success(t('account.saved'));
-    } finally { setSavingCal(false); }
-  }
-  function addWindow(dow: string) {
-    setCal((c) => { if (!c) return c; const a = { ...c.weekly_availability }; a[dow] = [...(a[dow] || []), ['09:00','17:00']]; return { ...c, weekly_availability: a }; });
-  }
-  function removeWindow(dow: string, idx: number) {
-    setCal((c) => { if (!c) return c; const a = { ...c.weekly_availability }; a[dow] = (a[dow] || []).filter((_, i) => i !== idx); return { ...c, weekly_availability: a }; });
-  }
-  function updateWindow(dow: string, idx: number, w: 0 | 1, v: string) {
-    setCal((c) => { if (!c) return c; const a = { ...c.weekly_availability }; const list = [...(a[dow] || [])]; list[idx] = [...list[idx]] as [string,string]; list[idx][w] = v; a[dow] = list; return { ...c, weekly_availability: a }; });
+    const { data: d } = await sb.rpc('nl_scheduling_my_dashboard');
+    if (d) setData(d);
   }
 
-  async function saveLink() {
-    if (savingLink || !editingLink) return;
-    setSavingLink(true);
-    try {
-      const sb = createClient();
-      assertNotPeekClient();
-      const { data: res, error } = await sb.rpc('nl_scheduling_upsert_link', {
-        p_id: editingLink.id || null,
-        p_slug: editingLink.slug || (editingLink.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || `link-${Date.now()}`,
-        p_title: editingLink.title || '', p_description: editingLink.description || null,
-        p_duration_min: editingLink.duration_min || 30, p_price_cents: editingLink.price_cents || 0,
-        p_currency: editingLink.currency || 'EUR', p_location_type: editingLink.location_type || 'video',
-        p_location_details: editingLink.location_details || null, p_visible: editingLink.visible !== false,
-      });
-      if (error || !(res as any)?.ok) { toast.error(error?.message || (res as any)?.error || 'failed'); return; }
-      toast.success(t('account.saved')); setEditingLink(null); await refresh();
-    } finally { setSavingLink(false); }
+  async function saveCalendar(extra?: Partial<{ active: boolean; inDir: boolean }>) {
+    setSavingCal(true);
+    const payload = {
+      p_timezone: tz, p_weekly_availability: weekly, p_buffer_minutes: buffer,
+      p_min_notice_hours: minNotice, p_max_advance_days: maxAdvance,
+      p_enabled: extra?.active ?? active, p_list_in_directory: extra?.inDir ?? inDir,
+    };
+    await sb.rpc('nl_scheduling_update_calendar', payload as any);
+    setSavingCal(false);
+    setSavedCal(true);
+    setTimeout(() => setSavedCal(false), 1800);
+    refresh();
+  }
+
+  function setDayWindows(day: string, windows: [string, string][]) {
+    setWeekly((w) => ({ ...w, [day]: windows }));
+  }
+  function copyLink() {
+    if (!handle) return;
+    const url = `${window.location.origin}/${locale}/agendar/${handle}`;
+    navigator.clipboard?.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1600);
+  }
+
+  async function saveLink(form: any) {
+    setBusy(true);
+    const { data: res } = await sb.rpc('nl_scheduling_upsert_link', {
+      p_id: form.id || null, p_slug: form.slug, p_title: form.title, p_description: form.description || '',
+      p_duration_min: Number(form.duration_min) || 30, p_price_cents: Number(form.price_cents) || 0,
+      p_currency: 'EUR', p_location_type: form.location_type || 'video', p_location_details: form.location_details || '',
+      p_visible: form.visible ?? true, p_purpose: form.purpose || 'mentoring', p_listed: form.listed ?? true,
+    } as any);
+    setBusy(false);
+    if ((res as any)?.ok) { setEditing(null); refresh(); }
   }
   async function deleteLink(id: string) {
-    if (!confirm(t('sched.confirm.delete'))) return;
-    const sb = createClient();
-    assertNotPeekClient();
-    await sb.rpc('nl_scheduling_delete_link', { p_id: id });
-    toast.success(t('sched.toast.deleted')); await refresh();
-  }
-  async function cancelBooking(id: string) {
-    if (!confirm(t('sched.confirm.cancel'))) return;
-    const sb = createClient();
-    assertNotPeekClient();
-    await sb.rpc('nl_scheduling_cancel_booking', { p_booking_id: id, p_reason: 'cancelled_by_host' });
-    toast.success(t('sched.toast.cancelled')); await refresh();
+    setBusy(true);
+    await sb.rpc('nl_scheduling_delete_link', { p_id: id } as any);
+    setBusy(false);
+    refresh();
   }
 
   return (
-    <div className="space-y-5">
-      <AppPageHeader title={t('sched.dashboard.title')} description={t('sched.dashboard.subtitle')} />
+    <div className="space-y-6">
+      <AppPageHeader backHref="/conta" title={`📅 ${t('title')}`} description={t('subtitle')} />
 
-      {publicUrl && (
-        <div className="bg-gradient-to-br from-brand-50 to-violet-50 border border-brand-100 rounded-xl p-4 flex items-center justify-between gap-3 flex-wrap">
-          <div className="min-w-0 flex-1">
-            <div className="text-xs uppercase tracking-wider text-brand-700 font-semibold mb-1">{t('account.scheduling.public_link')}</div>
-            <div className="text-sm font-mono text-slate-700 truncate">{publicUrl}</div>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Card className="!p-4 flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 text-sm font-semibold text-slate-900"><Calendar className="h-4 w-4 text-violet-600" />{t('active')}</div>
+            <p className="text-xs text-slate-500 mt-0.5 leading-snug">{t('active_hint')}</p>
           </div>
-          <div className="flex gap-2">
-            <button onClick={() => { navigator.clipboard.writeText(publicUrl); toast.success(t('sched.toast.copied')); }} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:border-brand-300 text-sm font-medium text-slate-700">
-              <Copy className="h-3.5 w-3.5" /> {t('sched.copy')}
-            </button>
-            <a href={publicUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-sm font-medium text-white">
-              <ExternalLink className="h-3.5 w-3.5" /> {t('sched.open')}
-            </a>
-          </div>
-        </div>
-      )}
+          <Toggle on={active} onChange={() => { const v = !active; setActive(v); saveCalendar({ active: v }); }} />
+        </Card>
 
-      {/* Google Calendar card */}
-      <div className="bg-white rounded-xl border border-slate-200 p-4 flex items-center justify-between gap-3 flex-wrap">
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-slate-500" />
-            <h3 className="font-semibold text-slate-900 text-sm">{t('sched.gcal.title')}</h3>
-            {gcal?.connected && <span className="text-[10px] uppercase bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold">ON</span>}
+        <Card className="!p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-sm font-semibold text-slate-900"><Sparkles className="h-4 w-4 text-violet-600" />{t('mentor')}</div>
+            <span className={cx('text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full',
+              isMentor ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500')}>
+              {isMentor ? t('mentor_on') : t('mentor_off')}
+            </span>
           </div>
-          <p className="text-xs text-slate-500 mt-0.5">{t('sched.gcal.subtitle')}</p>
-          {gcal?.connected && (
-            <div className="text-xs text-slate-600 mt-1.5">
-              {t('sched.gcal.connected')} <strong>{gcal.email}</strong>
-              {gcal.last_sync_at && <> · {t('sched.gcal.last_sync')}: {new Date(gcal.last_sync_at).toLocaleString(locale)}</>}
+          <div className="mt-3 flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <div className="text-sm text-slate-800">{t('in_directory')}</div>
+              <p className="text-xs text-slate-500 mt-0.5 leading-snug">{isMentor ? t('in_directory_hint') : t('mentor_locked')}</p>
             </div>
-          )}
-        </div>
-        {gcal?.connected ? (
-          <button onClick={disconnectGoogle} className="text-xs text-red-600 hover:text-red-700 font-medium px-3 py-1.5">
-            {t('sched.gcal.disconnect')}
+            <Toggle on={inDir && isMentor} disabled={!isMentor} onChange={() => { const v = !inDir; setInDir(v); saveCalendar({ inDir: v }); }} />
+          </div>
+        </Card>
+
+        <Card className="!p-4 flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 text-sm font-semibold text-slate-900"><Link2 className="h-4 w-4 text-violet-600" />{t('public_link')}</div>
+            <p className="text-xs text-slate-500 mt-0.5 truncate">/agendar/{handle || '—'}</p>
+          </div>
+          <button onClick={copyLink} disabled={!handle}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-violet-700 bg-violet-50 hover:bg-violet-100 disabled:opacity-50 rounded-full px-3 py-1.5 transition-colors">
+            {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}{copied ? t('copied') : t('copy')}
           </button>
-        ) : (
-          <button onClick={connectGoogle} className="text-xs bg-slate-900 hover:bg-slate-800 text-white px-3 py-1.5 rounded-md font-medium">
-            {t('sched.gcal.connect')}
-          </button>
-        )}
+        </Card>
       </div>
 
-      <div className="border-b border-slate-200 flex gap-1">
-        {([['availability', t('sched.tab.availability'), Calendar],
-           ['links', t('sched.tab.links'), Link2],
-           ['bookings', t('sched.tab.bookings'), Clock]] as const).map(([key, label, Icon]) => (
-          <button key={key} onClick={() => setTab(key as any)}
-            className={`inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${tab === key ? 'border-brand-600 text-brand-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>
-            <Icon className="h-4 w-4" />{label}
-          </button>
-        ))}
-      </div>
-
-      {tab === 'availability' && (
-        <div className="bg-white rounded-xl border border-slate-200 p-5 sm:p-6 space-y-5">
-          <div className="flex items-center justify-between flex-wrap gap-3">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" className="h-4 w-4 accent-brand-600" checked={cal.enabled} onChange={(e) => setCal({ ...cal, enabled: e.target.checked })} />
-              <span className="font-medium text-slate-900">{t('sched.enabled')}</span>
-            </label>
-            <button onClick={saveCalendar} disabled={savingCal} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-brand-600 to-violet-600 hover:opacity-90 text-white text-sm font-semibold disabled:opacity-50">
-              <Save className="h-4 w-4" /> {savingCal ? '…' : t('account.save')}
+      <div className="grid gap-6 lg:grid-cols-5">
+        <Card className="lg:col-span-3">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-display text-lg font-bold text-slate-900 flex items-center gap-2"><Clock className="h-5 w-5 text-violet-600" />{t('availability')}</h2>
+            <button onClick={() => saveCalendar()} disabled={savingCal}
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:opacity-90 rounded-full px-4 py-1.5 transition-opacity disabled:opacity-60">
+              {savingCal ? <Loader2 className="h-4 w-4 animate-spin" /> : savedCal ? <Check className="h-4 w-4" /> : null}{savedCal ? t('saved') : t('save')}
             </button>
           </div>
-          <div className="space-y-3">
-            {DOW.map((dow) => {
-              const windows = cal.weekly_availability[dow] || [];
+
+          <div className="space-y-2">
+            {DOW.map((d) => {
+              const windows = weekly[d.key] || [];
+              const on = windows.length > 0;
               return (
-                <div key={dow} className="flex items-start gap-3 py-2 border-b border-slate-100 last:border-0">
-                  <div className="w-24 pt-1.5 text-sm font-medium text-slate-700">{t(`sched.weekdays.${dow}` as any)}</div>
-                  <div className="flex-1 space-y-2">
-                    {windows.length === 0 && <div className="text-sm text-slate-400 italic py-1.5">{t('sched.closed')}</div>}
-                    {windows.map((w, idx) => (
-                      <div key={idx} className="flex items-center gap-2">
-                        <input type="time" value={w[0]} onChange={(e) => updateWindow(dow, idx, 0, e.target.value)} className="input w-24 text-sm" />
-                        <span className="text-slate-400">—</span>
-                        <input type="time" value={w[1]} onChange={(e) => updateWindow(dow, idx, 1, e.target.value)} className="input w-24 text-sm" />
-                        <button onClick={() => removeWindow(dow, idx)} className="p-1.5 text-slate-400 hover:text-red-500"><Trash2 className="h-3.5 w-3.5" /></button>
+                <div key={d.key} className="flex items-start gap-3 rounded-2xl border border-slate-100 p-3">
+                  <div className="flex items-center gap-2 w-20 shrink-0 pt-1.5">
+                    <Toggle on={on} onChange={() => setDayWindows(d.key, on ? [] : [['09:00', '17:00']])} />
+                    <span className="text-sm font-semibold text-slate-700">{d.label[locale]}</span>
+                  </div>
+                  <div className="flex-1 min-w-0 space-y-2">
+                    {!on && <div className="text-xs text-slate-400 pt-2">{t('unavailable')}</div>}
+                    {windows.map((win, i) => (
+                      <div key={i} className="flex items-center gap-2">
+                        <input type="time" value={win[0]} onChange={(e) => { const n = [...windows] as [string, string][]; n[i] = [e.target.value, n[i][1]]; setDayWindows(d.key, n); }}
+                          className="rounded-lg border border-slate-200 px-2 py-1 text-sm focus:ring-2 focus:ring-violet-300 outline-none" />
+                        <span className="text-slate-400">–</span>
+                        <input type="time" value={win[1]} onChange={(e) => { const n = [...windows] as [string, string][]; n[i] = [n[i][0], e.target.value]; setDayWindows(d.key, n); }}
+                          className="rounded-lg border border-slate-200 px-2 py-1 text-sm focus:ring-2 focus:ring-violet-300 outline-none" />
+                        <button onClick={() => { const n = windows.filter((_, j) => j !== i); setDayWindows(d.key, n); }} className="text-slate-300 hover:text-rose-500"><X className="h-4 w-4" /></button>
                       </div>
                     ))}
-                    <button onClick={() => addWindow(dow)} className="text-xs text-brand-600 hover:text-brand-700 font-medium inline-flex items-center gap-1">
-                      <Plus className="h-3 w-3" /> {t('sched.add_window')}
-                    </button>
+                    {on && (
+                      <button onClick={() => setDayWindows(d.key, [...windows, ['09:00', '17:00']])} className="inline-flex items-center gap-1 text-xs font-medium text-violet-600 hover:text-violet-800">
+                        <Plus className="h-3.5 w-3.5" />{t('add_window')}
+                      </button>
+                    )}
                   </div>
                 </div>
               );
             })}
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-slate-100">
-            <div><label className="label">{t('sched.buffer_minutes')}</label><input type="number" className="input" min={0} max={120} value={cal.buffer_minutes} onChange={(e) => setCal({ ...cal, buffer_minutes: parseInt(e.target.value) || 0 })} /></div>
-            <div><label className="label">{t('sched.min_notice')}</label><input type="number" className="input" min={0} value={cal.min_notice_hours} onChange={(e) => setCal({ ...cal, min_notice_hours: parseInt(e.target.value) || 0 })} /></div>
-            <div><label className="label">{t('sched.max_advance')}</label><input type="number" className="input" min={1} max={365} value={cal.max_advance_days} onChange={(e) => setCal({ ...cal, max_advance_days: parseInt(e.target.value) || 60 })} /></div>
-          </div>
-        </div>
-      )}
 
-      {tab === 'links' && (
-        <div className="space-y-4">
-          <div className="flex justify-end">
-            <button onClick={() => setEditingLink({ ...DEFAULT_LINK })} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold">
-              <Plus className="h-4 w-4" /> {t('sched.new_link')}
-            </button>
+          <div className="grid grid-cols-2 gap-3 mt-5 pt-5 border-t border-slate-100">
+            <label className="text-xs font-medium text-slate-500 col-span-2 sm:col-span-1">
+              <span className="flex items-center gap-1.5 mb-1"><Globe2 className="h-3.5 w-3.5" />{t('timezone')}</span>
+              <select value={tz} onChange={(e) => setTz(e.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 focus:ring-2 focus:ring-violet-300 outline-none">
+                {(TZS.includes(tz) ? TZS : [tz, ...TZS]).map((z) => <option key={z} value={z}>{z}</option>)}
+              </select>
+            </label>
+            <label className="text-xs font-medium text-slate-500">
+              <span className="block mb-1">{t('buffer')}</span>
+              <input type="number" min={0} value={buffer} onChange={(e) => setBuffer(+e.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-violet-300 outline-none" />
+            </label>
+            <label className="text-xs font-medium text-slate-500">
+              <span className="block mb-1">{t('min_notice')}</span>
+              <input type="number" min={0} value={minNotice} onChange={(e) => setMinNotice(+e.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-violet-300 outline-none" />
+            </label>
+            <label className="text-xs font-medium text-slate-500">
+              <span className="block mb-1">{t('max_advance')}</span>
+              <input type="number" min={1} value={maxAdvance} onChange={(e) => setMaxAdvance(+e.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-violet-300 outline-none" />
+            </label>
           </div>
-          <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100">
-            {data.links.length === 0 && <div className="p-6 text-center text-sm text-slate-500">{t('sched.links.empty')}</div>}
-            {data.links.map((l) => (
-              <div key={l.id} className="p-4 flex items-start justify-between gap-3 hover:bg-slate-50/50">
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-slate-900">{l.title}</h3>
-                    {!l.visible && <span className="text-[10px] uppercase bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">{t('sched.hidden')}</span>}
-                  </div>
-                  <div className="text-xs text-slate-500 mt-0.5">{l.duration_min} min · {l.price_cents > 0 ? `${(l.price_cents/100).toFixed(2)} €` : t('sched.link.free')} · /{l.slug}</div>
-                  {l.description && <p className="text-sm text-slate-600 mt-1.5 line-clamp-2">{l.description}</p>}
-                </div>
-                <div className="flex gap-1 flex-shrink-0">
-                  <button onClick={() => setEditingLink(l)} className="text-xs px-2.5 py-1.5 rounded-md hover:bg-slate-100 text-slate-700">{t('sched.edit')}</button>
-                  <button onClick={() => deleteLink(l.id)} className="text-xs px-2.5 py-1.5 rounded-md hover:bg-red-50 text-red-600">{t('sched.delete')}</button>
-                </div>
+        </Card>
+
+        <div className="lg:col-span-2 space-y-6">
+          <Card>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-display text-lg font-bold text-slate-900 flex items-center gap-2"><Video className="h-5 w-5 text-violet-600" />{t('session_types')}</h2>
+              <button onClick={() => setEditing({ purpose: 'mentoring', location_type: 'video', visible: true, listed: true, duration_min: 30, price_cents: 0 })}
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-violet-700 bg-violet-50 hover:bg-violet-100 rounded-full px-3 py-1.5 transition-colors">
+                <Plus className="h-4 w-4" />{t('new_type')}
+              </button>
+            </div>
+            {links.length === 0 ? (
+              <p className="text-sm text-slate-400 py-4 text-center">{t('no_types')}</p>
+            ) : (
+              <div className="space-y-2">
+                {links.map((l) => {
+                  const Icon = LOC_ICON[l.location_type] || Video;
+                  return (
+                    <div key={l.id} className="rounded-2xl border border-slate-100 p-3 hover:border-violet-200 transition-colors">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <div className="font-semibold text-slate-900 text-sm truncate">{l.title}</div>
+                          <div className="flex items-center gap-2 mt-1 text-xs text-slate-500 flex-wrap">
+                            <span className="inline-flex items-center gap-1"><Hourglass className="h-3 w-3" />{l.duration_min}m</span>
+                            <span className="inline-flex items-center gap-1"><Icon className="h-3 w-3" /></span>
+                            <span className={l.price_cents > 0 ? 'text-slate-700 font-semibold' : 'text-emerald-700 font-semibold'}>{l.price_cents > 0 ? `${(l.price_cents / 100).toFixed(2)} €` : t('free')}</span>
+                            <span className="inline-flex items-center gap-1 text-violet-600">{PURPOSE_LABEL[l.purpose]?.[locale] || l.purpose}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 mt-1.5">
+                            <span className={cx('text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full inline-flex items-center gap-1', l.visible ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500')}>
+                              {l.visible ? <Eye className="h-2.5 w-2.5" /> : <EyeOff className="h-2.5 w-2.5" />}{l.visible ? t('visible') : t('hidden')}
+                            </span>
+                            {l.listed && <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-violet-50 text-violet-700">{t('listed')}</span>}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button onClick={() => setEditing({ ...l })} className="p-1.5 text-slate-400 hover:text-violet-600 rounded-lg hover:bg-violet-50"><Pencil className="h-4 w-4" /></button>
+                          <button onClick={() => deleteLink(l.id)} className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50"><Trash2 className="h-4 w-4" /></button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            ))}
-          </div>
+            )}
+          </Card>
 
-          {editingLink && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm" onClick={() => setEditingLink(null)}>
-              <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 space-y-3" onClick={(e) => e.stopPropagation()}>
-                <h2 className="font-bold text-slate-900 text-lg">{editingLink.id ? t('sched.edit') : t('sched.new_link')}</h2>
-                <div><label className="label">{t('sched.link.title')}</label><input className="input" value={editingLink.title || ''} onChange={(e) => setEditingLink({ ...editingLink, title: e.target.value })} /></div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div><label className="label">{t('sched.link.duration')}</label>
-                    <select className="input" value={editingLink.duration_min || 30} onChange={(e) => setEditingLink({ ...editingLink, duration_min: parseInt(e.target.value) })}>
-                      {[15,30,45,60,90,120].map((d) => <option key={d} value={d}>{d}</option>)}
-                    </select>
+          <Card>
+            <h2 className="font-display text-lg font-bold text-slate-900 flex items-center gap-2 mb-3"><CalendarDays className="h-5 w-5 text-violet-600" />{t('bookings')}</h2>
+            <div className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">{t('upcoming')}</div>
+            {upcoming.length === 0 ? <p className="text-sm text-slate-400">{t('no_bookings')}</p> : (
+              <div className="space-y-2">
+                {upcoming.map((b) => (
+                  <div key={b.id} className="flex items-center gap-3 rounded-2xl border border-slate-100 p-3">
+                    <div className="h-9 w-9 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 text-white text-sm font-bold flex items-center justify-center shrink-0">{(b.guest_name || '?')[0]?.toUpperCase()}</div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-semibold text-slate-900 truncate">{b.guest_name}</div>
+                      <div className="text-xs text-slate-500">{new Date(b.scheduled_at).toLocaleString(locale)} · {b.duration_min}m</div>
+                    </div>
                   </div>
-                  <div><label className="label">{t('sched.link.price')}</label><input type="number" className="input" min={0} step={1} value={(editingLink.price_cents || 0) / 100} onChange={(e) => setEditingLink({ ...editingLink, price_cents: Math.round(parseFloat(e.target.value || '0') * 100) })} /></div>
+                ))}
+              </div>
+            )}
+            {past.length > 0 && (
+              <>
+                <div className="text-xs font-semibold uppercase tracking-wider text-slate-400 mt-4 mb-2">{t('past')}</div>
+                <div className="space-y-1.5">
+                  {past.slice(0, 5).map((b) => (
+                    <div key={b.id} className="flex items-center justify-between text-xs text-slate-500 px-1">
+                      <span className="truncate">{b.guest_name}</span>
+                      <span>{new Date(b.scheduled_at).toLocaleDateString(locale)}</span>
+                    </div>
+                  ))}
                 </div>
-                <div><label className="label">{t('sched.link.description')}</label><textarea className="input min-h-[80px]" value={editingLink.description || ''} onChange={(e) => setEditingLink({ ...editingLink, description: e.target.value })} /></div>
-                <label className="flex items-center gap-2 text-sm">
-                  <input type="checkbox" className="h-4 w-4 accent-brand-600" checked={editingLink.visible !== false} onChange={(e) => setEditingLink({ ...editingLink, visible: e.target.checked })} />
-                  {t('sched.link.visible_public')}
-                </label>
-                <div className="flex gap-2 pt-2">
-                  <button onClick={() => setEditingLink(null)} className="flex-1 px-4 py-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-sm font-medium text-slate-700">{t('btn.cancel')}</button>
-                  <button onClick={saveLink} disabled={savingLink} className="flex-1 px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold disabled:opacity-50">{savingLink ? '…' : t('account.save')}</button>
-                </div>
+              </>
+            )}
+          </Card>
+        </div>
+      </div>
+
+      {editing && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/40 backdrop-blur-sm p-0 sm:p-4" onClick={() => !busy && setEditing(null)}>
+          <div className="bg-white w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 max-h-[92vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-display text-lg font-bold text-slate-900">{editing.id ? t('edit') : t('new_type')}</h3>
+              <button onClick={() => setEditing(null)} className="text-slate-400 hover:text-slate-700"><X className="h-5 w-5" /></button>
+            </div>
+            <div className="space-y-3">
+              <Field label={t('ttl')}><input value={editing.title || ''} onChange={(e) => setEditing({ ...editing, title: e.target.value })} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-violet-300 outline-none" /></Field>
+              <Field label={t('slug')}><input value={editing.slug || ''} onChange={(e) => setEditing({ ...editing, slug: e.target.value })} placeholder="mentoria-30min" className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-violet-300 outline-none" /></Field>
+              <Field label={t('desc')}><textarea value={editing.description || ''} onChange={(e) => setEditing({ ...editing, description: e.target.value })} rows={2} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-violet-300 outline-none resize-none" /></Field>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label={t('duration')}><input type="number" value={editing.duration_min ?? 30} onChange={(e) => setEditing({ ...editing, duration_min: +e.target.value })} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-violet-300 outline-none" /></Field>
+                <Field label={t('price')}><input type="number" value={editing.price_cents ?? 0} onChange={(e) => setEditing({ ...editing, price_cents: +e.target.value })} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-violet-300 outline-none" /></Field>
+                <Field label={t('location')}>
+                  <select value={editing.location_type || 'video'} onChange={(e) => setEditing({ ...editing, location_type: e.target.value })} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-violet-300 outline-none">
+                    {LOCATIONS.map((l) => <option key={l} value={l}>{l}</option>)}
+                  </select>
+                </Field>
+                <Field label={t('purpose')}>
+                  <select value={editing.purpose || 'mentoring'} onChange={(e) => setEditing({ ...editing, purpose: e.target.value })} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-violet-300 outline-none">
+                    {PURPOSES.map((p) => <option key={p} value={p}>{PURPOSE_LABEL[p][locale]}</option>)}
+                  </select>
+                </Field>
+              </div>
+              <div className="flex items-center gap-4 pt-1">
+                <label className="flex items-center gap-2 text-sm text-slate-700"><Toggle on={editing.visible ?? true} onChange={() => setEditing({ ...editing, visible: !(editing.visible ?? true) })} />{t('visible')}</label>
+                <label className="flex items-center gap-2 text-sm text-slate-700"><Toggle on={editing.listed ?? true} onChange={() => setEditing({ ...editing, listed: !(editing.listed ?? true) })} />{t('listed')}</label>
               </div>
             </div>
-          )}
-        </div>
-      )}
-
-      {tab === 'bookings' && (
-        <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100">
-          {data.upcoming_bookings.length === 0 && <div className="p-6 text-center text-sm text-slate-500">{t('sched.bookings.empty')}</div>}
-          {data.upcoming_bookings.map((b) => (
-            <div key={b.id} className="p-4 flex items-start justify-between gap-3 hover:bg-slate-50/50">
-              <div className="min-w-0 flex-1">
-                <div className="text-xs text-slate-500">{new Date(b.scheduled_at).toLocaleString(locale, { dateStyle: 'medium', timeStyle: 'short' })}</div>
-                <h3 className="font-semibold text-slate-900 mt-0.5">{b.guest_name}</h3>
-                <div className="text-xs text-slate-500">{b.guest_email}{b.guest_phone && ` · ${b.guest_phone}`}</div>
-                <div className="text-xs text-slate-600 mt-1">{b.link_title} · {b.duration_min} min{b.price_cents > 0 && <> · {(b.price_cents/100).toFixed(2)} € {b.paid_at ? <Check className="inline h-3 w-3 text-emerald-600 ml-1" /> : <span className="text-amber-600 ml-1">{t('sched.pending')}</span>}</>}</div>
-                {b.guest_notes && <p className="text-sm text-slate-700 mt-2 p-2 bg-slate-50 rounded">{b.guest_notes}</p>}
-                {b.meeting_url && <a href={b.meeting_url} target="_blank" rel="noreferrer" className="text-xs text-brand-700 font-medium hover:underline mt-1.5 inline-block">→ {t('sched.meeting_link')}</a>}
-              </div>
-              <button onClick={() => cancelBooking(b.id)} className="text-xs px-2.5 py-1.5 rounded-md hover:bg-red-50 text-red-600 flex-shrink-0">{t('sched.cancel_booking')}</button>
+            <div className="flex items-center justify-end gap-2 mt-5">
+              <button onClick={() => setEditing(null)} className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900">{t('cancel')}</button>
+              <button onClick={() => saveLink(editing)} disabled={busy} className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-violet-600 to-indigo-600 rounded-full hover:opacity-90 disabled:opacity-60">
+                {busy && <Loader2 className="h-4 w-4 animate-spin" />}{t('save')}
+              </button>
             </div>
-          ))}
+          </div>
         </div>
       )}
     </div>
   );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return <label className="block text-xs font-medium text-slate-500"><span className="block mb-1">{label}</span>{children}</label>;
 }
