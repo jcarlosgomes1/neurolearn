@@ -8,6 +8,7 @@ import {
   Search, Download, X, Mail, Phone, Globe2, Calendar, ShieldCheck,
   ShieldAlert, ChevronLeft, ChevronRight, Loader2, UserCheck, Tag, Flame, Wand2,
 } from 'lucide-react';
+import { UserAvatar } from '@/components/account/UserAvatar';
 
 type Lang = 'pt' | 'en' | 'es' | 'fr';
 const STR: Record<string, Record<Lang, string>> = {
@@ -198,9 +199,7 @@ export function ContactsCockpit({ initialStats, initialList }: { initialStats: a
             {rows.map((r) => (
               <li key={r.id}>
                 <button onClick={() => openDetail(r.id)} className="w-full text-left p-4 hover:bg-slate-50 transition-colors flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 text-white text-sm font-bold flex items-center justify-center shrink-0">
-                    {(r.name || r.email || '?')[0]?.toUpperCase()}
-                  </div>
+                  <UserAvatar url={r.avatar_url} seed={r.id} name={r.name || r.email} size={40} className="shrink-0" />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-slate-900 text-sm truncate">{r.name || r.email}</span>
@@ -244,7 +243,7 @@ export function ContactsCockpit({ initialStats, initialList }: { initialStats: a
                 <>
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="h-12 w-12 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 text-white text-lg font-bold flex items-center justify-center shrink-0">{(c.name || c.email || '?')[0]?.toUpperCase()}</div>
+                      <UserAvatar seed={c.id} name={c.name || c.email} size={48} className="shrink-0" />
                       <div className="min-w-0">
                         <div className="font-bold text-slate-900 truncate">{c.name || '—'}</div>
                         <div className="flex items-center gap-1.5 mt-0.5">

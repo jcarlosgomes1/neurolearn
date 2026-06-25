@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
 import { getTranslations } from 'next-intl/server';
 import { Clock, ArrowRight } from 'lucide-react';
+import { UserAvatar } from '@/components/account/UserAvatar';
 
 export default async function Page({ params }: { params: Promise<{ handle: string; locale: string }> }) {
   const { handle, locale } = await params;
@@ -39,13 +40,7 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
         <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
           <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8">
             <div className="flex items-center gap-4">
-              {h.avatar_url ? (
-                <img src={h.avatar_url} alt={h.name} className="w-16 h-16 rounded-full object-cover" />
-              ) : (
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-brand-500 to-violet-600 text-white text-xl font-bold flex items-center justify-center">
-                  {h.name?.[0]?.toUpperCase() || '?'}
-                </div>
-              )}
+              <UserAvatar url={h.avatar_url} seed={h.name} name={h.name} size={64} />
               <div className="min-w-0">
                 <h1 className="text-xl font-bold text-slate-900 leading-tight">{h.name}</h1>
                 {h.headline && <p className="text-sm text-slate-500 mt-0.5">{h.headline}</p>}
