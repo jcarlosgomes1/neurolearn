@@ -57,7 +57,7 @@ export function EarningsClient() {
 
   return (
     <div className="max-w-6xl mx-auto">
-      <AppPageHeader eyebrow={t('teach.earnings.eyebrow')} title={t('teach.earnings.title')} description={t('teach.earnings.description')} />
+      <AppPageHeader  title={t('teach.earnings.title')} description={t('teach.earnings.description')} />
 
       {loading ? (
         <div className="flex items-center justify-center py-20 text-slate-400"><Loader2 className="w-6 h-6 animate-spin" /></div>

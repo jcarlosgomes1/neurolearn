@@ -85,7 +85,7 @@ export function ReviewsClient() {
 
   return (
     <div className="max-w-6xl mx-auto">
-      <AppPageHeader eyebrow={t('teach.reviews.eyebrow')} title={t('teach.reviews.title')} description={t('teach.reviews.description')} />
+      <AppPageHeader  title={t('teach.reviews.title')} description={t('teach.reviews.description')} />
 
       {loading ? (
         <div className="flex items-center justify-center py-20 text-slate-400"><Loader2 className="w-6 h-6 animate-spin" /></div>

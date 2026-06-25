@@ -25,7 +25,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8">
-      <AppPageHeader eyebrow={t('feedback.title')} title={t('feedback.page_title')} description={t('feedback.page_sub')} />
+      <AppPageHeader  title={t('feedback.page_title')} description={t('feedback.page_sub')} />
 
       {completed.length === 0 ? (
         <div className="text-center py-12 text-slate-400 text-sm">{t('feedback.no_completed')}</div>

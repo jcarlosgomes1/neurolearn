@@ -86,7 +86,7 @@ export function TermsClient() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
       <div className="mb-6">
-        <AppPageHeader eyebrow={t('teach.terms.eyebrow')} title={t('teach.terms.title')} description={t('teach.terms.description')} />
+        <AppPageHeader  title={t('teach.terms.title')} description={t('teach.terms.description')} />
       </div>
 
       <div className="mb-6 rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-teal-50 p-4">

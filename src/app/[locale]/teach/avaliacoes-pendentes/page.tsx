@@ -16,7 +16,7 @@ export default async function PendingEvaluationsPage({ params }: { params: Promi
 
   return (
     <div className="max-w-6xl mx-auto">
-      <AppPageHeader eyebrow={t('tea.eval_kicker')} title={t('tea.eval_h1')} description={t('tea.eval_intro')} />
+      <AppPageHeader  title={t('tea.eval_h1')} description={t('tea.eval_intro')} />
       <EvaluationsClient items={Array.isArray(pending) ? pending : []} />
     </div>
   );

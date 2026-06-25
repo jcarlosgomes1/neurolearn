@@ -106,7 +106,7 @@ export function QuizzesClient() {
 
   return (
     <div className="max-w-6xl mx-auto">
-      <AppPageHeader eyebrow={t('teach.qb.eyebrow')} title={t('teach.qb.title')} description={t('teach.qb.description')} />
+      <AppPageHeader  title={t('teach.qb.title')} description={t('teach.qb.description')} />
 
       {loading ? (
         <div className="flex items-center justify-center py-20 text-slate-400"><Loader2 className="w-6 h-6 animate-spin" /></div>
