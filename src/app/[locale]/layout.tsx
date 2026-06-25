@@ -10,6 +10,7 @@ import { CookieBanner } from '@/components/legal/CookieBanner';
 import { Telemetry } from '@/components/telemetry/Telemetry';
 import { MobileBottomNav } from '@/components/MobileBottomNav';
 import { TopBar } from '@/components/layout/TopBar';
+import { TopLoader } from '@/components/ui/TopLoader';
 import { PeekBanner } from '@/components/peek/PeekBanner';
 import { createClient } from '@/lib/supabase/server';
 import { PageEnter } from '@/components/motion/PageEnter';
@@ -63,6 +64,7 @@ export default async function LocaleLayout({
       theme = row.id;
       themeMode = row.mode || 'light';
       const t = row.tokens || {};
+      const surf = (t.surface || {}) as Record<string, string>;
       motionOn = t.motion !== false;
       const b = t.brand || {};
       const w = t.w || {};
@@ -76,24 +78,32 @@ export default async function LocaleLayout({
         `--paper:${t.paper};--card:${t.card};--ink:${t.ink};--ink-2:${t.ink2};--ink-3:${t.ink3};--line:${t.line};` +
         `--accent:${t.accent};--accent-bright:${t.accentBright};--accent-tint:${t.accentTint};` +
         brandVars + neutralVars +
-        `--w-display:${w.display||700};--w-h1:${w.h1||700};--w-h2:${w.h2||600};--w-h3:${w.h3||600};}`;
+        `--w-display:${w.display||700};--w-h1:${w.h1||700};--w-h2:${w.h2||600};--w-h3:${w.h3||600};` +
+        (surf.shadow ? `--nl-surface-shadow:${surf.shadow};` : '') +
+        (surf.emboss ? `--nl-surface-shadow-emboss:${surf.emboss};` : '') +
+        (surf.hover ? `--nl-surface-shadow-hover:${surf.hover};` : '') +
+        `}`;
     }
   } catch {
     // fallback: dir4 (Atelier)
   }
 
-  // Camada de movimento, governada pela direção de design ativa (config-driven).
+  // Camada de movimento, governada pela direcao de design ativa (config-driven).
   const motionCss = motionOn
     ? `.nl-reveal{opacity:0;transform:translateY(18px);transition:opacity .65s ease,transform .65s cubic-bezier(.2,.7,.2,1)}.nl-reveal[data-shown="true"]{opacity:1;transform:none}@media (prefers-reduced-motion:reduce){.nl-reveal{opacity:1!important;transform:none!important;transition:none!important}}`
     : `.nl-reveal{opacity:1!important;transform:none!important;transition:none!important}.nl-page-enter{animation:none!important}`;
 
+  // Superficies (alto-relevo tipo cartao), config-driven com defaults; uma direcao de design pode sobrepor via tokens.surface.
+  const surfaceCss = ':root{--nl-surface-shadow:0 1px 3px rgba(15,23,42,.07),0 1px 2px rgba(15,23,42,.04);--nl-surface-shadow-emboss:inset 0 1px 0 rgba(255,255,255,.85),0 1px 3px rgba(15,23,42,.07),0 1px 2px rgba(15,23,42,.04);--nl-surface-shadow-hover:0 6px 16px rgba(15,23,42,.10),0 2px 6px rgba(15,23,42,.06)}.nl-surface{box-shadow:var(--nl-surface-shadow)}.nl-surface-emboss{box-shadow:var(--nl-surface-shadow-emboss)}.nl-surface-int{transition:box-shadow .2s ease,transform .2s ease}.nl-surface-int:hover{box-shadow:var(--nl-surface-shadow-hover);transform:translateY(-2px)}';
+
   return (
     <html lang={locale} data-theme={theme} data-theme-mode={themeMode} data-motion={motionOn ? 'on' : 'off'}>
       <body className="min-h-screen font-sans antialiased [overflow-x:clip]">
-        <style dangerouslySetInnerHTML={{ __html: themeCss + motionCss }} />
+        <style dangerouslySetInnerHTML={{ __html: surfaceCss + themeCss + motionCss }} />
         <noscript><style dangerouslySetInnerHTML={{ __html: '.nl-reveal{opacity:1!important;transform:none!important}' }} /></noscript>
         <ClientIntlProvider locale={locale} messages={messages}>
           <TopBar locale={locale} />
+          <TopLoader />
           <PeekBanner />
           <OnboardingGate />
           <PageEnter>{children}</PageEnter>
