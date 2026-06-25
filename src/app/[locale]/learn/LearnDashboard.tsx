@@ -95,7 +95,7 @@ export function LearnDashboard() {
       />
 
       {/* Extras B2C: notificações + certificados */}
-      <div className="pb-10">
+      <div className="mt-8">
         <div className="grid md:grid-cols-2 gap-6">
           <section className="bg-white rounded-2xl border border-slate-200 p-5">
             <h2 className="font-semibold text-slate-900 mb-4">{t('learn.notifications')}</h2>
