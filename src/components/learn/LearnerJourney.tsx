@@ -124,7 +124,7 @@ export function LearnerJourney({
   const ctaBg = `linear-gradient(135deg, var(--accent, ${brand}), var(--accent-bright, #6366f1))`;
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
+    <div className="space-y-6">
       {/* Hero */}
       <Reveal i={0}>
         <div className="relative overflow-hidden rounded-3xl p-6 text-white" style={{ background: heroBg }}>

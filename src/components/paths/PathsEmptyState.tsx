@@ -28,7 +28,7 @@ export function PathsEmptyState() {
       <div className="absolute -bottom-20 -right-20 h-72 w-72 rounded-full bg-fuchsia-300/40 blur-3xl animate-pulse" style={{ animationDelay: '700ms' }} />
       <div className="absolute top-1/2 right-1/4 h-40 w-40 rounded-full bg-amber-300/40 blur-2xl animate-pulse" style={{ animationDelay: '1400ms' }} />
 
-      <div className="relative z-10 max-w-2xl mx-auto text-center">
+      <div className="relative z-10 text-center">
         <div className="inline-block mb-6">
           <svg width="120" height="120" viewBox="0 0 120 120" className="drop-shadow-xl">
             <defs>

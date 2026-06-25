@@ -37,7 +37,7 @@ export function MySkillsPanel() {
   if (loading) return <div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-slate-400" /></div>;
 
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8">
+    <div className="">
       <AppPageHeader title={t('skills.page_title')} description={t('skills.subtitle')} />
 
       {skills.length === 0 ? (
