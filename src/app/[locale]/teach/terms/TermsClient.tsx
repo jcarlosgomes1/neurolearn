@@ -84,7 +84,7 @@ export function TermsClient() {
   const courses = data?.courses || [];
 
   return (
-    <div className="py-8">
+    <div>
       <div className="mb-6">
         <AppPageHeader  title={t('teach.terms.title')} description={t('teach.terms.description')} />
       </div>

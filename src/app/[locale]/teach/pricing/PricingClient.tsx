@@ -75,7 +75,7 @@ export function PricingClient() {
   if (loading) return <div><div className="flex items-center justify-center py-20 text-slate-400"><Loader2 className="w-6 h-6 animate-spin" /></div></div>;
 
   return (
-    <div className="py-8">
+    <div>
       <div className="mb-6">
         <AppPageHeader  title={t('teach.pricing.title')} description={t('teach.pricing.description')} />
       </div>

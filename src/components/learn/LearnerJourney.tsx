@@ -226,8 +226,8 @@ export function LearnerJourney({
         <Reveal i={7}>
           <section>
             <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-1.5"><Sparkles className="h-4 w-4 text-violet-500" />{safeT('academy.learn.discover', 'Descobrir na Academia')}</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {data.discover.slice(0, 6).map((c) => (
+            <div className={`grid gap-6 ${data.discover.length === 1 ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
+              {data.discover.slice(0, 2).map((c) => (
                 <Link key={c.course_id} href={`/curso/${c.course_id}` as never}
                   className="group flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3.5 hover:border-violet-300 hover:shadow-sm transition-all">
                   <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-100 to-fuchsia-100 flex items-center justify-center text-lg shrink-0">{c.emoji || '✨'}</div>
