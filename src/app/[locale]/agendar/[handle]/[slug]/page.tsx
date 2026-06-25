@@ -12,7 +12,7 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
   const sb = await createClient();
   const blocks = await getHomeBlocks(locale);
 
-  const { data: host } = await sb.rpc('nl_scheduling_host_by_handle', { p_handle: handle });
+  const { data: host } = await sb.rpc('nl_scheduling_host_by_handle', { p_handle: handle, p_lang: locale });
   if (!host?.ok) {
     return (
       <>

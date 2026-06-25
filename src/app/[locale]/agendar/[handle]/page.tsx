@@ -11,7 +11,7 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
   const t = await getTranslations();
   const sb = await createClient();
   const blocks = await getHomeBlocks(locale);
-  const { data: host } = await sb.rpc('nl_scheduling_host_by_handle', { p_handle: handle });
+  const { data: host } = await sb.rpc('nl_scheduling_host_by_handle', { p_handle: handle, p_lang: locale });
 
   if (!host?.ok) {
     return (
@@ -30,6 +30,7 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
 
   const h = host.host;
   const links = host.links as Array<{ id: string; slug: string; title: string; description: string | null; duration_min: number; price_cents: number; currency: string }>;
+  const interests = (h.interests || []) as Array<{ slug: string; emoji: string; label: string }>;
 
   return (
     <>
@@ -51,6 +52,15 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
               </div>
             </div>
             {h.bio && <p className="text-sm text-slate-600 mt-4 leading-relaxed">{h.bio}</p>}
+            {interests.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-4">
+                {interests.map((it) => (
+                  <span key={it.slug} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-medium">
+                    <span>{it.emoji}</span>{it.label}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           <h2 className="font-bold text-slate-900 mt-8 mb-3 px-1">{t('sched.public.pick_type')}</h2>
