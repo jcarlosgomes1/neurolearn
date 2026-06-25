@@ -33,7 +33,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   const placements = r.ok ? r.placements : [];
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+    <div className="">
       <AppPageHeader
         backHref="/talento"
         backLabel={t('tal.back_profile')}

@@ -23,7 +23,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   return (
     <>
       {(placementsCount ?? 0) > 0 && (
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-4">
+        <div className="">
           <Link href={'/talento/meus-pedidos' as any}
             className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 hover:shadow-md transition-shadow">
             <div className="flex items-center gap-3">

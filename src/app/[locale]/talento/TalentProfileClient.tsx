@@ -53,7 +53,7 @@ export function TalentProfileClient({ initial }: { initial: { ok: boolean; profi
   }
   
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+    <div className="space-y-6">
       <AppPageHeader title={t('tal.profile_h')} description={t('tal.profile_sub')} />
       
       {/* Available toggle */}
