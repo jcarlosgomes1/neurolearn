@@ -47,7 +47,7 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
               )}
               <div className="min-w-0">
                 <h1 className="text-xl font-bold text-slate-900 leading-tight">{h.name}</h1>
-                <p className="text-xs text-slate-500 uppercase tracking-wider mt-0.5">{h.role}</p>
+                {h.headline && <p className="text-sm text-slate-500 mt-0.5">{h.headline}</p>}
               </div>
             </div>
             {h.bio && <p className="text-sm text-slate-600 mt-4 leading-relaxed">{h.bio}</p>}

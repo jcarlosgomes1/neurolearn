@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import {
   Clock, Globe2, Plus, Trash2, Pencil, Copy, Check, Calendar, Video, Phone,
-  MapPin, Eye, EyeOff, Link2, X, Loader2, CalendarDays, Hourglass,
+  MapPin, Eye, EyeOff, Link2, X, Loader2, CalendarDays, Hourglass, UserRound,
 } from 'lucide-react';
 
 type Lang = 'pt' | 'en' | 'es' | 'fr';
@@ -24,6 +24,12 @@ const STR: Record<string, Record<Lang, string>> = {
   public_link: { pt: 'A tua página', en: 'Your page', es: 'Tu página', fr: 'Ta page' },
   copy: { pt: 'Copiar', en: 'Copy', es: 'Copiar', fr: 'Copier' },
   copied: { pt: 'Copiado', en: 'Copied', es: 'Copiado', fr: 'Copié' },
+  public_profile: { pt: 'Perfil público', en: 'Public profile', es: 'Perfil público', fr: 'Profil public' },
+  profile_hint: { pt: 'Aparece na tua página pública de marcação.', en: 'Shown on your public booking page.', es: 'Aparece en tu página pública de reservas.', fr: 'Affiché sur ta page publique de réservation.' },
+  headline: { pt: 'Título curto', en: 'Headline', es: 'Título', fr: 'Titre' },
+  headline_ph: { pt: 'Ex.: Engenheiro de software · 10 anos', en: 'e.g. Software engineer · 10 yrs', es: 'Ej.: Ingeniero de software · 10 años', fr: 'Ex. : Ingénieur logiciel · 10 ans' },
+  bio_label: { pt: 'Bio', en: 'Bio', es: 'Bio', fr: 'Bio' },
+  bio_ph: { pt: 'Apresenta-te a quem te vai marcar…', en: 'Introduce yourself to people booking you…', es: 'Preséntate a quien te reserve…', fr: 'Présente-toi aux personnes qui réservent…' },
   availability: { pt: 'Disponibilidade semanal', en: 'Weekly availability', es: 'Disponibilidad semanal', fr: 'Disponibilité hebdomadaire' },
   add_window: { pt: 'Adicionar intervalo', en: 'Add window', es: 'Añadir intervalo', fr: 'Ajouter un créneau' },
   unavailable: { pt: 'Indisponível', en: 'Unavailable', es: 'No disponible', fr: 'Indisponible' },
@@ -112,6 +118,8 @@ export function SchedulingDashboard({ initial }: { initial: any }) {
   const [minNotice, setMinNotice] = useState<number>(cal.min_notice_hours ?? 12);
   const [maxAdvance, setMaxAdvance] = useState<number>(cal.max_advance_days ?? 30);
   const [active, setActive] = useState<boolean>(cal.enabled ?? true);
+  const [headline, setHeadline] = useState<string>(cal.headline || '');
+  const [bio, setBio] = useState<string>(cal.bio || '');
 
   const [savingCal, setSavingCal] = useState(false);
   const [savedCal, setSavedCal] = useState(false);
@@ -133,7 +141,7 @@ export function SchedulingDashboard({ initial }: { initial: any }) {
     const payload = {
       p_timezone: tz, p_weekly_availability: weekly, p_buffer_minutes: buffer,
       p_min_notice_hours: minNotice, p_max_advance_days: maxAdvance,
-      p_enabled: extra?.active ?? active,
+      p_enabled: extra?.active ?? active, p_headline: headline, p_bio: bio,
     };
     await sb.rpc('nl_scheduling_update_calendar', payload as any);
     setSavingCal(false);
@@ -198,6 +206,29 @@ export function SchedulingDashboard({ initial }: { initial: any }) {
           </button>
         </Card>
       </div>
+
+      <Card>
+        <div className="flex items-center justify-between mb-3 gap-3">
+          <div className="min-w-0">
+            <h2 className="font-display text-lg font-bold text-slate-900 flex items-center gap-2"><UserRound className="h-5 w-5 text-violet-600 shrink-0" />{t('public_profile')}</h2>
+            <p className="text-xs text-slate-500 mt-0.5">{t('profile_hint')}</p>
+          </div>
+          <button onClick={() => saveCalendar()} disabled={savingCal}
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:opacity-90 rounded-full px-4 py-1.5 transition-opacity disabled:opacity-60 shrink-0">
+            {savingCal ? <Loader2 className="h-4 w-4 animate-spin" /> : savedCal ? <Check className="h-4 w-4" /> : null}{savedCal ? t('saved') : t('save')}
+          </button>
+        </div>
+        <div className="space-y-3">
+          <div>
+            <label className="block text-xs font-medium text-slate-500 mb-1">{t('headline')}</label>
+            <input value={headline} onChange={(e) => setHeadline(e.target.value)} placeholder={t('headline_ph')} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-violet-300 outline-none" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-500 mb-1">{t('bio_label')}</label>
+            <textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={3} placeholder={t('bio_ph')} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-violet-300 outline-none resize-none" />
+          </div>
+        </div>
+      </Card>
 
       <div className="grid gap-6 lg:grid-cols-5">
         <Card className="lg:col-span-3">
