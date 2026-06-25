@@ -39,6 +39,7 @@ const STR: Record<string, Record<Lang, string>> = {
   fup_regenerate: { pt: 'Gerar de novo', en: 'Regenerate', es: 'Regenerar', fr: 'Régénérer' },
   fup_generating: { pt: 'A redigir…', en: 'Drafting…', es: 'Redactando…', fr: 'Rédaction…' },
   fup_note: { pt: 'Rascunho proposto. O envio por email será ativado em breve.', en: 'Proposed draft. Email sending will be enabled soon.', es: 'Borrador propuesto. El envío por email se activará pronto.', fr: 'Brouillon proposé. L’envoi par e-mail sera activé bientôt.' },
+  fup_suggested: { pt: 'O orquestrador sugeriu um follow-up. Gera o rascunho quando quiseres.', en: 'The orchestrator suggested a follow-up. Generate a draft when ready.', es: 'El orquestador sugirió un seguimiento. Genera el borrador cuando quieras.', fr: 'L’orchestrateur a suggéré une relance. Génère un brouillon quand tu veux.' },
 };
 const STATUS_LABEL: Record<string, Record<Lang, string>> = {
   lead: { pt: 'Lead', en: 'Lead', es: 'Lead', fr: 'Lead' },
@@ -209,6 +210,7 @@ export function ContactsCockpit({ initialStats, initialList }: { initialStats: a
                   </div>
                   <div className="flex flex-col items-end gap-1 shrink-0">
                     <div className="flex items-center gap-1.5">
+                      {r.followup_status === 'suggested' && <Flame className="h-3.5 w-3.5 text-amber-500 shrink-0" />}
                       <span className={cx('text-[10px] font-bold px-1.5 py-0.5 rounded-full', SEG_CLS[r.segment])}>{r.score}</span>
                       <span className={cx('text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full', STATUS_CLS[r.status])}>{sl(r.status)}</span>
                     </div>
@@ -279,6 +281,9 @@ export function ContactsCockpit({ initialStats, initialList }: { initialStats: a
                         {fupBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wand2 className="h-3.5 w-3.5" />}{fupBusy ? t('fup_generating') : (fupText ? t('fup_regenerate') : t('fup_generate'))}
                       </button>
                     </div>
+                    {c.followup_status === 'suggested' && !fupText && !fupBusy && (
+                      <div className="flex items-start gap-1.5 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-2 mb-1.5"><Flame className="h-3.5 w-3.5 shrink-0 mt-px" /><span>{t('fup_suggested')}</span></div>
+                    )}
                     {fupText && <p className="text-sm text-slate-700 leading-relaxed bg-white rounded-xl border border-slate-200 p-3 whitespace-pre-wrap">{fupText}</p>}
                     {fupText && <p className="text-[11px] text-slate-400 mt-1.5">{t('fup_note')}</p>}
                   </div>
