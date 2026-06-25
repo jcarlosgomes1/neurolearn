@@ -40,7 +40,7 @@ const LOC: Record<string, Record<Lang, string>> = {
 const LOC_ICON: Record<string, any> = { video: Video, phone: Phone, in_person: MapPin };
 const cx = (...c: (string | false | null | undefined)[]) => c.filter(Boolean).join(' ');
 
-export function BookingForm({ host, link }: { host: any; link: any }) {
+export function BookingForm({ host, link, consentText }: { host: any; link: any; consentText?: string }) {
   const locale = (useLocale() as Lang) || 'pt';
   const t = (k: string) => S[k]?.[locale] ?? S[k]?.pt ?? k;
   const sb = useMemo(() => createClient(), []);
@@ -53,6 +53,7 @@ export function BookingForm({ host, link }: { host: any; link: any }) {
   const [slot, setSlot] = useState<any | null>(null);
   const [step, setStep] = useState<'pick' | 'details' | 'done'>('pick');
   const [form, setForm] = useState({ name: '', email: '', phone: '', notes: '' });
+  const [consent, setConsent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -87,6 +88,7 @@ export function BookingForm({ host, link }: { host: any; link: any }) {
     const { data, error: rpcErr } = await sb.rpc('nl_scheduling_create_booking', {
       p_link_id: link.id, p_slot_iso: slot.start, p_guest_name: form.name,
       p_guest_email: form.email, p_guest_phone: form.phone || null, p_guest_notes: form.notes || null,
+      p_locale: locale, p_marketing_consent: consent, p_consent_text: consent ? (consentText || null) : null,
     } as any);
     setSubmitting(false);
     const res = data as any;
@@ -100,7 +102,6 @@ export function BookingForm({ host, link }: { host: any; link: any }) {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
       <div className="grid gap-6 md:grid-cols-[330px_1fr]">
-        {/* summary */}
         <aside className="md:sticky md:top-8 self-start">
           <div className="rounded-3xl border border-slate-200 bg-white p-6">
             <div className="flex items-center gap-3">
@@ -123,7 +124,6 @@ export function BookingForm({ host, link }: { host: any; link: any }) {
           </div>
         </aside>
 
-        {/* main */}
         <div>
           {step === 'done' ? (
             <div className="rounded-3xl border border-emerald-200 bg-emerald-50/50 p-8 text-center">
@@ -164,6 +164,12 @@ export function BookingForm({ host, link }: { host: any; link: any }) {
                   <label className="block text-xs font-medium text-slate-500 mb-1">{t('notes')} <span className="text-slate-400">({t('optional')})</span></label>
                   <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={3} className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-violet-300 outline-none resize-none" />
                 </div>
+                {consentText && (
+                  <label className="flex items-start gap-2.5 pt-1 cursor-pointer">
+                    <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5 h-4 w-4 rounded border-slate-300 text-violet-600 focus:ring-violet-300 shrink-0" />
+                    <span className="text-xs text-slate-500 leading-snug">{consentText}</span>
+                  </label>
+                )}
               </div>
               {link.price_cents > 0 && <p className="text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-2 mt-3">{t('pay_note')}</p>}
               {error && <p className="text-sm text-rose-600 mt-3">{error}</p>}

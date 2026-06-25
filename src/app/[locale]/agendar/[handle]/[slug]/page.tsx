@@ -31,11 +31,13 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
   const link = (host.links as Array<{ slug: string }>).find((l) => l.slug === slug);
   if (!link) notFound();
 
+  const { data: consentText } = await sb.rpc('nl_consent_text', { p_key: 'consent.marketing', p_lang: locale });
+
   return (
     <>
       <Header />
       <main className="min-h-screen bg-slate-50">
-        <BookingForm host={host.host} link={link as any} />
+        <BookingForm host={host.host} link={link as any} consentText={(consentText as string) || ''} />
       </main>
       <Footer data={blocks.footer_brand || {}} />
     </>
