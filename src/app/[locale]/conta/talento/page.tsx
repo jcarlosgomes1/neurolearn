@@ -20,7 +20,7 @@ export default async function TalentPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+    <div className="">
       <AdminPageHeader title={safeT('account.talent.title', 'Perfil de talento')} description={safeT('account.talent.description', 'Disponibiliza o teu perfil às empresas para oportunidades de carreira. Controlas o que partilhas e a quem.')} />
       <TalentClient initial={(profile as any) || {}} />
     </div>

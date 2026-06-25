@@ -45,7 +45,7 @@ export function SubscriptionClient({ initial }: { initial: any }) {
   if (!sub) {
     return (
       <main className="bg-slate-50 min-h-screen">
-        <div className="max-w-3xl mx-auto px-4 py-12">
+        <div className="">
           <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center">
             <Sparkles className="h-12 w-12 text-violet-500 mx-auto mb-3" />
             <h1 className="font-bold text-slate-900 text-xl mb-2">{t('sub.none_title')}</h1>
@@ -61,7 +61,7 @@ export function SubscriptionClient({ initial }: { initial: any }) {
 
   return (
     <main className="bg-slate-50 min-h-screen">
-      <div className="max-w-3xl mx-auto px-4 py-8">
+      <div className="">
         <AppPageHeader title={t('sub.title')} />
 
         <div className="bg-white border border-slate-200 rounded-2xl p-6 mb-4">

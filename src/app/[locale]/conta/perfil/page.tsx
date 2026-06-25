@@ -39,7 +39,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
             preferred_lang: profile?.preferred_lang || locale,
           }}
         />
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-10 space-y-6">
+        <div className="space-y-6">
           <PublicProfileCard
             catalogue={(cat.data as any) || []}
             initialInterests={(ints.data as any) || []}

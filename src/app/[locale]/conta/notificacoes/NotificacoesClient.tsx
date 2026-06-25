@@ -55,7 +55,7 @@ export function NotificacoesClient({ initial }: { initial: any[] }) {
 
   return (
     <main className="bg-slate-50 min-h-screen">
-      <div className="max-w-3xl mx-auto px-4 pt-6">
+      <div className="">
         <AppPageHeader title={t('notifs.title')} description={t('notifs.count_summary', { total: items.length, unread: items.filter(n => !n.read_at).length })} actions={
           <div className="flex gap-2">
             <div className="inline-flex rounded-lg border border-slate-200 bg-white overflow-hidden">
@@ -69,7 +69,7 @@ export function NotificacoesClient({ initial }: { initial: any[] }) {
         } />
       </div>
 
-      <div className="max-w-3xl mx-auto px-4 py-6">
+      <div className="">
         {visible.length === 0 ? (
           <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
             <Bell className="h-12 w-12 text-slate-300 mx-auto mb-3" />

@@ -18,7 +18,7 @@ interface TotpFactor {
 export function SecurityClient({ userEmail, totpFactors }: { userEmail: string; totpFactors: TotpFactor[] }) {
   const t = useTranslations();
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+    <div className="space-y-6">
       <AppPageHeader title={t('security.title')} description={t('security.subtitle')} />
 
       <PasswordChangeCard />

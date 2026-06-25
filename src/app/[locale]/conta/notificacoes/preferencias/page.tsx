@@ -21,7 +21,7 @@ export default async function NotifPrefsPage({ params }: { params: Promise<{ loc
   const whatsappEnabled = (await sb.rpc('nl_platform_config_get', { p_key: 'feature.whatsapp_notifications' })).data === 'true';
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+    <div className="">
       <AdminPageHeader title={safeT('account.notif_prefs.title', 'Preferências de notificação')} description={safeT('account.notif_prefs.description', 'Escolhe como e quando queres ser notificado. Canais e tipos individuais.')} />
       <NotifPrefsClient initial={prefs as any} whatsappEnabled={whatsappEnabled} />
     </div>

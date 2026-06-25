@@ -26,7 +26,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
 
   return (
     <main className="bg-slate-50 min-h-screen">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <div className="">
         <AppPageHeader eyebrow={t('account.home.title')} title={t('account.home.certs_title')} description={t('certs.subtitle')} />
 
         {certs.length === 0 ? (

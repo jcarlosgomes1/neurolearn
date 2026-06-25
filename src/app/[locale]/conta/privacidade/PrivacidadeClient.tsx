@@ -72,11 +72,11 @@ export function PrivacidadeClient({ email, requests: initial }: { email: string;
 
   return (
     <main className="bg-slate-50 min-h-screen">
-      <div className="max-w-3xl mx-auto px-4 pt-6">
+      <div className="">
         <AppPageHeader title={t('privacy.title')} description={<>{t('privacy.subtitle_pre')}<strong>{email}</strong></>} />
       </div>
 
-      <div className="max-w-3xl mx-auto px-4 py-6 space-y-4">
+      <div className="space-y-4">
         {error && <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-sm text-rose-700 flex items-center gap-2"><AlertCircle className="h-4 w-4" /> {error}</div>}
         {success && <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-sm text-emerald-700 flex items-center gap-2"><CheckCircle className="h-4 w-4" /> {success}</div>}
 

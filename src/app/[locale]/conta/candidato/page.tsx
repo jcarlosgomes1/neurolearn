@@ -23,7 +23,7 @@ export default async function CandidatoPage({ params }: { params: Promise<{ loca
   const { data: files } = await sb.rpc('nl_instructor_files_my');
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+    <div className="">
       <AdminPageHeader title={safeT('account.candidato.title', 'Os meus documentos')} description={safeT('account.candidato.description', 'Faz upload de CV, certificados e materiais. Ficam sempre acessíveis para atualizares.')} />
 
       <CandidatoClient

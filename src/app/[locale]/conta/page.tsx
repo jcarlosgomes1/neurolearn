@@ -20,7 +20,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   const { data: unreadCount } = await sb.rpc('nl_notifications_unread_count');
 
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+    <div className="space-y-6">
       <AppPageHeader title={t('account.home.title')} description={profile?.name || user.email} />
 
       <GamificationPanel />
