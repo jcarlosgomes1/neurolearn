@@ -38,7 +38,7 @@ export function TeachPeerReview() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
+    <div className="max-w-3xl mx-auto py-8">
       <AppPageHeader title="Avaliação por pares" description="Pede para ativar avaliação por pares nos teus cursos. Depois de aprovado, os exercícios abertos passam a ser revistos entre alunos." />
 
       {items === null ? (

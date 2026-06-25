@@ -44,7 +44,7 @@ export default async function LearningPathDetailPage({ params }: { params: Promi
     : path.difficulty === 'intermediate' ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700';
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
+    <div className="max-w-5xl mx-auto py-8">
       <Link href={'/aprender/percursos' as any} className="text-sm text-slate-500 hover:text-slate-700 flex items-center gap-1 mb-4">
         <ChevronLeft className="h-4 w-4" /> {t('path.all_paths')}
       </Link>

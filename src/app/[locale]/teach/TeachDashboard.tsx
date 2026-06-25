@@ -28,7 +28,7 @@ export function TeachDashboard() {
       err === 'instructor_not_approved' ? t('teach.err_not_approved') :
       err === 'not_authenticated' ? t('teach.err_signin') : err;
     return (
-      <div className="max-w-2xl mx-auto px-4 py-16 text-center">
+      <div className="max-w-2xl mx-auto py-16 text-center">
         <div className="text-5xl mb-4">🎓</div>
         <p className="text-slate-700 font-medium">{friendly}</p>
         <Link href={'/' as any} className="btn-primary mt-6 inline-flex">{t('teach.btn_back_home')}</Link>

@@ -24,7 +24,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   const completed = (enrollments || []) as any[];
 
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8">
+    <div className="max-w-2xl mx-auto py-8">
       <AppPageHeader  title={t('feedback.page_title')} description={t('feedback.page_sub')} />
 
       {completed.length === 0 ? (

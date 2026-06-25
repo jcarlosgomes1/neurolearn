@@ -40,7 +40,7 @@ export function LeagueClient({ locale }: { locale: string }) {
   const medal = (rank: number) => (rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : String(rank));
 
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 space-y-5">
+    <div className="max-w-2xl mx-auto py-6 space-y-5">
       <AppPageHeader title={t('liga.title')} description={t('liga.subtitle')} />
 
       {myRank != null && (
