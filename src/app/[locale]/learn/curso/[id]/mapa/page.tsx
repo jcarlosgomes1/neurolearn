@@ -20,7 +20,7 @@ export default async function Page({ params }: { params: Promise<{ id: string; l
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+    <div className="max-w-6xl mx-auto">
       <AppPageHeader backHref={`/learn/curso/${id}/aula/0/0`} backLabel={t('back')} title={r?.title || ''} description={t('subtitle')} />
       <div className="rounded-2xl border border-slate-200 bg-white p-2 sm:p-4 overflow-hidden">
         <MindMap code={r?.mermaid || ''} />

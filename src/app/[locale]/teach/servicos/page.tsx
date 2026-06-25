@@ -20,7 +20,7 @@ export default async function ServicesPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-6xl mx-auto">
       <AdminPageHeader title={safeT('teach.services.title', 'Os meus serviços')} description={safeT('teach.services.description', 'Workshops, formações in-company, mentorias. As empresas podem contactar-te através destes serviços.')} />
       <ServicesClient initial={Array.isArray(services) ? services : []} />
     </div>

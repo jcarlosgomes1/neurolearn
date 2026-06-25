@@ -40,7 +40,7 @@ export default async function Page({ params }: { params: Promise<{ id: string; l
   const terms: Term[] = gr?.ok && Array.isArray(gr.terms) ? gr.terms : [];
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+    <div className="max-w-3xl mx-auto">
       <AppPageHeader backHref={`/learn/curso/${id}/aula/0/0`} backLabel={t('back')} title={r?.title || ''} description={t('subtitle')} />
 
       <div className="space-y-10">

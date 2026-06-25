@@ -145,7 +145,7 @@ export function SessionsClient() {
   const fmt = (iso: string | null) => iso ? new Date(iso).toLocaleString(locale, { dateStyle: 'medium', timeStyle: 'short' }) : '—';
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+    <div className="max-w-6xl mx-auto">
       <AppPageHeader title={t('teach.live.title')} description={t('teach.live.subtitle')} actions={
         <button onClick={openNew} className="inline-flex items-center gap-2 rounded-xl bg-neutral-900 text-white px-4 py-2 text-sm font-medium hover:bg-neutral-800 shrink-0">
           <Plus className="w-4 h-4" /> {t('teach.live.new')}
