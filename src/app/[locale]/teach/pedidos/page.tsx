@@ -32,7 +32,7 @@ export default async function InquiriesPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="">
       <AdminPageHeader title={safeT('teach.inquiries.title', 'Pedidos recebidos')} description={safeT('teach.inquiries.description', 'Empresas que pediram um dos teus serviços. Cota, recusa ou negocia.')} />
       <InquiriesClient items={Array.isArray(inquiries) ? inquiries : []} orgsMap={orgsMap} svcMap={svcMap} />
     </div>

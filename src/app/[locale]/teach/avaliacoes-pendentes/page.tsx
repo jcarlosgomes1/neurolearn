@@ -15,7 +15,7 @@ export default async function PendingEvaluationsPage({ params }: { params: Promi
   const { data: pending } = await sb.rpc('nl_my_pending_evaluations');
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="">
       <AppPageHeader  title={t('tea.eval_h1')} description={t('tea.eval_intro')} />
       <EvaluationsClient items={Array.isArray(pending) ? pending : []} />
     </div>

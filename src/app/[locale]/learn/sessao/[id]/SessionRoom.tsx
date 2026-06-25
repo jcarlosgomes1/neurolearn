@@ -95,7 +95,7 @@ export function SessionRoom({ sessionId }: { sessionId: string }) {
   }
 
   if (loading) return <div className="flex justify-center py-24"><Loader2 className="w-6 h-6 animate-spin text-neutral-400" /></div>;
-  if (!sess) return <div className="max-w-2xl mx-auto py-16 text-center text-neutral-500">{t('learn.session.error')}</div>;
+  if (!sess) return <div className="py-16 text-center text-neutral-500">{t('learn.session.error')}</div>;
 
   const isHls = !!room && (room.provider === 'mux_live' || room.url.endsWith('.m3u8'));
 
@@ -118,7 +118,7 @@ export function SessionRoom({ sessionId }: { sessionId: string }) {
   const fmt = (iso: string | null) => iso ? new Date(iso).toLocaleString(locale, { dateStyle: 'full', timeStyle: 'short' }) : '—';
 
   return (
-    <div className="max-w-2xl mx-auto py-8">
+    <div className="py-8">
       <a href={`/${locale}/learn`} className="inline-flex items-center gap-1.5 text-sm text-neutral-500 hover:text-neutral-800 mb-4"><ArrowLeft className="w-4 h-4" /> {t('learn.session.back')}</a>
       <div className="rounded-2xl border border-neutral-200 bg-white overflow-hidden">
         <AppPageHeader title={sess.title} description={sess.instructor || undefined} />

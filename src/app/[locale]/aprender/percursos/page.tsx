@@ -18,7 +18,7 @@ export default async function LearningPathsPublicPage() {
   const paths = (error || !Array.isArray(data)) ? [] : data;
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="">
       <AppPageHeader title={t('path.h1')} description={t('path.sub')} />
       {paths.length === 0 ? <PathsEmptyState /> : <PathsGrid paths={paths} />}
     </div>

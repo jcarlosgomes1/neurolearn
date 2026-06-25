@@ -35,7 +35,7 @@ export default async function MyLearningPathsPage({ params }: { params: Promise<
   }
 
   return (
-    <div className="max-w-6xl mx-auto py-8">
+    <div className="py-8">
       <AppPageHeader title={t('path.my_h1')} description={t('path.my_sub')} actions={
         <Link href={'/aprender/percursos' as any}
           className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-sm font-medium">

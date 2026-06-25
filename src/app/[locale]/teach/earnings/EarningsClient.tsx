@@ -56,7 +56,7 @@ export function EarningsClient() {
   const subs = data?.subscriptions || [];
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="">
       <AppPageHeader  title={t('teach.earnings.title')} description={t('teach.earnings.description')} />
 
       {loading ? (

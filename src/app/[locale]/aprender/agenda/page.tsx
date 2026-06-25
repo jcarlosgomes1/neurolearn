@@ -89,7 +89,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   };
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="">
       <AppPageHeader title={t('agenda.page_title')} description={t('agenda.page_sub')} />
       {rows.length === 0 ? (
         <div className="text-center py-16 text-slate-400 text-sm">{t('agenda.empty')}</div>

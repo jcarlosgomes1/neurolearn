@@ -72,10 +72,10 @@ export function PricingClient() {
   const stLabel = (s?: string | null) => s === 'approved' ? t('teach.pricing.st_approved') : s === 'overridden' ? t('teach.pricing.st_overridden') : t('teach.pricing.st_proposed');
   const stClass = (s?: string | null) => s === 'approved' ? 'bg-emerald-50 text-emerald-700' : s === 'overridden' ? 'bg-amber-50 text-amber-700' : 'bg-slate-100 text-slate-600';
 
-  if (loading) return <div className="max-w-3xl mx-auto py-8"><div className="flex items-center justify-center py-20 text-slate-400"><Loader2 className="w-6 h-6 animate-spin" /></div></div>;
+  if (loading) return <div className="py-8"><div className="flex items-center justify-center py-20 text-slate-400"><Loader2 className="w-6 h-6 animate-spin" /></div></div>;
 
   return (
-    <div className="max-w-3xl mx-auto py-8">
+    <div className="py-8">
       <div className="mb-6">
         <AppPageHeader  title={t('teach.pricing.title')} description={t('teach.pricing.description')} />
       </div>

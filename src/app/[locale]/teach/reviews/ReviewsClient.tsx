@@ -84,7 +84,7 @@ export function ReviewsClient() {
   const fmtDate = (s: string) => { try { return new Date(s).toLocaleDateString(locale); } catch { return ''; } };
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="">
       <AppPageHeader  title={t('teach.reviews.title')} description={t('teach.reviews.description')} />
 
       {loading ? (

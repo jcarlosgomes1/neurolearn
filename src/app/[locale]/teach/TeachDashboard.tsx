@@ -28,7 +28,7 @@ export function TeachDashboard() {
       err === 'instructor_not_approved' ? t('teach.err_not_approved') :
       err === 'not_authenticated' ? t('teach.err_signin') : err;
     return (
-      <div className="max-w-2xl mx-auto py-16 text-center">
+      <div className="py-16 text-center">
         <div className="text-5xl mb-4">🎓</div>
         <p className="text-slate-700 font-medium">{friendly}</p>
         <Link href={'/' as any} className="btn-primary mt-6 inline-flex">{t('teach.btn_back_home')}</Link>
@@ -39,7 +39,7 @@ export function TeachDashboard() {
 
   const s = dash.stats;
   return (
-    <div className="max-w-6xl mx-auto px-6 lg:px-8 py-8 space-y-6 animate-fade-in">
+    <div className="px-6 lg:px-8 py-8 space-y-6 animate-fade-in">
       <AppPageHeader title={t('teach.title')} description={t('teach.subtitle')} actions={
         <Link href={'/teach/novo' as any} className="btn-primary inline-flex items-center gap-1.5">
           <Plus className="h-4 w-4" /> {t('teach.btn_new_course')}

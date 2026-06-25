@@ -105,7 +105,7 @@ export function QuizzesClient() {
   const qFor = (mi: number, li: number) => questions.filter((q) => q.module_index === mi && q.lesson_index === li);
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="">
       <AppPageHeader  title={t('teach.qb.title')} description={t('teach.qb.description')} />
 
       {loading ? (

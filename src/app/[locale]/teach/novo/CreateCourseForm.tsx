@@ -192,7 +192,7 @@ export function CreateCourseForm() {
 
   if (phase === 'prompt') {
     return (
-      <div className="max-w-3xl mx-auto pt-10 pb-16">
+      <div className="pt-10 pb-16">
         <AppPageHeader title={t('heading')} description={t('subheading')} />
         <p className="mb-6 text-sm text-slate-500 bg-slate-50 border border-slate-100 rounded-xl px-4 py-2.5 leading-relaxed">💡 {t('tip_intro')}</p>
 
@@ -219,7 +219,7 @@ export function CreateCourseForm() {
 
   if (phase === 'configuring') {
     return (
-      <div className="max-w-3xl mx-auto pt-8 pb-16 space-y-6">
+      <div className="pt-8 pb-16 space-y-6">
         <div>
           <button onClick={() => setPhase('prompt')} className="text-sm text-slate-500 hover:text-slate-900">{t('change_desc')}</button>
           <h2 className="mt-2 text-2xl font-bold text-slate-900">{t('refine')}</h2>
@@ -347,7 +347,7 @@ export function CreateCourseForm() {
   if (phase === 'generating') {
     const pct = job && job.progress_total > 0 ? Math.round((job.progress_done / job.progress_total) * 100) : 0;
     return (
-      <div className="max-w-2xl mx-auto py-16 text-center">
+      <div className="py-16 text-center">
         <div className="text-6xl mb-6 animate-pulse">🧠</div>
         <h2 className="text-2xl font-bold text-slate-900 mb-2">{t('building')}</h2>
         <p className="text-sm text-slate-500 mb-2">{job?.current_step || t('starting')}</p>
@@ -371,7 +371,7 @@ export function CreateCourseForm() {
 
   if (phase === 'review' && course) {
     return (
-      <div className="max-w-4xl mx-auto pt-6 pb-16">
+      <div className="pt-6 pb-16">
         <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
           <div className="flex items-center gap-3">
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full">

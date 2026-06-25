@@ -74,7 +74,7 @@ export function LearnDashboard() {
 
   if (err) {
     return (
-      <div className="max-w-2xl mx-auto py-16 text-center">
+      <div className="py-16 text-center">
         <p className="text-slate-600">{t('learn.err_load')}</p>
         <p className="text-sm text-slate-400 mt-2">{err === 'not_authenticated' ? t('learn.err_signin') : err}</p>
         <Link href={'/login' as never} className="btn-primary mt-4 inline-flex">{t('learn.btn_signin')}</Link>
@@ -95,7 +95,7 @@ export function LearnDashboard() {
       />
 
       {/* Extras B2C: notificações + certificados */}
-      <div className="max-w-3xl mx-auto pb-10">
+      <div className="pb-10">
         <div className="grid md:grid-cols-2 gap-6">
           <section className="bg-white rounded-2xl border border-slate-200 p-5">
             <h2 className="font-semibold text-slate-900 mb-4">{t('learn.notifications')}</h2>

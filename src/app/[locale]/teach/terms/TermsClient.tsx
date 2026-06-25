@@ -77,14 +77,14 @@ export function TermsClient() {
     finally { setAccepting(null); }
   }
 
-  if (loading) return <div className="max-w-3xl mx-auto py-8"><div className="flex items-center justify-center py-20 text-slate-400"><Loader2 className="w-6 h-6 animate-spin" /></div></div>;
+  if (loading) return <div className="py-8"><div className="flex items-center justify-center py-20 text-slate-400"><Loader2 className="w-6 h-6 animate-spin" /></div></div>;
 
   const app = data?.application;
   const appBody = (app?.body_md || '').trim();
   const courses = data?.courses || [];
 
   return (
-    <div className="max-w-3xl mx-auto py-8">
+    <div className="py-8">
       <div className="mb-6">
         <AppPageHeader  title={t('teach.terms.title')} description={t('teach.terms.description')} />
       </div>

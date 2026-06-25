@@ -54,7 +54,7 @@ export function ServicosClient({ locale, services: initialServices }: { locale: 
   }
   
   return (
-    <div className="px-4 sm:px-6 py-6 max-w-6xl mx-auto">
+    <div className="px-4 sm:px-6 py-6 ">
       <AppPageHeader title="Serviços Corporate" description="Formações custom para empresas — typically 5–50x o valor de cursos pré-gravados. Plataforma fica com 25% de fee, tu ficas com 75% do valor cotado." actions={
         <button onClick={openNew}
           className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-medium text-sm shadow-sm">
