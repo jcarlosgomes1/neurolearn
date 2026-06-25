@@ -254,7 +254,7 @@ export function AppShellClient({ role, pageTitle, session, nav, collapsedPref, p
             </aside>
           </div>
         ), document.body)}
-        <main className="flex-1 min-w-0 overflow-x-hidden"><div className={`mx-auto w-full max-w-6xl ${role === 'admin' || isLessonRoute ? '' : 'px-4 sm:px-6 lg:px-8'} pt-3 pb-6 sm:py-8`}><PageGlyphProvider value={resolvedGlyph}>{children}</PageGlyphProvider></div></main>
+        <main className="flex-1 min-w-0 overflow-x-hidden"><div className={`mx-auto w-full max-w-6xl ${role === 'admin' || isLessonRoute ? '' : 'px-4 sm:px-6 lg:px-8'} ${role === 'admin' || isLessonRoute ? 'pt-3 pb-6 sm:py-8' : 'pt-11 pb-14 sm:py-16'}`}><PageGlyphProvider value={resolvedGlyph}>{children}</PageGlyphProvider></div></main>
       </div>
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} items={nav} t={t} />
     </div>

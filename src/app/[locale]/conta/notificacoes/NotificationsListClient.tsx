@@ -46,7 +46,7 @@ export function NotificationsListClient({ initial, locale }: { initial: Notifica
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 space-y-4">
+    <div className="space-y-4">
       <Link href={`/conta` as any} className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700">
         <ArrowLeft className="h-3.5 w-3.5" /> {t('btn.back')}
       </Link>

@@ -77,7 +77,7 @@ export function TermsClient() {
     finally { setAccepting(null); }
   }
 
-  if (loading) return <div className="py-8"><div className="flex items-center justify-center py-20 text-slate-400"><Loader2 className="w-6 h-6 animate-spin" /></div></div>;
+  if (loading) return <div><div className="flex items-center justify-center py-20 text-slate-400"><Loader2 className="w-6 h-6 animate-spin" /></div></div>;
 
   const app = data?.application;
   const appBody = (app?.body_md || '').trim();

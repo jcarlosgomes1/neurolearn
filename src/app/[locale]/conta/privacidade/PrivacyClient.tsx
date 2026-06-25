@@ -85,7 +85,7 @@ export function PrivacyClient({ initial, userEmail }: { initial: GdprRequest[]; 
   }
   
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+    <div className="space-y-6">
       <div>
         <AppPageHeader title="Privacidade e dados" />
         <p className="text-sm text-slate-500 mt-1">Os teus direitos GDPR/RGPD: aceder, exportar e eliminar.</p>

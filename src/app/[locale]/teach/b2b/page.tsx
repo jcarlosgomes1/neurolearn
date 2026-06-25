@@ -28,7 +28,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   const active = r.ok ? r.active_subscriptions : 0;
   
   return (
-    <div className="px-4 sm:px-6 py-6 ">
+    <div>
       <Link href={'/teach' as any} className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-brand-700 mb-4">
         <ArrowLeft className="h-4 w-4" /> {t('btn.back')}
       </Link>

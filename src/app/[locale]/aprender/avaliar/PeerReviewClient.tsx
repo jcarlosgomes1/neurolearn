@@ -51,7 +51,7 @@ export function PeerReviewClient() {
   }
 
   return (
-    <div className="py-8">
+    <div>
       <AppPageHeader title={t('peer.page_title')} description={t('peer.subtitle')} />
 
       {loading ? (

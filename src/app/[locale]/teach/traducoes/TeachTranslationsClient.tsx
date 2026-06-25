@@ -95,7 +95,7 @@ export function TeachTranslationsClient() {
   const addable = locales.filter((l) => !declared.has(l.code));
 
   return (
-    <div className="py-8 space-y-6">
+    <div className="space-y-6">
       <AppPageHeader title="Traduções" description="Declara os idiomas que dominas e pede a tradução dos teus cursos para alcançar novos mercados. Cada pedido é validado pela equipa." />
 
       <section className="bg-white rounded-2xl border border-slate-200 p-5">

@@ -39,7 +39,7 @@ export function TeachDashboard() {
 
   const s = dash.stats;
   return (
-    <div className="px-6 lg:px-8 py-8 space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in">
       <AppPageHeader title={t('teach.title')} description={t('teach.subtitle')} actions={
         <Link href={'/teach/novo' as any} className="btn-primary inline-flex items-center gap-1.5">
           <Plus className="h-4 w-4" /> {t('teach.btn_new_course')}
