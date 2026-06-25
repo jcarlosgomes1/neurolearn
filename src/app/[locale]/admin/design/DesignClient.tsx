@@ -4,9 +4,16 @@ import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from '@/i18n/routing';
 import { toast } from 'sonner';
-import { Check, Loader2, ExternalLink, Eye, Sparkles } from 'lucide-react';
+import { Check, Loader2, ExternalLink, Eye, Sparkles, Layers } from 'lucide-react';
 
-interface Direction { id: string; name: string; tagline: string; file: string; accent: string; sort_order: number; motion: boolean; }
+interface Direction { id: string; name: string; tagline: string; file: string; accent: string; sort_order: number; motion: boolean; surface: string; }
+
+const SURFACE_PRESETS: { id: string; label: string }[] = [
+  { id: 'flat', label: 'Plano' },
+  { id: 'soft', label: 'Suave' },
+  { id: 'linkedin', label: 'LinkedIn' },
+  { id: 'strong', label: 'Forte' },
+];
 
 export function DesignClient({ initialActive, directions }: { initialActive: string; directions: Direction[] }) {
   const router = useRouter();
@@ -16,6 +23,10 @@ export function DesignClient({ initialActive, directions }: { initialActive: str
     () => Object.fromEntries(directions.map((d) => [d.id, d.motion !== false]))
   );
   const [togglingMotion, setTogglingMotion] = useState<string | null>(null);
+  const [surf, setSurf] = useState<Record<string, string>>(
+    () => Object.fromEntries(directions.map((d) => [d.id, d.surface || 'soft']))
+  );
+  const [settingSurf, setSettingSurf] = useState<string | null>(null);
 
   async function activate(id: string) {
     if (id === active) return;
@@ -53,12 +64,31 @@ export function DesignClient({ initialActive, directions }: { initialActive: str
     }
   }
 
+  async function setSurface(id: string, preset: string) {
+    if ((surf[id] || 'soft') === preset) return;
+    setSettingSurf(id);
+    try {
+      const sb = createClient();
+      const { data, error } = await sb.rpc('nl_design_set_surface', { p_id: id, p_preset: preset });
+      if (error) throw error;
+      if (!data?.ok) throw new Error(data?.error === 'forbidden' ? 'Sem permissão' : 'Inválido');
+      setSurf((s) => ({ ...s, [id]: preset }));
+      toast.success(`${directions.find((d) => d.id === id)?.name ?? id}: relevo ${SURFACE_PRESETS.find((p) => p.id === preset)?.label ?? preset}`);
+      if (id === active) router.refresh();
+    } catch (e: any) {
+      toast.error(e?.message || 'Erro');
+    } finally {
+      setSettingSurf(null);
+    }
+  }
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       {directions.map((d) => {
         const isActive = d.id === active;
         const isSaving = saving === d.id;
         const motionOn = motion[d.id] ?? true;
+        const surfSel = surf[d.id] || 'soft';
         return (
           <div
             key={d.id}
@@ -129,6 +159,31 @@ export function DesignClient({ initialActive, directions }: { initialActive: str
                     <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${motionOn ? 'translate-x-5' : 'translate-x-0.5'}`} />
                   )}
                 </button>
+              </div>
+
+              <div className="mt-3 pt-3 border-t border-slate-100">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="inline-flex items-center gap-1.5 text-sm text-slate-600">
+                    <Layers className="h-4 w-4 text-slate-400" /> Relevo dos cartões
+                  </span>
+                  {settingSurf === d.id && <Loader2 className="h-3.5 w-3.5 animate-spin text-slate-400" />}
+                </div>
+                <div className="mt-2 grid grid-cols-4 gap-1 rounded-xl bg-slate-100 p-1">
+                  {SURFACE_PRESETS.map((p) => {
+                    const sel = surfSel === p.id;
+                    return (
+                      <button
+                        key={p.id}
+                        onClick={() => setSurface(d.id, p.id)}
+                        disabled={settingSurf === d.id}
+                        className={`text-xs font-semibold py-1.5 rounded-lg transition-all disabled:opacity-60 ${sel ? 'bg-white text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}
+                        style={sel ? { boxShadow: '0 1px 2px rgba(15,23,42,.14)' } : undefined}
+                      >
+                        {p.label}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>
