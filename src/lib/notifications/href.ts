@@ -90,6 +90,10 @@ export function notificationHref(n: NotificationLike): string | null {
     case 'admin_translation':
       return '/admin/i18n';
 
+    // Saude/analitica de comunicacoes (admin).
+    case 'admin_comms':
+      return '/admin/comunicacoes';
+
     default:
       return null;
   }
@@ -101,7 +105,7 @@ export function notificationHref(n: NotificationLike): string | null {
 const CTA_KINDS = new Set([
   'agent_approval', 'proposal', 'org_content', 'course', 'catalog', 'certificate',
   'billing', 'gdpr', 'evaluation', 'org', 'inquiry', 'placement', 'booking',
-  'contact', 'admin_translation',
+  'contact', 'admin_translation', 'admin_comms',
 ]);
 
 export function notificationCtaKey(kind?: string | null): string {
