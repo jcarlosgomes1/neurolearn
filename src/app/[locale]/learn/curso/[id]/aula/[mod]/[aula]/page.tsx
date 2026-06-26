@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getTranslations } from 'next-intl/server';
 import { LessonViewer } from './LessonViewer';
+import { LessonErrorBoundary } from '@/components/shared/LessonErrorBoundary';
 import { LessonExtrasMount } from '@/components/lesson/LessonExtrasMount';
 import { LessonResourcesList } from '@/components/lesson/LessonResourcesList';
 
@@ -78,7 +79,7 @@ export default async function Page({ params }: { params: Promise<{ id: string; m
   }
 
   return (
-    <>
+    <LessonErrorBoundary locale={locale}>
       <LessonViewer
         courseId={id}
         course={{
@@ -113,6 +114,6 @@ export default async function Page({ params }: { params: Promise<{ id: string; m
         lessonContent={lessonContent}
         quiz={quiz}
       />
-    </>
+    </LessonErrorBoundary>
   );
 }
