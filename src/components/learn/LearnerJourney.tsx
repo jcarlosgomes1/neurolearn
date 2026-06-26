@@ -92,7 +92,7 @@ function Ring({ pct, size = 56 }: { pct: number; size?: number }) {
 function MiniStat({ icon, label, value }: { icon: React.ReactNode; label: string; value: number }) {
   const v = useCountUp(value, 800);
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-3 text-center transition-transform hover:-translate-y-0.5">
+    <div className="rounded-2xl border border-slate-200/70 bg-white p-3 text-center nl-surface nl-surface-int">
       <div className="flex items-center justify-center gap-1 text-slate-400 mb-1">{icon}</div>
       <div className="text-xl font-bold text-slate-900 tabular-nums leading-none">{v}</div>
       <div className="text-[10px] text-slate-400 uppercase tracking-wide mt-1">{label}</div>
@@ -205,7 +205,7 @@ export function LearnerJourney({
               {data.courses.map((c) => (
                 <Link key={c.course_id}
                   href={`/learn/curso/${c.course_id}/continuar` as never}
-                  className="group flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3.5 hover:border-indigo-300 hover:shadow-sm transition-all">
+                  className="group flex items-center gap-3 rounded-2xl border border-slate-200/70 bg-white p-3.5 nl-surface nl-surface-int hover:border-indigo-300">
                   <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-lg shrink-0">{c.emoji || '📘'}</div>
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-sm text-slate-900 truncate">{c.title}</div>
@@ -229,7 +229,7 @@ export function LearnerJourney({
             <div className={`grid gap-6 ${data.discover.length === 1 ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
               {data.discover.slice(0, 2).map((c) => (
                 <Link key={c.course_id} href={`/curso/${c.course_id}` as never}
-                  className="group flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3.5 hover:border-violet-300 hover:shadow-sm transition-all">
+                  className="group flex items-center gap-3 rounded-2xl border border-slate-200/70 bg-white p-3.5 nl-surface nl-surface-int hover:border-violet-300">
                   <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-100 to-fuchsia-100 flex items-center justify-center text-lg shrink-0">{c.emoji || '✨'}</div>
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-sm text-slate-900 truncate">{c.title}</div>
@@ -250,7 +250,7 @@ export function LearnerJourney({
             <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-1.5"><Zap className="h-4 w-4 text-amber-500" />{safeT('academy.learn.challenges', 'Desafios')}</h2>
             <div className="space-y-2.5">
               {challenges.map((ch) => (
-                <div key={ch.code} className="rounded-2xl border border-slate-200 bg-white p-4">
+                <div key={ch.code} className="rounded-2xl border border-slate-200/70 bg-white p-4 nl-surface">
                   <div className="flex items-center justify-between gap-2 mb-2">
                     <div className="flex items-center gap-2 min-w-0">
                       <span className="text-lg">{ch.icon || '🎯'}</span>
@@ -284,7 +284,7 @@ export function LearnerJourney({
         <Reveal i={5}>
           <section>
             <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-1.5"><Trophy className="h-4 w-4 text-amber-500" />{safeT('academy.learn.ranking', 'Ranking da equipa')}</h2>
-            <div className="rounded-2xl border border-slate-200 bg-white divide-y divide-slate-100">
+            <div className="rounded-2xl border border-slate-200/70 bg-white divide-y divide-slate-100 nl-surface">
               {lb.map((r) => (
                 <div key={r.rank} className={`flex items-center gap-3 p-3 ${r.is_me ? 'bg-indigo-50/60' : ''}`}>
                   <div className={`w-7 text-center font-bold text-sm tabular-nums ${r.rank === 1 ? 'text-amber-500' : r.rank === 2 ? 'text-slate-400' : r.rank === 3 ? 'text-orange-400' : 'text-slate-300'}`}>

@@ -97,7 +97,7 @@ export function LearnDashboard() {
       {/* Extras B2C: notificações + certificados */}
       <div className="mt-8">
         <div className="grid md:grid-cols-2 gap-6">
-          <section className="bg-white rounded-2xl border border-slate-200 p-5">
+          <section className="bg-white rounded-2xl border border-slate-200/70 p-5 nl-surface">
             <h2 className="font-semibold text-slate-900 mb-4">{t('learn.notifications')}</h2>
             {notifs.length === 0 ? (
               <p className="text-sm text-slate-500">{t('learn.no_notifications')}</p>
@@ -127,7 +127,7 @@ export function LearnDashboard() {
             )}
           </section>
 
-          <section id="certificados" className="scroll-mt-24 bg-white rounded-2xl border border-slate-200 p-5">
+          <section id="certificados" className="scroll-mt-24 bg-white rounded-2xl border border-slate-200/70 p-5 nl-surface">
             <h2 className="font-semibold text-slate-900 mb-4">{t('cert.my_certs_title')}</h2>
             {certs.length === 0 ? (
               <p className="text-sm text-slate-500">{t('cert.my_certs_empty')}</p>
