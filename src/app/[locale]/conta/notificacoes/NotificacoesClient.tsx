@@ -102,8 +102,8 @@ export function NotificacoesClient({ initial }: { initial: any[] }) {
     const head = (
       <>
         {typeLabel && <span className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-0.5">{typeLabel}</span>}
-        <h4 className={`leading-snug break-words ${isUnread ? 'font-semibold text-slate-900' : 'font-medium text-slate-500'}`}>{title}</h4>
-        {message && <p className={`text-sm mt-0.5 break-words ${isUnread ? 'text-slate-600' : 'text-slate-400'}`}>{message}</p>}
+        <h4 className={`text-sm leading-snug break-words ${isUnread ? 'font-semibold text-slate-900' : 'font-medium text-slate-500'}`}>{title}</h4>
+        {message && <p className={`text-[13px] mt-0.5 break-words ${isUnread ? 'text-slate-600' : 'text-slate-400'}`}>{message}</p>}
         {href && cta && <span className="mt-2 inline-block text-xs font-semibold text-brand-700">{cta} <span aria-hidden>{'\u2192'}</span></span>}
       </>
     );

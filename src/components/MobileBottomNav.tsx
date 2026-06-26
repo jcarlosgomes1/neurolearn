@@ -88,6 +88,15 @@ export function MobileBottomNav() {
   const hide = !loggedIn || ['/admin', '/demo', '/login', '/register', '/onboarding', '/join'].some((p) => pathname?.startsWith(p));
   if (hide) return null;
 
+  // Apenas o item mais especifico (href mais longo) fica ativo: evita que /conta
+  // acenda quando estamos em /conta/notificacoes.
+  const cur = pathname || '/';
+  let bestHref = '';
+  for (const it of ITEMS) {
+    const m = it.href === '/' ? cur === '/' : (cur === it.href || cur.startsWith(it.href + '/'));
+    if (m && it.href.length > bestHref.length) bestHref = it.href;
+  }
+
   return (
     <>
       <div className="h-16 md:hidden" aria-hidden />
@@ -99,7 +108,7 @@ export function MobileBottomNav() {
           {ITEMS.map((it) => {
             const Icon = it.icon;
             const label = safeT(t, it.labelKey, it.fb);
-            const active = pathname === it.href || (it.href !== '/' && pathname?.startsWith(it.href));
+            const active = it.href === bestHref;
             return (
               <Link key={it.href} href={it.href as any}
                 className={`flex flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium relative ${active ? 'text-brand-700' : 'text-slate-500'}`}>
