@@ -2,11 +2,14 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { useLocale } from 'next-intl';
 import { toast } from 'sonner';
-import { Loader2, X, Check, Wand2, RotateCcw, ChevronDown, ChevronRight } from 'lucide-react';
+import { Loader2, X, Check, Wand2, RotateCcw, ChevronDown, ChevronRight, Globe, ExternalLink } from 'lucide-react';
 
 type Step = { id: string; ordem: number; fase: string; estado: string; artefacto: any | null; nota_rejeicao: string | null };
-type Build = { id: string; title: string | null; status: string; fase_atual: number; gravavel: boolean };
+type Build = { id: string; title: string | null; status: string; fase_atual: number; gravavel: boolean; slug: string | null; published: boolean };
+
+const SEL = 'id,title,status,fase_atual,gravavel,slug,published';
 
 function ArtifactView({ data }: { data: any }) {
   if (data == null) return null;
@@ -48,11 +51,13 @@ const ESTADO: Record<string, { label: string; cls: string }> = {
 };
 
 export default function BuildCockpit({ suggestion, onClose, phaseLabel }: { suggestion: { id: string; title: string }; onClose: () => void; phaseLabel: (k: string) => string }) {
+  const locale = useLocale();
   const [loading, setLoading] = useState(true);
   const [build, setBuild] = useState<Build | null>(null);
   const [steps, setSteps] = useState<Step[]>([]);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [openArt, setOpenArt] = useState<string | null>(null);
+  const [pubBusy, setPubBusy] = useState(false);
 
   const loadSteps = useCallback(async (buildId: string) => {
     const sb = createClient();
@@ -64,12 +69,12 @@ export default function BuildCockpit({ suggestion, onClose, phaseLabel }: { sugg
     setLoading(true);
     try {
       const sb = createClient();
-      const { data: ex } = await sb.from('nl_event_builds').select('id,title,status,fase_atual,gravavel').eq('suggestion_id', suggestion.id).maybeSingle();
+      const { data: ex } = await sb.from('nl_event_builds').select(SEL).eq('suggestion_id', suggestion.id).maybeSingle();
       let b = ex as Build | null;
       if (!b) {
         const { data, error } = await sb.rpc('nl_event_build_start', { p_suggestion_id: suggestion.id });
         if (error || !(data as any)?.ok) throw new Error('start');
-        const { data: nb } = await sb.from('nl_event_builds').select('id,title,status,fase_atual,gravavel').eq('suggestion_id', suggestion.id).maybeSingle();
+        const { data: nb } = await sb.from('nl_event_builds').select(SEL).eq('suggestion_id', suggestion.id).maybeSingle();
         b = nb as Build | null;
       }
       setBuild(b);
@@ -79,6 +84,13 @@ export default function BuildCockpit({ suggestion, onClose, phaseLabel }: { sugg
   }, [suggestion.id, loadSteps]);
 
   useEffect(() => { init(); }, [init]);
+
+  async function refreshBuild() {
+    if (!build) return;
+    const sb = createClient();
+    const { data: nb } = await sb.from('nl_event_builds').select(SEL).eq('id', build.id).maybeSingle();
+    setBuild(nb as Build);
+  }
 
   async function runStep(id: string) {
     setBusyId(id);
@@ -99,11 +111,7 @@ export default function BuildCockpit({ suggestion, onClose, phaseLabel }: { sugg
       const { data, error } = await sb.rpc('nl_event_build_step_approve', { p_step_id: id });
       if (error || !(data as any)?.ok) throw new Error('approve');
       toast.success('Fase aprovada.');
-      if (build) {
-        await loadSteps(build.id);
-        const { data: nb } = await sb.from('nl_event_builds').select('id,title,status,fase_atual,gravavel').eq('id', build.id).maybeSingle();
-        setBuild(nb as Build);
-      }
+      if (build) { await loadSteps(build.id); await refreshBuild(); }
     } catch { toast.error('Falha ao aprovar.'); }
     finally { setBusyId(null); }
   }
@@ -120,8 +128,34 @@ export default function BuildCockpit({ suggestion, onClose, phaseLabel }: { sugg
     finally { setBusyId(null); }
   }
 
+  async function publish() {
+    if (!build) return;
+    setPubBusy(true);
+    try {
+      const sb = createClient();
+      const { data, error } = await sb.rpc('nl_event_build_publish', { p_build_id: build.id });
+      if (error || !(data as any)?.ok) throw new Error('pub');
+      await refreshBuild();
+      toast.success('Página publicada.');
+    } catch { toast.error('Aprova as fases Página e Inscrição primeiro.'); }
+    finally { setPubBusy(false); }
+  }
+
+  async function unpublish() {
+    if (!build) return;
+    setPubBusy(true);
+    try {
+      const sb = createClient();
+      await sb.rpc('nl_event_build_unpublish', { p_build_id: build.id });
+      await refreshBuild();
+    } catch { /* noop */ }
+    finally { setPubBusy(false); }
+  }
+
   const total = steps.length;
   const done = steps.filter((s) => s.estado === 'aprovado').length;
+  const pagOk = steps.some((s) => s.fase === 'pagina' && s.estado === 'aprovado');
+  const insOk = steps.some((s) => s.fase === 'inscricao' && s.estado === 'aprovado');
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 sm:p-4" onClick={onClose}>
@@ -143,7 +177,7 @@ export default function BuildCockpit({ suggestion, onClose, phaseLabel }: { sugg
         {loading ? (
           <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-neutral-400" /></div>
         ) : (
-          <div className="overflow-y-auto p-4 space-y-2">
+          <div className="overflow-y-auto p-4 space-y-2 flex-1">
             {steps.map((s) => {
               const est = ESTADO[s.estado] || ESTADO.pendente;
               const isOpen = openArt === s.id;
@@ -178,6 +212,24 @@ export default function BuildCockpit({ suggestion, onClose, phaseLabel }: { sugg
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {!loading && build && (
+          <div className="border-t border-neutral-100 p-4 bg-white">
+            {build.published && build.slug ? (
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-xs font-semibold text-emerald-700">Página publicada</div>
+                  <a href={`/${locale}/evento/${build.slug}`} target="_blank" rel="noreferrer" className="text-xs text-violet-600 hover:underline inline-flex items-center gap-1 truncate"><ExternalLink className="w-3 h-3 shrink-0" /> /evento/{build.slug}</a>
+                </div>
+                <button onClick={unpublish} disabled={pubBusy} className="rounded-lg border border-neutral-200 px-3 py-1.5 text-xs hover:border-neutral-300 disabled:opacity-50 shrink-0">Despublicar</button>
+              </div>
+            ) : (pagOk && insOk) ? (
+              <button onClick={publish} disabled={pubBusy} className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 text-white px-4 py-2.5 text-sm font-semibold hover:bg-emerald-700 disabled:opacity-50">{pubBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Globe className="w-4 h-4" />} Publicar página pública</button>
+            ) : (
+              <div className="text-xs text-neutral-400 text-center">Aprova as fases <b>Página</b> e <b>Inscrição</b> para publicar a página pública.</div>
+            )}
           </div>
         )}
       </div>
