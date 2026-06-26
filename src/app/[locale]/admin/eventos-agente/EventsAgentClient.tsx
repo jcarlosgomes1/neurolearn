@@ -52,6 +52,12 @@ function PlanModal({ s, accepting, onAccept, onClose, kindLabel }: { s: Suggesti
           <button onClick={onClose} aria-label="Fechar" className="text-neutral-400 hover:text-neutral-700 shrink-0"><X className="w-5 h-5" /></button>
         </div>
 
+        {(() => { const k = (s.plan && s.plan.kpis) || {}; const ins = Number(k.meta_inscritos) || 0; const conv = Number(k.meta_conversao_pct) || 0; const ticket = Number(String(k.meta_ticket_medio || "").replace(/[^0-9.,]/g, "").replace(",", ".")) || 0; const rev = Math.round(ins * (conv / 100) * ticket); if (!ins && !rev) return null; return (
+          <div className="mx-5 mt-4 rounded-xl bg-violet-50 border border-violet-100 px-4 py-3 flex items-center gap-6">
+            <div><div className="text-lg font-bold text-violet-700 tabular-nums">{ins || "—"}</div><div className="text-[10px] uppercase tracking-wide text-violet-500">leads previstos</div></div>
+            {rev > 0 && (<div><div className="text-lg font-bold text-violet-700 tabular-nums">~{rev.toLocaleString("pt-PT")}€</div><div className="text-[10px] uppercase tracking-wide text-violet-500">receita potencial</div></div>)}
+          </div>
+        ); })()}
         <div className="overflow-y-auto p-5 space-y-5">
           {p.objetivo_negocio && <Block label="Objetivo de negócio">{p.objetivo_negocio}</Block>}
 
@@ -113,7 +119,16 @@ function PlanModal({ s, accepting, onAccept, onClose, kindLabel }: { s: Suggesti
                   <div className="text-xs font-semibold text-neutral-800 mb-1">Externos</div>
                   {con.externos.perfil_ideal && <p className="text-sm text-neutral-600 mb-1.5">{con.externos.perfil_ideal}</p>}
                   {con.externos.estrategia_contacto && <p className="text-sm text-neutral-600 mb-1.5"><span className="text-neutral-400">Abordagem: </span>{con.externos.estrategia_contacto}</p>}
-                  {con.externos.nota_conformidade && <p className="text-xs text-amber-700 bg-amber-50 rounded-lg px-2.5 py-1.5">{con.externos.nota_conformidade}</p>}
+                  {con.externos.linkedin && <p className="text-sm text-neutral-600 mb-1.5"><span className="text-neutral-400">LinkedIn: </span>{con.externos.linkedin}</p>}
+              {Array.isArray(con.externos.empresas_alvo) && con.externos.empresas_alvo.length > 0 && (
+                <div className="mb-2">
+                  <div className="text-xs font-semibold text-neutral-800 mb-1">Empresas-alvo (futuros tenants)</div>
+                  <ul className="space-y-1">
+                    {con.externos.empresas_alvo.map((emp: any, i: number) => (<li key={i} className="text-sm text-neutral-600 flex gap-2"><span className="text-neutral-300">·</span><span>{String(emp)}</span></li>))}
+                  </ul>
+                </div>
+              )}
+              {con.externos.nota_conformidade && <p className="text-xs text-amber-700 bg-amber-50 rounded-lg px-2.5 py-1.5">{con.externos.nota_conformidade}</p>}
                 </div>
               )}
             </Block>
