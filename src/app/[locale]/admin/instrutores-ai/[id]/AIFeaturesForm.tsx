@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link, useRouter } from '@/i18n/routing';
 import { callAgentOps } from '@/lib/api/client';
+import { createClient } from '@/lib/supabase/client';
 import { DashboardSkeleton } from '@/components/shared/DashboardSkeleton';
 import { toast } from 'sonner';
 import { ArrowLeft } from 'lucide-react';
@@ -43,11 +44,17 @@ export function AIFeaturesForm({ instructorId }: { instructorId: string }) {
   const [err, setErr] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
+  const [studio, setStudio] = useState<boolean | null>(null);
+  const [studioBusy, setStudioBusy] = useState(false);
 
   useEffect(() => {
     callAgentOps<{ features: Features; instructor: Instructor }>('admin_get_instructor_ai_features', { instructor_id: instructorId })
       .then((r) => { setFeatures(r.features); setInstructor(r.instructor); })
       .catch((e) => setErr(e.message));
+  }, [instructorId]);
+
+  useEffect(() => {
+    createClient().rpc('nl_admin_instructor_studio_get', { p_instructor_id: instructorId }).then(({ data }) => setStudio(!!data));
   }, [instructorId]);
 
   function toggle(key: keyof Features) {
@@ -79,6 +86,18 @@ export function AIFeaturesForm({ instructorId }: { instructorId: string }) {
       toast.success(t('saved'));
       setDirty(false);
     } catch (e: any) { toast.error(e.message); } finally { setSaving(false); }
+  }
+
+  async function toggleStudio() {
+    if (studio === null || studioBusy) return;
+    const next = !studio;
+    setStudioBusy(true);
+    try {
+      const { error } = await createClient().rpc('nl_admin_instructor_studio_set', { p_instructor_id: instructorId, p_enabled: next });
+      if (error) throw error;
+      setStudio(next);
+      toast.success(t('saved'));
+    } catch (e: any) { toast.error(e.message); } finally { setStudioBusy(false); }
   }
 
   function revokeAll() {
@@ -150,6 +169,22 @@ export function AIFeaturesForm({ instructorId }: { instructorId: string }) {
             </label>
           );
         })}
+      </section>
+
+      <section className="bg-white rounded-xl border border-slate-200 p-5 sm:p-6">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 mb-3">{t('studio.section')}</h2>
+        <label className={`flex items-start gap-3 p-3 sm:p-4 rounded-lg border cursor-pointer transition-all ${studio ? 'border-violet-300 bg-violet-50/50' : 'border-slate-200 hover:border-slate-300'} ${studio === null || studioBusy ? 'opacity-60 pointer-events-none' : ''}`}>
+          <input type="checkbox" checked={!!studio} onChange={toggleStudio} className="mt-1 w-5 h-5 accent-violet-600 flex-shrink-0" />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-lg">✨</span>
+              <span className="font-semibold text-slate-900">{t('studio.title')}</span>
+              <span className="text-[10px] bg-violet-100 text-violet-700 px-1.5 py-0.5 rounded-full font-semibold">premium</span>
+            </div>
+            <p className="text-sm text-slate-600 mt-1 leading-relaxed">{t('studio.desc')}</p>
+            <p className="text-xs text-slate-400 mt-1.5">{t('studio.note')}</p>
+          </div>
+        </label>
       </section>
 
       <section className="bg-white rounded-xl border border-slate-200 p-5 sm:p-6 space-y-4">

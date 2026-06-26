@@ -12,6 +12,7 @@ import { ModulesEditor, type Module } from './ModulesEditor';
 import { CourseTranslationManager } from './CourseTranslationManager';
 import { CourseMaterials } from './CourseMaterials';
 import { CourseStudioPanel } from '@/components/studio/CourseStudioPanel';
+import { createClient } from '@/lib/supabase/client';
 
 interface Course {
   id: string;
@@ -48,12 +49,17 @@ export function CourseEditor({ courseId, backHref, mode = 'instructor' }: Props)
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [tab, setTab] = useState<'info' | 'modules' | 'materials' | 'estudio' | 'publish'>('info');
+  const [canStudio, setCanStudio] = useState(false);
 
   useEffect(() => {
     callAgentOps<{ course: Course }>(DETAIL_ACTION, { course_id: courseId })
       .then((r) => setCourse({ ...r.course, modules: Array.isArray(r.course.modules) ? r.course.modules : [], topics: Array.isArray(r.course.topics) ? r.course.topics : [] }))
       .catch((e) => setErr(e.message));
   }, [courseId, DETAIL_ACTION]);
+
+  useEffect(() => {
+    createClient().rpc('nl_studio_can_use', { p_course_id: courseId }).then(({ data }) => setCanStudio(!!data));
+  }, [courseId]);
 
   const update = useCallback((patch: Partial<Course>) => {
     setCourse((c) => (c ? { ...c, ...patch } : c));
@@ -139,7 +145,7 @@ export function CourseEditor({ courseId, backHref, mode = 'instructor' }: Props)
 
       <div className="border-b border-slate-200">
         <nav className="flex gap-1 -mb-px overflow-x-auto">
-          {((isAdmin ? ['info','modules','materials','estudio','publish'] : ['info','modules','materials','publish']) as Array<'info'|'modules'|'materials'|'estudio'|'publish'>).map((tk) => (
+          {((canStudio ? ['info','modules','materials','estudio','publish'] : ['info','modules','materials','publish']) as Array<'info'|'modules'|'materials'|'estudio'|'publish'>).map((tk) => (
             <button key={tk} onClick={() => setTab(tk)} className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${tab === tk ? 'border-brand-600 text-brand-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>
               {tk === 'info' ? t('tab_info') : tk === 'modules' ? t('tab_modules', { n: lessonCount }) : tk === 'materials' ? t('tab_materials') : tk === 'estudio' ? t('tab_studio') : t('tab_publish')}
             </button>
