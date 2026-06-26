@@ -120,8 +120,8 @@ export function LearnerJourney({
 
   const mounted = useMounted();
   const xpCount = useCountUp(g.xp_total, 1000);
-  const heroBg = `linear-gradient(135deg, var(--accent, ${brand}), var(--accent-bright, #8b5cf6))`;
-  const ctaBg = `linear-gradient(135deg, var(--accent, ${brand}), var(--accent-bright, #6366f1))`;
+  const heroBg = `linear-gradient(135deg, var(--accent, ${brand}), var(--accent-bright))`;
+  const ctaBg = `linear-gradient(135deg, var(--accent, ${brand}), var(--accent-bright))`;
 
   return (
     <div className="space-y-6">
