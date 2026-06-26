@@ -43,8 +43,8 @@ export function MobileBottomNav() {
     const sb = createClient();
     async function load() {
       try {
-        const { data } = await sb.rpc('nl_notifications_unread_summary');
-        if (data?.ok) setUnread(data.count || 0);
+        const { data } = await sb.rpc('nl_notifications_unseen_count');
+        setUnread(typeof data === 'number' ? data : 0);
       } catch {}
     }
     load();
