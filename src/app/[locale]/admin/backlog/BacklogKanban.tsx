@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Loader2, Plus, X, CheckCircle2, LayoutGrid, History } from 'lucide-react';
 
-interface Row { id: number; title: string; area: string; priority: string; status: string; detail: string | null; tested: boolean; backend_at: string | null; routes_at: string | null; ui_at: string | null; updated_at: string | null; }
+interface Row { id: number; title: string; area: string; priority: string; status: string; detail: string | null; tested: boolean; epic: string | null; backend_at: string | null; routes_at: string | null; ui_at: string | null; updated_at: string | null; }
 
 const BOARD_COLS = [
   { key: 'todo', label: 'A Fazer', accent: 'from-slate-400 to-slate-500' },
@@ -17,18 +17,40 @@ const ALL_STATUS = [...BOARD_COLS, { key: 'done', label: 'Concluído', accent: '
 const PRIOS = ['P0', 'P1', 'P2', 'P3'];
 const PRIO_COLOR: Record<string, string> = { P0: 'bg-rose-100 text-rose-700', P1: 'bg-amber-100 text-amber-700', P2: 'bg-blue-100 text-blue-700', P3: 'bg-slate-100 text-slate-600' };
 
+const EPICS = [
+  { code: 'DSX', label: 'Design & UI', emoji: '🎨' },
+  { code: 'STU', label: 'Estúdio & Instrutor', emoji: '🛠️' },
+  { code: 'EXP', label: 'Aprendizagem', emoji: '🎓' },
+  { code: 'EVT', label: 'Eventos', emoji: '📅' },
+  { code: 'SCH', label: 'Agendamento', emoji: '🗓️' },
+  { code: 'MON', label: 'Monetização', emoji: '💳' },
+  { code: 'B2B', label: 'LMS Corporativo', emoji: '🏢' },
+  { code: 'GRW', label: 'Crescimento & CRM', emoji: '📈' },
+  { code: 'AGT', label: 'Agentes & Automação', emoji: '🤖' },
+  { code: 'I18N', label: 'Internacionalização', emoji: '🌍' },
+  { code: 'PLT', label: 'Plataforma & Infra', emoji: '⚙️' },
+  { code: 'QA', label: 'Qualidade & Bugs', emoji: '🐞' },
+];
+const EPIC_BY_CODE: Record<string, { label: string; emoji: string }> = Object.fromEntries(EPICS.map((e) => [e.code, { label: e.label, emoji: e.emoji }]));
+function epicTag(code: string | null) {
+  const e = code ? EPIC_BY_CODE[code] : null;
+  return e ? `${e.emoji} ${e.label}` : '—';
+}
+
 export function BacklogKanban() {
   const sb = createClient();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'board' | 'ledger'>('board');
   const [prioFilter, setPrioFilter] = useState<string>('all');
+  const [epicFilter, setEpicFilter] = useState<string>('all');
   const [onlyUntested, setOnlyUntested] = useState(false);
   const [adding, setAdding] = useState(false);
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
   const [nt, setNt] = useState('');
   const [na, setNa] = useState('expose-ui');
   const [np, setNp] = useState('P2');
+  const [ne, setNe] = useState('PLT');
 
   function toggleExpand(id: number) {
     setExpanded((s) => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n; });
@@ -55,9 +77,13 @@ export function BacklogKanban() {
     setRows((r) => r.map((x) => x.id === id ? { ...x, priority } : x));
     await sb.from('nl_backlog').update({ priority, updated_at: new Date().toISOString() }).eq('id', id);
   }
+  async function setEpic(id: number, epic: string) {
+    setRows((r) => r.map((x) => x.id === id ? { ...x, epic } : x));
+    await sb.from('nl_backlog').update({ epic, updated_at: new Date().toISOString() }).eq('id', id);
+  }
   async function add() {
     if (!nt.trim()) return;
-    const { data } = await sb.from('nl_backlog').insert({ title: nt.trim(), area: na.trim() || 'misc', priority: np, status: 'todo' }).select().single();
+    const { data } = await sb.from('nl_backlog').insert({ title: nt.trim(), area: na.trim() || 'misc', priority: np, epic: ne, status: 'todo' }).select().single();
     if (data) setRows((r) => [...r, data as Row]);
     setNt(''); setAdding(false);
   }
@@ -67,11 +93,18 @@ export function BacklogKanban() {
   }
 
   const filtered = useMemo(() => rows.filter((r) =>
-    (prioFilter === 'all' || r.priority === prioFilter) && (!onlyUntested || !r.tested)
-  ), [rows, prioFilter, onlyUntested]);
+    (prioFilter === 'all' || r.priority === prioFilter) &&
+    (epicFilter === 'all' || r.epic === epicFilter) &&
+    (!onlyUntested || !r.tested)
+  ), [rows, prioFilter, epicFilter, onlyUntested]);
   const byStatus = (s: string) => filtered.filter((r) => r.status === s);
   const untestedDone = rows.filter((r) => r.status === 'done' && !r.tested).length;
   const doneCount = rows.filter((r) => r.status === 'done').length;
+  const epicCounts = useMemo(() => {
+    const m: Record<string, number> = {};
+    rows.forEach((r) => { if (r.status !== 'done' && r.status !== 'parked') m[r.epic || 'PLT'] = (m[r.epic || 'PLT'] || 0) + 1; });
+    return m;
+  }, [rows]);
 
   const ledgerItems = useMemo(() =>
     filtered.filter((r) => r.status === 'done')
@@ -82,6 +115,22 @@ export function BacklogKanban() {
 
   return (
     <div>
+      {/* Épicos */}
+      <div className="flex items-center gap-1.5 mb-4 overflow-x-auto pb-1 -mx-1 px-1">
+        <button onClick={() => setEpicFilter('all')} className={`shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full transition-colors ${epicFilter === 'all' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Todos os épicos</button>
+        {EPICS.map((e) => {
+          const c = epicCounts[e.code] || 0;
+          const sel = epicFilter === e.code;
+          return (
+            <button key={e.code} onClick={() => setEpicFilter(sel ? 'all' : e.code)}
+              className={`shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1.5 transition-colors ${sel ? 'bg-slate-900 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
+              <span>{e.emoji}</span> {e.label}
+              <span className={`tabular-nums text-[10px] font-bold px-1.5 py-0.5 rounded-full ${sel ? 'bg-white/25' : 'bg-slate-100 text-slate-500'}`}>{c}</span>
+            </button>
+          );
+        })}
+      </div>
+
       {/* View toggle */}
       <div className="flex items-center gap-1 mb-4 bg-slate-100 rounded-xl p-1 w-fit">
         <button onClick={() => setView('board')} className={`text-xs font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors ${view === 'board' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}>
@@ -107,7 +156,8 @@ export function BacklogKanban() {
       {adding && (
         <div className="mb-4 p-3 rounded-xl border border-slate-200 bg-white flex flex-col gap-2 sm:flex-row sm:items-center">
           <input value={nt} onChange={(e) => setNt(e.target.value)} placeholder="Título da tarefa" className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-violet-400" />
-          <input value={na} onChange={(e) => setNa(e.target.value)} placeholder="área" className="w-full sm:w-32 rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-violet-400" />
+          <select value={ne} onChange={(e) => setNe(e.target.value)} className="rounded-lg border border-slate-200 px-2 py-2 text-sm">{EPICS.map((e) => <option key={e.code} value={e.code}>{e.emoji} {e.label}</option>)}</select>
+          <input value={na} onChange={(e) => setNa(e.target.value)} placeholder="área" className="w-full sm:w-28 rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-violet-400" />
           <select value={np} onChange={(e) => setNp(e.target.value)} className="rounded-lg border border-slate-200 px-2 py-2 text-sm">{PRIOS.map((p) => <option key={p}>{p}</option>)}</select>
           <button onClick={add} className="rounded-lg bg-slate-900 text-white text-sm font-semibold px-4 py-2">Adicionar</button>
         </div>
@@ -122,6 +172,7 @@ export function BacklogKanban() {
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-[11px] font-mono text-slate-400">#{it.id}</span>
                 <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${PRIO_COLOR[it.priority] || ''}`}>{it.priority}</span>
+                <span className="text-[10px]">{EPIC_BY_CODE[it.epic || '']?.emoji || ''}</span>
                 <span className="text-sm font-semibold text-slate-800">{it.title}</span>
                 <span className="text-[10px] uppercase tracking-wide text-slate-400">{it.area}</span>
                 {it.tested && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />}
@@ -152,7 +203,10 @@ export function BacklogKanban() {
                         </div>
                         <button onClick={() => del(it.id)} className="text-slate-300 hover:text-rose-500"><X className="h-3.5 w-3.5" /></button>
                       </div>
-                      <p title={it.title} className="text-sm font-semibold text-slate-800 mt-1 leading-snug">{it.title}</p>
+                      <span className="inline-flex items-center gap-1 mt-1.5 text-[10px] font-semibold text-slate-500 bg-slate-50 border border-slate-200 rounded-full px-2 py-0.5" title={epicTag(it.epic)}>
+                        {EPIC_BY_CODE[it.epic || '']?.emoji || '•'} {EPIC_BY_CODE[it.epic || '']?.label || 'Sem épico'}
+                      </span>
+                      <p title={it.title} className="text-sm font-semibold text-slate-800 mt-1.5 leading-snug">{it.title}</p>
                       {it.detail ? (
                         <p title={it.detail} onClick={() => toggleExpand(it.id)}
                            className={`text-[11px] text-slate-500 mt-1 cursor-pointer ${expanded.has(it.id) ? '' : 'line-clamp-2'}`}>
@@ -169,6 +223,9 @@ export function BacklogKanban() {
                           {PRIOS.map((p) => <option key={p} value={p}>{p}</option>)}
                         </select>
                       </div>
+                      <select value={it.epic || 'PLT'} onChange={(e) => setEpic(it.id, e.target.value)} className="w-full mt-1 text-[11px] rounded-lg border border-slate-200 px-1.5 py-1 bg-slate-50">
+                        {EPICS.map((e) => <option key={e.code} value={e.code}>{e.emoji} {e.label}</option>)}
+                      </select>
                       <button onClick={() => setTested(it.id, !it.tested)} className={`w-full mt-2 text-[11px] font-semibold rounded-lg py-1.5 flex items-center justify-center gap-1 transition-colors ${it.tested ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}>
                         <CheckCircle2 className="h-3.5 w-3.5" /> {it.tested ? 'Testado' : 'Marcar testado'}
                       </button>
