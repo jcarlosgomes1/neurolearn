@@ -9,6 +9,7 @@ interface Props {
   email: string;
   area: 'student' | 'instructor' | 'admin';
   areas?: Array<'student' | 'instructor' | 'admin'>;
+  currentRole?: 'student' | 'instructor' | 'admin';
 }
 
 function safeT(t: any, key: string, fb: string): string {
@@ -19,7 +20,7 @@ function safeT(t: any, key: string, fb: string): string {
   return fb;
 }
 
-export function UserMenu({ email, area, areas }: Props) {
+export function UserMenu({ email, area, areas, currentRole }: Props) {
   const areaList = areas && areas.length ? areas : [area];
   const t = useTranslations();
   const locale = useLocale();
@@ -27,12 +28,14 @@ export function UserMenu({ email, area, areas }: Props) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  // A vista atual e determinada pela rota, nao pelo role de origem do utilizador.
+  // A vista atual reflete a casca em que estamos (currentRole). Fallback: rota e depois area de origem.
   const currentView: 'student' | 'instructor' | 'admin' =
-    pathname.includes('/teach') ? 'instructor'
-    : pathname.includes('/learn') ? 'student'
-    : pathname.includes('/admin') ? 'admin'
-    : area;
+    currentRole
+      ? currentRole
+      : pathname.includes('/teach') ? 'instructor'
+      : pathname.includes('/learn') ? 'student'
+      : pathname.includes('/admin') ? 'admin'
+      : area;
 
   useEffect(() => {
     const close = (e: MouseEvent) => {

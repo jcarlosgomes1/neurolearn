@@ -7,7 +7,7 @@ export default async function Page({ params, searchParams }: { params: Promise<{
   const { locale } = await params;
   const { q } = await searchParams;
   return (
-    <SiteChrome locale={locale} mainClassName="bg-white min-h-screen" wrapInner={false}>
+    <SiteChrome locale={locale} mainClassName="bg-white min-h-screen">
       <SemanticSearch initialQuery={q || ''} locale={locale} />
     </SiteChrome>
   );
