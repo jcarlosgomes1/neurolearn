@@ -16,7 +16,7 @@ function shadowFor(depth: number, emboss: boolean) {
   return emboss ? `inset 0 1px 0 rgba(255,255,255,.85),${base}` : base;
 }
 
-export function DesignClient({ initialActive, directions }: { initialActive: string; directions: Direction[] }) {
+export function DesignClient({ initialActive, directions, locale }: { initialActive: string; directions: Direction[]; locale: string }) {
   const router = useRouter();
   const [active, setActive] = useState(initialActive);
   const [saving, setSaving] = useState<string | null>(null);
@@ -161,7 +161,7 @@ export function DesignClient({ initialActive, directions }: { initialActive: str
 
               <div className="flex items-center gap-2 mt-4">
                 <a
-                  href={`/design/${d.file}`}
+                  href={`/${locale}/design/preview/${d.id}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors"
