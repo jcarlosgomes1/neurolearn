@@ -18,8 +18,10 @@ interface SiteChromeProps {
 }
 
 /**
- * Chrome unico: utilizador autenticado ve o AppShell (sidebar); visitante deslogado ve o header/footer de marketing.
- * Para paginas publicas que tambem sao usadas dentro do produto (cursos, pesquisa, agendar).
+ * Chrome unico para paginas publicas que tambem sao usadas dentro do produto (cursos, pesquisa, agendar).
+ * Utilizador autenticado: AppShell na vista de ALUNO (sao paginas de navegacao do aluno; a gestao
+ * admin/instrutor vive nas suas proprias areas) -> sidebar, badge e espacamento de aluno consistentes,
+ * sem flipar para admin no caso do super_admin. Visitante deslogado: header/footer de marketing.
  */
 export async function SiteChrome({
   locale,
@@ -35,15 +37,8 @@ export async function SiteChrome({
   const { data: { user } } = await sb.auth.getUser();
 
   if (user) {
-    const { data: profile } = await sb.from('nl_profiles').select('role').eq('id', user.id).single();
-    const role: 'admin' | 'instructor' | 'student' =
-      profile?.role === 'admin' || profile?.role === 'super_admin'
-        ? 'admin'
-        : profile?.role === 'instructor'
-        ? 'instructor'
-        : 'student';
     return (
-      <AppShell role={role}>
+      <AppShell role="student">
         {appTitle ? <AppPageHeader title={appTitle} description={appSubtitle} /> : null}
         {children}
       </AppShell>
