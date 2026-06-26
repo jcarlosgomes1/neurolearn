@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { ModulesEditor, type Module } from './ModulesEditor';
 import { CourseTranslationManager } from './CourseTranslationManager';
 import { CourseMaterials } from './CourseMaterials';
+import { CourseStudioPanel } from '@/components/studio/CourseStudioPanel';
 
 interface Course {
   id: string;
@@ -46,7 +47,7 @@ export function CourseEditor({ courseId, backHref, mode = 'instructor' }: Props)
   const [err, setErr] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
-  const [tab, setTab] = useState<'info' | 'modules' | 'materials' | 'publish'>('info');
+  const [tab, setTab] = useState<'info' | 'modules' | 'materials' | 'estudio' | 'publish'>('info');
 
   useEffect(() => {
     callAgentOps<{ course: Course }>(DETAIL_ACTION, { course_id: courseId })
@@ -138,9 +139,9 @@ export function CourseEditor({ courseId, backHref, mode = 'instructor' }: Props)
 
       <div className="border-b border-slate-200">
         <nav className="flex gap-1 -mb-px overflow-x-auto">
-          {(['info','modules','materials','publish'] as const).map((tk) => (
+          {((isAdmin ? ['info','modules','materials','estudio','publish'] : ['info','modules','materials','publish']) as Array<'info'|'modules'|'materials'|'estudio'|'publish'>).map((tk) => (
             <button key={tk} onClick={() => setTab(tk)} className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${tab === tk ? 'border-brand-600 text-brand-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>
-              {tk === 'info' ? t('tab_info') : tk === 'modules' ? t('tab_modules', { n: lessonCount }) : tk === 'materials' ? t('tab_materials') : t('tab_publish')}
+              {tk === 'info' ? t('tab_info') : tk === 'modules' ? t('tab_modules', { n: lessonCount }) : tk === 'materials' ? t('tab_materials') : tk === 'estudio' ? t('tab_studio') : t('tab_publish')}
             </button>
           ))}
         </nav>
@@ -200,6 +201,10 @@ export function CourseEditor({ courseId, backHref, mode = 'instructor' }: Props)
 
       {tab === 'materials' && course && (
         <CourseMaterials courseId={course.id} />
+      )}
+
+      {tab === 'estudio' && course && (
+        <CourseStudioPanel courseId={course.id} />
       )}
 
       {tab === 'publish' && (

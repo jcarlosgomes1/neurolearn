@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Link } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
-import { Layers, Library, HelpCircle, Route, Sparkles, ExternalLink, PencilRuler } from 'lucide-react';
+import { Layers, Library, HelpCircle, Route, Sparkles, ExternalLink, PencilRuler, Send, Quote, Map, MessagesSquare } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Lesson { m: number; l: number; title: string; cards: number }
@@ -41,6 +41,22 @@ export function CourseStudioPanel({ courseId }: { courseId: string }) {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
   const [progress, setProgress] = useState<string | null>(null);
+  const [qaQ, setQaQ] = useState('');
+  const [qaA, setQaA] = useState<string | null>(null);
+  const [qaCites, setQaCites] = useState<Array<{ tag: string; title: string }>>([]);
+  const [qaBusy, setQaBusy] = useState(false);
+
+  async function askQa() {
+    const q = qaQ.trim();
+    if (!q || qaBusy) return;
+    setQaBusy(true); setQaA(null); setQaCites([]);
+    try {
+      const r = await rpc('nl_course_qa', { p_course_id: courseId, p_question: q });
+      setQaA((r.answer as string) || t('course_ws.studio.qa_empty'));
+      setQaCites(Array.isArray(r.citations) ? (r.citations as Array<{ tag: string; title: string }>) : []);
+    } catch (e) { toast.error(e instanceof Error ? e.message : t('course_ws.studio.error')); }
+    finally { setQaBusy(false); }
+  }
 
   async function rpc(fn: string, args: Record<string, unknown>) {
     const sb = createClient();
@@ -101,9 +117,45 @@ export function CourseStudioPanel({ courseId }: { courseId: string }) {
         <GenCard icon={Route} title={t('course_ws.studio.timeline')} sub={(ov.timeline || 0) + ' ' + t('course_ws.studio.u_milestones')} busy={busy === 'timeline'} generating={generating}
           actions={[{ label: ov.timeline ? t('course_ws.studio.regen') : t('course_ws.studio.gen'), primary: true, onClick: () => genCourse('timeline') }]} />
       </div>
+      <div className="mt-6 rounded-2xl border border-slate-200 bg-gradient-to-br from-brand-50/40 to-white p-5">
+        <div className="flex items-center gap-2.5 mb-1">
+          <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-brand-50 text-brand-600"><MessagesSquare className="h-5 w-5" /></span>
+          <h3 className="font-display text-base font-bold text-slate-900 leading-tight">{t('course_ws.studio.qa_title')}</h3>
+        </div>
+        <p className="text-xs text-slate-500 mb-3">{t('course_ws.studio.qa_intro')}</p>
+        <div className="flex gap-2">
+          <input value={qaQ} onChange={(e) => setQaQ(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') askQa(); }}
+            placeholder={t('course_ws.studio.qa_ph')}
+            className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-brand-400 focus:outline-none" />
+          <button onClick={askQa} disabled={qaBusy || !qaQ.trim()}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-3.5 py-2 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-50 whitespace-nowrap">
+            {qaBusy ? <Sparkles className="h-4 w-4 animate-pulse" /> : <Send className="h-4 w-4" />}
+            {qaBusy ? t('course_ws.studio.qa_thinking') : t('course_ws.studio.qa_ask')}
+          </button>
+        </div>
+        {qaA && (
+          <div className="mt-4 animate-in fade-in slide-in-from-bottom-1">
+            <p className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">{qaA}</p>
+            {qaCites.length > 0 && (
+              <div className="mt-3">
+                <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">{t('course_ws.studio.qa_sources')}</span>
+                <div className="mt-1.5 flex flex-wrap gap-1.5">
+                  {qaCites.map((c) => (
+                    <span key={c.tag} className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs text-slate-600">
+                      <Quote className="h-3 w-3 text-brand-500" /> {c.title || c.tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
       <div className="flex flex-wrap gap-4 mt-6 text-sm">
         <Link href={'/admin/estudio/flashcards' as any} className="inline-flex items-center gap-1.5 font-semibold text-brand-600 hover:text-brand-700"><PencilRuler className="h-4 w-4" /> {t('course_ws.studio.edit_flashcards')}</Link>
         <Link href={`/learn/curso/${courseId}/guia` as any} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 font-semibold text-brand-600 hover:text-brand-700"><ExternalLink className="h-4 w-4" /> {t('course_ws.studio.view_guide')}</Link>
+        <Link href={`/learn/curso/${courseId}/mapa` as any} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 font-semibold text-brand-600 hover:text-brand-700"><Map className="h-4 w-4" /> {t('course_ws.studio.view_map')}</Link>
       </div>
     </div>
   );
