@@ -4,7 +4,8 @@ import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { Loader2, Wand2, Check, UserPlus, Send, Users, Sparkles, Calendar, FileText, X } from 'lucide-react';
+import { Loader2, Wand2, Check, UserPlus, Send, Users, Sparkles, Calendar, FileText, X, Layers } from 'lucide-react';
+import BuildCockpit from './BuildCockpit';
 
 type Suggestion = { id: string; title: string; rationale: string | null; suggested_kind: string; topic: string | null; audience: string | null; score: number; status: string; created_session_id: string | null; plan: any | null; plan_at?: string | null };
 type EventMin = { id: string; title: string; session_kind: string; published?: boolean };
@@ -212,6 +213,7 @@ export function EventsAgentClient() {
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
   const [planLoadingId, setPlanLoadingId] = useState<string | null>(null);
   const [planFor, setPlanFor] = useState<Suggestion | null>(null);
+  const [buildFor, setBuildFor] = useState<Suggestion | null>(null);
 
   const loadBase = useCallback(async () => {
     setLoading(true);
@@ -339,7 +341,7 @@ export function EventsAgentClient() {
                     {planLoadingId === s.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileText className="w-3.5 h-3.5" />} {s.plan ? 'Ver plano' : 'Gerar plano'}
                   </button>
                   {s.status === 'accepted' && (
-                    <span className="inline-flex items-center gap-1.5 text-sm text-emerald-700"><Check className="w-4 h-4" /> {t('events.agent.accepted')}</span>
+                    <button onClick={() => setBuildFor(s)} className="inline-flex items-center gap-1.5 rounded-lg border border-violet-200 text-violet-700 px-3 py-1.5 text-sm font-medium hover:bg-violet-50"><Layers className="w-4 h-4" /> Construção</button>
                   )}
                 </div>
               </div>
@@ -386,6 +388,9 @@ export function EventsAgentClient() {
         )}
       </section>
 
+      {buildFor && (
+        <BuildCockpit suggestion={{ id: buildFor.id, title: buildFor.title }} onClose={() => setBuildFor(null)} phaseLabel={(k) => { try { return t(`events.build.phase_${k}`); } catch { return k; } }} />
+      )}
       {planFor && (
         <PlanModal s={planFor} accepting={acceptingId === planFor.id} onAccept={() => accept(planFor.id)} onClose={() => setPlanFor(null)} kindLabel={kindLabel} />
       )}
