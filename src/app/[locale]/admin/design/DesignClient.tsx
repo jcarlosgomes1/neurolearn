@@ -4,10 +4,11 @@ import { useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from '@/i18n/routing';
 import { toast } from 'sonner';
-import { Check, Loader2, ExternalLink, Eye, Sparkles, Layers } from 'lucide-react';
+import { Check, Loader2, ExternalLink, Eye, Sparkles, Layers, Palette } from 'lucide-react';
 
 interface Surface { depth: number; emboss: boolean; }
-interface Direction { id: string; name: string; tagline: string; file: string; accent: string; sort_order: number; motion: boolean; surface: Surface; }
+interface Accent { base: string; soft: string; deep: string; }
+interface Direction { id: string; name: string; tagline: string; file: string; accent: string; sort_order: number; motion: boolean; surface: Surface; accents?: Record<string, Accent> | null; }
 
 function shadowFor(depth: number, emboss: boolean) {
   const f = Math.max(0, Math.min(100, depth)) / 100;
@@ -102,6 +103,7 @@ export function DesignClient({ initialActive, directions }: { initialActive: str
         const motionOn = motion[d.id] ?? true;
         const dDepth = depth[d.id] ?? 35;
         const dEmboss = emboss[d.id] !== false;
+        const accents = d.accents ? Object.entries(d.accents) : [];
         return (
           <div
             key={d.id}
@@ -130,6 +132,32 @@ export function DesignClient({ initialActive, directions }: { initialActive: str
                 <span className="h-9 w-9 rounded-full flex-shrink-0 border border-slate-200" style={{ background: d.accent }} />
               </div>
               <p className="text-sm text-slate-600 mt-2 leading-relaxed">{d.tagline}</p>
+
+              <div className="mt-3 pt-3 border-t border-slate-100">
+                <div className="flex items-center justify-between">
+                  <span className="inline-flex items-center gap-1.5 text-sm text-slate-600">
+                    <Palette className="h-4 w-4 text-slate-400" /> Paleta de acentos
+                  </span>
+                  {accents.length > 0 && <span className="text-[11px] text-slate-400">{accents.length} cores</span>}
+                </div>
+                {accents.length > 0 ? (
+                  <div className="mt-2.5 flex flex-wrap gap-1.5">
+                    {accents.map(([k, c]) => (
+                      <span
+                        key={k}
+                        title={`${k} · ${c.base}`}
+                        className="inline-flex items-center gap-1.5 rounded-full pl-1 pr-2.5 py-1 text-[11px] font-medium border border-slate-200/70"
+                        style={{ background: c.soft, color: c.deep }}
+                      >
+                        <span className="h-3.5 w-3.5 rounded-full" style={{ background: c.base }} />
+                        {k}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-400 mt-2">Por definir — proposta de paleta por validar.</p>
+                )}
+              </div>
 
               <div className="flex items-center gap-2 mt-4">
                 <a
