@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 
 interface Surface { depth: number; emboss: boolean; }
 interface Accent { base: string; soft: string; deep: string; }
-interface Direction { id: string; name: string; tagline: string; file: string; accent: string; sort_order: number; motion: boolean; surface: Surface; accents?: Record<string, Accent> | null; }
+interface Direction { id: string; name: string; tagline: string; accent: string; sort_order: number; motion: boolean; surface: Surface; accents?: Record<string, Accent> | null; }
 
 export default async function Page() {
   const sb = await createClient();

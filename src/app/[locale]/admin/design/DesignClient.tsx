@@ -8,7 +8,7 @@ import { Check, Loader2, ExternalLink, Eye, Sparkles, Layers, Palette } from 'lu
 
 interface Surface { depth: number; emboss: boolean; }
 interface Accent { base: string; soft: string; deep: string; }
-interface Direction { id: string; name: string; tagline: string; file: string; accent: string; sort_order: number; motion: boolean; surface: Surface; accents?: Record<string, Accent> | null; }
+interface Direction { id: string; name: string; tagline: string; accent: string; sort_order: number; motion: boolean; surface: Surface; accents?: Record<string, Accent> | null; }
 
 function shadowFor(depth: number, emboss: boolean) {
   const f = Math.max(0, Math.min(100, depth)) / 100;
