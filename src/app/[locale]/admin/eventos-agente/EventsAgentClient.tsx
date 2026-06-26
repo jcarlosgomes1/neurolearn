@@ -66,6 +66,7 @@ function PlanModal({ s, accepting, onAccept, onClose, kindLabel }: { s: Suggesti
               <div className="flex flex-wrap gap-1.5 mb-2">
                 {est.formato && <span className="text-xs px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-600">{est.formato}</span>}
                 {est.duracao_min && <span className="text-xs px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-600">{est.duracao_min} min</span>}
+                {est.modalidade && <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700">{String(est.modalidade).replace(/_/g, " ")}</span>}
                 {est.plataforma && <span className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 uppercase">{est.plataforma}</span>}
                 {est.idioma && <span className="text-xs px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-600">{est.idioma}</span>}
               </div>
@@ -145,6 +146,19 @@ function PlanModal({ s, accepting, onAccept, onClose, kindLabel }: { s: Suggesti
                   </li>
                 ))}
               </ul>
+            </Block>
+          )}
+
+          {p.gravacao && (p.gravacao.gravar || p.gravacao.repositorio) && (
+            <Block label="Gravação & repositório (leads perpétuos)">
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {p.gravacao.gravar && <span className="text-xs px-2 py-0.5 rounded-full bg-rose-50 text-rose-700">Gravar</span>}
+                {p.gravacao.repositorio && <span className="text-xs px-2 py-0.5 rounded-full bg-rose-50 text-rose-700">Repositório on-demand</span>}
+                {p.gravacao.gate_inscricao && <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700">Ver exige inscrição (lead)</span>}
+                {p.gravacao.evergreen && <span className="text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-700">Evergreen</span>}
+              </div>
+              {p.gravacao.cross_sell_no_replay && <p className="text-sm text-neutral-600 mb-1"><span className="text-neutral-400">Cross-sell no replay: </span>{p.gravacao.cross_sell_no_replay}</p>}
+              {p.gravacao.nota && <p className="text-sm text-neutral-600">{p.gravacao.nota}</p>}
             </Block>
           )}
 
