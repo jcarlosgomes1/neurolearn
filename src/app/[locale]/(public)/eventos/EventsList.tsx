@@ -1,62 +1,115 @@
 'use client';
 
-import { useTranslations, useLocale } from 'next-intl';
-import { Clock, MapPin, Users, Video, ArrowRight } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
+import { CalendarDays, Globe, MapPin, Video, ArrowRight } from 'lucide-react';
 
 type Ev = {
-  id: string; title: string; description: string | null; session_kind: string; host: string; url: string;
-  cover_url: string | null; location: string | null; attendees_max: number | null; attendees_count: number | null;
-  starts_at: string | null;
+  slug: string; title: string; idioma: string;
+  event_at: string | null; event_timezone: string | null;
+  modalidade: string | null; kind: string | null; room_provider: string | null;
+  gravavel: boolean; is_past: boolean; subtitle: string | null;
 };
 
-const GRADS = ['from-violet-500 to-indigo-600', 'from-emerald-500 to-teal-600', 'from-amber-500 to-orange-600', 'from-fuchsia-500 to-pink-600', 'from-blue-500 to-cyan-600', 'from-rose-500 to-red-600'];
+const LANG_NAME: Record<string, string> = { pt: 'Português', en: 'English', es: 'Español', fr: 'Français' };
+const FB: Record<string, string> = {
+  'events.repo.upcoming': 'Próximos',
+  'events.repo.past': 'Passados',
+  'events.repo.all_languages': 'Todas as línguas',
+  'events.repo.online': 'Online',
+  'events.repo.presencial': 'Presencial',
+  'events.repo.replay': 'Ver gravação',
+  'events.repo.register': 'Inscrever-me',
+  'events.repo.details': 'Detalhes',
+  'events.repo.empty': 'Ainda não há eventos publicados.',
+};
 
-export function EventsList({ events }: { events: Ev[] }) {
-  const t = useTranslations();
-  const locale = useLocale();
-  const kindLabel = (k: string) => { try { return t(`events.agent.kind_${k}` as string); } catch { return k; } };
+export function EventsList({ events, locale }: { events: Ev[]; locale: string }) {
+  const t = useTranslations() as unknown as (key: string) => string;
+  const tx = (k: string, fb?: string) => {
+    try { const v = t(k); return v && v !== k ? v : (fb ?? FB[k] ?? k); }
+    catch { return fb ?? FB[k] ?? k; }
+  };
+  const langLabel = (l: string) => tx(`events.repo.lang_${l}`, LANG_NAME[l] || l.toUpperCase());
 
-  if (!events.length) {
-    return <div className="rounded-2xl border border-slate-200 bg-slate-50 p-10 text-center text-slate-500">{t('ev.empty')}</div>;
+  const [lang, setLang] = useState<string>('all');
+
+  const langs = useMemo(
+    () => Array.from(new Set(events.map((e) => e.idioma || 'pt').filter(Boolean))),
+    [events]
+  );
+  const filtered = useMemo(
+    () => (lang === 'all' ? events : events.filter((e) => (e.idioma || 'pt') === lang)),
+    [events, lang]
+  );
+  const upcoming = filtered.filter((e) => !e.is_past);
+  const past = useMemo(
+    () => filtered.filter((e) => e.is_past).sort((a, b) => (b.event_at || '').localeCompare(a.event_at || '')),
+    [filtered]
+  );
+
+  function fmtDate(iso: string | null, tz: string | null) {
+    if (!iso) return null;
+    try { return new Date(iso).toLocaleString(locale, { dateStyle: 'long', timeStyle: 'short', timeZone: tz || 'Europe/Lisbon' }); }
+    catch { return null; }
   }
 
+  function Card({ e }: { e: Ev }) {
+    const when = fmtDate(e.event_at, e.event_timezone);
+    const online = e.modalidade !== 'presencial' && e.room_provider !== 'presencial';
+    return (
+      <a href={`/${locale}/evento/${e.slug}`} className="group rounded-2xl border border-slate-200 bg-white p-5 hover:shadow-2xl hover:-translate-y-1 transition-all flex flex-col">
+        <div className="flex items-center gap-2 mb-2 flex-wrap">
+          <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-violet-50 text-violet-700"><Globe className="w-3 h-3" /> {langLabel(e.idioma || 'pt')}</span>
+          <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">
+            {online ? (<><Globe className="w-3 h-3" /> {tx('events.repo.online')}</>) : (<><MapPin className="w-3 h-3" /> {tx('events.repo.presencial')}</>)}
+          </span>
+        </div>
+        <h3 className="text-lg font-bold text-slate-900 leading-snug group-hover:text-violet-700 transition-colors">{e.title}</h3>
+        {e.subtitle && <p className="text-sm text-slate-600 mt-1 line-clamp-2 flex-1">{e.subtitle}</p>}
+        {when && <div className="mt-3 flex items-center gap-1.5 text-xs text-slate-500"><CalendarDays className="w-3.5 h-3.5" /> {when}</div>}
+        <div className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-violet-700">
+          {e.is_past && e.gravavel && <Video className="w-4 h-4" />}
+          {e.is_past ? (e.gravavel ? tx('events.repo.replay') : tx('events.repo.details')) : tx('events.repo.register')}
+          <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+        </div>
+      </a>
+    );
+  }
+
+  const empty = (
+    <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-16 text-center text-slate-500">{tx('events.repo.empty')}</div>
+  );
+
   return (
-    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-      {events.map((e, i) => {
-        const d = e.starts_at ? new Date(e.starts_at) : null;
-        const grad = GRADS[i % GRADS.length];
-        return (
-          <article key={e.id} className="group bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all flex flex-col">
-            <div className={`relative h-36 bg-gradient-to-br ${grad}`}>
-              {e.cover_url ? <img src={e.cover_url} alt="" className="absolute inset-0 w-full h-full object-cover" /> : null}
-              <span className="absolute top-3 left-3 text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full bg-white/90 text-slate-800">{kindLabel(e.session_kind)}</span>
-              {d ? (
-                <div className="absolute bottom-3 left-3 text-white drop-shadow">
-                  <span className="text-2xl font-bold" suppressHydrationWarning>{d.getDate()}</span>
-                  <span className="text-[11px] uppercase font-bold ml-1 opacity-90" suppressHydrationWarning>{d.toLocaleDateString(locale, { month: 'short' })}</span>
-                </div>
-              ) : null}
-            </div>
-            <div className="p-5 flex-1 flex flex-col">
-              <div className="flex flex-wrap gap-2 text-xs text-slate-500 mb-1">
-                {d ? <span className="inline-flex items-center gap-1" suppressHydrationWarning><Clock className="h-3 w-3" /> {d.toLocaleString(locale, { hour: '2-digit', minute: '2-digit' })}</span> : null}
-                <span className="inline-flex items-center gap-1">{e.location ? <><MapPin className="h-3 w-3" /> {e.location}</> : <><Video className="h-3 w-3" /> {t('events.card.online')}</>}</span>
-              </div>
-              <h3 className="text-lg font-bold text-slate-900 leading-snug">{e.title}</h3>
-              {e.host ? <p className="text-sm text-slate-500 mt-0.5">{e.host}</p> : null}
-              {e.description ? <p className="text-sm text-slate-600 mt-2 line-clamp-2 flex-1">{e.description}</p> : <div className="flex-1" />}
-              <div className="mt-4 flex items-center justify-between">
-                <a href={e.url} className="inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors">
-                  {t('events.card.register')} <ArrowRight className="h-4 w-4" />
-                </a>
-                <span className="text-xs text-slate-400 inline-flex items-center gap-1">
-                  <Users className="h-3.5 w-3.5" /> {e.attendees_count ?? 0}{e.attendees_max ? `/${e.attendees_max}` : ''}
-                </span>
-              </div>
-            </div>
-          </article>
-        );
-      })}
+    <div>
+      {langs.length > 1 && (
+        <div className="flex items-center gap-1.5 mb-8 flex-wrap">
+          <Globe className="w-4 h-4 text-slate-400" />
+          <button onClick={() => setLang('all')} className={`px-3 py-1 text-xs rounded-full transition-colors ${lang === 'all' ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>{tx('events.repo.all_languages')}</button>
+          {langs.map((l) => (
+            <button key={l} onClick={() => setLang(l)} className={`px-3 py-1 text-xs rounded-full transition-colors ${lang === l ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>{langLabel(l)}</button>
+          ))}
+        </div>
+      )}
+
+      {events.length === 0 ? empty : (
+        <div className="space-y-12">
+          {upcoming.length > 0 && (
+            <section>
+              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">{tx('events.repo.upcoming')}</h2>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">{upcoming.map((e) => <Card key={e.slug} e={e} />)}</div>
+            </section>
+          )}
+          {past.length > 0 && (
+            <section>
+              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">{tx('events.repo.past')}</h2>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">{past.map((e) => <Card key={e.slug} e={e} />)}</div>
+            </section>
+          )}
+          {upcoming.length === 0 && past.length === 0 && empty}
+        </div>
+      )}
     </div>
   );
 }
