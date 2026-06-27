@@ -11,11 +11,11 @@ type Build = {
   id: string; title: string | null; status: string; fase_atual: number; gravavel: boolean; slug: string | null; published: boolean;
   event_at: string | null; event_timezone: string | null; duration_min: number | null;
   room_provider: string | null; room_url: string | null; room_status: string;
-  schedule_proposal: any | null; scheduled_at: string | null;
+  schedule_proposal: any | null; scheduled_at: string | null; idioma_oficial: string | null;
 };
 type Act = { status: string; blocker: string | null };
 
-const SEL = 'id,title,status,fase_atual,gravavel,slug,published,event_at,event_timezone,duration_min,room_provider,room_url,room_status,schedule_proposal,scheduled_at';
+const SEL = 'id,title,status,fase_atual,gravavel,slug,published,event_at,event_timezone,duration_min,room_provider,room_url,room_status,schedule_proposal,scheduled_at,idioma_oficial';
 
 const BLOCKER_PT: Record<string, string> = {
   evento_sem_data: 'aguarda agendamento',
@@ -89,6 +89,7 @@ export default function BuildCockpit({ suggestion, onClose, phaseLabel }: { sugg
   const [schedBusy, setSchedBusy] = useState(false);
   const [whenInput, setWhenInput] = useState('');
   const [provInput, setProvInput] = useState('daily');
+  const [idiomaBusy, setIdiomaBusy] = useState(false);
 
   const loadSteps = useCallback(async (buildId: string) => {
     const sb = createClient();
@@ -250,6 +251,19 @@ export default function BuildCockpit({ suggestion, onClose, phaseLabel }: { sugg
   const pagOk = steps.some((s) => s.fase === 'pagina' && s.estado === 'aprovado');
   const insOk = steps.some((s) => s.fase === 'inscricao' && s.estado === 'aprovado');
 
+  async function setIdioma(l: string) {
+    if (!build || idiomaBusy) return;
+    setIdiomaBusy(true);
+    try {
+      const sb = createClient();
+      const { data, error } = await sb.rpc('nl_event_build_set_idioma', { p_build_id: build.id, p_idioma: l });
+      if (error || !(data as any)?.ok) throw new Error();
+      await refreshBuild();
+      toast.success('Idioma do evento atualizado.');
+    } catch { toast.error('Falha ao atualizar o idioma.'); }
+    finally { setIdiomaBusy(false); }
+  }
+
   function ActBadge({ fase }: { fase: string }) {
     const a = acts[fase];
     if (!a || a.status === 'ignorado') return null;
@@ -296,7 +310,7 @@ export default function BuildCockpit({ suggestion, onClose, phaseLabel }: { sugg
                       {(s.estado === 'pendente' || s.estado === 'rejeitado') && (
                         <button onClick={() => runStep(s.id)} disabled={busyId === s.id} className="inline-flex items-center gap-1 rounded-lg bg-violet-600 text-white px-2.5 py-1.5 text-xs font-medium hover:bg-violet-700 disabled:opacity-50">
                           {busyId === s.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Wand2 className="w-3.5 h-3.5" />} Gerar
-                        </button>
+                      </button>
                       )}
                       {(s.estado === 'gerado' || s.estado === 'aprovado') && (
                         <button onClick={() => setOpenArt(isOpen ? null : s.id)} className="rounded-lg border border-neutral-200 px-2 py-1.5 text-xs hover:border-neutral-300">{isOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}</button>
@@ -320,6 +334,23 @@ export default function BuildCockpit({ suggestion, onClose, phaseLabel }: { sugg
 
         {!loading && build && (
           <div className="border-t border-neutral-100 p-4 bg-white space-y-3">
+            {/* Idioma oficial do evento */}
+            <div className="rounded-xl border border-neutral-200 p-3">
+              <div className="flex items-center gap-2 mb-2">
+                <Globe className="w-4 h-4 text-neutral-500" />
+                <span className="text-xs font-bold uppercase tracking-wider text-neutral-500">Idioma oficial</span>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {([['pt', 'Português'], ['en', 'English'], ['es', 'Español'], ['fr', 'Français']] as const).map(([code, label]) => {
+                  const active = (build.idioma_oficial || 'pt') === code;
+                  return (
+                    <button key={code} onClick={() => setIdioma(code)} disabled={idiomaBusy} className={`px-2.5 py-1 text-xs rounded-full border transition-colors disabled:opacity-50 ${active ? 'bg-violet-600 text-white border-violet-600' : 'border-neutral-200 text-neutral-600 hover:border-neutral-300'}`}>{label}</button>
+                  );
+                })}
+              </div>
+              <p className="mt-1.5 text-[11px] text-neutral-400">Comanda o selo no repositório e a língua da divulgação.</p>
+            </div>
+
             {/* Agendamento / materialização do evento */}
             <div className="rounded-xl border border-violet-100 bg-violet-50/40 p-3">
               <div className="flex items-center gap-2 mb-2">
