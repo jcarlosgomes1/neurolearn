@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { EventRegisterForm } from './EventRegisterForm';
 import { SiteChrome } from '@/components/layout/SiteChrome';
@@ -19,6 +20,21 @@ export default async function Page({ params }: { params: Promise<{ slug: string;
   const agenda: string[] = Array.isArray(pag.agenda_resumo) ? pag.agenda_resumo : [];
   const oradores: string[] = Array.isArray(pag.oradores) ? pag.oradores : [];
   const faq: Faq[] = Array.isArray(pag.faq) ? pag.faq : [];
+
+  const idioma: string = res.idioma || 'pt';
+  const roomUrl: string | null = res.room_status === 'ready' ? (res.room_url || null) : null;
+  let labels = { registered: 'Inscrição confirmada!', addToCalendar: 'Adicionar ao calendário', openRoom: 'Abrir sala' };
+  try {
+    const tev = (await getTranslations({ locale: idioma })) as unknown as (k: string) => string;
+    const r = tev('events.public.registered_title');
+    const a = tev('events.public.add_to_calendar');
+    const o = tev('events.public.open_room');
+    labels = {
+      registered: r && r !== 'events.public.registered_title' ? r : labels.registered,
+      addToCalendar: a && a !== 'events.public.add_to_calendar' ? a : labels.addToCalendar,
+      openRoom: o && o !== 'events.public.open_room' ? o : labels.openRoom,
+    };
+  } catch { /* fallback PT */ }
 
   return (
     <SiteChrome locale={locale} mainClassName="min-h-screen bg-slate-50" wrapInner={false}>
@@ -63,7 +79,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string;
             <h2 className="text-xl font-bold text-slate-900">Inscrição</h2>
             {ins.oferta && <p className="mt-1 text-sm text-slate-500">{ins.oferta}</p>}
             <div className="mt-5">
-              <EventRegisterForm slug={slug} locale={locale} consentText={ins.consentimento_texto || ''} successText={ins.mensagem_sucesso || ''} />
+              <EventRegisterForm slug={slug} locale={locale} consentText={ins.consentimento_texto || ''} successText={ins.mensagem_sucesso || ''} eventAt={res.event_at || null} roomUrl={roomUrl} labels={labels} />
             </div>
           </div>
         </section>

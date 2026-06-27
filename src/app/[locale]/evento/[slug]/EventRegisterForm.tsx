@@ -2,8 +2,11 @@
 
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { CalendarPlus, Video } from 'lucide-react';
 
-export function EventRegisterForm({ slug, locale, consentText, successText }: { slug: string; locale: string; consentText: string; successText: string }) {
+type Labels = { registered: string; addToCalendar: string; openRoom: string };
+
+export function EventRegisterForm({ slug, locale, consentText, successText, eventAt, roomUrl, labels }: { slug: string; locale: string; consentText: string; successText: string; eventAt?: string | null; roomUrl?: string | null; labels?: Labels }) {
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [empresa, setEmpresa] = useState('');
@@ -12,6 +15,8 @@ export function EventRegisterForm({ slug, locale, consentText, successText }: { 
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
   const [err, setErr] = useState('');
+
+  const L: Labels = labels || { registered: 'Inscrição confirmada!', addToCalendar: 'Adicionar ao calendário', openRoom: 'Abrir sala' };
 
   async function submit() {
     setErr('');
@@ -29,8 +34,22 @@ export function EventRegisterForm({ slug, locale, consentText, successText }: { 
   if (done) {
     return (
       <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-5 text-center">
-        <div className="text-emerald-700 font-semibold">Inscrição confirmada!</div>
+        <div className="text-emerald-700 font-semibold">{L.registered}</div>
         <p className="mt-1 text-sm text-emerald-700/80">{successText || 'Recebemos a tua inscrição. Em breve terás novidades.'}</p>
+        {(eventAt || roomUrl) && (
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+            {eventAt && (
+              <a href={`/api/eventos/${slug}/ics`} className="inline-flex items-center gap-1.5 rounded-lg bg-white border border-emerald-300 text-emerald-700 px-3 py-2 text-sm font-medium hover:bg-emerald-100 transition-colors">
+                <CalendarPlus className="w-4 h-4" /> {L.addToCalendar}
+              </a>
+            )}
+            {roomUrl && (
+              <a href={roomUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 text-white px-3 py-2 text-sm font-medium hover:bg-emerald-700 transition-colors">
+                <Video className="w-4 h-4" /> {L.openRoom}
+              </a>
+            )}
+          </div>
+        )}
       </div>
     );
   }
