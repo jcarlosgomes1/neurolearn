@@ -259,11 +259,22 @@ export function EventsAgentClient() {
     setPlanLoadingId(s.id);
     try {
       const sb = createClient();
-      const { data, error } = await sb.rpc('nl_event_plan_generate', { p_id: s.id });
-      if (error || !(data as { ok?: boolean })?.ok) throw new Error('plan');
-      const withPlan = { ...s, plan: (data as { plan?: any }).plan };
-      setSuggestions((prev) => prev.map((x) => (x.id === s.id ? withPlan : x)));
-      setPlanFor(withPlan);
+      // geracao assincrona: dispara em background e faz polling do estado
+      await sb.functions.invoke('event-generate', { body: { suggestion_id: s.id } });
+      const deadline = Date.now() + 200000;
+      while (Date.now() < deadline) {
+        await new Promise((r) => setTimeout(r, 3000));
+        const { data } = await sb.from('nl_event_suggestions').select('plan,plan_status').eq('id', s.id).maybeSingle();
+        const row = data as { plan?: any; plan_status?: string } | null;
+        if (row?.plan) {
+          const withPlan = { ...s, plan: row.plan };
+          setSuggestions((prev) => prev.map((x) => (x.id === s.id ? withPlan : x)));
+          setPlanFor(withPlan);
+          return;
+        }
+        if (row?.plan_status === 'erro') throw new Error('gen');
+      }
+      throw new Error('timeout');
     } catch { toast.error('Não foi possível gerar o plano.'); }
     finally { setPlanLoadingId(null); }
   }
