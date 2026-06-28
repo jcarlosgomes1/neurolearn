@@ -2,7 +2,7 @@
 
 import { Link, usePathname } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
-import { LayoutDashboard, Settings2, Palette, ShoppingBag, Edit3 } from 'lucide-react';
+import { LayoutDashboard, Settings2, Palette, ShoppingBag, Edit3, Radar } from 'lucide-react';
 
 export function EmpresaTabs({ orgId }: { orgId: string }) {
   const t = useTranslations();
@@ -10,6 +10,7 @@ export function EmpresaTabs({ orgId }: { orgId: string }) {
   const base = `/admin/empresas/${orgId}`;
   const tabs = [
     { key: 'overview', href: base, label: t('emp_ws.tab.overview'), icon: LayoutDashboard, exact: true },
+    { key: 'intelligence', href: `${base}/inteligencia`, label: t('emp_ws.tab.intelligence'), icon: Radar, exact: false },
     { key: 'features', href: `${base}/features`, label: t('emp_ws.tab.features'), icon: Settings2, exact: false },
     { key: 'branding', href: `${base}/branding`, label: t('emp_ws.tab.branding'), icon: Palette, exact: false },
     { key: 'marketplace', href: `${base}/marketplace`, label: t('emp_ws.tab.marketplace'), icon: ShoppingBag, exact: false },
