@@ -2,7 +2,7 @@ import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { Link } from '@/i18n/routing';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import { Package, Plus, Sliders, FileText, TrendingUp } from 'lucide-react';
+import { Package, Plus, Sliders, FileText, TrendingUp, Calculator } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -53,6 +53,13 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
           icon={<Sliders className="h-5 w-5 text-indigo-600" />}
           title="Marketplace"
           description="Talent placement fee, catalog revenue share, inter-org take rate. Tudo em settings dinâmicas."
+        />
+        <SectionCard 
+          href={`/admin/billing/calculador`} 
+          locale={locale}
+          icon={<Calculator className="h-5 w-5 text-amber-600" />}
+          title="Calculador de Tiers"
+          description="Custo real por seat, preço sugerido pela margem-alvo e margem efetiva ao preço atual. O agente receita propõe ajustes."
         />
         <SectionCard 
           href={`/admin/billing/assinaturas`} 
