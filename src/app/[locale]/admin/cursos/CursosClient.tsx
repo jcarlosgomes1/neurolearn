@@ -30,7 +30,19 @@ interface Course {
 
 interface TranslationCoverage { course_id: string; lang_code: string }
 
+interface CoursePnl {
+  ok: boolean;
+  course?: { is_tenant?: boolean; currency?: string };
+  cost?: { ai_total_cents: number; ai_creation_cents: number; ai_usage_cents: number; ai_calls: number };
+  revenue?: { gross_cents: number; platform_share_cents: number; instructor_share_cents: number; refunded_cents: number; transactions: number };
+  pnl?: { platform_net_cents: number; roi_pct: number | null };
+}
+
 type StatusFilter = 'all' | 'published' | 'draft' | 'archived' | 'pending_review';
+
+function eur(cents: number | null | undefined): string {
+  return ((cents ?? 0) / 100).toFixed(2) + '€';
+}
 
 export function CursosClient() {
   const t = useTranslations();
@@ -43,6 +55,10 @@ export function CursosClient() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [search, setSearch] = useState('');
+
+  const [pnlOpen, setPnlOpen] = useState<string | null>(null);
+  const [pnlData, setPnlData] = useState<Record<string, CoursePnl>>({});
+  const [pnlLoading, setPnlLoading] = useState<string | null>(null);
 
   async function load() {
     setLoading(true);
@@ -62,6 +78,18 @@ export function CursosClient() {
     setLoading(false);
   }
   useEffect(() => { load(); }, []);
+
+  async function togglePnl(c: Course) {
+    if (pnlOpen === c.id) { setPnlOpen(null); return; }
+    setPnlOpen(c.id);
+    if (!pnlData[c.id]) {
+      setPnlLoading(c.id);
+      const { data, error } = await supabase.rpc('nl_course_pnl', { p_course_id: c.id });
+      if (error) { toast.error(error.message); }
+      else { setPnlData((prev) => ({ ...prev, [c.id]: data as CoursePnl })); }
+      setPnlLoading(null);
+    }
+  }
 
   const categories = useMemo(() => {
     const s = new Set<string>();
@@ -98,7 +126,6 @@ export function CursosClient() {
     setSavingId(c.id);
     const newVal = !c.archived;
     if (newVal && c.published) {
-      // Archiving auto-unpublishes
       const { error } = await supabase.from('nl_courses').update({ archived: true, published: false }).eq('id', c.id);
       if (error) { toast.error(error.message); }
       else {
@@ -121,6 +148,40 @@ export function CursosClient() {
     if (c.published) return <span className="inline-block text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700">{t('admin_courses.s_published')}</span>;
     if (c.approval_status === 'pending_review') return <span className="inline-block text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-100 text-amber-700">{t('admin_courses.s_pending_review')}</span>;
     return <span className="inline-block text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">{t('admin_courses.s_draft')}</span>;
+  }
+
+  function pnlPanel(c: Course) {
+    const d = pnlData[c.id];
+    if (pnlLoading === c.id) return <div className="mt-3 pt-3 border-t border-slate-100 text-xs text-slate-500">{t('admin_courses.pnl_loading')}</div>;
+    if (!d || !d.ok) return null;
+    const net = d.pnl?.platform_net_cents ?? 0;
+    return (
+      <div className="mt-3 pt-3 border-t border-slate-100">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-xs font-semibold text-slate-700">{t('admin_courses.pnl_title')}</span>
+          {d.course?.is_tenant && <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700">{t('admin_courses.pnl_tenant')}</span>}
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+          <div className="bg-rose-50 rounded-lg p-2">
+            <div className="text-rose-700 font-semibold">{eur(d.cost?.ai_total_cents)}</div>
+            <div className="text-slate-500 text-[11px]">{t('admin_courses.pnl_cost_ia')} · {d.cost?.ai_calls ?? 0}</div>
+            <div className="text-[10px] text-slate-400 mt-0.5">{t('admin_courses.pnl_creation')} {eur(d.cost?.ai_creation_cents)} · {t('admin_courses.pnl_usage')} {eur(d.cost?.ai_usage_cents)}</div>
+          </div>
+          <div className="bg-emerald-50 rounded-lg p-2">
+            <div className="text-emerald-700 font-semibold">{eur(d.revenue?.gross_cents)}</div>
+            <div className="text-slate-500 text-[11px]">{t('admin_courses.pnl_revenue')} · {d.revenue?.transactions ?? 0}</div>
+          </div>
+          <div className="bg-slate-50 rounded-lg p-2">
+            <div className={`font-semibold ${net >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>{eur(net)}</div>
+            <div className="text-slate-500 text-[11px]">{t('admin_courses.pnl_platform_net')}</div>
+          </div>
+          <div className="bg-violet-50 rounded-lg p-2">
+            <div className="text-violet-700 font-semibold">{d.pnl?.roi_pct != null ? d.pnl.roi_pct + '%' : '—'}</div>
+            <div className="text-slate-500 text-[11px]">{t('admin_courses.pnl_roi')}</div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -194,6 +255,10 @@ export function CursosClient() {
                     </div>
                   </div>
                   <div className="flex gap-2 flex-wrap items-start">
+                    <button onClick={() => togglePnl(c)}
+                      className={`text-xs font-medium px-3 py-1.5 rounded-lg ${pnlOpen === c.id ? 'bg-violet-600 text-white' : 'bg-violet-100 text-violet-700 hover:bg-violet-200'}`}>
+                      {t('admin_courses.pnl_btn')}
+                    </button>
                     <button onClick={() => togglePublished(c)} disabled={savingId === c.id || c.archived}
                       className={`text-xs font-medium px-3 py-1.5 rounded-lg ${c.published ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'} disabled:opacity-50`}>
                       {c.published ? `✓ ${t('admin_courses.btn_unpublish')}` : t('admin_courses.btn_publish')}
@@ -207,6 +272,7 @@ export function CursosClient() {
                     </Link>
                   </div>
                 </div>
+                {pnlOpen === c.id && pnlPanel(c)}
               </div>
             );
           })}
