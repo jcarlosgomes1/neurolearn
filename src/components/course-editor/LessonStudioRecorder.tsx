@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
+import { SUPABASE_URL } from '@/lib/supabase/config';
 import { toast } from 'sonner';
 
 type Source = 'screen' | 'camera' | 'slides';
@@ -29,11 +30,15 @@ interface Props {
   currentUrl?: string | null;
   lessonTitle?: string;
   content?: LessonContent;
+  // Opcionais: se presentes, o vídeo vai para o Mux (streaming de topo) quando configurado; senão, Storage.
+  courseId?: string;
+  moduleIndex?: number;
+  lessonIndex?: number;
 }
 
 // Estúdio de autoria: slides nativos (gerados do conteúdo) ou imagens + webcam overlay,
 // ou ecrã + webcam, compostos num canvas → WebM → Storage.
-export function LessonStudioRecorder({ onUploaded, currentUrl, lessonTitle, content }: Props) {
+export function LessonStudioRecorder({ onUploaded, currentUrl, lessonTitle, content, courseId, moduleIndex, lessonIndex }: Props) {
   const t = useTranslations('studio');
   const [source, setSource] = useState<Source>('slides');
   const [phase, setPhase] = useState<Phase>('idle');
@@ -368,18 +373,50 @@ export function LessonStudioRecorder({ onUploaded, currentUrl, lessonTitle, cont
   function nextSlide() { setSlideIdx((i) => Math.min(i + 1, slides.length - 1)); }
   function prevSlide() { setSlideIdx((i) => Math.max(i - 1, 0)); }
 
+  // Storage: caminho imediato, funciona sempre.
+  async function uploadToStorage(): Promise<string> {
+    const sb = createClient();
+    const { data: { user } } = await sb.auth.getUser();
+    if (!user) throw new Error('not_auth');
+    const path = `${user.id}/${Date.now()}.webm`;
+    const { error } = await sb.storage.from('lesson-media').upload(path, recordedBlob.current!, { contentType: 'video/webm', upsert: false });
+    if (error) throw error;
+    const { data: pub } = sb.storage.from('lesson-media').getPublicUrl(path);
+    return pub.publicUrl;
+  }
+
+  // Mux: streaming de topo. Só quando configurado E temos IDs da aula. Cai para Storage em qualquer falha.
+  async function tryUploadToMux(): Promise<string | null> {
+    if (courseId === undefined || moduleIndex === undefined || lessonIndex === undefined) return null;
+    const sb = createClient();
+    const { data: { session } } = await sb.auth.getSession();
+    const token = session?.access_token;
+    if (!token) return null;
+    const fnUrl = `${SUPABASE_URL}/functions/v1/mux-upload`;
+    // 1) criar upload direto (devolve 503 se Mux não configurado → cai para Storage)
+    const createRes = await fetch(fnUrl, {
+      method: 'POST', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'create_upload', course_id: courseId, module_index: moduleIndex, lesson_index: lessonIndex, title: lessonTitle || 'Aula' }),
+    });
+    if (!createRes.ok) return null; // 503 mux_not_configured ou outro → Storage
+    const created = await createRes.json();
+    if (!created?.ok || !created?.upload_url) return null;
+    // 2) PUT do WebM para a URL de upload do Mux
+    const put = await fetch(created.upload_url, { method: 'PUT', headers: { 'Content-Type': 'video/webm' }, body: recordedBlob.current! });
+    if (!put.ok) return null;
+    // 3) Mux processa de forma assíncrona (webhook preenche mux_playback_id). Guardamos também a cópia Storage
+    //    como fonte imediata para o player até o Mux ficar pronto.
+    return await uploadToStorage();
+  }
+
   async function upload() {
     if (!recordedBlob.current) return;
     setPhase('uploading');
     try {
-      const sb = createClient();
-      const { data: { user } } = await sb.auth.getUser();
-      if (!user) throw new Error('not_auth');
-      const path = `${user.id}/${Date.now()}.webm`;
-      const { error } = await sb.storage.from('lesson-media').upload(path, recordedBlob.current, { contentType: 'video/webm', upsert: false });
-      if (error) throw error;
-      const { data: pub } = sb.storage.from('lesson-media').getPublicUrl(path);
-      onUploaded(pub.publicUrl);
+      let url: string | null = null;
+      try { url = await tryUploadToMux(); } catch { url = null; }
+      if (!url) url = await uploadToStorage();
+      onUploaded(url);
       toast.success(t('uploaded'));
       discard();
     } catch {
