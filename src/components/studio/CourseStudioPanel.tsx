@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Link } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
-import { Layers, Library, HelpCircle, Route, Sparkles, ExternalLink, PencilRuler, Send, Quote, Map, MessagesSquare } from 'lucide-react';
+import { Layers, Library, HelpCircle, Route, Sparkles, ExternalLink, PencilRuler, Send, Quote, Map, MessagesSquare, BookOpen, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Lesson { m: number; l: number; title: string; cards: number }
@@ -104,6 +104,15 @@ export function CourseStudioPanel({ courseId }: { courseId: string }) {
 
   return (
     <div>
+      <Link href={`/admin/estudio/${courseId}` as any}
+        className="group mb-5 flex items-center gap-3 rounded-2xl border border-brand-200 bg-gradient-to-br from-brand-50 to-white p-4 hover:shadow-md transition-all">
+        <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-brand-600 text-white shrink-0 group-hover:scale-105 transition-transform"><BookOpen className="h-5 w-5" /></span>
+        <div className="min-w-0">
+          <div className="font-display text-base font-bold text-slate-900 leading-tight">{t('course_ws.studio.open_full')}</div>
+          <div className="text-xs text-slate-500">{t('course_ws.studio.open_full_hint')}</div>
+        </div>
+        <ArrowRight className="h-5 w-5 text-brand-600 ml-auto shrink-0 group-hover:translate-x-0.5 transition-transform" />
+      </Link>
       <div className="grid sm:grid-cols-2 gap-4">
         <GenCard icon={Layers} title={t('course_ws.studio.flashcards')} sub={withCards + '/' + total + ' ' + t('course_ws.studio.u_lessons_cards')} busy={busy === 'flashcards'} progress={busy === 'flashcards' ? progress : null} generating={generating}
           actions={[
@@ -153,7 +162,7 @@ export function CourseStudioPanel({ courseId }: { courseId: string }) {
       </div>
 
       <div className="flex flex-wrap gap-4 mt-6 text-sm">
-        <Link href={'/admin/estudio/flashcards' as any} className="inline-flex items-center gap-1.5 font-semibold text-brand-600 hover:text-brand-700"><PencilRuler className="h-4 w-4" /> {t('course_ws.studio.edit_flashcards')}</Link>
+        <Link href={`/admin/estudio/${courseId}` as any} className="inline-flex items-center gap-1.5 font-semibold text-brand-600 hover:text-brand-700"><PencilRuler className="h-4 w-4" /> {t('course_ws.studio.edit_flashcards')}</Link>
         <Link href={`/learn/curso/${courseId}/guia` as any} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 font-semibold text-brand-600 hover:text-brand-700"><ExternalLink className="h-4 w-4" /> {t('course_ws.studio.view_guide')}</Link>
         <Link href={`/learn/curso/${courseId}/mapa` as any} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 font-semibold text-brand-600 hover:text-brand-700"><Map className="h-4 w-4" /> {t('course_ws.studio.view_map')}</Link>
       </div>
