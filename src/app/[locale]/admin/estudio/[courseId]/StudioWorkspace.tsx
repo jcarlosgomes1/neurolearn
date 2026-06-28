@@ -5,21 +5,24 @@ import { createClient } from '@/lib/supabase/client';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { Layers, Library, HelpCircle, Route, Sparkles, ArrowLeft, Plus, Trash2, Save } from 'lucide-react';
+import { Layers, Library, HelpCircle, Route, FileText, Sparkles, ArrowLeft, Plus, Trash2, Save, ShieldCheck } from 'lucide-react';
 
-type Tab = 'flashcards' | 'glossary' | 'faq' | 'timeline';
+type Tab = 'flashcards' | 'glossary' | 'faq' | 'timeline' | 'sources';
 
 interface Overview { ok?: boolean; title?: string; glossary?: number; faq?: number; timeline?: number; lessons?: { m: number; l: number; title: string; cards: number }[] }
 interface Flashcard { id: string; module_index: number; lesson_index: number; front: string; back: string; hint: string | null }
 interface GlossaryTerm { id: string; term: string; definition: string }
 interface FaqItem { id: string; question: string; answer: string }
 interface TimelineStep { id: string; label: string; detail: string | null }
+interface Source { id: string; title: string; kind: string; origin_url: string | null; rights_flag: string | null; lang: string | null; summary: string | null; citations: number }
+interface Policy { require_attribution?: boolean; show_provenance_to_learner?: boolean; max_quote_words?: number }
 
 const TABS: { key: Tab; icon: React.ElementType; color: string }[] = [
   { key: 'flashcards', icon: Layers, color: 'text-violet-600' },
   { key: 'glossary', icon: Library, color: 'text-emerald-600' },
   { key: 'faq', icon: HelpCircle, color: 'text-amber-600' },
   { key: 'timeline', icon: Route, color: 'text-blue-600' },
+  { key: 'sources', icon: FileText, color: 'text-slate-600' },
 ];
 
 export function StudioWorkspace({ courseId, courseTitle }: { courseId: string; courseTitle: string }) {
@@ -34,6 +37,9 @@ export function StudioWorkspace({ courseId, courseTitle }: { courseId: string; c
   const [glossary, setGlossary] = useState<GlossaryTerm[]>([]);
   const [faq, setFaq] = useState<FaqItem[]>([]);
   const [timeline, setTimeline] = useState<TimelineStep[]>([]);
+  const [sources, setSources] = useState<Source[]>([]);
+  const [policy, setPolicy] = useState<Policy | null>(null);
+  const [newSrc, setNewSrc] = useState({ title: '', origin_url: '', summary: '', rights_flag: 'unknown' });
   const [loading, setLoading] = useState(false);
 
   async function rpcOk(fn: string, args: Record<string, unknown>) {
@@ -54,6 +60,7 @@ export function StudioWorkspace({ courseId, courseTitle }: { courseId: string; c
       if (which === 'glossary') { const r = await sb.rpc('nl_glossary_for_course', { p_course_id: courseId }); setGlossary(((r.data as { terms?: GlossaryTerm[] })?.terms) || []); }
       else if (which === 'faq') { const r = await sb.rpc('nl_faq_for_course', { p_course_id: courseId }); setFaq(((r.data as { faq?: FaqItem[] })?.faq) || []); }
       else if (which === 'timeline') { const r = await sb.rpc('nl_timeline_for_course', { p_course_id: courseId }); setTimeline(((r.data as { steps?: TimelineStep[] })?.steps) || []); }
+      else if (which === 'sources') { const r = await sb.rpc('nl_course_sources_list', { p_course_id: courseId }); const d = r.data as { sources?: Source[]; policy?: Policy }; setSources(d?.sources || []); setPolicy(d?.policy || null); }
       else if (which === 'flashcards' && ov?.lessons) {
         const all: Flashcard[] = [];
         for (const les of ov.lessons.filter((l) => l.cards > 0)) {
@@ -110,6 +117,22 @@ export function StudioWorkspace({ courseId, courseTitle }: { courseId: string; c
   async function saveTimeline() {
     try { await rpcOk('nl_timeline_set', { p_course_id: courseId, p_steps: timeline.map((s) => ({ label: s.label, detail: s.detail || '' })) }); toast.success(t('studio.saved')); await loadOv(); }
     catch (e) { toast.error(e instanceof Error ? e.message : 'Erro'); }
+  }
+
+  async function addSource() {
+    if (!newSrc.title.trim()) { toast.error(t('studio.source_title')); return; }
+    try {
+      await rpcOk('nl_course_source_upsert', { p_id: null, p_course_id: courseId, p_title: newSrc.title, p_kind: 'url', p_origin_url: newSrc.origin_url || null, p_rights_flag: newSrc.rights_flag, p_lang: null, p_summary: newSrc.summary || null, p_module_index: null, p_lesson_index: null });
+      setNewSrc({ title: '', origin_url: '', summary: '', rights_flag: 'unknown' });
+      toast.success(t('studio.saved')); await loadTab('sources');
+    } catch (e) { toast.error(e instanceof Error ? e.message : 'Erro'); }
+  }
+  async function delSource(id: string) {
+    try { await rpcOk('nl_course_source_delete', { p_id: id }); setSources((p) => p.filter((x) => x.id !== id)); toast.success(t('studio.saved')); }
+    catch (e) { toast.error(e instanceof Error ? e.message : 'Erro'); }
+  }
+  function rightsLabel(f: string | null): string {
+    return t('studio.rights_' + (f === 'licensed' ? 'licensed' : f === 'owned' ? 'owned' : f === 'public_domain' ? 'public' : 'unknown'));
   }
 
   const inputCls = 'w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-brand-400 focus:outline-none';
@@ -217,6 +240,49 @@ export function StudioWorkspace({ courseId, courseTitle }: { courseId: string; c
             <button onClick={() => setTimeline((p) => [...p, { id: '', label: '', detail: '' }])} className="inline-flex items-center gap-1 rounded-lg bg-slate-100 hover:bg-slate-200 px-3 py-2 text-xs font-semibold text-slate-700"><Plus className="h-3.5 w-3.5" /> {t('studio.add')}</button>
             <button onClick={saveTimeline} className="inline-flex items-center gap-1 rounded-lg bg-brand-600 hover:bg-brand-700 px-3 py-2 text-xs font-semibold text-white"><Save className="h-3.5 w-3.5" /> {t('studio.save')}</button>
           </div>
+        </div>
+      )}
+
+      {/* SOURCES */}
+      {!loading && tab === 'sources' && (
+        <div className="space-y-4">
+          {policy?.show_provenance_to_learner && (
+            <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs text-slate-500 flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4 text-emerald-600" /> {t('studio.provenance')} · {t('studio.rights')} · máx. {policy?.max_quote_words || 25} {t('studio.citations_count')}
+            </div>
+          )}
+          {/* Anexar nova fonte */}
+          <div className="rounded-2xl border border-slate-200 bg-white p-4 space-y-2">
+            <input value={newSrc.title} onChange={(e) => setNewSrc({ ...newSrc, title: e.target.value })} placeholder={t('studio.source_title')} className={inputCls} />
+            <input value={newSrc.origin_url} onChange={(e) => setNewSrc({ ...newSrc, origin_url: e.target.value })} placeholder={t('studio.source_url')} className={inputCls} />
+            <textarea value={newSrc.summary} onChange={(e) => setNewSrc({ ...newSrc, summary: e.target.value })} placeholder={t('studio.source_summary')} rows={2} className={inputCls} />
+            <div className="flex flex-wrap gap-2 items-center">
+              <select value={newSrc.rights_flag} onChange={(e) => setNewSrc({ ...newSrc, rights_flag: e.target.value })} className="rounded-lg border border-slate-200 px-3 py-2 text-sm">
+                <option value="unknown">{t('studio.rights_unknown')}</option>
+                <option value="owned">{t('studio.rights_owned')}</option>
+                <option value="licensed">{t('studio.rights_licensed')}</option>
+                <option value="public_domain">{t('studio.rights_public')}</option>
+              </select>
+              <button onClick={addSource} className="inline-flex items-center gap-1 rounded-lg bg-brand-600 hover:bg-brand-700 px-3 py-2 text-xs font-semibold text-white"><Plus className="h-3.5 w-3.5" /> {t('studio.add_source')}</button>
+            </div>
+          </div>
+          {/* Lista de fontes */}
+          {sources.length === 0 ? <p className="text-sm text-slate-400 text-center py-6">{t('studio.no_sources')}</p> :
+            sources.map((s) => (
+              <div key={s.id} className="rounded-xl border border-slate-200 bg-white p-4 flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-semibold text-slate-900 text-sm">{s.title}</span>
+                    <span className={'text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded ' + (s.rights_flag === 'licensed' || s.rights_flag === 'owned' || s.rights_flag === 'public_domain' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700')}>{rightsLabel(s.rights_flag)}</span>
+                    {s.citations > 0 && <span className="text-[10px] text-slate-400">{s.citations} {t('studio.citations_count')}</span>}
+                  </div>
+                  {s.origin_url && <a href={s.origin_url} target="_blank" rel="noreferrer" className="text-xs text-brand-600 hover:underline break-all">{s.origin_url}</a>}
+                  {s.summary && <p className="text-xs text-slate-500 mt-1">{s.summary}</p>}
+                </div>
+                <button onClick={() => delSource(s.id)} className="rounded-lg bg-rose-50 hover:bg-rose-100 p-2 text-rose-600 shrink-0"><Trash2 className="h-4 w-4" /></button>
+              </div>
+            ))
+          }
         </div>
       )}
     </div>
