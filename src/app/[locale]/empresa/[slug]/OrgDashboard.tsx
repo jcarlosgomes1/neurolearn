@@ -202,6 +202,7 @@ export function OrgDashboard({ data }: { data: unknown }) {
           <Chip href={`/empresa/${org.slug}/percursos`} icon={Route} label={t('org.dash.nav_paths')} />
           <Chip href={`/empresa/${org.slug}/turmas`} icon={GraduationCap} label={t('org.dash.nav_cohorts')} />
           <Chip href={`/empresa/${org.slug}/autoria`} icon={PenLine} label={t('academy.authoring.nav')} />
+          <Chip href={`/empresa/${org.slug}/estudio`} icon={Sparkles} label={t('org_studio.title')} />
         </NavGroup>
         <NavGroup title={t('academy.group.pessoas')}>
           <Chip href={`/empresa/${org.slug}/cursos-subscritos`} icon={BookOpen} label={t('org.dash.nav_subscribed')} />
