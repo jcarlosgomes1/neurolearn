@@ -15,7 +15,7 @@ interface Session { email: string; area: 'student' | 'instructor' | 'admin'; are
 
 const ICONS: Record<string, typeof BookOpen> = { BookOpen, Route, Sparkles, Building2, Newspaper, Star, Gem, BookMarked, Milestone };
 
-export function HeaderClient({ session, nav }: { session: Session | null; nav: NavItem[] }) {
+export function HeaderClient({ session, nav, menuStyle = 'underline' }: { session: Session | null; nav: NavItem[]; menuStyle?: string }) {
   const t = useTranslations();
   const locale = useLocale();
   const [open, setOpen] = useState(false);
@@ -52,19 +52,69 @@ export function HeaderClient({ session, nav }: { session: Session | null; nav: N
             <BrandLogo iconClassName="transition-transform group-hover:scale-110" textClassName="text-lg tracking-tight" />
           </Link>
 
-          <nav className="hidden md:flex items-stretch h-full">
-            {NAV.map((item) => {
-              const active = isActive(item.href);
-              return (
-                <Link key={item.href} href={item.href as any}
-                  className={`group relative flex flex-col items-center justify-center h-full px-3 lg:px-4 min-w-[60px] gap-0.5 text-[11px] font-medium transition-colors ${active ? 'text-brand-700' : 'text-slate-500 hover:text-slate-900'}`}>
-                  <item.Icon className="h-[18px] w-[18px]" strokeWidth={active ? 2.4 : 2} />
-                  <span>{item.label}</span>
-                  <span className={`absolute bottom-0 left-2.5 right-2.5 h-[2.5px] rounded-full transition-colors ${active ? 'bg-brand-600' : 'bg-transparent group-hover:bg-slate-200'}`} />
-                </Link>
-              );
-            })}
-          </nav>
+          {/* Nav desktop — estilo governado por menuStyle (tokens.menu.style na BD) */}
+          {menuStyle === 'icons' && (
+            <nav className="hidden md:flex items-stretch h-full">
+              {NAV.map((item) => {
+                const active = isActive(item.href);
+                return (
+                  <Link key={item.href} href={item.href as any}
+                    className="group relative flex flex-col items-center justify-center h-full px-3 lg:px-4 min-w-[60px] gap-0.5 text-[11px] font-medium transition-colors"
+                    style={{ color: active ? 'var(--accent)' : 'var(--ink-2)' }}>
+                    <item.Icon className="h-[18px] w-[18px]" strokeWidth={active ? 2.4 : 2} />
+                    <span>{item.label}</span>
+                    <span className="absolute bottom-0 left-2.5 right-2.5 h-[2.5px] rounded-full" style={{ background: active ? 'var(--accent)' : 'transparent' }} />
+                  </Link>
+                );
+              })}
+            </nav>
+          )}
+
+          {menuStyle === 'underline' && (
+            <nav className="hidden md:flex items-stretch h-full gap-1">
+              {NAV.map((item) => {
+                const active = isActive(item.href);
+                return (
+                  <Link key={item.href} href={item.href as any}
+                    className="group relative flex items-center h-full px-3 lg:px-4 text-sm font-medium transition-colors"
+                    style={{ color: active ? 'var(--ink)' : 'var(--ink-2)' }}>
+                    <span>{item.label}</span>
+                    <span className="absolute left-3 right-3 lg:left-4 lg:right-4 bottom-0 h-0.5 rounded-full transition-opacity" style={{ background: 'var(--accent)', opacity: active ? 1 : 0 }} />
+                  </Link>
+                );
+              })}
+            </nav>
+          )}
+
+          {menuStyle === 'pill' && (
+            <nav className="hidden md:flex items-center gap-1">
+              {NAV.map((item) => {
+                const active = isActive(item.href);
+                return (
+                  <Link key={item.href} href={item.href as any}
+                    className="text-sm font-medium px-3 py-1.5 rounded-lg transition-colors"
+                    style={active ? { color: 'var(--accent)', background: 'var(--accent-tint)' } : { color: 'var(--ink-2)' }}>
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </nav>
+          )}
+
+          {menuStyle === 'minimal' && (
+            <nav className="hidden md:flex items-center gap-7">
+              {NAV.map((item) => {
+                const active = isActive(item.href);
+                return (
+                  <Link key={item.href} href={item.href as any}
+                    className="text-sm transition-colors"
+                    style={{ color: active ? 'var(--ink)' : 'var(--ink-3)', fontWeight: active ? 600 : 500 }}>
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </nav>
+          )}
 
           <div className="flex items-center gap-1 sm:gap-2">
             <Link href={'/search' as any} aria-label={t('nav.search')}

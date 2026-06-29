@@ -39,7 +39,7 @@ export default function FooterClient({ data, platform, solutions, company, legal
 
   return (
     <footer className="bg-slate-900 text-slate-400">
-      <div className="max-w-6xl mx-auto px-4 py-14">
+      <div className="mx-auto px-4 py-14" style={{ maxWidth: 'var(--page-max, 72rem)' }}>
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-6">
           <div className="lg:col-span-2">
             <BrandLogo className="text-white text-lg" />
