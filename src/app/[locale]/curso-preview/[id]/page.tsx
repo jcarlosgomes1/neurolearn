@@ -53,7 +53,7 @@ export default async function CoursePreviewPage({ params }: { params: Promise<{ 
   return (
     <>
       <Header />
-      <main className="min-h-screen overflow-x-hidden" style={{ backgroundColor: PAPER }}>
+      <main className="min-h-screen [overflow-x:clip]" style={{ backgroundColor: PAPER }}>
 
         {/* ===== HERO — imagem + transformação + decisão sempre visível ===== */}
         <section className="relative">
@@ -173,7 +173,7 @@ export default async function CoursePreviewPage({ params }: { params: Promise<{ 
                         <div className="flex items-baseline gap-4">
                           <span className="font-display font-bold tabular-nums flex-shrink-0" style={{ fontSize: '1.5rem', color: 'rgb(213 124 95)', lineHeight: 1 }}>{String(i + 1).padStart(2, '0')}</span>
                           <div className="min-w-0 flex-1">
-                            <h3 className="font-semibold" style={{ fontSize: '1.1rem', color: INK }}>{m.title || m.name || t('cdp.module_n', { n: i + 1 })}</h3>
+                            <h3 className="font-semibold" style={{ fontSize: '1.1rem', color: INK }}>{((m.title || m.name || t('cdp.module_n', { n: i + 1 })) as string).replace(/^M[oó]dulo\s*\d+\s*[:\-–.]\s*/i, '')}</h3>
                             {m.description && <p className="mt-1.5 text-sm leading-relaxed" style={{ color: INK2 }}>{m.description}</p>}
                             {Array.isArray(m.lessons) && m.lessons.length > 0 && (
                               <ul className="mt-3 space-y-2">
