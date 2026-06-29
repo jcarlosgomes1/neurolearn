@@ -35,7 +35,7 @@ export function LanguageSwitcher() {
         });
       }}
       disabled={pending}
-      className="text-sm bg-transparent border border-slate-200 rounded-md px-2 py-1 cursor-pointer hover:border-slate-300 transition-colors disabled:opacity-50"
+      className="text-sm bg-transparent border border-[var(--line)] rounded-md px-2 py-1 cursor-pointer hover:border-[var(--line)] transition-colors disabled:opacity-50"
       aria-label="Language"
     >
       {LANGS.map((l) => (

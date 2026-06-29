@@ -29,7 +29,7 @@ export function PageHero({
   const centered = align === 'center';
   const pad = variant === 'plain' ? 'pt-10 pb-10 sm:py-14 lg:py-16' : 'pt-12 pb-14 sm:py-20 lg:py-24';
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-brand-50 via-white to-brand-100/40 border-b border-slate-200/60">
+    <section className="relative overflow-hidden bg-gradient-to-br from-brand-50 via-white to-brand-100/40 border-b border-[var(--line)]">
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute -top-32 left-[10%] h-96 w-96 rounded-full bg-brand-400/30 blur-3xl animate-pulse" />
         <div className="absolute top-8 right-[8%] h-80 w-80 rounded-full bg-brand-300/30 blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
@@ -43,11 +43,11 @@ export function PageHero({
             <span className="text-xs font-semibold uppercase tracking-[0.18em] truncate">{badge}</span>
           </div>
         )}
-        <h1 className="t-h1 text-slate-900 text-balance">
+        <h1 className="t-h1 text-[var(--ink)] text-balance">
           {title}{titleAccent ? <span className="bg-gradient-to-r from-brand-600 to-brand-500 bg-clip-text text-transparent">{titleAccent}</span> : null}
         </h1>
         {subtitle && (
-          <p className={`mt-4 sm:mt-5 text-base sm:text-lg text-slate-600 text-pretty leading-relaxed ${centered ? 'max-w-2xl mx-auto' : 'max-w-3xl'}`}>{subtitle}</p>
+          <p className={`mt-4 sm:mt-5 text-base sm:text-lg text-[var(--ink-2)] text-pretty leading-relaxed ${centered ? 'max-w-2xl mx-auto' : 'max-w-3xl'}`}>{subtitle}</p>
         )}
         {children && <div className={`mt-7 flex flex-wrap gap-3 ${centered ? 'justify-center' : ''}`}>{children}</div>}
       </div>
