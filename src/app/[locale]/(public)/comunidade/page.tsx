@@ -36,7 +36,7 @@ export default async function Page() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <main className="min-h-screen bg-[var(--paper)]">
       <PageHero
         icon={Users} badge={t('community.badge')}
         title={t('community.title')}
@@ -44,7 +44,7 @@ export default async function Page() {
       />
       <div className="mx-auto max-w-3xl px-6 py-8">
         {!enabled ? (
-          <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-slate-500">{t('community.unavailable')}</div>
+          <div className="rounded-2xl border border-[var(--line)] bg-[var(--card)] p-8 text-center text-[var(--ink-3)]">{t('community.unavailable')}</div>
         ) : (
           <CommunityClient initialPosts={posts as never} initialReplies={replies as never} likedIds={likedIds} isAuthed={!!user} channels={(channels as never) ?? []} />
         )}

@@ -43,31 +43,31 @@ export default async function Page() {
     <>
       <Header />
       <main className="bg-white">
-        <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 to-slate-950 text-white">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(99,102,241,0.2),transparent_60%)]" />
+        <section className="relative overflow-hidden bg-[var(--ink)] text-white">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(201,100,66,0.25),transparent_60%)]" />
           <div className="relative max-w-4xl mx-auto px-4 sm:px-6 py-20 sm:py-28 text-center">
-            <Rocket className="h-12 w-12 mx-auto mb-5 text-violet-400" />
+            <Rocket className="h-12 w-12 mx-auto mb-5 text-[var(--accent-bright)]" />
             <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-5">{t('cl.h1')}</h1>
-            <p className="text-lg text-slate-300 max-w-xl mx-auto">{t('cl.hero_sub')}</p>
+            <p className="text-lg text-white/70 max-w-xl mx-auto">{t('cl.hero_sub')}</p>
           </div>
         </section>
 
-        <section className="py-16 bg-gradient-to-b from-slate-50 to-white">
+        <section className="py-16 bg-gradient-to-b from-[var(--paper)] to-[var(--card)]">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 space-y-8">
             {RELEASES.map(r => (
-              <article key={r.version} className="bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+              <article key={r.version} className="rounded-2xl border border-[var(--line)] bg-[var(--card)] overflow-hidden hover:shadow-md transition-shadow">
+                <div className="flex items-center justify-between border-b border-[var(--line)] px-6 py-4">
                   <div className="flex items-center gap-3">
-                    <div className="inline-flex h-9 w-9 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 text-white items-center justify-center font-bold text-xs">
+                    <div className="inline-flex h-9 w-9 rounded-lg bg-gradient-to-br from-[var(--accent)] to-[var(--accent-bright)] text-white items-center justify-center font-bold text-xs">
                       {r.version.replace('v','')}
                     </div>
                     <div>
-                      <div className="font-bold text-slate-900">{r.version}</div>
-                      <div className="text-[10px] uppercase tracking-wider text-slate-500">{t(r.dateKey)}</div>
+                      <div className="font-bold text-[var(--ink)]">{r.version}</div>
+                      <div className="text-[10px] uppercase tracking-wider text-[var(--ink-3)]">{t(r.dateKey)}</div>
                     </div>
                   </div>
                 </div>
-                <ul className="divide-y divide-slate-100">
+                <ul className="divide-y divide-[var(--line)]">
                   {r.items.map((item, i) => {
                     const meta = TYPE_META[item.type];
                     const Icon = meta.icon;
@@ -76,7 +76,7 @@ export default async function Page() {
                         <span className={`inline-flex items-center gap-1 text-[9px] px-1.5 py-0.5 rounded border font-bold uppercase tracking-wider flex-shrink-0 mt-0.5 ${meta.cls}`}>
                           <Icon className="h-2.5 w-2.5" /> {t(meta.labelKey)}
                         </span>
-                        <span className="text-sm text-slate-700 leading-relaxed">{t(item.textKey)}</span>
+                        <span className="text-sm text-[var(--ink-2)] leading-relaxed">{t(item.textKey)}</span>
                       </li>
                     );
                   })}
@@ -86,12 +86,12 @@ export default async function Page() {
           </div>
         </section>
 
-        <section className="py-16 bg-slate-50">
+        <section className="py-16 bg-[var(--paper)]">
           <div className="max-w-2xl mx-auto px-4 sm:px-6 text-center">
-            <Zap className="h-10 w-10 mx-auto mb-4 text-violet-600" />
-            <h2 className="text-2xl font-bold text-slate-900 mb-3">{t('cl.suggest_h')}</h2>
-            <p className="text-sm text-slate-600 mb-6">{t('cl.suggest_p')}</p>
-            <Link href={'/contacto' as any} className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold rounded-xl">
+            <Zap className="h-10 w-10 mx-auto mb-4 text-[var(--accent)]" />
+            <h2 className="text-2xl font-bold text-[var(--ink)] mb-3">{t('cl.suggest_h')}</h2>
+            <p className="text-sm text-[var(--ink-2)] mb-6">{t('cl.suggest_p')}</p>
+            <Link href={'/contacto' as any} className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[var(--accent)] hover:brightness-110 text-white text-sm font-semibold rounded-xl">
               {t('cl.suggest_btn')} <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>

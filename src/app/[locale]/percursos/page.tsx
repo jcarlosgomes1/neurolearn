@@ -52,9 +52,9 @@ export default async function PublicLearningPathsPage({ params }: { params: Prom
         { name: t('nav.learning_paths'), href: `/${locale}/percursos` },
       ]} baseUrl={SITE_URL} />
       <Header />
-      <main className="bg-white min-h-screen">
+      <main className="min-h-screen" style={{ background: 'var(--paper)' }}>
         <PageHero badge={t('nav.learning_paths')} title={t('path.h1')} subtitle={t('path.sub')} />
-        <section className="max-w-6xl mx-auto px-4 py-10">
+        <section className="mx-auto px-4 py-10" style={{ maxWidth: 'var(--page-max, 72rem)' }}>
           {paths.length === 0 ? <PathsEmptyState /> : <PathsGrid paths={paths} basePath="/percursos" />}
         </section>
         <Footer data={blocks.footer_brand || {}} />
