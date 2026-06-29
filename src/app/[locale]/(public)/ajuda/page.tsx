@@ -2,6 +2,7 @@ import { seoMetadata } from '@/lib/seo';
 import { Link } from '@/i18n/routing';
 import { getTranslations } from 'next-intl/server';
 import { PageHero } from '@/components/shared/PageHero';
+import { PageWidth } from '@/components/shared/PageWidth';
 import { createClient } from '@/lib/supabase/server';
 import { Search, HelpCircle, User, BookOpen, CreditCard, Award, Building2, ShieldCheck, ArrowRight, Mail } from 'lucide-react';
 
@@ -12,15 +13,15 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 const CAT_ORDER = ['account', 'courses', 'billing', 'certificates', 'business', 'privacy'];
-const CAT_UI: Record<string, { icon: any; cls: string }> = {
-  account: { icon: User, cls: 'from-violet-500 to-indigo-600' },
-  courses: { icon: BookOpen, cls: 'from-emerald-500 to-teal-600' },
-  billing: { icon: CreditCard, cls: 'from-amber-500 to-orange-600' },
-  certificates: { icon: Award, cls: 'from-fuchsia-500 to-pink-600' },
-  business: { icon: Building2, cls: 'from-blue-500 to-cyan-600' },
-  privacy: { icon: ShieldCheck, cls: 'from-rose-500 to-red-600' },
+const CAT_UI: Record<string, { icon: any; fam: string }> = {
+  account: { icon: User, fam: 'denim' },
+  courses: { icon: BookOpen, fam: 'sage' },
+  billing: { icon: CreditCard, fam: 'saffron' },
+  certificates: { icon: Award, fam: 'plum' },
+  business: { icon: Building2, fam: 'teal' },
+  privacy: { icon: ShieldCheck, fam: 'terra' },
 };
-const FALLBACK_UI = { icon: HelpCircle, cls: 'from-slate-500 to-slate-700' };
+const FALLBACK_UI = { icon: HelpCircle, fam: 'denim' };
 
 type Row = { category: string; slug: string; title: string; sort: number };
 type Hit = { slug: string; title: string; category: string; snippet: string };
@@ -63,40 +64,41 @@ export default async function Page({
   };
 
   return (
-    <main className="bg-white min-h-screen">
+    <main className="min-h-screen" style={{ background: 'var(--paper)' }}>
       <PageHero
         icon={HelpCircle} badge={t('aj.badge')}
         title={t('aj.h1_pre')}
         titleAccent={t('aj.h1_accent')}
       >
         <form action={`/${locale}/ajuda`} method="get" className="relative w-full max-w-xl">
-          <Search className="h-5 w-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search className="h-5 w-5 absolute left-4 top-1/2 -translate-y-1/2" style={{ color: 'var(--ink-3)' }} />
           <input
             type="search"
             name="q"
             defaultValue={query}
             placeholder={t('aj.search_ph')}
-            className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-200 bg-white text-slate-900 placeholder-slate-400 shadow-lg outline-none focus:border-brand-500"
+            className="w-full pl-12 pr-4 py-3.5 rounded-2xl shadow-lg outline-none"
+            style={{ border: '1px solid var(--line)', background: 'var(--card)', color: 'var(--ink)' }}
           />
         </form>
       </PageHero>
 
       {query ? (
-        <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
-          <h2 className="t-h2 text-slate-900">{t('help.search.results_title', { q: query })}</h2>
-          <p className="mt-1 text-sm text-slate-500">{t('help.search.count', { n: results.length })}</p>
+        <section className="mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20" style={{ maxWidth: '48rem' }}>
+          <h2 className="t-h2" style={{ color: 'var(--ink)' }}>{t('help.search.results_title', { q: query })}</h2>
+          <p className="mt-1 text-sm" style={{ color: 'var(--ink-3)' }}>{t('help.search.count', { n: results.length })}</p>
           {results.length === 0 ? (
-            <div className="mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-8 text-center text-slate-600">
+            <div className="mt-8 rounded-2xl p-8 text-center" style={{ border: '1px solid var(--line)', background: 'var(--card)', color: 'var(--ink-2)' }}>
               {t('help.search.none', { q: query })}
             </div>
           ) : (
             <ul className="mt-6 space-y-3">
               {results.map((h) => (
                 <li key={h.slug}>
-                  <Link href={`/ajuda/${h.slug}` as any} className="block rounded-2xl border border-slate-200 p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all">
-                    <div className="text-xs font-semibold text-blue-600 mb-1">{catLabel(h.category)}</div>
-                    <div className="font-bold text-slate-900">{h.title}</div>
-                    <div className="text-sm text-slate-500 mt-1 line-clamp-2">{h.snippet}…</div>
+                  <Link href={`/ajuda/${h.slug}` as any} className="block rounded-2xl p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all" style={{ border: '1px solid var(--line)', background: 'var(--card)' }}>
+                    <div className="text-xs font-semibold mb-1" style={{ color: 'var(--accent)' }}>{catLabel(h.category)}</div>
+                    <div className="font-bold" style={{ color: 'var(--ink)' }}>{h.title}</div>
+                    <div className="text-sm mt-1 line-clamp-2" style={{ color: 'var(--ink-3)' }}>{h.snippet}…</div>
                   </Link>
                 </li>
               ))}
@@ -104,23 +106,23 @@ export default async function Page({
           )}
         </section>
       ) : (
-        <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
-          <h2 className="t-h2 text-slate-900 mb-8">{t('help.browse_title')}</h2>
+        <PageWidth py="py-16 sm:py-20">
+          <h2 className="t-h2 mb-8" style={{ color: 'var(--ink)' }}>{t('help.browse_title')}</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {cats.map((c) => {
               const ui = CAT_UI[c] || FALLBACK_UI;
               const Icon = ui.icon;
               return (
-                <div key={c} className="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-xl hover:-translate-y-1 transition-all">
-                  <div className={`inline-flex h-11 w-11 rounded-xl bg-gradient-to-br ${ui.cls} text-white items-center justify-center mb-4 shadow-md`}>
+                <div key={c} className="rounded-2xl p-6 hover:shadow-xl hover:-translate-y-1 transition-all" style={{ background: 'var(--card)', border: '1px solid var(--line)', boxShadow: 'var(--nl-surface-shadow)' }}>
+                  <div className="inline-flex h-11 w-11 rounded-xl text-white items-center justify-center mb-4 shadow-md" style={{ background: `linear-gradient(135deg, var(--${ui.fam}-base), var(--${ui.fam}-deep))` }}>
                     <Icon className="h-5 w-5" />
                   </div>
-                  <h3 className="t-h3 text-slate-900 mb-3">{catLabel(c)}</h3>
+                  <h3 className="t-h3 mb-3" style={{ color: 'var(--ink)' }}>{catLabel(c)}</h3>
                   <ul className="space-y-1.5">
                     {(byCat.get(c) || []).map((a) => (
                       <li key={a.slug}>
-                        <Link href={`/ajuda/${a.slug}` as any} className="text-sm text-slate-600 hover:text-slate-900 inline-flex items-center gap-1 hover:gap-1.5 transition-all">
-                          <ArrowRight className="h-3 w-3 text-slate-400" /> {a.title}
+                        <Link href={`/ajuda/${a.slug}` as any} className="text-sm inline-flex items-center gap-1 hover:gap-1.5 transition-all" style={{ color: 'var(--ink-2)' }}>
+                          <ArrowRight className="h-3 w-3" style={{ color: 'var(--ink-3)' }} /> {a.title}
                         </Link>
                       </li>
                     ))}
@@ -129,19 +131,19 @@ export default async function Page({
               );
             })}
           </div>
-        </section>
+        </PageWidth>
       )}
 
-      <section className="bg-slate-50 py-20 border-t border-slate-200/60">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="t-h2 text-slate-900">{t('aj.cta_title')}</h2>
-          <p className="mt-3 text-slate-600">{t('aj.cta_desc')}</p>
+      <section className="py-20 border-t" style={{ background: 'color-mix(in srgb, var(--paper) 60%, var(--card))', borderColor: 'var(--line)' }}>
+        <div className="mx-auto px-4 sm:px-6 lg:px-8 text-center" style={{ maxWidth: '48rem' }}>
+          <h2 className="t-h2" style={{ color: 'var(--ink)' }}>{t('aj.cta_title')}</h2>
+          <p className="mt-3" style={{ color: 'var(--ink-2)' }}>{t('aj.cta_desc')}</p>
           <div className="mt-6 grid sm:grid-cols-1 max-w-md mx-auto">
             <Link href={{ pathname: '/contacto', query: { topic: 'support', from: '/ajuda' } } as any}
-              className="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-lg transition-all group">
-              <Mail className="h-6 w-6 text-blue-600 mx-auto mb-2 group-hover:scale-110 transition-transform" />
-              <div className="font-bold text-slate-900">{t('aj.send_msg')}</div>
-              <div className="text-xs text-slate-500 mt-1">{t('aj.send_sub')}</div>
+              className="rounded-2xl p-6 hover:shadow-lg transition-all group" style={{ background: 'var(--card)', border: '1px solid var(--line)' }}>
+              <Mail className="h-6 w-6 mx-auto mb-2 group-hover:scale-110 transition-transform" style={{ color: 'var(--accent)' }} />
+              <div className="font-bold" style={{ color: 'var(--ink)' }}>{t('aj.send_msg')}</div>
+              <div className="text-xs mt-1" style={{ color: 'var(--ink-3)' }}>{t('aj.send_sub')}</div>
             </Link>
           </div>
         </div>
