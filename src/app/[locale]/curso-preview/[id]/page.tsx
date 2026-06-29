@@ -53,7 +53,7 @@ export default async function CoursePreviewPage({ params }: { params: Promise<{ 
   return (
     <>
       <Header />
-      <main className="min-h-screen [overflow-x:clip]" style={{ backgroundColor: PAPER }}>
+      <main className="min-h-screen" style={{ backgroundColor: PAPER }}>
 
         {/* ===== HERO — imagem + transformação + decisão sempre visível ===== */}
         <section className="relative">
@@ -170,10 +170,11 @@ export default async function CoursePreviewPage({ params }: { params: Promise<{ 
                   {modules.map((m: any, i: number) => (
                     <div key={i} className="bg-white transition-colors hover:bg-[rgb(250,249,245)]" style={{ borderTop: i > 0 ? `1px solid ${LINE}` : 'none' }}>
                       <div className="p-5 sm:p-6">
-                        <div className="flex items-baseline gap-4">
-                          <span className="font-display font-bold tabular-nums flex-shrink-0" style={{ fontSize: '1.5rem', color: 'rgb(213 124 95)', lineHeight: 1 }}>{String(i + 1).padStart(2, '0')}</span>
-                          <div className="min-w-0 flex-1">
-                            <h3 className="font-semibold" style={{ fontSize: '1.1rem', color: INK }}>{((m.title || m.name || t('cdp.module_n', { n: i + 1 })) as string).replace(/^M[oó]dulo\s*\d+\s*[:\-–.]\s*/i, '')}</h3>
+                        <div className="min-w-0">
+                            <h3 className="font-semibold flex items-baseline gap-2.5" style={{ fontSize: '1.1rem', color: INK }}>
+                              <span className="font-display font-bold tabular-nums" style={{ fontSize: '0.95rem', color: 'rgb(213 124 95)' }}>{String(i + 1).padStart(2, '0')}</span>
+                              <span>{((m.title || m.name || t('cdp.module_n', { n: i + 1 })) as string).replace(/^M[oó]dulo\s*\d+\s*[:\-–.]\s*/i, '')}</span>
+                            </h3>
                             {m.description && <p className="mt-1.5 text-sm leading-relaxed" style={{ color: INK2 }}>{m.description}</p>}
                             {Array.isArray(m.lessons) && m.lessons.length > 0 && (
                               <ul className="mt-3 space-y-2">
@@ -185,7 +186,6 @@ export default async function CoursePreviewPage({ params }: { params: Promise<{ 
                                 ))}
                               </ul>
                             )}
-                          </div>
                         </div>
                       </div>
                     </div>
