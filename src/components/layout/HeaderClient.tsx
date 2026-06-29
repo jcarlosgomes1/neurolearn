@@ -46,9 +46,9 @@ export function HeaderClient({ session, nav, menuStyle = 'underline' }: { sessio
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-white border-b border-slate-200">
+      <header className="sticky top-0 z-40 bg-white border-b border-[var(--line)]">
         <div className="mx-auto w-full px-4 h-16 flex items-center justify-between gap-3" style={{ maxWidth: 'var(--page-max, 72rem)' }}>
-          <Link href="/" className="flex items-center gap-2 text-slate-900 group shrink-0">
+          <Link href="/" className="flex items-center gap-2 text-[var(--ink)] group shrink-0">
             <BrandLogo iconClassName="transition-transform group-hover:scale-110" textClassName="text-lg tracking-tight" />
           </Link>
 
@@ -118,7 +118,7 @@ export function HeaderClient({ session, nav, menuStyle = 'underline' }: { sessio
 
           <div className="flex items-center gap-1 sm:gap-2">
             <Link href={'/search' as any} aria-label={t('nav.search')}
-              className="w-9 h-9 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-700 transition-colors">
+              className="w-9 h-9 rounded-lg hover:bg-[var(--accent-tint)] flex items-center justify-center text-[var(--ink-2)] transition-colors">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
             </Link>
 
@@ -141,7 +141,7 @@ export function HeaderClient({ session, nav, menuStyle = 'underline' }: { sessio
             <button onClick={() => setOpen(!open)}
               aria-label={open ? t('nav.close_menu') : t('nav.open_menu')}
               aria-expanded={open}
-              className="md:hidden w-10 h-10 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-700 transition-colors active:scale-95">
+              className="md:hidden w-10 h-10 rounded-lg hover:bg-[var(--accent-tint)] flex items-center justify-center text-[var(--ink-2)] transition-colors active:scale-95">
               {open ? (
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M6 6l12 12M6 18L18 6"/></svg>
               ) : (
@@ -153,11 +153,11 @@ export function HeaderClient({ session, nav, menuStyle = 'underline' }: { sessio
       </header>
 
       {open && (
-        <div className="md:hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm" onClick={() => setOpen(false)}>
+        <div className="md:hidden fixed inset-0 z-50 bg-[color-mix(in_srgb,var(--ink)_40%,transparent)] backdrop-blur-sm" onClick={() => setOpen(false)}>
           <div className="absolute top-0 right-0 w-[88%] max-w-sm max-h-[100dvh] overflow-y-auto bg-white shadow-2xl flex flex-col rounded-bl-3xl" onClick={(e) => e.stopPropagation()}>
-            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-              <span className="font-bold text-slate-900">{t('nav.menu')}</span>
-              <button onClick={() => setOpen(false)} aria-label={t('nav.close_menu')} className="w-9 h-9 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-600">
+            <div className="px-5 py-4 border-b border-[var(--line)] flex items-center justify-between">
+              <span className="font-bold text-[var(--ink)]">{t('nav.menu')}</span>
+              <button onClick={() => setOpen(false)} aria-label={t('nav.close_menu')} className="w-9 h-9 rounded-lg hover:bg-[var(--accent-tint)] flex items-center justify-center text-[var(--ink-2)]">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M6 6l12 12M6 18L18 6"/></svg>
               </button>
             </div>
@@ -166,8 +166,8 @@ export function HeaderClient({ session, nav, menuStyle = 'underline' }: { sessio
             <nav className="px-3 py-4">
               {NAV.map((item) => (
                 <Link key={item.href} href={item.href as any}
-                  className="flex items-center gap-3 px-3 py-3.5 rounded-lg hover:bg-slate-50 text-slate-800 font-medium transition-colors">
-                  <item.Icon className="h-5 w-5 text-slate-400" /> {item.label}
+                  className="flex items-center gap-3 px-3 py-3.5 rounded-lg hover:bg-[var(--paper)] text-[var(--ink)] font-medium transition-colors">
+                  <item.Icon className="h-5 w-5 text-[var(--ink-3)]" /> {item.label}
                 </Link>
               ))}
 
@@ -177,25 +177,25 @@ export function HeaderClient({ session, nav, menuStyle = 'underline' }: { sessio
                 </Link>
               )}
 
-              <div className="my-3 border-t border-slate-100" />
-              <Link href={'/search' as any} className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-slate-50 text-slate-700 text-sm">
+              <div className="my-3 border-t border-[var(--line)]" />
+              <Link href={'/search' as any} className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-[var(--paper)] text-[var(--ink-2)] text-sm">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
                 {t('nav.search')}
               </Link>
               {session && (
-                <Link href={'/conta/notificacoes' as any} className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-slate-50 text-slate-700 text-sm">
+                <Link href={'/conta/notificacoes' as any} className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-[var(--paper)] text-[var(--ink-2)] text-sm">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
                 {t('nav.notifs')}
                 </Link>
               )}
-              <Link href={'/contacto' as any} className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-slate-50 text-slate-700 text-sm">
-                <Mail className="h-[18px] w-[18px] text-slate-400" /> {t('nav.contact')}
+              <Link href={'/contacto' as any} className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-[var(--paper)] text-[var(--ink-2)] text-sm">
+                <Mail className="h-[18px] w-[18px] text-[var(--ink-3)]" /> {t('nav.contact')}
               </Link>
             </nav>
 
-            <div className="px-5 py-4 border-t border-slate-100 space-y-3">
+            <div className="px-5 py-4 border-t border-[var(--line)] space-y-3">
               <div className="flex items-center justify-between gap-3">
-                <span className="text-xs text-slate-500">{t('nav.language')}</span>
+                <span className="text-xs text-[var(--ink-3)]">{t('nav.language')}</span>
                 <LanguageSwitcher />
               </div>
               {!session && (

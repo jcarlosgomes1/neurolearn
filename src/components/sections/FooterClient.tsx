@@ -38,7 +38,7 @@ export default function FooterClient({ data, platform, solutions, company, legal
   }
 
   return (
-    <footer className="bg-slate-900 text-slate-400">
+    <footer className="bg-[var(--ink)] text-white/70">
       <div className="mx-auto px-4 py-14" style={{ maxWidth: 'var(--page-max, 72rem)' }}>
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-6">
           <div className="lg:col-span-2">
@@ -47,10 +47,10 @@ export default function FooterClient({ data, platform, solutions, company, legal
               {data?.brand || strings.brandTagline}
             </p>
             <div className="mt-5 flex gap-3">
-              <a href="https://www.linkedin.com/company/neurolearn" target="_blank" rel="noopener" aria-label="LinkedIn" className="w-9 h-9 rounded-lg bg-slate-800 hover:bg-brand-600 flex items-center justify-center transition-colors text-white">in</a>
-              <a href="https://www.instagram.com/neurolearn" target="_blank" rel="noopener" aria-label="Instagram" className="w-9 h-9 rounded-lg bg-slate-800 hover:bg-brand-600 flex items-center justify-center transition-colors text-white">ig</a>
-              <a href="https://www.youtube.com/@neurolearn" target="_blank" rel="noopener" aria-label="YouTube" className="w-9 h-9 rounded-lg bg-slate-800 hover:bg-brand-600 flex items-center justify-center transition-colors text-white">yt</a>
-              <a href="https://x.com/neurolearn" target="_blank" rel="noopener" aria-label="X" className="w-9 h-9 rounded-lg bg-slate-800 hover:bg-brand-600 flex items-center justify-center transition-colors text-white">X</a>
+              <a href="https://www.linkedin.com/company/neurolearn" target="_blank" rel="noopener" aria-label="LinkedIn" className="w-9 h-9 rounded-lg bg-white/10 hover:bg-[var(--accent)] flex items-center justify-center transition-colors text-white">in</a>
+              <a href="https://www.instagram.com/neurolearn" target="_blank" rel="noopener" aria-label="Instagram" className="w-9 h-9 rounded-lg bg-white/10 hover:bg-[var(--accent)] flex items-center justify-center transition-colors text-white">ig</a>
+              <a href="https://www.youtube.com/@neurolearn" target="_blank" rel="noopener" aria-label="YouTube" className="w-9 h-9 rounded-lg bg-white/10 hover:bg-[var(--accent)] flex items-center justify-center transition-colors text-white">yt</a>
+              <a href="https://x.com/neurolearn" target="_blank" rel="noopener" aria-label="X" className="w-9 h-9 rounded-lg bg-white/10 hover:bg-[var(--accent)] flex items-center justify-center transition-colors text-white">X</a>
             </div>
           </div>
 
@@ -83,9 +83,9 @@ export default function FooterClient({ data, platform, solutions, company, legal
           )}
         </div>
 
-        <div className="mt-12 pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+        <div className="mt-12 pt-8 border-t border-white/15 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
           <span>© {year} {strings.brandName}. {strings.rights}.</span>
-          <span className="text-slate-500">{strings.builtWithCare}</span>
+          <span className="text-white/55">{strings.builtWithCare}</span>
         </div>
       </div>
     </footer>
