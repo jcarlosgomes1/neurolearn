@@ -152,7 +152,7 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
                 {course.rating_avg && <span className="inline-flex items-center gap-1.5" style={{ color: 'rgb(180 88 58)' }}><Star className="h-4 w-4 fill-current" /> {Number(course.rating_avg).toFixed(1)} <span style={{ color: 'rgb(168 161 151)' }}>({course.rating_count || 0})</span></span>}
               </div>
             </div>
-            <aside className="lg:col-span-5 self-start">
+            <aside className="lg:col-span-5 lg:sticky lg:top-24 self-start">
               <div className="rounded-2xl overflow-hidden bg-white" style={{ border: '1px solid rgb(233 229 222)', boxShadow: '0 8px 30px -12px rgba(66,61,55,0.22)' }}>
                 {course.hero_image_url && (
                   <div className="aspect-[16/9] w-full overflow-hidden" style={{ backgroundColor: 'rgb(245 243 239)' }}>
