@@ -3,7 +3,8 @@ import { Link } from '@/i18n/routing';
 import { getTranslations } from 'next-intl/server';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
 import { PageHero } from '@/components/shared/PageHero';
-import { Sparkles, Target, Heart, Globe2, Zap, ArrowRight, Users, BookOpen, Briefcase, Trophy } from 'lucide-react';
+import { PageWidth } from '@/components/shared/PageWidth';
+import { Sparkles, Target, Heart, Globe2, Zap, ArrowRight } from 'lucide-react';
 
 export const revalidate = 600;
 
@@ -18,10 +19,10 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   const blocks = await getHomeBlocks(locale);
 
   const VALUES = [
-    { icon: Heart, titleKey: 'so.v1_t', descKey: 'so.v1_d', cls: 'from-rose-500 to-pink-600' },
-    { icon: Zap, titleKey: 'so.v2_t', descKey: 'so.v2_d', cls: 'from-amber-500 to-orange-600' },
-    { icon: Globe2, titleKey: 'so.v3_t', descKey: 'so.v3_d', cls: 'from-emerald-500 to-teal-600' },
-    { icon: Target, titleKey: 'so.v4_t', descKey: 'so.v4_d', cls: 'from-violet-500 to-indigo-600' },
+    { icon: Heart, titleKey: 'so.v1_t', descKey: 'so.v1_d', fam: 'plum' },
+    { icon: Zap, titleKey: 'so.v2_t', descKey: 'so.v2_d', fam: 'saffron' },
+    { icon: Globe2, titleKey: 'so.v3_t', descKey: 'so.v3_d', fam: 'sage' },
+    { icon: Target, titleKey: 'so.v4_t', descKey: 'so.v4_d', fam: 'denim' },
   ];
 
   const STATS = [
@@ -32,81 +33,79 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   ];
 
   return (
-      <main className="bg-white min-h-screen">
-        {/* Hero */}
-        <PageHero
-          icon={Sparkles} badge={t('so.badge')}
-          title={t('so.h1_pre')}
-          titleAccent={t('so.h1_accent')}
-          subtitle={t('so.hero_desc')}
-        />
+    <main className="min-h-screen" style={{ background: 'var(--paper)' }}>
+      <PageHero
+        icon={Sparkles} badge={t('so.badge')}
+        title={t('so.h1_pre')}
+        titleAccent={t('so.h1_accent')}
+        subtitle={t('so.hero_desc')}
+      />
 
-        {/* Story */}
-        <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
-          <h2 className="t-h2 text-slate-900 mb-6">{t('so.story_title')}</h2>
-          <div className="prose prose-slate prose-lg max-w-none space-y-4 text-slate-700 leading-relaxed">
-            <p>{t('so.story_p1')}</p>
-            <p>{t('so.story_p2')}</p>
-            <p>{t('so.story_p3')}</p>
+      {/* Story */}
+      <section className="mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20" style={{ maxWidth: '48rem' }}>
+        <h2 className="t-h2 mb-6" style={{ color: 'var(--ink)' }}>{t('so.story_title')}</h2>
+        <div className="space-y-4 text-lg leading-relaxed" style={{ color: 'var(--ink-2)' }}>
+          <p>{t('so.story_p1')}</p>
+          <p>{t('so.story_p2')}</p>
+          <p>{t('so.story_p3')}</p>
+        </div>
+      </section>
+
+      {/* Values */}
+      <section className="py-16 sm:py-20 border-y" style={{ background: 'color-mix(in srgb, var(--paper) 60%, var(--card))', borderColor: 'var(--line)' }}>
+        <PageWidth>
+          <div className="text-center mb-12">
+            <h2 className="t-h2" style={{ color: 'var(--ink)' }}>{t('so.values_title')}</h2>
+            <p className="mt-3 max-w-2xl mx-auto" style={{ color: 'var(--ink-2)' }}>{t('so.values_sub')}</p>
           </div>
-        </section>
-
-        {/* Values */}
-        <section className="bg-slate-50 py-16 sm:py-20 border-y border-slate-200/60">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <h2 className="t-h2 text-slate-900">{t('so.values_title')}</h2>
-              <p className="mt-3 text-slate-600 max-w-2xl mx-auto">{t('so.values_sub')}</p>
-            </div>
-            <div className="grid sm:grid-cols-2 gap-4">
-              {VALUES.map((v, i) => (
-                <div key={i} className="group bg-white rounded-2xl border border-slate-200 p-6 hover:-translate-y-1 hover:shadow-xl transition-all">
-                  <div className={`inline-flex h-12 w-12 rounded-xl bg-gradient-to-br ${v.cls} text-white items-center justify-center mb-4 shadow-md group-hover:scale-110 transition-transform`}>
-                    <v.icon className="h-6 w-6" />
-                  </div>
-                  <h3 className="t-h3 text-slate-900 mb-2">{t(v.titleKey)}</h3>
-                  <p className="text-sm text-slate-600 leading-relaxed">{t(v.descKey)}</p>
+          <div className="grid sm:grid-cols-2 gap-4">
+            {VALUES.map((v, i) => (
+              <div key={i} className="group rounded-2xl p-6 hover:-translate-y-1 transition-all" style={{ background: 'var(--card)', border: '1px solid var(--line)', boxShadow: 'var(--nl-surface-shadow)' }}>
+                <div className="inline-flex h-12 w-12 rounded-xl text-white items-center justify-center mb-4 shadow-md group-hover:scale-110 transition-transform" style={{ background: `linear-gradient(135deg, var(--${v.fam}-base), var(--${v.fam}-deep))` }}>
+                  <v.icon className="h-6 w-6" />
                 </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Stats */}
-        <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {STATS.map((s, i) => (
-              <div key={i} className="text-center">
-                <div className="text-5xl sm:text-6xl font-bold bg-gradient-to-br from-violet-600 to-indigo-600 bg-clip-text text-transparent">{s.value}</div>
-                <div className="mt-2 font-semibold text-slate-900">{t(s.labelKey)}</div>
-                <div className="text-xs text-slate-500 mt-1">{t(s.subKey)}</div>
+                <h3 className="t-h3 mb-2" style={{ color: 'var(--ink)' }}>{t(v.titleKey)}</h3>
+                <p className="text-sm leading-relaxed" style={{ color: 'var(--ink-2)' }}>{t(v.descKey)}</p>
               </div>
             ))}
           </div>
-        </section>
+        </PageWidth>
+      </section>
 
-        {/* CTA */}
-        <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-violet-600 via-indigo-600 to-blue-600 p-10 sm:p-14 shadow-2xl">
-            <div className="absolute inset-0 -z-10">
-              <div className="absolute -top-10 -right-10 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
-              <div className="absolute -bottom-10 -left-10 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
+      {/* Stats */}
+      <PageWidth py="py-16 sm:py-20">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {STATS.map((s, i) => (
+            <div key={i} className="text-center">
+              <div className="text-5xl sm:text-6xl font-bold" style={{ color: 'var(--accent)' }}>{s.value}</div>
+              <div className="mt-2 font-semibold" style={{ color: 'var(--ink)' }}>{t(s.labelKey)}</div>
+              <div className="text-xs mt-1" style={{ color: 'var(--ink-3)' }}>{t(s.subKey)}</div>
             </div>
-            <div className="relative text-center text-white">
-              <h2 className="t-h2">{t('so.cta_title')}</h2>
-              <p className="mt-4 text-lg text-white/90 max-w-2xl mx-auto">{t('so.cta_desc')}</p>
-              <div className="mt-8 flex flex-wrap justify-center gap-3">
-                <Link href={'/cursos' as any} className="inline-flex items-center gap-2 px-6 py-3 bg-white text-violet-700 hover:bg-violet-50 hover:scale-105 transition-all font-bold rounded-xl shadow-lg">
-                  {t('common.explore_courses')} <ArrowRight className="h-4 w-4" />
-                </Link>
-                <Link href={'/para-empresas' as any} className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold rounded-xl backdrop-blur-sm">
-                  {t('so.cta_b2b')}
-                </Link>
-              </div>
+          ))}
+        </div>
+      </PageWidth>
+
+      {/* CTA */}
+      <PageWidth className="pb-20">
+        <div className="relative overflow-hidden rounded-3xl p-10 sm:p-14 shadow-2xl" style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent-bright))' }}>
+          <div className="absolute inset-0 -z-10">
+            <div className="absolute -top-10 -right-10 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
+            <div className="absolute -bottom-10 -left-10 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
+          </div>
+          <div className="relative text-center text-white">
+            <h2 className="t-h2">{t('so.cta_title')}</h2>
+            <p className="mt-4 text-lg text-white/90 max-w-2xl mx-auto">{t('so.cta_desc')}</p>
+            <div className="mt-8 flex flex-wrap justify-center gap-3">
+              <Link href={'/cursos' as any} className="inline-flex items-center gap-2 px-6 py-3 bg-white hover:scale-105 transition-all font-bold rounded-xl shadow-lg" style={{ color: 'var(--accent)' }}>
+                {t('common.explore_courses')} <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link href={'/para-empresas' as any} className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold rounded-xl backdrop-blur-sm">
+                {t('so.cta_b2b')}
+              </Link>
             </div>
           </div>
-        </section>
-
-      </main>
+        </div>
+      </PageWidth>
+    </main>
   );
 }
