@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { Plus, Loader2, Calendar, Users, X, UserPlus } from 'lucide-react';
+import { Plus, Loader2, Calendar, Users, X, UserPlus, Clock, Video, Repeat } from 'lucide-react';
 
 type Cohort = { id: string; name: string; description: string | null; status: string; start_date: string | null; end_date: string | null; max_seats: number | null; members: number; target_title: string | null };
 type Member = { user_id: string; name: string | null; email: string };
@@ -20,19 +20,37 @@ export function CohortsClient({ orgId, cohorts: initial, members }: { orgId: str
   const [end, setEnd] = useState('');
   const [seats, setSeats] = useState('');
   const [manageId, setManageId] = useState<string | null>(null);
+  // F4: horario sincrono (opcional)
+  const [sync, setSync] = useState(false);
+  const [days, setDays] = useState<string[]>([]);
+  const [startTime, setStartTime] = useState('18:00');
+  const [durationMin, setDurationMin] = useState('60');
+  const [joinUrl, setJoinUrl] = useState('');
+  const WEEKDAYS: { key: string; label: string }[] = [
+    { key: 'MO', label: t('empresa.cohorts.dow_mo') }, { key: 'TU', label: t('empresa.cohorts.dow_tu') },
+    { key: 'WE', label: t('empresa.cohorts.dow_we') }, { key: 'TH', label: t('empresa.cohorts.dow_th') },
+    { key: 'FR', label: t('empresa.cohorts.dow_fr') }, { key: 'SA', label: t('empresa.cohorts.dow_sa') },
+    { key: 'SU', label: t('empresa.cohorts.dow_su') },
+  ];
+  function toggleDay(d: string) { setDays((ds) => ds.includes(d) ? ds.filter((x) => x !== d) : [...ds, d]); }
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Lisbon';
 
   async function create() {
     if (!name.trim()) return;
     setBusy(true);
     try {
+      const rrule = sync && days.length > 0 ? `FREQ=WEEKLY;BYDAY=${days.join(',')}` : null;
       const { data, error } = await supabase.rpc('nl_cohort_create', {
         p_org_id: orgId, p_name: name, p_start: start || null, p_end: end || null,
         p_max_seats: seats ? Number(seats) : null,
+        p_schedule_rrule: rrule, p_session_start_time: sync ? startTime : null,
+        p_session_duration_min: sync ? Number(durationMin) || 60 : null,
+        p_timezone: tz, p_join_url: sync ? (joinUrl || null) : null,
       });
       if (error || !(data as { ok?: boolean })?.ok) throw error || new Error('fail');
       const id = (data as { cohort_id: string }).cohort_id;
       setCohorts((c) => [{ id, name, description: null, status: 'open', start_date: start || null, end_date: end || null, max_seats: seats ? Number(seats) : null, members: 0, target_title: null }, ...c]);
-      setName(''); setStart(''); setEnd(''); setSeats(''); setCreating(false);
+      setName(''); setStart(''); setEnd(''); setSeats(''); setSync(false); setDays([]); setStartTime('18:00'); setDurationMin('60'); setJoinUrl(''); setCreating(false);
       toast.success(t('empresa.cohorts.created'));
     } catch { toast.error(t('empresa.cohorts.error')); }
     finally { setBusy(false); }
@@ -70,6 +88,46 @@ export function CohortsClient({ orgId, cohorts: initial, members }: { orgId: str
           </div>
           <input type="number" value={seats} onChange={(e) => setSeats(e.target.value)} placeholder={t('empresa.cohorts.max_seats')}
             className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" />
+
+          {/* F4: horario sincrono */}
+          <div className="rounded-xl border border-slate-200 p-3">
+            <label className="flex items-center justify-between gap-2 cursor-pointer">
+              <span className="flex items-center gap-2 text-sm font-medium text-slate-800">
+                <Repeat className="h-4 w-4 text-violet-600" /> {t('empresa.cohorts.sync_toggle')}
+              </span>
+              <input type="checkbox" checked={sync} onChange={(e) => setSync(e.target.checked)} className="h-4 w-4 accent-violet-600" />
+            </label>
+            <p className="text-xs text-slate-500 mt-1">{t('empresa.cohorts.sync_hint')}</p>
+            {sync && (
+              <div className="mt-3 space-y-3">
+                <div>
+                  <div className="text-xs text-slate-500 mb-1.5">{t('empresa.cohorts.sync_days')}</div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {WEEKDAYS.map((d) => (
+                      <button key={d.key} type="button" onClick={() => toggleDay(d.key)}
+                        className={`text-xs font-medium px-2.5 py-1.5 rounded-lg border transition-colors ${days.includes(d.key) ? 'bg-violet-600 text-white border-violet-600' : 'border-slate-200 text-slate-600 hover:border-violet-300'}`}>
+                        {d.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <label className="text-xs text-slate-500">{t('empresa.cohorts.sync_time')}
+                    <div className="flex items-center gap-1.5 mt-1"><Clock className="h-3.5 w-3.5 text-slate-400" />
+                      <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} className="w-full rounded-lg border border-slate-200 px-2 py-2 text-sm" /></div>
+                  </label>
+                  <label className="text-xs text-slate-500">{t('empresa.cohorts.sync_duration')}
+                    <input type="number" value={durationMin} onChange={(e) => setDurationMin(e.target.value)} min="15" step="15"
+                      className="w-full mt-1 rounded-lg border border-slate-200 px-3 py-2 text-sm" /></label>
+                </div>
+                <label className="text-xs text-slate-500 block">{t('empresa.cohorts.sync_join_url')}
+                  <div className="flex items-center gap-1.5 mt-1"><Video className="h-3.5 w-3.5 text-slate-400" />
+                    <input value={joinUrl} onChange={(e) => setJoinUrl(e.target.value)} placeholder="https://meet…"
+                      className="w-full rounded-lg border border-slate-200 px-2 py-2 text-sm" /></div>
+                </label>
+              </div>
+            )}
+          </div>
           <div className="flex gap-2">
             <button onClick={create} disabled={busy || !name.trim()}
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-violet-600 text-white text-sm font-medium disabled:opacity-50">
