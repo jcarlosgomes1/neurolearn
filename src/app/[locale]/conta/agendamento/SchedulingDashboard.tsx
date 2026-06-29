@@ -21,6 +21,8 @@ const STR: Record<string, Record<Lang, string>> = {
   active: { pt: 'Disponível para marcações', en: 'Available for bookings', es: 'Disponible para reservas', fr: 'Disponible aux réservations' },
   active_hint: { pt: 'Gera horários reserváveis a partir da tua disponibilidade.', en: 'Generates bookable slots from your availability.', es: 'Genera horarios reservables desde tu disponibilidad.', fr: 'Génère des créneaux réservables.' },
   mentor_badge: { pt: 'Mentor', en: 'Mentor', es: 'Mentor', fr: 'Mentor' },
+  directory: { pt: 'Aparecer no diretório de mentores', en: 'Appear in the mentor directory', es: 'Aparecer en el directorio de mentores', fr: 'Apparaître dans l’annuaire des mentors' },
+  directory_hint: { pt: 'Quem procura mentoria pode encontrar-te e marcar diretamente.', en: 'People looking for mentoring can find you and book directly.', es: 'Quienes buscan mentoría pueden encontrarte y reservar directamente.', fr: 'Les personnes en quête de mentorat peuvent te trouver et réserver directement.' },
   public_link: { pt: 'A tua página', en: 'Your page', es: 'Tu página', fr: 'Ta page' },
   copy: { pt: 'Copiar', en: 'Copy', es: 'Copiar', fr: 'Copier' },
   copied: { pt: 'Copiado', en: 'Copied', es: 'Copiado', fr: 'Copié' },
@@ -120,6 +122,7 @@ export function SchedulingDashboard({ initial }: { initial: any }) {
   const [active, setActive] = useState<boolean>(cal.enabled ?? true);
   const [headline, setHeadline] = useState<string>(cal.headline || '');
   const [bio, setBio] = useState<string>(cal.bio || '');
+  const [listDir, setListDir] = useState<boolean>(cal.list_in_directory ?? false);
 
   const [savingCal, setSavingCal] = useState(false);
   const [savedCal, setSavedCal] = useState(false);
@@ -136,12 +139,12 @@ export function SchedulingDashboard({ initial }: { initial: any }) {
     if (d) setData(d);
   }
 
-  async function saveCalendar(extra?: Partial<{ active: boolean }>) {
+  async function saveCalendar(extra?: Partial<{ active: boolean; listInDir: boolean }>) {
     setSavingCal(true);
     const payload = {
       p_timezone: tz, p_weekly_availability: weekly, p_buffer_minutes: buffer,
       p_min_notice_hours: minNotice, p_max_advance_days: maxAdvance,
-      p_enabled: extra?.active ?? active, p_headline: headline, p_bio: bio,
+      p_enabled: extra?.active ?? active, p_list_in_directory: extra?.listInDir ?? listDir, p_headline: headline, p_bio: bio,
     };
     await sb.rpc('nl_scheduling_update_calendar', payload as any);
     setSavingCal(false);
@@ -194,6 +197,18 @@ export function SchedulingDashboard({ initial }: { initial: any }) {
           </div>
           <Toggle on={active} onChange={() => { const v = !active; setActive(v); saveCalendar({ active: v }); }} />
         </Card>
+
+        {isMentor && (
+          <Card className="!p-4 flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                <UserRound className="h-4 w-4 text-violet-600 shrink-0" />{t('directory')}
+              </div>
+              <p className="text-xs text-slate-500 mt-0.5 leading-snug">{t('directory_hint')}</p>
+            </div>
+            <Toggle on={listDir} onChange={() => { const v = !listDir; setListDir(v); saveCalendar({ listInDir: v }); }} />
+          </Card>
+        )}
 
         <Card className="!p-4 flex items-center justify-between gap-3">
           <div className="min-w-0">
