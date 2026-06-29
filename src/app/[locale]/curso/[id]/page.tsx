@@ -1,4 +1,5 @@
 import { Header } from '@/components/layout/Header';
+import { MobileEnrollBar } from '@/components/shared/MobileEnrollBar';
 import { Footer } from '@/components/sections/Footer';
 import { Link } from '@/i18n/routing';
 import { createClient } from '@/lib/supabase/server';
@@ -241,7 +242,7 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
 
           {/* ===================== COLUNA STICKY (cartão) ===================== */}
           <aside className="lg:col-span-4 lg:sticky lg:top-24 self-start space-y-4">
-            <div className="rounded-2xl overflow-hidden bg-white" style={{ border: '1px solid rgb(233 229 222)', boxShadow: '0 8px 30px -12px rgba(66,61,55,0.22)' }}>
+            <div id="enroll-card" className="rounded-2xl overflow-hidden bg-white" style={{ border: '1px solid rgb(233 229 222)', boxShadow: '0 8px 30px -12px rgba(66,61,55,0.22)' }}>
               {course.hero_image_url && (
                 <div className="aspect-[16/9] w-full overflow-hidden" style={{ backgroundColor: 'rgb(245 243 239)' }}>
                   <img src={course.hero_image_url} alt={course.title} className="w-full h-full object-cover" />
@@ -287,6 +288,17 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
           </aside>
         </div>
 
+        {lessonCount > 0 && (
+          <MobileEnrollBar
+            courseId={course.id}
+            priceLabel={fmtCents(course.price_cents, course.currency || 'EUR')}
+            courseTitle={course.title}
+            isFree={!course.price_cents || course.price_cents === 0}
+            enrolled={enrolled}
+            continueHref={`/learn/curso/${course.id}/continuar`}
+            watchTargetId="enroll-card"
+          />
+        )}
         <Footer data={blocks.footer_brand || {}} />
       </main>
     </>
