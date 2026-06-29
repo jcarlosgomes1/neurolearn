@@ -11,7 +11,10 @@
 /* Rede de seguranca universal contra overflow horizontal em mobile.
    Impede que qualquer elemento mais largo que o ecra crie scroll lateral
    e faca o conteudo encostar/cortar na margem direita. Padrao global. */
-html, body {
+html {
+  max-width: 100%;
+}
+body {
   overflow-x: hidden;
   max-width: 100%;
 }
