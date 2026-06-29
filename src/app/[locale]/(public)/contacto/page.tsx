@@ -36,7 +36,7 @@ export default async function Page({ params, searchParams }: {
   const blocks = await getHomeBlocks(locale);
 
   return (
-      <main className="bg-white min-h-screen">
+      <main className="bg-[var(--card)] min-h-screen bg-[var(--paper)]">
         {/* Hero */}
         <PageHero
           icon={MessageSquare} badge={safeT(t, 'contact.title', 'Falar connosco')}
@@ -58,28 +58,28 @@ export default async function Page({ params, searchParams }: {
 
             {/* Side info */}
             <aside className="space-y-4">
-              <div className="bg-white rounded-2xl border border-slate-200 p-5">
+              <div className="bg-[var(--card)] rounded-2xl border border-[var(--line)] p-5">
                 <Mail className="h-5 w-5 text-blue-600 mb-3" />
-                <div className="text-[10px] uppercase tracking-wider font-bold text-slate-500 mb-1">Email directo</div>
-                <a href={`mailto:${contactEmail}`} className="text-sm font-semibold text-slate-900 hover:text-blue-700 break-all">
+                <div className="text-[10px] uppercase tracking-wider font-bold text-[var(--ink-3)] mb-1">Email directo</div>
+                <a href={`mailto:${contactEmail}`} className="text-sm font-semibold text-[var(--ink)] hover:text-blue-700 break-all">
                   {contactEmail}
                 </a>
-                <div className="text-xs text-slate-500 mt-1">Preferimos o formulário acima.</div>
+                <div className="text-xs text-[var(--ink-3)] mt-1">Preferimos o formulário acima.</div>
               </div>
-              <div className="bg-white rounded-2xl border border-slate-200 p-5">
+              <div className="bg-[var(--card)] rounded-2xl border border-[var(--line)] p-5">
                 <Clock className="h-5 w-5 text-emerald-600 mb-3" />
-                <div className="text-[10px] uppercase tracking-wider font-bold text-slate-500 mb-1">Tempo de resposta</div>
-                <div className="text-sm font-semibold text-slate-900">Menos de 24h em média</div>
-                <div className="text-xs text-slate-500 mt-1">Dias úteis, fuso CET.</div>
+                <div className="text-[10px] uppercase tracking-wider font-bold text-[var(--ink-3)] mb-1">Tempo de resposta</div>
+                <div className="text-sm font-semibold text-[var(--ink)]">Menos de 24h em média</div>
+                <div className="text-xs text-[var(--ink-3)] mt-1">Dias úteis, fuso CET.</div>
               </div>
-              <div className="bg-white rounded-2xl border border-slate-200 p-5">
+              <div className="bg-[var(--card)] rounded-2xl border border-[var(--line)] p-5">
                 <MapPin className="h-5 w-5 text-rose-600 mb-3" />
-                <div className="text-[10px] uppercase tracking-wider font-bold text-slate-500 mb-1">Onde estamos</div>
-                <div className="text-sm font-semibold text-slate-900">Equipa remota</div>
-                <div className="text-xs text-slate-500 mt-1">Sede em Portugal.</div>
+                <div className="text-[10px] uppercase tracking-wider font-bold text-[var(--ink-3)] mb-1">Onde estamos</div>
+                <div className="text-sm font-semibold text-[var(--ink)]">Equipa remota</div>
+                <div className="text-xs text-[var(--ink-3)] mt-1">Sede em Portugal.</div>
               </div>
               <div className="text-center">
-                <Link href={'/ajuda' as any} className="text-xs text-slate-500 hover:text-slate-900">
+                <Link href={'/ajuda' as any} className="text-xs text-[var(--ink-3)] hover:text-[var(--ink)]">
                   Antes de escrever, vê o Centro de ajuda →
                 </Link>
               </div>

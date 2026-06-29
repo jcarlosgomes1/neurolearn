@@ -29,9 +29,9 @@ export default async function EssentialsPage({ params }: { params: Promise<{ loc
   const blocks = await getHomeBlocks(locale);
 
   return (
-      <main className="bg-white min-h-screen">
+      <main className="min-h-screen" style={{ background: 'var(--paper)' }}>
         <PageHero badge={t('ess.badge')} title={t('ess.title')} subtitle={t('ess.subtitle')} />
-        <section className="max-w-6xl mx-auto px-4 py-12">
+        <section className="mx-auto px-4 py-12" style={{ maxWidth: 'var(--page-max, 72rem)' }}>
           {!tracks || tracks.length === 0 ? (
             <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-600 via-brand-700 to-brand-900 text-white p-12 text-center">
               <div className="flex justify-center mb-4"><Rocket className="h-12 w-12" strokeWidth={1.5} /></div>

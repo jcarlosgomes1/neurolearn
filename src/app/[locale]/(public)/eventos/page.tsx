@@ -28,14 +28,14 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   const events = res.events || [];
 
   return (
-    <main className="bg-white min-h-screen">
+    <main className="min-h-screen" style={{ background: 'var(--paper)' }}>
       <PageHero
         icon={Calendar} badge={t('ev.badge')}
         title={t('ev.h1_pre')}
         titleAccent={t('ev.h1_accent')}
         subtitle={t('ev.hero_desc')}
       />
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
+      <section className="mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20" style={{ maxWidth: 'var(--page-max, 72rem)' }}>
         <EventsList events={events} locale={locale} />
       </section>
     </main>

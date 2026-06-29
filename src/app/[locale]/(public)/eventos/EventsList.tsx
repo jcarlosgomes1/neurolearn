@@ -58,16 +58,16 @@ export function EventsList({ events, locale }: { events: Ev[]; locale: string })
     const when = fmtDate(e.event_at, e.event_timezone);
     const online = e.modalidade !== 'presencial' && e.room_provider !== 'presencial';
     return (
-      <a href={`/${locale}/evento/${e.slug}`} className="group rounded-2xl border border-slate-200 bg-white p-5 hover:shadow-2xl hover:-translate-y-1 transition-all flex flex-col">
+      <a href={`/${locale}/evento/${e.slug}`} className="group rounded-2xl border border-[var(--line)] bg-[var(--card)] p-5 hover:shadow-2xl hover:-translate-y-1 transition-all flex flex-col">
         <div className="flex items-center gap-2 mb-2 flex-wrap">
           <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-violet-50 text-violet-700"><Globe className="w-3 h-3" /> {langLabel(e.idioma || 'pt')}</span>
-          <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">
+          <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-[var(--accent-tint)] text-[var(--ink-3)]">
             {online ? (<><Globe className="w-3 h-3" /> {tx('events.repo.online')}</>) : (<><MapPin className="w-3 h-3" /> {tx('events.repo.presencial')}</>)}
           </span>
         </div>
-        <h3 className="text-lg font-bold text-slate-900 leading-snug group-hover:text-violet-700 transition-colors">{e.title}</h3>
-        {e.subtitle && <p className="text-sm text-slate-600 mt-1 line-clamp-2 flex-1">{e.subtitle}</p>}
-        {when && <div className="mt-3 flex items-center gap-1.5 text-xs text-slate-500"><CalendarDays className="w-3.5 h-3.5" /> {when}</div>}
+        <h3 className="text-lg font-bold text-[var(--ink)] leading-snug group-hover:text-violet-700 transition-colors">{e.title}</h3>
+        {e.subtitle && <p className="text-sm text-[var(--ink-2)] mt-1 line-clamp-2 flex-1">{e.subtitle}</p>}
+        {when && <div className="mt-3 flex items-center gap-1.5 text-xs text-[var(--ink-3)]"><CalendarDays className="w-3.5 h-3.5" /> {when}</div>}
         <div className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-violet-700">
           {e.is_past && e.gravavel && <Video className="w-4 h-4" />}
           {e.is_past ? (e.gravavel ? tx('events.repo.replay') : tx('events.repo.details')) : tx('events.repo.register')}
@@ -78,17 +78,17 @@ export function EventsList({ events, locale }: { events: Ev[]; locale: string })
   }
 
   const empty = (
-    <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-16 text-center text-slate-500">{tx('events.repo.empty')}</div>
+    <div className="rounded-2xl border border-dashed border-[var(--line)] bg-[var(--paper)] p-16 text-center text-[var(--ink-3)]">{tx('events.repo.empty')}</div>
   );
 
   return (
     <div>
       {langs.length > 1 && (
         <div className="flex items-center gap-1.5 mb-8 flex-wrap">
-          <Globe className="w-4 h-4 text-slate-400" />
-          <button onClick={() => setLang('all')} className={`px-3 py-1 text-xs rounded-full transition-colors ${lang === 'all' ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>{tx('events.repo.all_languages')}</button>
+          <Globe className="w-4 h-4 text-[var(--ink-3)]" />
+          <button onClick={() => setLang('all')} className={`px-3 py-1 text-xs rounded-full transition-colors ${lang === 'all' ? 'bg-violet-600 text-white' : 'bg-[var(--accent-tint)] text-[var(--ink-2)] hover:brightness-95'}`}>{tx('events.repo.all_languages')}</button>
           {langs.map((l) => (
-            <button key={l} onClick={() => setLang(l)} className={`px-3 py-1 text-xs rounded-full transition-colors ${lang === l ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>{langLabel(l)}</button>
+            <button key={l} onClick={() => setLang(l)} className={`px-3 py-1 text-xs rounded-full transition-colors ${lang === l ? 'bg-violet-600 text-white' : 'bg-[var(--accent-tint)] text-[var(--ink-2)] hover:brightness-95'}`}>{langLabel(l)}</button>
           ))}
         </div>
       )}
@@ -97,13 +97,13 @@ export function EventsList({ events, locale }: { events: Ev[]; locale: string })
         <div className="space-y-12">
           {upcoming.length > 0 && (
             <section>
-              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">{tx('events.repo.upcoming')}</h2>
+              <h2 className="text-sm font-bold uppercase tracking-wider text-[var(--ink-3)] mb-4">{tx('events.repo.upcoming')}</h2>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">{upcoming.map((e) => <Card key={e.slug} e={e} />)}</div>
             </section>
           )}
           {past.length > 0 && (
             <section>
-              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">{tx('events.repo.past')}</h2>
+              <h2 className="text-sm font-bold uppercase tracking-wider text-[var(--ink-3)] mb-4">{tx('events.repo.past')}</h2>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">{past.map((e) => <Card key={e.slug} e={e} />)}</div>
             </section>
           )}

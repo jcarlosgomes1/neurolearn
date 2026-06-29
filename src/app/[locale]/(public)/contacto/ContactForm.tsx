@@ -69,15 +69,15 @@ export function ContactForm({
 
   if (sent) {
     return (
-      <div className="bg-white rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 p-10 text-center">
+      <div className="bg-[var(--card)] rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 p-10 text-center">
         <div className="inline-flex h-14 w-14 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-white items-center justify-center shadow-lg mb-4">
           <CheckCircle2 className="h-7 w-7" />
         </div>
-        <h2 className="text-2xl font-bold text-slate-900 mb-2">{t('contactform.sent_title')}</h2>
-        <p className="text-sm text-slate-600 max-w-md mx-auto">
+        <h2 className="text-2xl font-bold text-[var(--ink)] mb-2">{t('contactform.sent_title')}</h2>
+        <p className="text-sm text-[var(--ink-2)] max-w-md mx-auto">
           {t.rich('contactform.sent_body', {
             email,
-            b: (chunks) => <strong className="text-slate-900">{chunks}</strong>,
+            b: (chunks) => <strong className="text-[var(--ink)]">{chunks}</strong>,
           })}
         </p>
         <button onClick={() => { setSent(false); setName(''); setEmail(''); setPhone(''); setSubject(''); setMessage(''); }}
@@ -89,52 +89,52 @@ export function ContactForm({
   }
 
   return (
-    <form onSubmit={submit} className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 space-y-4">
+    <form onSubmit={submit} className="bg-[var(--card)] rounded-2xl border border-[var(--line)] p-6 sm:p-8 space-y-4">
       <div className="grid sm:grid-cols-2 gap-3">
         <div>
-          <label className="text-[10px] uppercase tracking-wider font-bold text-slate-500 mb-1.5 block">{t('contactform.label_name')}</label>
+          <label className="text-[10px] uppercase tracking-wider font-bold text-[var(--ink-3)] mb-1.5 block">{t('contactform.label_name')}</label>
           <input type="text" value={name} onChange={(e) => setName(e.target.value)}
             placeholder={t('contactform.ph_name')} maxLength={120}
-            className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:border-blue-500 outline-none" />
+            className="w-full px-3 py-2.5 border border-[var(--line)] rounded-lg text-sm focus:border-blue-500 outline-none" />
         </div>
         <div>
-          <label className="text-[10px] uppercase tracking-wider font-bold text-slate-500 mb-1.5 block">{t('contactform.label_email')} *</label>
+          <label className="text-[10px] uppercase tracking-wider font-bold text-[var(--ink-3)] mb-1.5 block">{t('contactform.label_email')} *</label>
           <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
             placeholder={t('contactform.ph_email')} maxLength={180}
-            className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:border-blue-500 outline-none" />
+            className="w-full px-3 py-2.5 border border-[var(--line)] rounded-lg text-sm focus:border-blue-500 outline-none" />
         </div>
       </div>
 
       <div>
-        <label className="text-[10px] uppercase tracking-wider font-bold text-slate-500 mb-1.5 block">{t('contactform.label_phone')} <span className="text-slate-400 font-normal normal-case">{t('contactform.phone_hint')}</span></label>
+        <label className="text-[10px] uppercase tracking-wider font-bold text-[var(--ink-3)] mb-1.5 block">{t('contactform.label_phone')} <span className="text-[var(--ink-3)] font-normal normal-case">{t('contactform.phone_hint')}</span></label>
         <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={t('contactform.ph_phone')} maxLength={40}
-          className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:border-blue-500 outline-none" />
+          className="w-full px-3 py-2.5 border border-[var(--line)] rounded-lg text-sm focus:border-blue-500 outline-none" />
       </div>
 
       <div>
-        <label className="text-[10px] uppercase tracking-wider font-bold text-slate-500 mb-1.5 block">{t('contactform.label_topic')}</label>
+        <label className="text-[10px] uppercase tracking-wider font-bold text-[var(--ink-3)] mb-1.5 block">{t('contactform.label_topic')}</label>
         <select value={topic} onChange={(e) => setTopic(e.target.value)}
-          className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm bg-white focus:border-blue-500 outline-none">
+          className="w-full px-3 py-2.5 border border-[var(--line)] rounded-lg text-sm bg-[var(--card)] focus:border-blue-500 outline-none">
           {TOPICS.map((tp) => <option key={tp.value} value={tp.value}>{t(tp.key)}</option>)}
         </select>
       </div>
 
       <div>
-        <label className="text-[10px] uppercase tracking-wider font-bold text-slate-500 mb-1.5 block">{t('contactform.label_subject')}</label>
+        <label className="text-[10px] uppercase tracking-wider font-bold text-[var(--ink-3)] mb-1.5 block">{t('contactform.label_subject')}</label>
         <input type="text" value={subject} onChange={(e) => setSubject(e.target.value)}
           placeholder={t('contactform.ph_subject')} maxLength={200}
-          className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:border-blue-500 outline-none" />
+          className="w-full px-3 py-2.5 border border-[var(--line)] rounded-lg text-sm focus:border-blue-500 outline-none" />
       </div>
 
       <div>
-        <label className="text-[10px] uppercase tracking-wider font-bold text-slate-500 mb-1.5 block">
-          {t('contactform.label_message')} * <span className="text-slate-400 font-normal normal-case">{t('contactform.message_hint')}</span>
+        <label className="text-[10px] uppercase tracking-wider font-bold text-[var(--ink-3)] mb-1.5 block">
+          {t('contactform.label_message')} * <span className="text-[var(--ink-3)] font-normal normal-case">{t('contactform.message_hint')}</span>
         </label>
         <textarea required value={message} onChange={(e) => setMessage(e.target.value)}
           rows={7} maxLength={5000}
           placeholder={t('contactform.ph_message')}
-          className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:border-blue-500 outline-none resize-y" />
-        <div className="text-[10px] text-slate-400 mt-1 text-right">{message.length} / 5000</div>
+          className="w-full px-3 py-2.5 border border-[var(--line)] rounded-lg text-sm focus:border-blue-500 outline-none resize-y" />
+        <div className="text-[10px] text-[var(--ink-3)] mt-1 text-right">{message.length} / 5000</div>
       </div>
 
       <button type="submit" disabled={busy}
@@ -142,9 +142,9 @@ export function ContactForm({
         {busy ? <><Loader2 className="h-4 w-4 animate-spin" /> {t('contactform.btn_sending')}</> : <><Send className="h-4 w-4" /> {t('contactform.btn_send')}</>}
       </button>
 
-      <p className="text-[11px] text-slate-400 text-center leading-relaxed">
+      <p className="text-[11px] text-[var(--ink-3)] text-center leading-relaxed">
         {t.rich('contactform.privacy_consent', {
-          privacy: (chunks) => <Link href={'/legal/privacy' as any} className="underline hover:text-slate-700">{chunks}</Link>,
+          privacy: (chunks) => <Link href={'/legal/privacy' as any} className="underline hover:text-[var(--ink-2)]">{chunks}</Link>,
         })}
       </p>
     </form>
