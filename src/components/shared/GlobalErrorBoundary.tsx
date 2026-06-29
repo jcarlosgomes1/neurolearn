@@ -1,11 +1,30 @@
 'use client';
 
 import { useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 
+const FALLBACK: Record<string, string> = {
+  'err.h1': 'Something went wrong',
+  'err.desc': 'We hit a problem loading this page. We have automatically logged the error so we can look into it.',
+  'err.retry': 'Try again',
+  'common.home': 'Home',
+};
+
 export function GlobalErrorBoundary({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
+  // useTranslations pode não estar disponível se o erro for no próprio provider i18n.
+  let tr: (k: string) => string;
+  try {
+    const t = useTranslations();
+    tr = (k: string) => {
+      try { const v = t(k); return v && v !== k ? v : (FALLBACK[k] ?? k); } catch { return FALLBACK[k] ?? k; }
+    };
+  } catch {
+    tr = (k: string) => FALLBACK[k] ?? k;
+  }
+
   useEffect(() => {
     console.error('App error:', error);
     (async () => {
@@ -40,9 +59,9 @@ export function GlobalErrorBoundary({ error, reset }: { error: Error & { digest?
           <AlertTriangle className="h-10 w-10" strokeWidth={2.2} />
         </div>
 
-        <h1 className="text-3xl font-bold text-[var(--ink)] mb-2 tracking-tight">Algo correu mal</h1>
+        <h1 className="text-3xl font-bold text-[var(--ink)] mb-2 tracking-tight">{tr('err.h1')}</h1>
         <p className="text-sm text-[var(--ink-2)] mb-2 max-w-sm mx-auto leading-relaxed">
-          Encontrámos um problema ao carregar esta página. Já registámos o erro automaticamente para investigarmos.
+          {tr('err.desc')}
         </p>
 
         {error.digest && (
@@ -55,12 +74,12 @@ export function GlobalErrorBoundary({ error, reset }: { error: Error & { digest?
           <button
             onClick={reset}
             className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[var(--ink)] hover:opacity-90 active:scale-[0.98] text-white text-sm font-semibold rounded-xl transition-all shadow-sm">
-            <RefreshCw className="h-4 w-4" /> Tentar de novo
+            <RefreshCw className="h-4 w-4" /> {tr('err.retry')}
           </button>
           <Link
             href={'/' as any}
             className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[var(--card)] border border-[var(--line)] hover:bg-[var(--paper)] active:scale-[0.98] text-[var(--ink-2)] text-sm font-semibold rounded-xl transition-all">
-            <Home className="h-4 w-4" /> Voltar à home
+            <Home className="h-4 w-4" /> {tr('common.home')}
           </Link>
         </div>
       </div>
