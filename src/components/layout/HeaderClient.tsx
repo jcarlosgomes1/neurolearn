@@ -19,7 +19,6 @@ export function HeaderClient({ session, nav }: { session: Session | null; nav: N
   const t = useTranslations();
   const locale = useLocale();
   const [open, setOpen] = useState(false);
-  const [hidden, setHidden] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => { setOpen(false); }, [pathname]);
@@ -29,22 +28,6 @@ export function HeaderClient({ session, nav }: { session: Session | null; nav: N
     return () => { document.body.style.overflow = ''; };
   }, [open]);
 
-  // LinkedIn-style: barra de altura fixa que desliza para fora ao descer e volta ao subir (mobile).
-  useEffect(() => {
-    let lastY = window.scrollY;
-    let ticking = false;
-    function update() {
-      const y = window.scrollY;
-      if (y < 80) setHidden(false);
-      else if (y > lastY + 4) setHidden(true);
-      else if (y < lastY - 4) setHidden(false);
-      lastY = y;
-      ticking = false;
-    }
-    function onScroll() { if (!ticking) { ticking = true; requestAnimationFrame(update); } }
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
 
   function navLabel(it: NavItem): string {
     if (it.label_override) return it.label_override;
@@ -63,7 +46,7 @@ export function HeaderClient({ session, nav }: { session: Session | null; nav: N
 
   return (
     <>
-      <header className={`sticky top-0 z-40 bg-white border-b border-slate-200 transition-transform duration-300 will-change-transform translate-y-0`}>
+      <header className="sticky top-0 z-40 bg-white border-b border-slate-200">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-3">
           <Link href="/" className="flex items-center gap-2 text-slate-900 group shrink-0">
             <BrandLogo iconClassName="transition-transform group-hover:scale-110" textClassName="text-lg tracking-tight" />
