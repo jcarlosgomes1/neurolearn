@@ -296,7 +296,6 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
             isFree={!course.price_cents || course.price_cents === 0}
             enrolled={enrolled}
             continueHref={`/learn/curso/${course.id}/continuar`}
-            watchTargetId="enroll-card"
           />
         )}
         <Footer data={blocks.footer_brand || {}} />

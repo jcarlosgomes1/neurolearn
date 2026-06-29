@@ -1,14 +1,14 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import { EnrollButton } from './EnrollButton';
 
 /**
  * Barra de ação fixa no fundo, apenas em mobile (lg:hidden).
- * Aparece quando o cartão principal de inscrição sai do ecrã (IntersectionObserver),
- * mantendo a decisão sempre a um toque sem duplicar quando o cartão já está visível.
+ * Escondida no topo; desliza para dentro quando o utilizador rola além
+ * do primeiro ecrã (a zona inicial onde a decisão de inscrição já está visível).
  * Reutiliza EnrollButton (mesma lógica de auth/inscrição) — zero duplicação.
  * Reutilizável em qualquer página de produto (curso marketplace agora; tenant herda).
  */
@@ -19,7 +19,6 @@ export function MobileEnrollBar({
   isFree,
   enrolled,
   continueHref,
-  watchTargetId,
 }: {
   courseId: string;
   priceLabel: string;
@@ -27,26 +26,29 @@ export function MobileEnrollBar({
   isFree?: boolean;
   enrolled?: boolean;
   continueHref?: string;
-  watchTargetId: string;
 }) {
   const t = useTranslations();
   const [visible, setVisible] = useState(false);
-  const barRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const target = document.getElementById(watchTargetId);
-    if (!target) { setVisible(true); return; }
-    const io = new IntersectionObserver(
-      ([entry]) => setVisible(!entry.isIntersecting),
-      { rootMargin: '0px 0px -40% 0px', threshold: 0 }
-    );
-    io.observe(target);
-    return () => io.disconnect();
-  }, [watchTargetId]);
+    // Aparece depois de rolar ~70% da altura do primeiro ecrã.
+    const threshold = () => Math.round(window.innerHeight * 0.7);
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(() => {
+        setVisible(window.scrollY > threshold());
+        ticking = false;
+      });
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   return (
     <div
-      ref={barRef}
       aria-hidden={!visible}
       className="lg:hidden fixed inset-x-0 bottom-0 z-40 transition-transform duration-300 ease-out"
       style={{
