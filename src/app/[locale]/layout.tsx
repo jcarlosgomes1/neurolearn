@@ -97,7 +97,7 @@ export default async function LocaleLayout({
   const surfaceCss = ':root{--nl-surface-shadow:0 1px 3px rgba(15,23,42,.07),0 1px 2px rgba(15,23,42,.04);--nl-surface-shadow-emboss:inset 0 1px 0 rgba(255,255,255,.85),0 1px 3px rgba(15,23,42,.07),0 1px 2px rgba(15,23,42,.04);--nl-surface-shadow-hover:0 6px 16px rgba(15,23,42,.10),0 2px 6px rgba(15,23,42,.06)}.nl-surface{box-shadow:var(--nl-surface-shadow)}.nl-surface-emboss{box-shadow:var(--nl-surface-shadow-emboss)}.nl-surface-int{transition:box-shadow .2s ease,transform .2s ease}.nl-surface-int:hover{box-shadow:var(--nl-surface-shadow-hover);transform:translateY(-2px)}';
 
   return (
-    <html lang={locale} data-theme={theme} data-theme-mode={themeMode} data-motion={motionOn ? 'on' : 'off'} className="[overflow-x:clip]">
+    <html lang={locale} data-theme={theme} data-theme-mode={themeMode} data-motion={motionOn ? 'on' : 'off'}>
       <body className="min-h-screen font-sans antialiased">
         <style dangerouslySetInnerHTML={{ __html: surfaceCss + themeCss + motionCss }} />
         <noscript><style dangerouslySetInnerHTML={{ __html: '.nl-reveal{opacity:1!important;transform:none!important}' }} /></noscript>
