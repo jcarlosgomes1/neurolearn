@@ -23,7 +23,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   const { data: { user } } = await sb.auth.getUser();
   if (!user) redirect(`/${locale}/login`);
 
-  const { data } = await sb.rpc('nl_student_agenda');
+  const { data } = await sb.rpc('nl_calendar_agenda');
   const rows = ((data || []) as AgendaRow[]);
   const upcoming = rows.filter((r) => !r.is_past);
   const past = rows.filter((r) => r.is_past).reverse();
