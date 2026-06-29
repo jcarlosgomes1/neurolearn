@@ -32,7 +32,7 @@ export function GlobalErrorBoundary({ error, reset }: { error: Error & { digest?
     <div className="min-h-[60vh] flex items-center justify-center px-4 relative overflow-hidden">
       {/* decorativo: blob de cor subtil */}
       <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-gradient-to-br from-rose-100 to-amber-100 rounded-full blur-3xl opacity-40" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-gradient-to-br from-[var(--accent-tint)] to-[var(--saffron-soft)] rounded-full blur-3xl opacity-40" />
       </div>
 
       <div className="max-w-md w-full text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -40,13 +40,13 @@ export function GlobalErrorBoundary({ error, reset }: { error: Error & { digest?
           <AlertTriangle className="h-10 w-10" strokeWidth={2.2} />
         </div>
 
-        <h1 className="text-3xl font-bold text-slate-900 mb-2 tracking-tight">Algo correu mal</h1>
-        <p className="text-sm text-slate-600 mb-2 max-w-sm mx-auto leading-relaxed">
+        <h1 className="text-3xl font-bold text-[var(--ink)] mb-2 tracking-tight">Algo correu mal</h1>
+        <p className="text-sm text-[var(--ink-2)] mb-2 max-w-sm mx-auto leading-relaxed">
           Encontrámos um problema ao carregar esta página. Já registámos o erro automaticamente para investigarmos.
         </p>
 
         {error.digest && (
-          <p className="text-[11px] text-slate-400 font-mono mb-5 inline-block bg-slate-50 border border-slate-100 rounded px-2 py-1">
+          <p className="text-[11px] text-[var(--ink-3)] font-mono mb-5 inline-block bg-[var(--paper)] border border-[var(--line)] rounded px-2 py-1">
             Ref: {error.digest}
           </p>
         )}
@@ -54,12 +54,12 @@ export function GlobalErrorBoundary({ error, reset }: { error: Error & { digest?
         <div className="flex flex-wrap gap-2 justify-center mt-4">
           <button
             onClick={reset}
-            className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-slate-900 hover:bg-slate-800 active:scale-[0.98] text-white text-sm font-semibold rounded-xl transition-all shadow-sm">
+            className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[var(--ink)] hover:opacity-90 active:scale-[0.98] text-white text-sm font-semibold rounded-xl transition-all shadow-sm">
             <RefreshCw className="h-4 w-4" /> Tentar de novo
           </button>
           <Link
             href={'/' as any}
-            className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 active:scale-[0.98] text-slate-700 text-sm font-semibold rounded-xl transition-all">
+            className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[var(--card)] border border-[var(--line)] hover:bg-[var(--paper)] active:scale-[0.98] text-[var(--ink-2)] text-sm font-semibold rounded-xl transition-all">
             <Home className="h-4 w-4" /> Voltar à home
           </Link>
         </div>
