@@ -47,7 +47,7 @@ export function HeaderClient({ session, nav }: { session: Session | null; nav: N
   return (
     <>
       <header className="sticky top-0 z-40 bg-white border-b border-slate-200">
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-3">
+        <div className="mx-auto w-full px-4 h-16 flex items-center justify-between gap-3" style={{ maxWidth: 'var(--page-max, 72rem)' }}>
           <Link href="/" className="flex items-center gap-2 text-slate-900 group shrink-0">
             <BrandLogo iconClassName="transition-transform group-hover:scale-110" textClassName="text-lg tracking-tight" />
           </Link>
@@ -76,7 +76,7 @@ export function HeaderClient({ session, nav }: { session: Session | null; nav: N
 
             {(!session || session.area === 'student') && (
               <Link href={'/candidatar' as any}
-                className="hidden md:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-semibold bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 text-white transition-all shadow-sm hover:shadow">
+                className="hidden md:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-semibold text-white transition-all hover:brightness-110 shadow-sm hover:shadow" style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent-bright))' }}>
                 <GraduationCap className="h-4 w-4" /><span>{t('nav.teach_cta')}</span>
               </Link>
             )}
@@ -122,7 +122,7 @@ export function HeaderClient({ session, nav }: { session: Session | null; nav: N
               ))}
 
               {(!session || session.area === 'student') && (
-                <Link href={'/candidatar' as any} className="flex items-center gap-3 px-3 py-3.5 rounded-lg hover:opacity-90 text-white font-semibold transition-colors bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 mt-2 shadow-sm">
+                <Link href={'/candidatar' as any} className="flex items-center gap-3 px-3 py-3.5 rounded-lg hover:opacity-90 text-white font-semibold transition-colors mt-2 shadow-sm" style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent-bright))' }}>
                   <GraduationCap className="h-4 w-4" /><span>{t('nav.teach_cta')}</span>
                 </Link>
               )}
