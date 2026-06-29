@@ -126,110 +126,71 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
       ]} baseUrl={SITE_URL} />
       <Header />
       <main className="min-h-screen" style={{ backgroundColor: 'rgb(250 249 245)' }}>
-        {/* ===== HERO ===== */}
-        <section>
-          <div className="max-w-6xl mx-auto px-5 sm:px-8 pt-6 pb-3">
-            <Link href={'/cursos' as any} className="group inline-flex items-center gap-2 text-sm font-medium" style={{ color: 'rgb(154 144 133)' }} aria-label={t('cdp.back')}>
-              <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" strokeWidth={2.25} />
-              <span>{t('cdp.back')}</span>
-            </Link>
-          </div>
-          <div className="max-w-6xl mx-auto px-5 sm:px-8 pb-14 grid grid-cols-1 lg:grid-cols-12 gap-x-12 gap-y-8">
-            <div className="lg:col-span-7 min-w-0">
-              <div className="flex items-center gap-2.5 mb-5">
-                {course.level && <span className="text-xs font-semibold uppercase tracking-[0.1em]" style={{ color: 'rgb(180 88 58)' }}>{course.level}</span>}
-                {course.featured && <><span style={{ color: 'rgb(233 229 222)' }}>·</span><span className="inline-flex items-center gap-1 text-xs font-semibold tracking-wide uppercase" style={{ color: 'rgb(180 83 9)' }}><Sparkles className="h-3.5 w-3.5" /> {t('cdp.featured')}</span></>}
-                <div className="ml-auto"><WishlistButton courseId={course.id} size="md" /></div>
-              </div>
-              <h1 className="font-display font-bold tracking-[-0.02em] text-balance" style={{ fontSize: 'clamp(2.5rem, 6.5vw, 4rem)', lineHeight: 1.02, color: 'rgb(28 25 22)' }}>{course.title}</h1>
-              {course.subtitle && <p className="mt-6 text-pretty" style={{ fontSize: '1.3rem', lineHeight: 1.5, color: 'rgb(92 84 76)' }}>{course.subtitle}</p>}
-              {isFallback && <CourseTranslationRequest courseId={id} locale={locale} sourceLangName={usedLangName} />}
-              <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm" style={{ color: 'rgb(92 84 76)' }}>
-                {modules.length > 0 && <span className="inline-flex items-center gap-2"><Layers className="h-4 w-4" strokeWidth={1.75} style={{ color: 'rgb(154 144 133)' }} /> {t('cdp.modules', { n: modules.length })}</span>}
-                {lessonCount > 0 && <span className="inline-flex items-center gap-2"><PlayCircle className="h-4 w-4" strokeWidth={1.75} style={{ color: 'rgb(154 144 133)' }} /> {lessonCount} aulas</span>}
-                {course.duration && <span className="inline-flex items-center gap-2"><Clock className="h-4 w-4" strokeWidth={1.75} style={{ color: 'rgb(154 144 133)' }} /> {course.duration}</span>}
-                {course.enrollments_count > 0 && <span className="inline-flex items-center gap-2"><Users className="h-4 w-4" strokeWidth={1.75} style={{ color: 'rgb(154 144 133)' }} /> {t('cdp.students', { n: course.enrollments_count })}</span>}
-                {course.rating_avg && <span className="inline-flex items-center gap-1.5" style={{ color: 'rgb(180 88 58)' }}><Star className="h-4 w-4 fill-current" /> {Number(course.rating_avg).toFixed(1)} <span style={{ color: 'rgb(168 161 151)' }}>({course.rating_count || 0})</span></span>}
-              </div>
+        {/* ===== TOPO: voltar ===== */}
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 pt-6 pb-3">
+          <Link href={'/cursos' as any} className="group inline-flex items-center gap-2 text-sm font-medium" style={{ color: 'rgb(154 144 133)' }} aria-label={t('cdp.back')}>
+            <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" strokeWidth={2.25} />
+            <span>{t('cdp.back')}</span>
+          </Link>
+        </div>
+
+        {/* ===== GRID DE PÁGINA INTEIRA: conteúdo (esq) + cartão sticky (dir) ===== */}
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 pb-16 grid grid-cols-1 lg:grid-cols-12 gap-x-12 gap-y-10 items-start">
+
+          {/* ===================== COLUNA PRINCIPAL ===================== */}
+          <div className="lg:col-span-8 min-w-0">
+            {/* HERO */}
+            <div className="flex items-center gap-2.5 mb-5">
+              {course.level && <span className="text-xs font-semibold uppercase tracking-[0.1em]" style={{ color: 'rgb(180 88 58)' }}>{course.level}</span>}
+              {course.featured && <><span style={{ color: 'rgb(233 229 222)' }}>·</span><span className="inline-flex items-center gap-1 text-xs font-semibold tracking-wide uppercase" style={{ color: 'rgb(180 83 9)' }}><Sparkles className="h-3.5 w-3.5" /> {t('cdp.featured')}</span></>}
+              <div className="ml-auto"><WishlistButton courseId={course.id} size="md" /></div>
             </div>
-            <aside className="lg:col-span-5 lg:sticky lg:top-24 self-start">
-              <div className="rounded-2xl overflow-hidden bg-white" style={{ border: '1px solid rgb(233 229 222)', boxShadow: '0 8px 30px -12px rgba(66,61,55,0.22)' }}>
-                {course.hero_image_url && (
-                  <div className="aspect-[16/9] w-full overflow-hidden" style={{ backgroundColor: 'rgb(245 243 239)' }}>
-                    <img src={course.hero_image_url} alt={course.title} className="w-full h-full object-cover" />
-                  </div>
-                )}
-                <div className="p-6">
-                  {lessonCount === 0 ? (
-                    <div className="rounded-xl p-4 text-sm font-medium text-center" style={{ backgroundColor: 'rgb(254 252 232)', color: 'rgb(146 64 14)' }}>{t('cdp.coming_soon')}</div>
-                  ) : enrolled ? (
-                    <Link href={`/learn/curso/${course.id}/continuar` as any} className="btn-primary w-full inline-flex items-center justify-center gap-2 py-3.5 text-base font-semibold">{t('cdp.go_to_course')}</Link>
-                  ) : (
-                    <>
-                      <div className="mb-5">
-                        {(!course.price_cents || course.price_cents === 0) ? (
-                          <div className="flex items-baseline gap-2.5"><span className="font-display font-bold" style={{ fontSize: '2.75rem', lineHeight: 1, color: 'rgb(15 138 128)' }}>{t('cdp.free') || 'Grátis'}</span></div>
-                        ) : (
-                          <><div className="font-display font-bold" style={{ fontSize: '2.75rem', lineHeight: 1, color: 'rgb(28 25 22)' }}>{fmtCents(course.price_cents, course.currency || 'EUR')}</div><p className="text-xs mt-2" style={{ color: 'rgb(121 114 104)' }}>{t('cdp.price_note')}</p></>
-                        )}
-                      </div>
-                      <EnrollButton courseId={course.id} priceLabel={fmtCents(course.price_cents, course.currency || 'EUR')} courseTitle={course.title} />
-                    </>
-                  )}
-                  <div className="mt-6 pt-5 grid grid-cols-1 gap-3 text-sm border-t" style={{ borderColor: 'rgb(233 229 222)', color: 'rgb(66 61 55)' }}>
-                    <div className="flex items-center gap-2.5"><CheckCircle className="h-4 w-4 flex-shrink-0" style={{ color: 'rgb(154 144 133)' }} /><span>{t('cdp.benefit_lifetime')}</span></div>
-                    <div className="flex items-center gap-2.5"><Award className="h-4 w-4 flex-shrink-0" style={{ color: 'rgb(154 144 133)' }} /><span>{t('cdp.benefit_certificate')}</span></div>
-                    <div className="flex items-center gap-2.5"><ShieldCheck className="h-4 w-4 flex-shrink-0" style={{ color: 'rgb(154 144 133)' }} /><span>{t('cdp.benefit_refund')}</span></div>
-                  </div>
+            <h1 className="font-display font-bold tracking-[-0.02em] text-balance" style={{ fontSize: 'clamp(2.25rem, 5vw, 3.5rem)', lineHeight: 1.04, color: 'rgb(28 25 22)' }}>{course.title}</h1>
+            {course.subtitle && <p className="mt-5 text-pretty" style={{ fontSize: '1.25rem', lineHeight: 1.5, color: 'rgb(92 84 76)' }}>{course.subtitle}</p>}
+            {isFallback && <CourseTranslationRequest courseId={id} locale={locale} sourceLangName={usedLangName} />}
+            <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm" style={{ color: 'rgb(92 84 76)' }}>
+              {modules.length > 0 && <span className="inline-flex items-center gap-2"><Layers className="h-4 w-4" strokeWidth={1.75} style={{ color: 'rgb(154 144 133)' }} /> {t('cdp.modules', { n: modules.length })}</span>}
+              {lessonCount > 0 && <span className="inline-flex items-center gap-2"><PlayCircle className="h-4 w-4" strokeWidth={1.75} style={{ color: 'rgb(154 144 133)' }} /> {lessonCount} aulas</span>}
+              {course.duration && <span className="inline-flex items-center gap-2"><Clock className="h-4 w-4" strokeWidth={1.75} style={{ color: 'rgb(154 144 133)' }} /> {course.duration}</span>}
+              {course.enrollments_count > 0 && <span className="inline-flex items-center gap-2"><Users className="h-4 w-4" strokeWidth={1.75} style={{ color: 'rgb(154 144 133)' }} /> {t('cdp.students', { n: course.enrollments_count })}</span>}
+              {course.rating_avg && <span className="inline-flex items-center gap-1.5" style={{ color: 'rgb(180 88 58)' }}><Star className="h-4 w-4 fill-current" /> {Number(course.rating_avg).toFixed(1)} <span style={{ color: 'rgb(168 161 151)' }}>({course.rating_count || 0})</span></span>}
+            </div>
+
+            {/* PERCURSOS */}
+            {coursePaths.length > 0 && (
+              <div className="mt-10 rounded-2xl p-5" style={{ backgroundColor: 'white', border: '1px solid rgb(233 229 222)' }}>
+                <h2 className="text-base font-bold mb-1 flex items-center gap-2" style={{ color: 'rgb(180 88 58)' }}><BookOpen className="h-4 w-4" /> {t('cdp.in_paths_h')}</h2>
+                <p className="text-sm mb-4" style={{ color: 'rgb(92 84 76)' }}>{t('cdp.in_paths_sub')}</p>
+                <div className="flex flex-col gap-2">
+                  {coursePaths.map((p: any) => (
+                    <Link key={p.id} href={`/percursos/${p.slug}` as any} className="group flex items-center gap-3 rounded-xl px-4 py-3 transition-all min-w-0 max-w-full" style={{ border: '1px solid rgb(233 229 222)' }}>
+                      <span className="text-2xl flex-shrink-0">{p.emoji || '\u{1F393}'}</span>
+                      <div className="min-w-0 flex-1"><div className="font-semibold truncate" style={{ color: 'rgb(28 25 22)' }}>{p.title}</div>{p.subtitle && <div className="text-xs truncate" style={{ color: 'rgb(121 114 104)' }}>{p.subtitle}</div>}</div>
+                      <span className="text-xs flex-shrink-0" style={{ color: 'rgb(154 144 133)' }}>{t('cdp.in_paths_count', { n: p.course_count })}</span>
+                    </Link>
+                  ))}
                 </div>
               </div>
-            </aside>
-          </div>
-        </section>
+            )}
 
-        {/* ===== PERCURSOS ===== */}
-        {coursePaths.length > 0 && (
-          <section className="max-w-6xl mx-auto px-5 sm:px-8 pb-4">
-            <div className="rounded-2xl p-5" style={{ backgroundColor: 'white', border: '1px solid rgb(233 229 222)' }}>
-              <h2 className="text-base font-bold mb-1 flex items-center gap-2" style={{ color: 'rgb(180 88 58)' }}><BookOpen className="h-4 w-4" /> {t('cdp.in_paths_h')}</h2>
-              <p className="text-sm mb-4" style={{ color: 'rgb(92 84 76)' }}>{t('cdp.in_paths_sub')}</p>
-              <div className="flex flex-col gap-2">
-                {coursePaths.map((p: any) => (
-                  <Link key={p.id} href={`/percursos/${p.slug}` as any} className="group flex items-center gap-3 rounded-xl px-4 py-3 transition-all min-w-0 max-w-full" style={{ border: '1px solid rgb(233 229 222)' }}>
-                    <span className="text-2xl flex-shrink-0">{p.emoji || '\u{1F393}'}</span>
-                    <div className="min-w-0 flex-1"><div className="font-semibold truncate" style={{ color: 'rgb(28 25 22)' }}>{p.title}</div>{p.subtitle && <div className="text-xs truncate" style={{ color: 'rgb(121 114 104)' }}>{p.subtitle}</div>}</div>
-                    <span className="text-xs flex-shrink-0" style={{ color: 'rgb(154 144 133)' }}>{t('cdp.in_paths_count', { n: p.course_count })}</span>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* ===== O QUE VAIS DOMINAR ===== */}
-        {topics.length > 0 && (
-          <section style={{ backgroundColor: 'white', borderTop: '1px solid rgb(233 229 222)', borderBottom: '1px solid rgb(233 229 222)' }}>
-            <div className="max-w-6xl mx-auto px-5 sm:px-8 py-16">
-              <div className="max-w-2xl mb-10">
+            {/* O QUE VAIS DOMINAR */}
+            {topics.length > 0 && (
+              <div className="mt-12">
                 <span className="text-xs font-semibold uppercase tracking-[0.12em]" style={{ color: 'rgb(180 88 58)' }}>{t('cdp.what_youll_learn')}</span>
-                <h2 className="font-display font-bold tracking-tight mt-3" style={{ fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', lineHeight: 1.1, color: 'rgb(28 25 22)' }}>{t('cdp.what_youll_learn')}</h2>
+                <h2 className="font-display font-bold tracking-tight mt-3 mb-7" style={{ fontSize: 'clamp(1.6rem, 3.5vw, 2.25rem)', lineHeight: 1.1, color: 'rgb(28 25 22)' }}>{t('cdp.what_youll_learn')}</h2>
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+                  {topics.map((tp: string, i: number) => (
+                    <li key={i} className="flex items-start gap-3"><span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full flex-shrink-0" style={{ backgroundColor: 'rgb(214 239 236)' }}><CheckCircle className="h-3.5 w-3.5" strokeWidth={3} style={{ color: 'rgb(12 107 99)' }} /></span><span style={{ fontSize: '1rem', lineHeight: 1.5, color: 'rgb(66 61 55)' }}>{tp}</span></li>
+                  ))}
+                </ul>
               </div>
-              <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-5">
-                {topics.map((tp: string, i: number) => (
-                  <li key={i} className="flex items-start gap-3.5"><span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full flex-shrink-0" style={{ backgroundColor: 'rgb(214 239 236)' }}><CheckCircle className="h-3.5 w-3.5" strokeWidth={3} style={{ color: 'rgb(12 107 99)' }} /></span><span style={{ fontSize: '1.05rem', lineHeight: 1.5, color: 'rgb(66 61 55)' }}>{tp}</span></li>
-                ))}
-              </ul>
-            </div>
-          </section>
-        )}
+            )}
 
-        {/* ===== CORPO ===== */}
-        <section className="max-w-6xl mx-auto px-5 sm:px-8 py-16 grid grid-cols-1 lg:grid-cols-12 gap-12">
-          <div className="lg:col-span-8 space-y-14">
+            {/* CURRÍCULO */}
             {modules.length > 0 && (
-              <div>
-                <div className="flex items-baseline justify-between mb-7 flex-wrap gap-2">
-                  <h2 className="font-display font-bold tracking-tight" style={{ fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', lineHeight: 1.1, color: 'rgb(28 25 22)' }}>{t('cdp.content')}</h2>
+              <div className="mt-12">
+                <div className="flex items-baseline justify-between mb-6 flex-wrap gap-2">
+                  <h2 className="font-display font-bold tracking-tight" style={{ fontSize: 'clamp(1.6rem, 3.5vw, 2.25rem)', lineHeight: 1.1, color: 'rgb(28 25 22)' }}>{t('cdp.content')}</h2>
                   <span className="text-sm font-medium" style={{ color: 'rgb(154 144 133)' }}>{t('cdp.modules', { n: modules.length })}{lessonCount > 0 ? ` · ${lessonCount} aulas` : ''}</span>
                 </div>
                 <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid rgb(233 229 222)' }}>
@@ -254,24 +215,62 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
                 </div>
               </div>
             )}
+
+            {/* SOBRE */}
             {course.description && (
-              <div>
-                <h2 className="font-display font-bold tracking-tight mb-5" style={{ fontSize: 'clamp(1.5rem, 3.5vw, 2rem)', lineHeight: 1.1, color: 'rgb(28 25 22)' }}>{t('cdp.about')}</h2>
-                <div className="leading-[1.8] whitespace-pre-wrap" style={{ color: 'rgb(66 61 55)', fontSize: '1.08rem' }}>{course.description}</div>
+              <div className="mt-12">
+                <h2 className="font-display font-bold tracking-tight mb-5" style={{ fontSize: 'clamp(1.4rem, 3vw, 1.85rem)', lineHeight: 1.1, color: 'rgb(28 25 22)' }}>{t('cdp.about')}</h2>
+                <div className="leading-[1.8] whitespace-pre-wrap" style={{ color: 'rgb(66 61 55)', fontSize: '1.05rem' }}>{course.description}</div>
               </div>
             )}
-            <div className="pt-10" style={{ borderTop: '1px solid rgb(233 229 222)' }}>
+
+            {/* REVIEWS */}
+            <div className="mt-12 pt-10" style={{ borderTop: '1px solid rgb(233 229 222)' }}>
               <h2 className="font-display text-2xl font-bold mb-1 flex items-center gap-2" style={{ color: 'rgb(28 25 22)' }}><Star className="h-6 w-6" style={{ color: 'rgb(245 158 11)', fill: 'rgb(245 158 11)' }} /> {t('cdp.reviews_h')}</h2>
               <p className="text-sm mb-6" style={{ color: 'rgb(121 114 104)' }}>{t('cdp.reviews_sub')}</p>
               <CourseReviews courseId={course.id} currentUserId={user?.id} isInstructor={isInstructor} />
             </div>
-            <div className="pt-10" style={{ borderTop: '1px solid rgb(233 229 222)' }}>
+
+            {/* Q&A */}
+            <div className="mt-12 pt-10" style={{ borderTop: '1px solid rgb(233 229 222)' }}>
               <h2 className="font-display text-2xl font-bold mb-1 flex items-center gap-2" style={{ color: 'rgb(28 25 22)' }}><MessageCircle className="h-6 w-6" style={{ color: 'rgb(59 130 246)' }} /> {t('cdp.qa_h')}</h2>
               <p className="text-sm mb-6" style={{ color: 'rgb(121 114 104)' }}>{t('cdp.qa_sub')}</p>
               <CourseQA courseId={course.id} currentUserId={user?.id} />
             </div>
           </div>
-          <aside className="lg:col-span-4 space-y-4">
+
+          {/* ===================== COLUNA STICKY (cartão) ===================== */}
+          <aside className="lg:col-span-4 lg:sticky lg:top-24 self-start space-y-4">
+            <div className="rounded-2xl overflow-hidden bg-white" style={{ border: '1px solid rgb(233 229 222)', boxShadow: '0 8px 30px -12px rgba(66,61,55,0.22)' }}>
+              {course.hero_image_url && (
+                <div className="aspect-[16/9] w-full overflow-hidden" style={{ backgroundColor: 'rgb(245 243 239)' }}>
+                  <img src={course.hero_image_url} alt={course.title} className="w-full h-full object-cover" />
+                </div>
+              )}
+              <div className="p-6">
+                {lessonCount === 0 ? (
+                  <div className="rounded-xl p-4 text-sm font-medium text-center" style={{ backgroundColor: 'rgb(254 252 232)', color: 'rgb(146 64 14)' }}>{t('cdp.coming_soon')}</div>
+                ) : enrolled ? (
+                  <Link href={`/learn/curso/${course.id}/continuar` as any} className="btn-primary w-full inline-flex items-center justify-center gap-2 py-3.5 text-base font-semibold">{t('cdp.go_to_course')}</Link>
+                ) : (
+                  <>
+                    <div className="mb-5">
+                      {(!course.price_cents || course.price_cents === 0) ? (
+                        <div className="flex items-baseline gap-2.5"><span className="font-display font-bold" style={{ fontSize: '2.5rem', lineHeight: 1, color: 'rgb(15 138 128)' }}>Grátis</span></div>
+                      ) : (
+                        <><div className="font-display font-bold" style={{ fontSize: '2.5rem', lineHeight: 1, color: 'rgb(28 25 22)' }}>{fmtCents(course.price_cents, course.currency || 'EUR')}</div><p className="text-xs mt-2" style={{ color: 'rgb(121 114 104)' }}>{t('cdp.price_note')}</p></>
+                      )}
+                    </div>
+                    <EnrollButton courseId={course.id} priceLabel={fmtCents(course.price_cents, course.currency || 'EUR')} courseTitle={course.title} />
+                  </>
+                )}
+                <div className="mt-6 pt-5 grid grid-cols-1 gap-3 text-sm border-t" style={{ borderColor: 'rgb(233 229 222)', color: 'rgb(66 61 55)' }}>
+                  <div className="flex items-center gap-2.5"><CheckCircle className="h-4 w-4 flex-shrink-0" style={{ color: 'rgb(154 144 133)' }} /><span>{t('cdp.benefit_lifetime')}</span></div>
+                  <div className="flex items-center gap-2.5"><Award className="h-4 w-4 flex-shrink-0" style={{ color: 'rgb(154 144 133)' }} /><span>{t('cdp.benefit_certificate')}</span></div>
+                  <div className="flex items-center gap-2.5"><ShieldCheck className="h-4 w-4 flex-shrink-0" style={{ color: 'rgb(154 144 133)' }} /><span>{t('cdp.benefit_refund')}</span></div>
+                </div>
+              </div>
+            </div>
             {instructor && (
               <div className="rounded-2xl p-6 bg-white" style={{ border: '1px solid rgb(233 229 222)' }}>
                 <h3 className="text-xs font-bold uppercase tracking-[0.12em] mb-5" style={{ color: 'rgb(154 144 133)' }}>{t('cdp.instructor')}</h3>
@@ -286,8 +285,7 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
               <div className="flex items-start gap-2.5"><ShieldCheck className="h-5 w-5 flex-shrink-0 mt-0.5" style={{ color: 'rgb(13 148 136)' }} /><div><h4 className="font-semibold text-sm" style={{ color: 'rgb(19 78 74)' }}>{t('cdp.guarantee_h')}</h4><p className="text-xs mt-1 leading-relaxed" style={{ color: 'rgb(17 94 89)' }}>{t('cdp.guarantee_p')}</p></div></div>
             </div>
           </aside>
-        </section>
-        {/* FIM ESTRUTURA NOVA */}
+        </div>
 
         <Footer data={blocks.footer_brand || {}} />
       </main>
