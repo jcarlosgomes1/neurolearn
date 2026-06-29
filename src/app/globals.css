@@ -168,5 +168,6 @@ html{scroll-behavior:smooth}
 a,button{transition:color .18s ease,background-color .18s ease,border-color .18s ease,box-shadow .25s ease,transform .18s ease}
 @media (prefers-reduced-motion: no-preference){
   .nl-page-enter{animation:nlPageEnter .5s cubic-bezier(.2,.7,.2,1) both}
+  .nl-page-enter:has(header){animation:none}
 }
 @keyframes nlPageEnter{from{opacity:0}to{opacity:1}}
