@@ -61,14 +61,10 @@ export function BlogClient({ posts }: { posts: Post[] }) {
 
   function clearFilters() { setSearch(''); setCat('all'); }
 
-  function pillClass(active: boolean) {
-    return `text-sm font-medium px-3.5 py-1.5 rounded-full border transition-colors ${active ? 'bg-brand-600 text-white border-brand-600' : 'bg-white text-slate-600 border-slate-200 hover:border-brand-300 hover:text-brand-700'}`;
-  }
-
   if (posts.length === 0) return null;
 
   return (
-    <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 sm:pb-24">
+    <section className="mx-auto px-4 sm:px-6 lg:px-8 pb-16 sm:pb-24" style={{ maxWidth: 'var(--page-max, 72rem)' }}>
       <div className="mb-4 sm:mb-5">
         <input type="search" value={search} onChange={(e) => setSearch(e.target.value)}
           placeholder={t('blog.search_ph')}
@@ -77,27 +73,29 @@ export function BlogClient({ posts }: { posts: Post[] }) {
 
       {categories.length > 0 && (
         <div className="mb-6 sm:mb-8 flex flex-wrap gap-2">
-          <button onClick={() => setCat('all')} className={pillClass(cat === 'all')}>{t('blog.f_cat_all')}</button>
+          <button onClick={() => setCat('all')} className="text-sm font-medium px-3.5 py-1.5 rounded-full border transition-colors"
+            style={cat === 'all' ? { background: 'var(--accent)', color: '#fff', borderColor: 'var(--accent)' } : { background: 'var(--card)', color: 'var(--ink-2)', borderColor: 'var(--line)' }}>{t('blog.f_cat_all')}</button>
           {categories.map((x) => (
-            <button key={x} onClick={() => setCat(x)} className={pillClass(cat === x)}>{x}</button>
+            <button key={x} onClick={() => setCat(x)} className="text-sm font-medium px-3.5 py-1.5 rounded-full border transition-colors"
+              style={cat === x ? { background: 'var(--accent)', color: '#fff', borderColor: 'var(--accent)' } : { background: 'var(--card)', color: 'var(--ink-2)', borderColor: 'var(--line)' }}>{x}</button>
           ))}
         </div>
       )}
 
       {filtered.length === 0 ? (
         <div className="text-center py-16">
-          <SearchX className="h-8 w-8 text-slate-300 mx-auto mb-3" aria-hidden />
-          <p className="text-slate-700 font-medium">{t('blog.no_match')}</p>
-          <button onClick={clearFilters} className="mt-3 text-sm text-brand-600 hover:underline">
+          <SearchX className="h-8 w-8 mx-auto mb-3" style={{ color: 'var(--ink-3)' }} aria-hidden />
+          <p className="font-medium" style={{ color: 'var(--ink)' }}>{t('blog.no_match')}</p>
+          <button onClick={clearFilters} className="mt-3 text-sm hover:underline" style={{ color: 'var(--accent)' }}>
             {t('blog.clear_filters')}
           </button>
         </div>
       ) : (
         <>
-          <p className="text-sm text-slate-500 mb-5 sm:mb-6">{t('blog.showing', { n: filtered.length })}</p>
+          <p className="text-sm mb-5 sm:mb-6" style={{ color: 'var(--ink-3)' }}>{t('blog.showing', { n: filtered.length })}</p>
           <div className="grid gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {shown.map((p) => (
-              <Link key={p.id} href={`/blog/${p.slug}` as any} className="group flex flex-col bg-white rounded-xl overflow-hidden border border-slate-200 hover:border-slate-300 hover:shadow-lg transition-all duration-300">
+              <Link key={p.id} href={`/blog/${p.slug}` as any} className="group flex flex-col rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300" style={{ background: 'var(--card)', border: '1px solid var(--line)' }}>
                 <CoverImage
                   src={p.featured_image_url}
                   alt={p.tr!.title}
@@ -107,10 +105,10 @@ export function BlogClient({ posts }: { posts: Post[] }) {
                   aspectRatio="16/10"
                 />
                 <div className="p-5 flex flex-col flex-1">
-                  {p.category && <span className="self-start text-[11px] font-semibold uppercase tracking-wider text-brand-700 bg-brand-50 px-2 py-0.5 rounded-full mb-3">{p.category}</span>}
-                  <h3 className="text-lg font-bold text-slate-900 leading-snug group-hover:text-brand-700 transition-colors line-clamp-2">{p.tr!.title}</h3>
-                  {p.tr!.excerpt && <p className="mt-2 text-sm text-slate-600 leading-relaxed line-clamp-3 flex-1">{p.tr!.excerpt}</p>}
-                  <div className="mt-4 flex items-center gap-2 text-xs text-slate-500">
+                  {p.category && <span className="self-start text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full mb-3" style={{ color: 'var(--accent)', background: 'var(--accent-tint)' }}>{p.category}</span>}
+                  <h3 className="text-lg font-bold leading-snug transition-colors line-clamp-2" style={{ color: 'var(--ink)' }}>{p.tr!.title}</h3>
+                  {p.tr!.excerpt && <p className="mt-2 text-sm leading-relaxed line-clamp-3 flex-1" style={{ color: 'var(--ink-2)' }}>{p.tr!.excerpt}</p>}
+                  <div className="mt-4 flex items-center gap-2 text-xs" style={{ color: 'var(--ink-3)' }}>
                     {p.published_at && <span>{fmtDate(p.published_at)}</span>}
                     {p.tr!.reading_time_minutes && <><span>·</span><span>{p.tr!.reading_time_minutes} {t('blog.min_read')}</span></>}
                   </div>
@@ -121,7 +119,7 @@ export function BlogClient({ posts }: { posts: Post[] }) {
           {filtered.length > visible && (
             <div className="mt-10 sm:mt-12 text-center">
               <button onClick={() => setVisible((v) => v + PAGE)}
-                className="inline-flex items-center px-6 py-2.5 rounded-full border border-slate-200 bg-white text-sm font-semibold text-slate-700 hover:border-brand-300 hover:text-brand-700 transition-colors">
+                className="inline-flex items-center px-6 py-2.5 rounded-full border text-sm font-semibold transition-colors" style={{ background: 'var(--card)', color: 'var(--ink-2)', borderColor: 'var(--line)' }}>
                 {t('blog.load_more')}
               </button>
             </div>

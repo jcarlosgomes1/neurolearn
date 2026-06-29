@@ -68,19 +68,18 @@ export default async function BlogPage({ params }: { params: Promise<{ locale: s
   return (
     <>
       <Header />
-      <main className="bg-white min-h-screen">
+      <main className="min-h-screen" style={{ background: 'var(--paper)' }}>
         <PageHero badge={t('blog.eyebrow')} title={t('blog.title')} subtitle={t('blog.subtitle')} />
 
         {enriched.length === 0 ? (
           <section className="max-w-3xl mx-auto px-4 py-16 text-center">
-            
-            <p className="text-lg text-slate-500">{t('blog.empty')}</p>
+            <p className="text-lg" style={{ color: 'var(--ink-3)' }}>{t('blog.empty')}</p>
           </section>
         ) : (
           <>
             {hero && hero.tr && (
-              <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mb-12 sm:mb-16">
-                <Link href={`/blog/${hero.slug}` as any} className="group block bg-slate-50 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300">
+              <section className="mx-auto px-4 sm:px-6 lg:px-8 mb-12 sm:mb-16" style={{ maxWidth: 'var(--page-max, 72rem)' }}>
+                <Link href={`/blog/${hero.slug}` as any} className="group block rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300" style={{ background: 'var(--card)', border: '1px solid var(--line)' }}>
                   <div className="grid md:grid-cols-2 gap-0">
                     <CoverImage
                       src={hero.featured_image_url}
@@ -92,10 +91,10 @@ export default async function BlogPage({ params }: { params: Promise<{ locale: s
                       priority
                     />
                     <div className="p-6 sm:p-10 flex flex-col justify-center">
-                      {hero.category && <span className="self-start text-xs font-semibold uppercase tracking-wider text-brand-700 bg-brand-50 px-2.5 py-1 rounded-full mb-4">{hero.category}</span>}
-                      <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 leading-tight group-hover:text-brand-700 transition-colors">{hero.tr.title}</h2>
-                      {hero.tr.excerpt && <p className="mt-4 text-base sm:text-lg text-slate-600 leading-relaxed line-clamp-3">{hero.tr.excerpt}</p>}
-                      <div className="mt-6 flex items-center gap-3 text-sm text-slate-500">
+                      {hero.category && <span className="self-start text-xs font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full mb-4" style={{ color: 'var(--accent)', background: 'var(--accent-tint)' }}>{hero.category}</span>}
+                      <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight transition-colors" style={{ color: 'var(--ink)' }}>{hero.tr.title}</h2>
+                      {hero.tr.excerpt && <p className="mt-4 text-base sm:text-lg leading-relaxed line-clamp-3" style={{ color: 'var(--ink-2)' }}>{hero.tr.excerpt}</p>}
+                      <div className="mt-6 flex items-center gap-3 text-sm" style={{ color: 'var(--ink-3)' }}>
                         {hero.author_name && <span>{hero.author_name}</span>}
                         {hero.published_at && <><span>·</span><span>{fmtDate(hero.published_at)}</span></>}
                         {hero.tr.reading_time_minutes && <><span>·</span><span>{hero.tr.reading_time_minutes} {t('blog.min_read')}</span></>}
