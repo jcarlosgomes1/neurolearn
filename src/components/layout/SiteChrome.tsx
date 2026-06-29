@@ -30,7 +30,7 @@ export async function SiteChrome({
   publicHero,
   mainClassName = 'min-h-screen bg-white',
   wrapInner = true,
-  innerClassName = 'max-w-6xl mx-auto px-4 py-8 sm:py-12',
+  innerClassName = 'mx-auto px-4 py-8 sm:py-12',
   children,
 }: SiteChromeProps) {
   const sb = await createClient();
@@ -51,7 +51,7 @@ export async function SiteChrome({
       <Header />
       <main className={mainClassName}>
         {publicHero}
-        {wrapInner ? <div className={innerClassName}>{children}</div> : children}
+        {wrapInner ? <div className={innerClassName} style={{ maxWidth: 'var(--page-max, 72rem)' }}>{children}</div> : children}
         <Footer data={blocks.footer_brand || {}} />
       </main>
     </>

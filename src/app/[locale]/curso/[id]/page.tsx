@@ -128,7 +128,7 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
       <Header />
       <main className="min-h-screen" style={{ backgroundColor: 'rgb(250 249 245)' }}>
         {/* ===== TOPO: voltar ===== */}
-        <div className="max-w-6xl mx-auto px-5 sm:px-8 pt-6 pb-3">
+        <div style={{ maxWidth: 'var(--page-max, 72rem)' }} className="mx-auto px-5 sm:px-8 pt-6 pb-3">
           <Link href={'/cursos' as any} className="group inline-flex items-center gap-2 text-sm font-medium" style={{ color: 'rgb(154 144 133)' }} aria-label={t('cdp.back')}>
             <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" strokeWidth={2.25} />
             <span>{t('cdp.back')}</span>
@@ -136,7 +136,7 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
         </div>
 
         {/* ===== GRID DE PÁGINA INTEIRA: conteúdo (esq) + cartão sticky (dir) ===== */}
-        <div className="max-w-6xl mx-auto px-5 sm:px-8 pb-16 grid grid-cols-1 lg:grid-cols-12 gap-x-12 gap-y-10 items-start">
+        <div style={{ maxWidth: 'var(--page-max, 72rem)' }} className="mx-auto px-5 sm:px-8 pb-16 grid grid-cols-1 lg:grid-cols-12 gap-x-12 gap-y-10 items-start">
 
           {/* ===================== COLUNA PRINCIPAL ===================== */}
           <div className="lg:col-span-8 min-w-0">
