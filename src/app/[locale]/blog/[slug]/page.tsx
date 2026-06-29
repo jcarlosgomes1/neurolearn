@@ -128,10 +128,10 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         { name: translation.title, href: `/${locale}/blog/${slug}` },
       ]} baseUrl={SITE_URL} />
       <Header />
-      <main className="bg-white min-h-screen">
+      <main className="bg-[var(--card)] min-h-screen">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-10 pb-16 sm:pb-24">
           <Link href={'/blog' as any}
-            className="group inline-flex items-center gap-2 mb-6 px-3 py-1.5 rounded-full bg-white hover:bg-slate-50 border border-slate-200 hover:border-brand-300 text-slate-700 hover:text-brand-700 text-sm font-medium transition-all"
+            className="group inline-flex items-center gap-2 mb-6 px-3 py-1.5 rounded-full bg-[var(--card)] hover:bg-[var(--paper)] border border-[var(--line)] hover:border-brand-300 text-[var(--ink-2)] hover:text-[var(--accent)] text-sm font-medium transition-all"
             aria-label={backLabel}>
             <ArrowLeft className="h-4 w-4 -ml-0.5 transition-transform group-hover:-translate-x-0.5" strokeWidth={2.5} />
             <span>{backLabel}</span>
@@ -147,25 +147,25 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
             {/* Conteudo */}
             <div className="min-w-0">
-              <div className="rounded-2xl overflow-hidden border border-slate-200">
+              <div className="rounded-2xl overflow-hidden border border-[var(--line)]">
                 <CoverImage src={post.featured_image_url} alt={translation.title} seed={post.slug}
                   category={post.category} aspectRatio="21/9" priority />
               </div>
               {post.category && (
-                <span className="inline-block mt-6 text-xs font-semibold uppercase tracking-wider text-brand-700 bg-brand-50 px-2.5 py-1 rounded-full">
+                <span className="inline-block mt-6 text-xs font-semibold uppercase tracking-wider text-[var(--accent)] bg-[var(--accent-tint)] px-2.5 py-1 rounded-full">
                   {post.category}
                 </span>
               )}
-              <h1 className="mt-3 text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight leading-[1.2] text-balance">
+              <h1 className="mt-3 text-3xl sm:text-4xl font-bold text-[var(--ink)] tracking-tight leading-[1.2] text-balance">
                 {translation.title}
               </h1>
-              <div className="mt-5 flex flex-wrap items-center gap-2 text-sm text-slate-500">
-                {post.author_name && <span className="font-medium text-slate-700">{post.author_name}</span>}
+              <div className="mt-5 flex flex-wrap items-center gap-2 text-sm text-[var(--ink-3)]">
+                {post.author_name && <span className="font-medium text-[var(--ink-2)]">{post.author_name}</span>}
                 {post.published_at && <><span>·</span><span>{fmtDate(post.published_at)}</span></>}
                 {translation.reading_time_minutes && <><span>·</span><span>{translation.reading_time_minutes} {t('blog.read_time_unit')}</span></>}
               </div>
               {translation.excerpt && (
-                <p className="mt-8 text-xl text-slate-600 leading-relaxed font-light italic border-l-4 border-brand-500 pl-5 text-pretty">
+                <p className="mt-8 text-xl text-[var(--ink-2)] leading-relaxed font-light italic border-l-4 border-brand-500 pl-5 text-pretty">
                   {translation.excerpt}
                 </p>
               )}
@@ -173,9 +173,9 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                 <Markdown source={translation.content_md || ''} />
               </div>
               {post.tags && post.tags.length > 0 && (
-                <div className="mt-10 pt-6 border-t border-slate-100 flex flex-wrap gap-2">
+                <div className="mt-10 pt-6 border-t border-[var(--line)] flex flex-wrap gap-2">
                   {post.tags.map((tag: string) => (
-                    <span key={tag} className="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full">#{tag}</span>
+                    <span key={tag} className="text-xs bg-[var(--accent-tint)] text-[var(--ink-2)] px-2.5 py-1 rounded-full">#{tag}</span>
                   ))}
                 </div>
               )}
@@ -185,16 +185,16 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             <aside className="hidden lg:block">
               {related.length > 0 && (
                 <div className="sticky top-24">
-                  <div className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">{t('blog.related')}</div>
+                  <div className="text-xs font-semibold uppercase tracking-wider text-[var(--ink-3)] mb-3">{t('blog.related')}</div>
                   <div className="space-y-3">
                     {related.map((r) => (
-                      <Link key={r.id} href={`/blog/${r.slug}` as any} className="group flex gap-3 items-start rounded-lg p-2 -m-2 hover:bg-slate-50 transition-colors">
-                        <div className="w-16 flex-shrink-0 rounded-md overflow-hidden border border-slate-100">
+                      <Link key={r.id} href={`/blog/${r.slug}` as any} className="group flex gap-3 items-start rounded-lg p-2 -m-2 hover:bg-[var(--paper)] transition-colors">
+                        <div className="w-16 flex-shrink-0 rounded-md overflow-hidden border border-[var(--line)]">
                           <CoverImage src={r.featured_image_url} alt={r.tr.title} seed={r.slug} category={r.category} aspectRatio="1/1" />
                         </div>
                         <div className="min-w-0">
-                          <div className="text-sm font-semibold text-slate-800 leading-snug line-clamp-3 group-hover:text-brand-700 transition-colors">{r.tr.title}</div>
-                          {r.tr.reading_time_minutes && <div className="text-[11px] text-slate-400 mt-1">{r.tr.reading_time_minutes} {t('blog.min_unit')}</div>}
+                          <div className="text-sm font-semibold text-[var(--ink)] leading-snug line-clamp-3 group-hover:text-[var(--accent)] transition-colors">{r.tr.title}</div>
+                          {r.tr.reading_time_minutes && <div className="text-[11px] text-[var(--ink-3)] mt-1">{r.tr.reading_time_minutes} {t('blog.min_unit')}</div>}
                         </div>
                       </Link>
                     ))}
@@ -206,15 +206,15 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
           {/* Relacionados (mobile) */}
           {related.length > 0 && (
-            <section className="lg:hidden mt-12 border-t border-slate-100 pt-8">
-              <h2 className="text-xl font-bold text-slate-900 mb-5">{t('blog.related')}</h2>
+            <section className="lg:hidden mt-12 border-t border-[var(--line)] pt-8">
+              <h2 className="text-xl font-bold text-[var(--ink)] mb-5">{t('blog.related')}</h2>
               <div className="grid gap-6 sm:grid-cols-2">
                 {related.map((r) => (
-                  <Link key={r.id} href={`/blog/${r.slug}` as any} className="group bg-white rounded-xl overflow-hidden border border-slate-200 hover:shadow-md transition-all">
+                  <Link key={r.id} href={`/blog/${r.slug}` as any} className="group bg-[var(--card)] rounded-xl overflow-hidden border border-[var(--line)] hover:shadow-md transition-all">
                     <CoverImage src={r.featured_image_url} alt={r.tr.title} seed={r.slug} category={r.category} aspectRatio="16/10" />
                     <div className="p-4">
-                      <h3 className="font-bold text-slate-900 leading-snug group-hover:text-brand-700 transition-colors line-clamp-2">{r.tr.title}</h3>
-                      <div className="mt-2 flex items-center gap-2 text-xs text-slate-500">
+                      <h3 className="font-bold text-[var(--ink)] leading-snug group-hover:text-[var(--accent)] transition-colors line-clamp-2">{r.tr.title}</h3>
+                      <div className="mt-2 flex items-center gap-2 text-xs text-[var(--ink-3)]">
                         {r.published_at && <span>{fmtDate(r.published_at)}</span>}
                         {r.tr.reading_time_minutes && <><span>·</span><span>{r.tr.reading_time_minutes} {t('blog.min_unit')}</span></>}
                       </div>

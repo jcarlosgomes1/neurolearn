@@ -45,16 +45,16 @@ export function ArticleToc({ label }: { label: string }) {
 
   return (
     <nav className="text-sm">
-      <div className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">{label}</div>
+      <div className="text-xs font-semibold uppercase tracking-wider text-[var(--ink-3)] mb-3">{label}</div>
       <ol className="space-y-1">
         {items.map((it, i) => (
           <li key={it.id}>
             <a
               href={`#${it.id}`}
               onClick={(e) => { e.preventDefault(); const el = document.getElementById(it.id); if (el) el.scrollIntoView({ behavior: 'smooth' }); }}
-              className={`flex gap-2 -ml-px border-l-2 pl-3 py-1 leading-snug transition-colors ${active === it.id ? 'border-brand-500 text-brand-700 font-medium' : 'border-slate-100 text-slate-500 hover:text-slate-800 hover:border-slate-300'}`}
+              className={`flex gap-2 -ml-px border-l-2 pl-3 py-1 leading-snug transition-colors ${active === it.id ? 'border-[var(--accent)] text-[var(--accent)] font-medium' : 'border-[var(--line)] text-[var(--ink-3)] hover:text-[var(--ink)] hover:border-[var(--line)]'}`}
             >
-              <span className="text-slate-300 tabular-nums flex-shrink-0">{String(i + 1).padStart(2, '0')}</span>
+              <span className="text-[var(--ink-3)] tabular-nums flex-shrink-0">{String(i + 1).padStart(2, '0')}</span>
               <span className="line-clamp-2">{it.text}</span>
             </a>
           </li>
