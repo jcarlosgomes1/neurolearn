@@ -51,7 +51,7 @@ export default async function CoursesPage({ params, searchParams }: { params: Pr
   const { locale } = await params;
   const t = await getTranslations();
   const sb = await createClient();
-  const { data: courses } = await sb.rpc('nl_courses_catalog', { p_lang: locale });
+  const { data: courses } = await sb.rpc('nl_courses_catalog_v2', { p_lang: locale });
   const { data: cats } = await sb.rpc('nl_course_categories_list', { p_lang: locale });
   const { data: rmRaw } = await sb.rpc('nl_platform_config_get', { p_key: 'rating_min_display' });
   const { data: emRaw } = await sb.rpc('nl_platform_config_get', { p_key: 'enroll_min_display' });
