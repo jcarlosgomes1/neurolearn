@@ -82,6 +82,7 @@ export default async function LocaleLayout({
         `:root{--font-body:${t.fbody};--font-display:${t.fdisplay};--font-num:${t.fnum};` +
         `--paper:${t.paper};--card:${t.card};--ink:${t.ink};--ink-2:${t.ink2};--ink-3:${t.ink3};--line:${t.line};` +
         `--accent:${t.accent};--accent-bright:${t.accentBright};--accent-tint:${t.accentTint};` +
+        `--page-max:${t.pageMax || '80rem'};` +
         brandVars + neutralVars + accentVars +
         `--w-display:${w.display||700};--w-h1:${w.h1||700};--w-h2:${w.h2||600};--w-h3:${w.h3||600};` +
         (surf.shadow ? `--nl-surface-shadow:${surf.shadow};` : '') +

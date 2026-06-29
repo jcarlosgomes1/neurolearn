@@ -2,6 +2,7 @@ import { seoMetadata } from '@/lib/seo';
 import { Link } from '@/i18n/routing';
 import { getTranslations } from 'next-intl/server';
 import { PageHero } from '@/components/shared/PageHero';
+import { PageWidth } from '@/components/shared/PageWidth';
 import { getHomeBlocks } from '@/lib/api/home-blocks';
 import { Compass, Briefcase, Award, Brain, Sparkles, ArrowRight, Target, MessageCircle } from 'lucide-react';
 
@@ -12,7 +13,6 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return seoMetadata('marketing', 'para-estudantes', locale, { title: 'Para estudantes · NeuroLearn' });
 }
 
-// Cores via tokens de acento (CSS vars --<fam>-base/deep), governados pela direcao de design ativa na BD.
 const FEATURES = [
   { icon: Compass, tKey: 'ps.feat.guided_t', dKey: 'ps.feat.guided_d', fam: 'denim' },
   { icon: Brain, tKey: 'ps.feat.tutor_t', dKey: 'ps.feat.tutor_d', fam: 'plum' },
@@ -49,7 +49,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
         </Link>
       </PageHero>
 
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <PageWidth py="py-20">
         <div className="text-center mb-12">
           <h2 className="t-h2" style={{ color: 'var(--ink)' }}>{t('ps.features_title')}</h2>
           <p className="mt-3 max-w-2xl mx-auto" style={{ color: 'var(--ink-2)' }}>{t('ps.features_sub')}</p>
@@ -65,10 +65,10 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
             </div>
           ))}
         </div>
-      </section>
+      </PageWidth>
 
       <section className="py-20 border-y" style={{ background: 'color-mix(in srgb, var(--paper) 60%, var(--card))', borderColor: 'var(--line)' }}>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <PageWidth>
           <h2 className="t-h2 text-center mb-12" style={{ color: 'var(--ink)' }}>{t('ps.paths_title')}</h2>
           <div className="grid sm:grid-cols-3 gap-4">
             {PATHS.map((p, i) => (
@@ -79,10 +79,10 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
               </div>
             ))}
           </div>
-        </div>
+        </PageWidth>
       </section>
 
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <PageWidth py="py-20">
         <div className="relative overflow-hidden rounded-3xl p-10 sm:p-14 shadow-2xl text-center text-white" style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent-bright))' }}>
           <Sparkles className="h-8 w-8 mx-auto mb-4 opacity-70" />
           <h2 className="t-h2">{t('ps.cta_title')}</h2>
@@ -91,7 +91,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
             {t('ps.cta_create')} <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
-      </section>
+      </PageWidth>
     </main>
   );
 }

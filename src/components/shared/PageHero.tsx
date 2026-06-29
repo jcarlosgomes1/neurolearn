@@ -36,7 +36,7 @@ export function PageHero({
         <div className="absolute -bottom-24 left-1/3 h-72 w-72 rounded-full bg-brand-500/20 blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
       </div>
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10" style={{ background: 'radial-gradient(60% 55% at 50% 0%, rgb(var(--brand-400) / 0.18), transparent 70%)' }} />
-      <div className={`relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 ${pad} ${centered ? 'text-center' : ''}`}>
+      <div className={`relative mx-auto w-full px-4 sm:px-6 lg:px-8 ${pad} ${centered ? 'text-center' : ''}`} style={{ maxWidth: 'var(--page-max, 72rem)' }}>
         {badge && (
           <div className={`inline-flex items-center gap-2 mb-4 sm:mb-5 text-brand-700 ${centered ? 'justify-center' : ''}`}>
             {Icon ? <Icon aria-hidden className="h-4 w-4 flex-shrink-0 text-brand-600" strokeWidth={2} /> : null}
