@@ -1,7 +1,7 @@
 'use client';
 
 import { Link, usePathname } from '@/i18n/routing';
-import { User, Bell, Heart, Award, Sparkles, Shield, LogOut, BookOpen, Calendar, FileText, KeyRound, BellRing, Briefcase, GraduationCap, Route } from 'lucide-react';
+import { User, Bell, Heart, Award, Sparkles, Shield, LogOut, BookOpen, Calendar, FileText, KeyRound, BellRing, Briefcase, GraduationCap, Route, CalendarClock } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 function safeT(t: any, key: string, fb: string): string {
@@ -23,6 +23,7 @@ export function AccountSidebar() {
         { href: '/conta/aprendizagem', labelKey: 'account.item.learning', fb: 'A minha aprendizagem', icon: BookOpen },
         { href: '/conta/certificados', labelKey: 'account.item.certificates', fb: 'Certificados', icon: GraduationCap },
         { href: '/conta/agendamento', labelKey: 'account.item.scheduling', fb: 'Agendamento', icon: Calendar },
+        { href: '/conta/propostas', labelKey: 'account.item.proposals', fb: 'Propostas de reunião', icon: CalendarClock },
       ],
     },
     {
