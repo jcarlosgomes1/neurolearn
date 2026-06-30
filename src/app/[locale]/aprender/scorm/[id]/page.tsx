@@ -15,7 +15,7 @@ export default async function Page({ params }: { params: Promise<{ id: string; l
   const { data: pkg } = await sb.from('nl_scorm_packages').select('title, course_id').eq('id', id).maybeSingle();
   const meta = (user?.user_metadata || {}) as { full_name?: string; name?: string };
   const studentName = meta.full_name || meta.name || user?.email || 'Aluno';
-  const exitHref = pkg?.course_id ? `/${locale}/learn/curso/${pkg.course_id}` : `/${locale}/admin/scorm`;
+  const exitHref = pkg?.course_id ? `/${locale}/learn/curso/${pkg.course_id}/mapa` : `/${locale}/admin/scorm`;
 
   return (
     <ScormPlayer

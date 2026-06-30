@@ -4978,5 +4978,8 @@
   "scormplay.completed": "¡Completado!",
   "scormplay.exit": "Salir",
   "scormplay.loading": "Cargando contenido…",
-  "scormadmin.open": "Abrir"
+  "scormadmin.open": "Abrir",
+  "scormlearn.title": "Contenidos SCORM",
+  "scormlearn.open": "Abrir",
+  "scormadmin.no_course": "— sin curso (vista previa) —"
 }

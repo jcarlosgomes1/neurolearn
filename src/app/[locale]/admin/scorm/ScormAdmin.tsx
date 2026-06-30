@@ -11,6 +11,7 @@ type Pkg = {
   id: string; course_id: string | null; title: string; kind: string | null;
   version: string | null; status: string; launch_href: string | null; error: string | null; created_at: string;
 };
+type Course = { id: string; title: string; emoji?: string };
 
 const STATUS: Record<string, { cls: string; key: string }> = {
   uploaded: { cls: 'bg-slate-100 text-slate-600', key: 'scormadmin.st_uploaded' },
@@ -24,6 +25,7 @@ export function ScormAdmin() {
   const locale = useLocale();
   const supabase = useMemo(() => createClient(), []);
   const [rows, setRows] = useState<Pkg[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [form, setForm] = useState({ course_id: '', title: '' });
@@ -31,8 +33,12 @@ export function ScormAdmin() {
 
   async function load() {
     setLoading(true);
-    const { data } = await supabase.rpc('nl_scorm_list');
-    setRows(Array.isArray(data) ? (data as Pkg[]) : []);
+    const [{ data: pkgs }, { data: crs }] = await Promise.all([
+      supabase.rpc('nl_scorm_list'),
+      supabase.rpc('nl_scorm_courses'),
+    ]);
+    setRows(Array.isArray(pkgs) ? (pkgs as Pkg[]) : []);
+    setCourses(Array.isArray(crs) ? (crs as Course[]) : []);
     setLoading(false);
   }
   useEffect(() => { load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
@@ -82,12 +88,16 @@ export function ScormAdmin() {
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">{t('scormadmin.course_label')}</label>
-            <input
+            <select
               value={form.course_id}
               onChange={(e) => setForm((f) => ({ ...f, course_id: e.target.value }))}
-              placeholder={t('scormadmin.course_ph')}
-              className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none"
-            />
+              className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none"
+            >
+              <option value="">{t('scormadmin.no_course')}</option>
+              {courses.map((c) => (
+                <option key={c.id} value={c.id}>{c.emoji ? `${c.emoji} ` : ''}{c.title}</option>
+              ))}
+            </select>
           </div>
         </div>
         <div className="mt-4">
@@ -133,7 +143,7 @@ export function ScormAdmin() {
                         {p.status === 'ready' ? <CheckCircle2 className="h-3 w-3" /> : p.status === 'error' ? <AlertTriangle className="h-3 w-3" /> : null}
                         {t(st.key)}
                       </span>
-                      {p.course_id && <span className="truncate">· {p.course_id}</span>}
+                      {p.course_id && <span className="truncate">· {courses.find((c) => c.id === p.course_id)?.title || p.course_id}</span>}
                       {p.launch_href && <span className="inline-flex items-center gap-1 truncate text-slate-400"><ExternalLink className="h-3 w-3" />{p.launch_href}</span>}
                       {p.status === 'error' && p.error && <span className="truncate text-rose-500">· {p.error}</span>}
                     </div>

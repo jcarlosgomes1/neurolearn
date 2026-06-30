@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getTranslations } from 'next-intl/server';
 import { MindMap } from '@/components/shared/MindMap';
+import { ScormCourseSection } from '@/components/learn/ScormCourseSection';
 import { AppPageHeader } from '@/components/layout/AppPageHeader';
 
 export const metadata = { title: 'Mapa do curso' };
@@ -25,6 +26,7 @@ export default async function Page({ params }: { params: Promise<{ id: string; l
       <div className="rounded-2xl border border-slate-200 bg-white p-2 sm:p-4 overflow-hidden">
         <MindMap code={r?.mermaid || ''} />
       </div>
+      <ScormCourseSection courseId={id} />
     </div>
   );
 }
