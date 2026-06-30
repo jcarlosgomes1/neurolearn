@@ -28,6 +28,12 @@ const STR: Record<string, Record<Lang, string>> = {
   gcal_connect: { pt: 'Ligar', en: 'Connect', es: 'Conectar', fr: 'Connecter' },
   gcal_connected: { pt: 'Ligado', en: 'Connected', es: 'Conectado', fr: 'Connecté' },
   gcal_disconnect: { pt: 'Desligar', en: 'Disconnect', es: 'Desconectar', fr: 'Déconnecter' },
+  mscal_title: { pt: 'Outlook / Microsoft 365', en: 'Outlook / Microsoft 365', es: 'Outlook / Microsoft 365', fr: 'Outlook / Microsoft 365' },
+  mscal_hint: { pt: 'Sincroniza as tuas sessões com o teu calendário Outlook.', en: 'Sync your sessions with your Outlook calendar.', es: 'Sincroniza tus sesiones con tu calendario Outlook.', fr: 'Synchronise tes séances avec ton calendrier Outlook.' },
+  ics_title: { pt: 'Outro calendário (Apple, etc.)', en: 'Other calendar (Apple, etc.)', es: 'Otro calendario (Apple, etc.)', fr: 'Autre agenda (Apple, etc.)' },
+  ics_hint: { pt: 'Subscreve este link no Apple Calendar, Outlook ou qualquer app — atualiza sozinho.', en: 'Subscribe to this link in Apple Calendar, Outlook or any app — it stays in sync.', es: 'Suscribe este enlace en Apple Calendar, Outlook o cualquier app — se actualiza solo.', fr: 'Abonne-toi à ce lien dans Apple Calendar, Outlook ou toute app — il se met à jour seul.' },
+  ics_get: { pt: 'Obter link de subscrição', en: 'Get subscription link', es: 'Obtener enlace de suscripción', fr: 'Obtenir le lien d’abonnement' },
+  ics_copy: { pt: 'Copiar link', en: 'Copy link', es: 'Copiar enlace', fr: 'Copier le lien' },
   public_link: { pt: 'A tua página', en: 'Your page', es: 'Tu página', fr: 'Ta page' },
   copy: { pt: 'Copiar', en: 'Copy', es: 'Copiar', fr: 'Copier' },
   copied: { pt: 'Copiado', en: 'Copied', es: 'Copiado', fr: 'Copié' },
@@ -143,7 +149,42 @@ export function SchedulingDashboard({ initial }: { initial: any }) {
     } catch {}
   }
   async function disconnectGoogle() {
-    try { await sb.rpc('nl_scheduling_oauth_disconnect'); setGcal({ connected: false }); } catch {}
+    try { await sb.rpc('nl_scheduling_oauth_disconnect', { p_provider: 'google' }); setGcal({ connected: false }); } catch {}
+  }
+
+  const [mscal, setMscal] = useState<{ connected: boolean; email?: string } | null>(null);
+  const [icsUrl, setIcsUrl] = useState<string>('');
+  const [icsCopied, setIcsCopied] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try { const { data } = await sb.rpc('nl_scheduling_oauth_status_all'); if (data?.microsoft) setMscal(data.microsoft); } catch {}
+    })();
+  }, [sb]);
+
+  async function connectMicrosoft() {
+    try {
+      const { data } = await sb.rpc('nl_microsoft_calendar_connect_url', { p_locale: locale });
+      if (data?.ok && data.auth_url) window.location.href = data.auth_url;
+      else if (data?.error === 'oauth_not_configured') alert('Microsoft OAuth ainda não configurado.');
+    } catch {}
+  }
+  async function disconnectMicrosoft() {
+    try { await sb.rpc('nl_scheduling_oauth_disconnect', { p_provider: 'microsoft' }); setMscal({ connected: false }); } catch {}
+  }
+  async function getIcsLink() {
+    try {
+      const { data } = await sb.rpc('nl_calendar_ics_token');
+      if (data?.ok && data.token) {
+        const base = 'https://obpezocujzdaznrdgwoo.supabase.co/functions/v1/calendar-ics?token=' + data.token;
+        setIcsUrl(base);
+      }
+    } catch {}
+  }
+  function copyIcs() {
+    if (!icsUrl) return;
+    navigator.clipboard?.writeText(icsUrl);
+    setIcsCopied(true); setTimeout(() => setIcsCopied(false), 1600);
   }
 
   const [savingCal, setSavingCal] = useState(false);
@@ -244,6 +285,39 @@ export function SchedulingDashboard({ initial }: { initial: any }) {
             <button onClick={disconnectGoogle} className="text-xs font-semibold text-slate-500 hover:text-rose-600 px-3 py-1.5 rounded-lg border border-slate-200">{t('gcal_disconnect')}</button>
           ) : (
             <button onClick={connectGoogle} className="text-xs font-semibold text-white bg-violet-600 hover:bg-violet-700 px-3 py-1.5 rounded-lg">{t('gcal_connect')}</button>
+          )}
+        </Card>
+
+        <Card className="!p-4 flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+              <CalendarDays className="h-4 w-4 text-violet-600 shrink-0" />{t('mscal_title')}
+              {mscal?.connected && <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700">{t('gcal_connected')}</span>}
+            </div>
+            <p className="text-xs text-slate-500 mt-0.5 leading-snug">{mscal?.connected && mscal.email ? mscal.email : t('mscal_hint')}</p>
+          </div>
+          {mscal?.connected ? (
+            <button onClick={disconnectMicrosoft} className="text-xs font-semibold text-slate-500 hover:text-rose-600 px-3 py-1.5 rounded-lg border border-slate-200">{t('gcal_disconnect')}</button>
+          ) : (
+            <button onClick={connectMicrosoft} className="text-xs font-semibold text-white bg-violet-600 hover:bg-violet-700 px-3 py-1.5 rounded-lg">{t('gcal_connect')}</button>
+          )}
+        </Card>
+
+        <Card className="!p-4 sm:col-span-2">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 text-sm font-semibold text-slate-900"><CalendarDays className="h-4 w-4 text-violet-600 shrink-0" />{t('ics_title')}</div>
+              <p className="text-xs text-slate-500 mt-0.5 leading-snug">{t('ics_hint')}</p>
+            </div>
+            {!icsUrl && <button onClick={getIcsLink} className="text-xs font-semibold text-white bg-violet-600 hover:bg-violet-700 px-3 py-1.5 rounded-lg shrink-0">{t('ics_get')}</button>}
+          </div>
+          {icsUrl && (
+            <div className="flex items-center gap-2 mt-3">
+              <input readOnly value={icsUrl} className="flex-1 min-w-0 rounded-lg border border-slate-200 px-2 py-1.5 text-xs text-slate-600 bg-slate-50" />
+              <button onClick={copyIcs} className="inline-flex items-center gap-1.5 text-xs font-semibold text-violet-700 bg-violet-50 hover:bg-violet-100 rounded-lg px-3 py-1.5 shrink-0">
+                {icsCopied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}{icsCopied ? t('copied') : t('ics_copy')}
+              </button>
+            </div>
           )}
         </Card>
 
