@@ -91,10 +91,13 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
     const isHls = /\.m3u8($|\?)/i.test(url) || url.includes('mux.com');
     if (!url || isLiveV || !isHls) { setTranscript(null); return; }
     let active = true;
-    const sb = createClient();
-    sb.rpc('nl_lesson_transcript', { p_course_id: courseId, p_module: moduleIndex, p_lesson: lessonIndex, p_lang: locale })
-      .then(({ data }: { data: any }) => { if (active) setTranscript(data?.ok ? data : null); })
-      .catch(() => { if (active) setTranscript(null); });
+    (async () => {
+      try {
+        const sb = createClient();
+        const { data } = await sb.rpc('nl_lesson_transcript', { p_course_id: courseId, p_module: moduleIndex, p_lesson: lessonIndex, p_lang: locale });
+        if (active) setTranscript(data?.ok ? data : null);
+      } catch { if (active) setTranscript(null); }
+    })();
     return () => { active = false; };
   }, [courseId, moduleIndex, lessonIndex, locale, course]);
 
