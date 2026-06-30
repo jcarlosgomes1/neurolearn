@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { SUPABASE_URL } from '@/lib/supabase/config';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Code2, Loader2, CheckCircle2, XCircle, Clock, Play, Terminal } from 'lucide-react';
@@ -26,7 +27,7 @@ export function PracticeExercisePanel({ exercise }: { exercise: Exercise }) {
   const [submitting, setSubmitting] = useState(false);
   const [running, setRunning] = useState(false);
   const [output, setOutput] = useState<{ text: string; error?: string } | null>(null);
-  const [result, setResult] = useState<{ passed: boolean | null; score: number | null; feedback: Check[]; auto_gradable: boolean } | null>(
+  const [result, setResult] = useState<{ passed: boolean | null; score: number | null; feedback: Check[]; auto_gradable: boolean; overall?: string } | null>(
     my ? { passed: my.auto_passed, score: my.auto_score, feedback: [], auto_gradable: my.status === 'auto_graded' } : null
   );
 
@@ -58,11 +59,16 @@ export function PracticeExercisePanel({ exercise }: { exercise: Exercise }) {
         setResult({ passed: r.passed, score: d.score ?? (r.passed ? exercise.max_score : 0), feedback: [], auto_gradable: true });
         if (r.passed) toast.success(t('practice.passed')); else toast.error(t('practice.failed'));
       } else {
-        const { data, error } = await supabase.rpc('nl_practice_submit', { p_exercise_id: exercise.id, p_submission: code });
-        const d = data as { ok?: boolean; evaluation?: { passed: boolean | null; score: number | null; feedback?: Check[]; auto_gradable: boolean } };
-        if (error || !d?.ok) throw error || new Error('fail');
-        const ev = d.evaluation!;
-        setResult({ passed: ev.passed, score: ev.score, feedback: ev.feedback || [], auto_gradable: ev.auto_gradable });
+        const token = (await supabase.auth.getSession()).data.session?.access_token;
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/grade-practice`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ exercise_id: exercise.id, submission: code }),
+        });
+        const d = await res.json().catch(() => ({})) as { ok?: boolean; evaluation?: { passed: boolean | null; score: number | null; feedback?: Check[]; auto_gradable: boolean; overall?: string } };
+        if (!d?.ok || !d.evaluation) throw new Error('fail');
+        const ev = d.evaluation;
+        setResult({ passed: ev.passed, score: ev.score, feedback: ev.feedback || [], auto_gradable: ev.auto_gradable, overall: ev.overall });
         if (ev.passed) toast.success(t('practice.passed'));
         else if (!ev.auto_gradable) toast.success(t('practice.pending_review'));
       }
@@ -114,6 +120,7 @@ export function PracticeExercisePanel({ exercise }: { exercise: Exercise }) {
                 : <><Clock className="h-4 w-4 text-amber-600" /> <span className="text-amber-800">{t('practice.pending_review')}</span></>}
               {result.score != null && <span className="ml-auto text-xs font-bold">{t('practice.score')}: {result.score}/{exercise.max_score}</span>}
             </div>
+            {result.overall && <p className="mt-2 text-xs text-slate-700 whitespace-pre-wrap leading-relaxed">{result.overall}</p>}
             {result.feedback.length > 0 && (
               <ul className="mt-2 space-y-1">
                 {result.feedback.map((c, i) => (
