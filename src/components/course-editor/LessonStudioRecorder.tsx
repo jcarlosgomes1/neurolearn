@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 import { SUPABASE_URL } from '@/lib/supabase/config';
 import { toast } from 'sonner';
+import { Teleprompter } from '@/components/course-editor/Teleprompter';
 
 type Source = 'screen' | 'camera' | 'slides';
 type Phase = 'idle' | 'preview' | 'recording' | 'recorded' | 'uploading';
@@ -533,14 +534,7 @@ export function LessonStudioRecorder({ onUploaded, currentUrl, lessonTitle, cont
             </div>
           </div>
         )}
-        {(content?.p?.length || 0) > 0 && (
-          <details className="rounded-lg border border-slate-200 bg-slate-50">
-            <summary className="px-3 py-2 text-sm font-medium text-slate-600 cursor-pointer select-none">📜 {t('teleprompter')}</summary>
-            <div className="max-h-40 overflow-y-auto px-4 py-3 space-y-2 text-[15px] leading-relaxed text-slate-700">
-              {(content?.p || []).map((para, i) => <p key={i}>{para}</p>)}
-            </div>
-          </details>
-        )}
+        <Teleprompter paragraphs={content?.p || []} />
         {source === 'slides' && slides.length > 0 && (
           <div className="flex items-center justify-center gap-3">
             <button onClick={prevSlide} disabled={slideIdx === 0} className="px-4 py-2 rounded-lg border border-slate-200 disabled:opacity-40 text-slate-700">‹</button>
