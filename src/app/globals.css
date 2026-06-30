@@ -34,7 +34,7 @@ body {
     --t-eyebrow: .6875rem;
     --t-caption: clamp(.75rem, .72rem + .13vw, .8125rem);
     --t-h3: clamp(1.0625rem, 1rem + .28vw, 1.25rem);
-    --t-h2: clamp(1.75rem, 1.35rem + 1.7vw, 2.5rem);
+    --t-h2: clamp(1.875rem, 1.4rem + 2.1vw, 2.875rem);
     --t-h1: clamp(1.5rem, 1.32rem + 0.78vw, 1.875rem);
     --t-display: clamp(2.5rem, 1.7rem + 3.55vw, 4.25rem);
   }
