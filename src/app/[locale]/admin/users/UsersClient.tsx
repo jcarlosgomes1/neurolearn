@@ -17,7 +17,7 @@ interface User {
   is_instructor_record?: boolean; instr_revenue_cents?: number;
   instr_payouts_cents?: number; instr_revshare_pct?: number | null; instr_status?: string | null;
 }
-interface KPIs { total: number; active: number; inactive: number; admins: number; instructors: number; students: number; paying: number; last_7d: number; last_30d: number; }
+interface KPIs { total: number; active: number; inactive: number; admins: number; instructors: number; account_managers: number; students: number; paying: number; last_7d: number; last_30d: number; }
 interface Page { items: User[]; total: number; limit: number; offset: number; }
 
 const ROLE_META: Record<string, { label: string; icon: any; cls: string }> = {
@@ -115,6 +115,7 @@ export function UsersClient({ currentUserId, kpis, initialPage }: { currentUserI
         <KpiCard label="Activos" value={kpis.active ?? 0} icon={CheckCircle2} cls="from-emerald-500 to-teal-600" />
         <KpiCard label="Admins" value={kpis.admins ?? 0} icon={Crown} cls="from-amber-500 to-orange-600" />
         <KpiCard label="Instrutores" value={kpis.instructors ?? 0} icon={GraduationCap} cls="from-violet-500 to-indigo-600" />
+        <KpiCard label="Gestores de conta" value={kpis.account_managers ?? 0} icon={Briefcase} cls="from-orange-500 to-amber-600" />
         <KpiCard label="Alunos" value={kpis.students ?? 0} icon={UserIcon} cls="from-blue-500 to-cyan-600" />
         <KpiCard label="A pagar" value={kpis.paying ?? 0} icon={Activity} cls="from-fuchsia-500 to-pink-600" />
         <KpiCard label="Novos 7d" value={kpis.last_7d ?? 0} icon={Calendar} cls="from-emerald-500 to-green-600" />
