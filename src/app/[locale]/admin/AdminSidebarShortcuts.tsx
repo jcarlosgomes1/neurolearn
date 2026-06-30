@@ -4,7 +4,7 @@ import { Link } from '@/i18n/routing';
 import {
   Package, Tag, DollarSign, GraduationCap, Shield, Key, BarChart3, Receipt,
   RotateCcw, Mail, Users, Lock, Sparkles, CalendarClock, AlertTriangle, Settings,
-  Activity, ShieldAlert, Languages, FolderTree, Zap
+  Activity, ShieldAlert, Languages, FolderTree, Zap, Compass
 } from 'lucide-react';
 
 type ShortcutItem = {
@@ -44,6 +44,7 @@ const SECTIONS: ShortcutSection[] = [
       { href: '/admin/i18n', label: 'Traduções', icon: Languages },
       { href: '/admin/categorias', label: 'Categorias', icon: FolderTree },
       { href: '/admin/scorm', label: 'Pacotes SCORM', icon: Package, badge: 'Novo' },
+      { href: '/admin/talento', label: 'Talento', icon: Compass, badge: 'Novo' },
     ],
   },
   {
