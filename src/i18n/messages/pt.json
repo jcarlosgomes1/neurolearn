@@ -4974,5 +4974,9 @@
   "scormadmin.st_extracting": "A extrair",
   "scormadmin.st_ready": "Pronto",
   "scormadmin.st_error": "Erro",
-  "scormadmin.hint": "Pacotes SCORM 1.2 ou 2004. O conteúdo é guardado de forma privada."
+  "scormadmin.hint": "Pacotes SCORM 1.2 ou 2004. O conteúdo é guardado de forma privada.",
+  "scormplay.completed": "Concluído!",
+  "scormplay.exit": "Sair",
+  "scormplay.loading": "A carregar conteúdo…",
+  "scormadmin.open": "Abrir"
 }

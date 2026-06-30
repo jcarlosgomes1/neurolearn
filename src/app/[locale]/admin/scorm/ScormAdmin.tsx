@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { toast } from 'sonner';
 import { Loader2, UploadCloud, Package, Trash2, ExternalLink, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { runScormImportAction } from './actions';
@@ -21,6 +21,7 @@ const STATUS: Record<string, { cls: string; key: string }> = {
 
 export function ScormAdmin() {
   const t = useTranslations();
+  const locale = useLocale();
   const supabase = useMemo(() => createClient(), []);
   const [rows, setRows] = useState<Pkg[]>([]);
   const [loading, setLoading] = useState(true);
@@ -137,9 +138,17 @@ export function ScormAdmin() {
                       {p.status === 'error' && p.error && <span className="truncate text-rose-500">· {p.error}</span>}
                     </div>
                   </div>
-                  <button onClick={() => del(p.id)} className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-medium text-slate-500 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600">
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
+                  <div className="flex shrink-0 items-center gap-2">
+                    {p.status === 'ready' && (
+                      <a href={`/${locale}/aprender/scorm/${p.id}`} target="_blank" rel="noreferrer"
+                        className="inline-flex items-center gap-1 rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-1.5 text-xs font-medium text-indigo-700 transition hover:bg-indigo-100">
+                        <ExternalLink className="h-3.5 w-3.5" /> {t('scormadmin.open')}
+                      </a>
+                    )}
+                    <button onClick={() => del(p.id)} className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-medium text-slate-500 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600">
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
                 </div>
               );
             })}

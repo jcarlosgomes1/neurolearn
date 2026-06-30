@@ -4974,5 +4974,9 @@
   "scormadmin.st_extracting": "Extracting",
   "scormadmin.st_ready": "Ready",
   "scormadmin.st_error": "Error",
-  "scormadmin.hint": "SCORM 1.2 or 2004 packages. Content is stored privately."
+  "scormadmin.hint": "SCORM 1.2 or 2004 packages. Content is stored privately.",
+  "scormplay.completed": "Completed!",
+  "scormplay.exit": "Exit",
+  "scormplay.loading": "Loading content…",
+  "scormadmin.open": "Open"
 }
