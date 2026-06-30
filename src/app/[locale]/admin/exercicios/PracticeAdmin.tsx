@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Loader2, Plus, Save, Code2, FileText, ListChecks, Users, Sparkles, ShieldCheck, AlertTriangle } from 'lucide-react';
-import { generateCodeExerciseAction } from './actions';
+import { generateCodeExerciseAction, generateOpenExerciseAction } from './actions';
 import { runWithTests } from '@/lib/codeRunner';
 
 type Check = { type: string; value?: string; weight?: number; message?: string };
@@ -21,7 +21,7 @@ export function PracticeAdmin() {
   const [creating, setCreating] = useState(false);
   const [saving, setSaving] = useState(false);
   const [draft, setDraft] = useState({ course_id: '', kind: 'code', title: '', prompt: '', starter: '', checks: '', max_score: '100', language: 'python', tests: '' });
-  const [gen, setGen] = useState({ course_id: '', topic: '', language: 'python', difficulty: 'intermédio' });
+  const [gen, setGen] = useState({ course_id: '', topic: '', language: 'python', difficulty: 'intermédio', kind: 'code' });
   const [generating, setGenerating] = useState(false);
   const [showGen, setShowGen] = useState(false);
   const [verifying, setVerifying] = useState<string | null>(null);
@@ -30,10 +30,12 @@ export function PracticeAdmin() {
     if (!gen.course_id.trim() || !gen.topic.trim()) { toast.error(t('practiceadmin.required')); return; }
     setGenerating(true);
     try {
-      const r = await generateCodeExerciseAction({ course_id: gen.course_id, topic: gen.topic, language: gen.language, difficulty: gen.difficulty });
+      const r = gen.kind === 'open'
+        ? await generateOpenExerciseAction({ course_id: gen.course_id, topic: gen.topic, difficulty: gen.difficulty })
+        : await generateCodeExerciseAction({ course_id: gen.course_id, topic: gen.topic, language: gen.language, difficulty: gen.difficulty });
       if (!r.ok) { toast.error(r.error || t('practiceadmin.error')); return; }
-      toast.success('Rascunho gerado — verifica e publica.');
-      setGen({ course_id: '', topic: '', language: 'python', difficulty: 'intermédio' });
+      toast.success('Rascunho gerado — revê e aprova.');
+      setGen({ course_id: '', topic: '', language: 'python', difficulty: 'intermédio', kind: gen.kind });
       setShowGen(false);
       await load();
     } catch { toast.error(t('practiceadmin.error')); }
@@ -50,6 +52,17 @@ export function PracticeAdmin() {
       toast.success('Verificado e publicado.');
       await load();
     } catch { toast.error('Falha ao publicar.'); }
+    finally { setVerifying(null); }
+  }
+
+  async function approveOpen(e: Exercise) {
+    setVerifying(e.id);
+    try {
+      const { data, error } = await supabase.rpc('nl_admin_practice_approve', { p_id: e.id, p_verified: true });
+      if (error || !(data as { ok?: boolean })?.ok) throw error || new Error('fail');
+      toast.success('Aprovado e publicado.');
+      await load();
+    } catch { toast.error('Falha ao aprovar.'); }
     finally { setVerifying(null); }
   }
 
@@ -94,21 +107,27 @@ export function PracticeAdmin() {
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <div className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-amber-600" />
-            <h3 className="font-semibold text-slate-900 text-sm">Gerar exercício de código (Premium)</h3>
+            <h3 className="font-semibold text-slate-900 text-sm">Gerar exercício (Premium)</h3>
           </div>
           <button onClick={() => setShowGen((v) => !v)} className="text-xs font-medium text-amber-700 hover:underline">{showGen ? 'Fechar' : 'Abrir'}</button>
         </div>
         {showGen && (
           <div className="space-y-2">
             <div className="grid grid-cols-2 gap-2">
-              <input value={gen.course_id} onChange={(ev) => setGen((g) => ({ ...g, course_id: ev.target.value }))} placeholder={t('practiceadmin.course_id')}
-                className="rounded-lg border border-amber-200 px-3 py-2 text-sm" />
-              <select value={gen.language} onChange={(ev) => setGen((g) => ({ ...g, language: ev.target.value }))}
+              <select value={gen.kind} onChange={(ev) => setGen((g) => ({ ...g, kind: ev.target.value }))}
                 className="rounded-lg border border-amber-200 px-3 py-2 text-sm">
-                <option value="python">Python</option><option value="javascript">JavaScript</option>
+                <option value="code">Código</option><option value="open">Resposta aberta</option>
               </select>
+              {gen.kind === 'code' ? (
+                <select value={gen.language} onChange={(ev) => setGen((g) => ({ ...g, language: ev.target.value }))}
+                  className="rounded-lg border border-amber-200 px-3 py-2 text-sm">
+                  <option value="python">Python</option><option value="javascript">JavaScript</option>
+                </select>
+              ) : <div />}
             </div>
-            <input value={gen.topic} onChange={(ev) => setGen((g) => ({ ...g, topic: ev.target.value }))} placeholder="Tópico da aula (ex: listas e ciclos for)"
+            <input value={gen.course_id} onChange={(ev) => setGen((g) => ({ ...g, course_id: ev.target.value }))} placeholder={t('practiceadmin.course_id')}
+              className="w-full rounded-lg border border-amber-200 px-3 py-2 text-sm" />
+            <input value={gen.topic} onChange={(ev) => setGen((g) => ({ ...g, topic: ev.target.value }))} placeholder="Tópico da aula"
               className="w-full rounded-lg border border-amber-200 px-3 py-2 text-sm" />
             <select value={gen.difficulty} onChange={(ev) => setGen((g) => ({ ...g, difficulty: ev.target.value }))}
               className="w-full rounded-lg border border-amber-200 px-3 py-2 text-sm">
@@ -118,7 +137,7 @@ export function PracticeAdmin() {
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-amber-600 text-white text-sm font-medium disabled:opacity-50 hover:bg-amber-700">
               {generating ? <><Loader2 className="h-4 w-4 animate-spin" /> A gerar…</> : <><Sparkles className="h-4 w-4" /> Gerar rascunho</>}
             </button>
-            <p className="text-[11px] text-amber-700/80">Gera em rascunho. Só é publicado depois de a solução passar os próprios testes na sandbox.</p>
+            <p className="text-[11px] text-amber-700/80">Gera em rascunho. Código: publica após a solução passar os testes. Resposta aberta: revê e aprova.</p>
           </div>
         )}
       </div>
@@ -212,6 +231,12 @@ export function PracticeAdmin() {
               )}
               {e.status === 'draft' && e.kind === 'code' && !e.tests && !e.solution_md && (
                 <p className="mt-2 inline-flex items-center gap-1 text-[11px] text-amber-600"><AlertTriangle className="h-3 w-3" /> Sem testes/solução para verificar</p>
+              )}
+              {e.status === 'draft' && e.kind !== 'code' && (
+                <button onClick={() => approveOpen(e)} disabled={verifying === e.id}
+                  className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-medium disabled:opacity-50 hover:bg-emerald-700">
+                  {verifying === e.id ? <><Loader2 className="h-3.5 w-3.5 animate-spin" /> A aprovar…</> : <><ShieldCheck className="h-3.5 w-3.5" /> Aprovar</>}
+                </button>
               )}
             </div>
           </div>
