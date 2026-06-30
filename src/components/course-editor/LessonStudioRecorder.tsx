@@ -11,6 +11,34 @@ import { VideoTrimmer } from '@/components/course-editor/VideoTrimmer';
 type Source = 'screen' | 'camera' | 'slides';
 type Phase = 'idle' | 'preview' | 'recording' | 'recorded' | 'uploading';
 
+type ThemeKey = 'indigo' | 'charcoal' | 'emerald' | 'ocean';
+interface SlideTheme { bg: [string, string, string]; accent: string; title: string; text: string; bulletDot: string; bulletText: string; codeBg: string; codeBase: string; codeKeyword: string; codeString: string; codeComment: string; codeNumber: string; footer: string; }
+const SLIDE_THEMES: Record<ThemeKey, SlideTheme> = {
+  indigo:   { bg: ['#0b1024', '#1e1b4b', '#312e81'], accent: '#818cf8', title: '#ffffff', text: '#e9edff', bulletDot: '#a5b4fc', bulletText: '#e9edff', codeBg: 'rgba(2,6,23,0.7)', codeBase: '#e2e8f0', codeKeyword: '#c4b5fd', codeString: '#86efac', codeComment: '#64748b', codeNumber: '#fbbf24', footer: 'rgba(255,255,255,0.4)' },
+  charcoal: { bg: ['#0a0a0a', '#171717', '#262626'], accent: '#f59e0b', title: '#fafafa', text: '#e5e5e5', bulletDot: '#f59e0b', bulletText: '#e5e5e5', codeBg: 'rgba(0,0,0,0.6)',  codeBase: '#e5e5e5', codeKeyword: '#fcd34d', codeString: '#86efac', codeComment: '#737373', codeNumber: '#f59e0b', footer: 'rgba(255,255,255,0.35)' },
+  emerald:  { bg: ['#022c22', '#064e3b', '#065f46'], accent: '#34d399', title: '#ecfdf5', text: '#d1fae5', bulletDot: '#6ee7b7', bulletText: '#d1fae5', codeBg: 'rgba(2,20,15,0.7)', codeBase: '#d1fae5', codeKeyword: '#5eead4', codeString: '#fde68a', codeComment: '#4b7d6a', codeNumber: '#fbbf24', footer: 'rgba(255,255,255,0.4)' },
+  ocean:    { bg: ['#0c1a2b', '#0e2a47', '#0e7490'], accent: '#22d3ee', title: '#ecfeff', text: '#cffafe', bulletDot: '#67e8f9', bulletText: '#cffafe', codeBg: 'rgba(2,12,23,0.7)', codeBase: '#cffafe', codeKeyword: '#7dd3fc', codeString: '#86efac', codeComment: '#5b7a8c', codeNumber: '#fbbf24', footer: 'rgba(255,255,255,0.4)' },
+};
+const CODE_KW = /^(const|let|var|function|return|if|else|for|while|do|switch|case|break|continue|import|export|default|from|class|async|await|new|try|catch|finally|throw|typeof|instanceof|interface|type|enum|public|private|protected|readonly|extends|implements|null|undefined|true|false|void|of|in|this|super|yield|static|get|set)$/;
+const CODE_TOKEN = /(\s+)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`)|(\b\d+(?:\.\d+)?\b)|([A-Za-z_$][A-Za-z0-9_$]*)|([^\sA-Za-z0-9_$"\'`]+)/g;
+function drawCodeLine(ctx: CanvasRenderingContext2D, raw: string, x0: number, y: number, th: SlideTheme) {
+  const line = raw.slice(0, 60);
+  const cIdx = line.indexOf('//');
+  const codePart = cIdx >= 0 ? line.slice(0, cIdx) : line;
+  const commentPart = cIdx >= 0 ? line.slice(cIdx) : '';
+  let x = x0; let m: RegExpExecArray | null;
+  CODE_TOKEN.lastIndex = 0;
+  while ((m = CODE_TOKEN.exec(codePart)) !== null) {
+    const tok = m[0];
+    let color = th.codeBase;
+    if (m[2]) color = th.codeString;
+    else if (m[3]) color = th.codeNumber;
+    else if (m[4]) color = CODE_KW.test(tok) ? th.codeKeyword : th.codeBase;
+    ctx.fillStyle = color; ctx.fillText(tok, x, y); x += ctx.measureText(tok).width;
+  }
+  if (commentPart) { ctx.fillStyle = th.codeComment; ctx.fillText(commentPart, x, y); }
+}
+
 interface Slide {
   kind: 'generated' | 'image';
   title?: string;
@@ -58,11 +86,13 @@ export function LessonStudioRecorder({ onUploaded, currentUrl, lessonTitle, cont
   const pipShapeRef = useRef(pipShape);
   const [slides, setSlides] = useState<Slide[]>([]);
   const [slideIdx, setSlideIdx] = useState(0);
+  const [theme, setTheme] = useState<ThemeKey>('indigo');
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const camVideoRef = useRef<HTMLVideoElement | null>(null);
   const screenVideoRef = useRef<HTMLVideoElement | null>(null);
   const slideIdxRef = useRef(0);
+  const themeRef = useRef<ThemeKey>('indigo');
   const slidesRef = useRef<Slide[]>([]);
 
   const screenStream = useRef<MediaStream | null>(null);
@@ -88,6 +118,7 @@ export function LessonStudioRecorder({ onUploaded, currentUrl, lessonTitle, cont
   }, [lessonTitle, content]);
 
   useEffect(() => { slideIdxRef.current = slideIdx; }, [slideIdx]);
+  useEffect(() => { themeRef.current = theme; }, [theme]);
   useEffect(() => { slidesRef.current = slides; }, [slides]);
   useEffect(() => { pipPosRef.current = pipPos; }, [pipPos]);
   useEffect(() => { pipSizeRef.current = pipSize; }, [pipSize]);
@@ -153,9 +184,10 @@ export function LessonStudioRecorder({ onUploaded, currentUrl, lessonTitle, cont
 
   function drawSlide(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, slide: Slide | undefined, idx: number, total: number) {
     const W = canvas.width, H = canvas.height;
+    const th = SLIDE_THEMES[themeRef.current] || SLIDE_THEMES.indigo;
     // Fundo premium: gradiente diagonal profundo + leve vinheta
     const g = ctx.createLinearGradient(0, 0, W, H);
-    g.addColorStop(0, '#0b1024'); g.addColorStop(0.55, '#1e1b4b'); g.addColorStop(1, '#312e81');
+    g.addColorStop(0, th.bg[0]); g.addColorStop(0.55, th.bg[1]); g.addColorStop(1, th.bg[2]);
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
     const vg = ctx.createRadialGradient(W * 0.5, H * 0.4, H * 0.2, W * 0.5, H * 0.5, H * 0.95);
     vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.35)');
@@ -180,9 +212,9 @@ export function LessonStudioRecorder({ onUploaded, currentUrl, lessonTitle, cont
     // Barra de marca (accent) à esquerda do título
     const isCode = !!slide.code;
     if (slide.title) {
-      ctx.fillStyle = '#818cf8';
+      ctx.fillStyle = th.accent;
       ctx.fillRect(pad, 120, 8, 64);
-      ctx.fillStyle = '#ffffff';
+      ctx.fillStyle = th.title;
       ctx.font = '800 60px system-ui, sans-serif';
       const titleLines = wrapText(ctx, slide.title, W - pad * 2 - 30);
       titleLines.slice(0, 2).forEach((ln, i) => ctx.fillText(ln, pad + 32, 170 + i * 70));
@@ -194,22 +226,21 @@ export function LessonStudioRecorder({ onUploaded, currentUrl, lessonTitle, cont
       const codeLines = slide.code.split('\n').slice(0, 12);
       const boxX = pad, boxY = y - 20, boxW = W - pad * 2;
       const boxH = Math.min(codeLines.length * 40 + 40, H - boxY - 80);
-      ctx.fillStyle = 'rgba(2,6,23,0.7)';
+      ctx.fillStyle = th.codeBg;
       ctx.beginPath(); (ctx as any).roundRect?.(boxX, boxY, boxW, boxH, 16); ctx.fill();
-      ctx.fillStyle = '#e2e8f0';
-      codeLines.forEach((ln, i) => ctx.fillText(ln.slice(0, 60), boxX + 28, boxY + 50 + i * 40));
+      codeLines.forEach((ln, i) => drawCodeLine(ctx, ln, boxX + 28, boxY + 50 + i * 40, th));
     } else {
       ctx.font = '400 38px system-ui, sans-serif';
       (slide.bullets || []).slice(0, 6).forEach((b) => {
         const lines = wrapText(ctx, b, W - pad * 2 - 56);
-        ctx.fillStyle = '#a5b4fc'; ctx.beginPath(); ctx.arc(pad + 8, y - 12, 7, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#e9edff';
+        ctx.fillStyle = th.bulletDot; ctx.beginPath(); ctx.arc(pad + 8, y - 12, 7, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = th.bulletText;
         lines.forEach((ln, i) => ctx.fillText(ln, pad + 40, y + i * 50));
         y += lines.length * 50 + 30;
       });
     }
     // Rodapé: marca + número de slide
-    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.fillStyle = th.footer;
     ctx.font = '600 24px system-ui, sans-serif';
     ctx.fillText('NeuroLearn', pad, H - 56);
     ctx.textAlign = 'right';
@@ -482,6 +513,15 @@ export function LessonStudioRecorder({ onUploaded, currentUrl, lessonTitle, cont
                 {slides.length > 0 && (
                   <button onClick={() => { setSlides([]); setSlideIdx(0); }} className="text-sm px-3 py-2 rounded-lg text-rose-600 hover:bg-rose-50">{t('clear_slides')}</button>
                 )}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-medium text-slate-600">{t('theme')}</span>
+                <select value={theme} onChange={(e) => setTheme(e.target.value as ThemeKey)} className="text-sm rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-slate-700">
+                  <option value="indigo">{t('theme_indigo')}</option>
+                  <option value="charcoal">{t('theme_charcoal')}</option>
+                  <option value="emerald">{t('theme_emerald')}</option>
+                  <option value="ocean">{t('theme_ocean')}</option>
+                </select>
               </div>
               {slides.length > 0
                 ? <p className="text-xs text-slate-500">{t('slides_ready', { n: slides.length })}</p>
