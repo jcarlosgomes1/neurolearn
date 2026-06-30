@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useLocale } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 import { AppPageHeader } from '@/components/layout/AppPageHeader';
@@ -23,6 +23,11 @@ const STR: Record<string, Record<Lang, string>> = {
   mentor_badge: { pt: 'Mentor', en: 'Mentor', es: 'Mentor', fr: 'Mentor' },
   directory: { pt: 'Aparecer no diretório de mentores', en: 'Appear in the mentor directory', es: 'Aparecer en el directorio de mentores', fr: 'Apparaître dans l’annuaire des mentors' },
   directory_hint: { pt: 'Quem procura mentoria pode encontrar-te e marcar diretamente.', en: 'People looking for mentoring can find you and book directly.', es: 'Quienes buscan mentoría pueden encontrarte y reservar directamente.', fr: 'Les personnes en quête de mentorat peuvent te trouver et réserver directement.' },
+  gcal_title: { pt: 'Google Calendar', en: 'Google Calendar', es: 'Google Calendar', fr: 'Google Calendar' },
+  gcal_hint: { pt: 'Sincroniza automaticamente as tuas sessões com o teu Google Calendar.', en: 'Automatically sync your sessions with your Google Calendar.', es: 'Sincroniza automáticamente tus sesiones con tu Google Calendar.', fr: 'Synchronise automatiquement tes séances avec ton Google Calendar.' },
+  gcal_connect: { pt: 'Ligar', en: 'Connect', es: 'Conectar', fr: 'Connecter' },
+  gcal_connected: { pt: 'Ligado', en: 'Connected', es: 'Conectado', fr: 'Connecté' },
+  gcal_disconnect: { pt: 'Desligar', en: 'Disconnect', es: 'Desconectar', fr: 'Déconnecter' },
   public_link: { pt: 'A tua página', en: 'Your page', es: 'Tu página', fr: 'Ta page' },
   copy: { pt: 'Copiar', en: 'Copy', es: 'Copiar', fr: 'Copier' },
   copied: { pt: 'Copiado', en: 'Copied', es: 'Copiado', fr: 'Copié' },
@@ -123,6 +128,23 @@ export function SchedulingDashboard({ initial }: { initial: any }) {
   const [headline, setHeadline] = useState<string>(cal.headline || '');
   const [bio, setBio] = useState<string>(cal.bio || '');
   const [listDir, setListDir] = useState<boolean>(cal.list_in_directory ?? false);
+  const [gcal, setGcal] = useState<{ connected: boolean; email?: string; last_sync_at?: string } | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      try { const { data } = await sb.rpc('nl_scheduling_oauth_status'); if (data?.google) setGcal(data.google); } catch {}
+    })();
+  }, [sb]);
+
+  async function connectGoogle() {
+    try {
+      const { data } = await sb.rpc('nl_google_calendar_connect_url', { p_locale: locale });
+      if (data?.ok && data.auth_url) window.location.href = data.auth_url;
+    } catch {}
+  }
+  async function disconnectGoogle() {
+    try { await sb.rpc('nl_scheduling_oauth_disconnect'); setGcal({ connected: false }); } catch {}
+  }
 
   const [savingCal, setSavingCal] = useState(false);
   const [savedCal, setSavedCal] = useState(false);
@@ -209,6 +231,21 @@ export function SchedulingDashboard({ initial }: { initial: any }) {
             <Toggle on={listDir} onChange={() => { const v = !listDir; setListDir(v); saveCalendar({ listInDir: v }); }} />
           </Card>
         )}
+
+        <Card className="!p-4 flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+              <CalendarDays className="h-4 w-4 text-violet-600 shrink-0" />{t('gcal_title')}
+              {gcal?.connected && <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700">{t('gcal_connected')}</span>}
+            </div>
+            <p className="text-xs text-slate-500 mt-0.5 leading-snug">{gcal?.connected && gcal.email ? gcal.email : t('gcal_hint')}</p>
+          </div>
+          {gcal?.connected ? (
+            <button onClick={disconnectGoogle} className="text-xs font-semibold text-slate-500 hover:text-rose-600 px-3 py-1.5 rounded-lg border border-slate-200">{t('gcal_disconnect')}</button>
+          ) : (
+            <button onClick={connectGoogle} className="text-xs font-semibold text-white bg-violet-600 hover:bg-violet-700 px-3 py-1.5 rounded-lg">{t('gcal_connect')}</button>
+          )}
+        </Card>
 
         <Card className="!p-4 flex items-center justify-between gap-3">
           <div className="min-w-0">
