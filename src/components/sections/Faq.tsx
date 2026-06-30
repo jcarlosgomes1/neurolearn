@@ -29,7 +29,7 @@ export function Faq({ data, maxItems = 6 }: Props) {
     <section className="py-20 bg-white">
       <div className="max-w-6xl mx-auto px-4">
         {data.title && (
-          <h2 className="text-center text-3xl sm:text-4xl font-bold text-slate-900 mb-12 tracking-tight text-balance">
+          <h2 className="t-h2 text-center text-slate-900 mb-12 text-balance">
             {data.title}
           </h2>
         )}

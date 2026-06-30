@@ -30,7 +30,7 @@ export function Pricing({ header, plans }: { header: HeaderData; plans: PlansDat
     <section className="py-20 bg-white" id="pricing">
       <div className="max-w-6xl mx-auto px-4">
         <div className="text-center max-w-2xl mx-auto mb-12">
-          {header.title && <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight text-balance">{header.title}</h2>}
+          {header.title && <h2 className="t-h2 text-slate-900 text-balance">{header.title}</h2>}
           {header.sub && <p className="mt-4 text-lg text-slate-600 text-pretty">{header.sub}</p>}
         </div>
 

@@ -17,7 +17,7 @@ export function FinalCta({ data }: { data: CtaData }) {
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-600 via-brand-700 to-brand-900 px-6 py-16 sm:px-12 sm:py-20 text-center text-white">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.15),transparent_50%)]" />
           <div className="relative">
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-balance">
+            <h2 className="t-h2 text-balance">
               {data.title}
             </h2>
             {data.sub && (

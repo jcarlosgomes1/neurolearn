@@ -59,7 +59,7 @@ export async function HowItWorksSection() {
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-violet-50 border border-violet-200 text-xs font-semibold text-violet-700 mb-4">
             <Sparkles className="h-3.5 w-3.5" /> {t('hx.how_badge')}
           </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 tracking-tight">
+          <h2 className="t-h2 text-slate-900">
             {t('hx.how_h2a')} <span className="bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">{t('hx.how_h2b')}</span>
           </h2>
           <p className="mt-3 text-slate-600 max-w-2xl mx-auto">{t('hx.how_sub')}</p>
@@ -103,7 +103,7 @@ export async function CategoriesGrid() {
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-slate-200 text-xs font-semibold text-slate-700 mb-4 shadow-sm">
             <BookOpen className="h-3.5 w-3.5" /> {t('hx.cat_badge')}
           </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 tracking-tight">
+          <h2 className="t-h2 text-slate-900">
             {t('hx.cat_h2a')} <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">{t('hx.cat_h2b')}</span>
           </h2>
           <p className="mt-3 text-slate-600 max-w-2xl mx-auto">{t('hx.cat_sub')}</p>
@@ -154,7 +154,7 @@ export async function LiveMomentumSection() {
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-xs font-semibold text-amber-700 mb-4">
             <Star className="h-3.5 w-3.5 fill-amber-500" /> {t('hx.feat_badge')}
           </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 tracking-tight">
+          <h2 className="t-h2 text-slate-900">
             {t('hx.feat_h2a')} <span className="bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">{t('hx.feat_h2b')}</span>
           </h2>
           <p className="mt-3 text-slate-600 max-w-2xl mx-auto">{t('hx.feat_sub')}</p>
