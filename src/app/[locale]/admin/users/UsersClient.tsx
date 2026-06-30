@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useRouter, Link } from '@/i18n/routing';
 import { fmtCents } from '@/lib/utils/cn';
 import { toast } from 'sonner';
-import { Search, Crown, ShieldCheck, GraduationCap, User as UserIcon, CheckCircle2, XCircle, Loader2, ChevronLeft, ChevronRight, Mail, Calendar, Activity, X, Wallet, ArrowUpRight } from 'lucide-react';
+import { Search, Crown, ShieldCheck, GraduationCap, User as UserIcon, CheckCircle2, XCircle, Loader2, ChevronLeft, ChevronRight, Mail, Calendar, Activity, X, Wallet, ArrowUpRight, Briefcase } from 'lucide-react';
 
 interface User {
   id: string; name: string | null; email: string | null; handle: string | null;
@@ -24,6 +24,7 @@ const ROLE_META: Record<string, { label: string; icon: any; cls: string }> = {
   super_admin: { label: 'Super',     icon: Crown,         cls: 'bg-amber-100 text-amber-700' },
   admin:       { label: 'Admin',     icon: ShieldCheck,   cls: 'bg-violet-100 text-violet-700' },
   instructor:  { label: 'Instrutor', icon: GraduationCap, cls: 'bg-emerald-100 text-emerald-700' },
+  account_manager: { label: 'Gestor', icon: Briefcase,    cls: 'bg-orange-100 text-orange-700' },
   student:     { label: 'Aluno',     icon: UserIcon,      cls: 'bg-blue-100 text-blue-700' },
 };
 
@@ -134,6 +135,7 @@ export function UsersClient({ currentUserId, kpis, initialPage }: { currentUserI
           <option value="super_admin">Super admin</option>
           <option value="admin">Admin</option>
           <option value="instructor">Instrutor</option>
+          <option value="account_manager">Gestor de conta</option>
           <option value="student">Aluno</option>
         </select>
         <select value={filterActive} onChange={(e) => changeFilter(setFilterActive, e.target.value)}
@@ -236,6 +238,7 @@ export function UsersClient({ currentUserId, kpis, initialPage }: { currentUserI
                       className="text-xs border border-slate-200 rounded-lg pl-2.5 pr-7 py-1.5 bg-white hover:border-violet-300 focus:border-violet-500 outline-none cursor-pointer disabled:opacity-50">
                       <option value="student">Aluno</option>
                       <option value="instructor">Instrutor</option>
+                      <option value="account_manager">Gestor de conta</option>
                       <option value="admin">Admin</option>
                       <option value="super_admin">Super</option>
                     </select>
