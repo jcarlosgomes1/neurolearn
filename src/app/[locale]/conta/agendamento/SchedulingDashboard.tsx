@@ -26,6 +26,9 @@ const STR: Record<string, Record<Lang, string>> = {
   gcal_title: { pt: 'Google Calendar', en: 'Google Calendar', es: 'Google Calendar', fr: 'Google Calendar' },
   gcal_hint: { pt: 'Sincroniza automaticamente as tuas sessões com o teu Google Calendar.', en: 'Automatically sync your sessions with your Google Calendar.', es: 'Sincroniza automáticamente tus sesiones con tu Google Calendar.', fr: 'Synchronise automatiquement tes séances avec ton Google Calendar.' },
   gcal_connect: { pt: 'Ligar', en: 'Connect', es: 'Conectar', fr: 'Connecter' },
+  cal_link_title: { pt: 'Ligações de calendário', en: 'Calendar connections', es: 'Conexiones de calendario', fr: 'Connexions d\u2019agenda' },
+  cal_link_hint: { pt: 'Liga o Google, Outlook ou Apple e importa o teu calendário.', en: 'Connect Google, Outlook or Apple and import your calendar.', es: 'Conecta Google, Outlook o Apple e importa tu calendario.', fr: 'Connecte Google, Outlook ou Apple et importe ton agenda.' },
+  cal_link_cta: { pt: 'Abrir', en: 'Open', es: 'Abrir', fr: 'Ouvrir' },
   gcal_connected: { pt: 'Ligado', en: 'Connected', es: 'Conectado', fr: 'Connecté' },
   gcal_disconnect: { pt: 'Desligar', en: 'Disconnect', es: 'Desconectar', fr: 'Déconnecter' },
   mscal_title: { pt: 'Outlook / Microsoft 365', en: 'Outlook / Microsoft 365', es: 'Outlook / Microsoft 365', fr: 'Outlook / Microsoft 365' },
@@ -330,58 +333,12 @@ export function SchedulingDashboard({ initial }: { initial: any }) {
           </Card>
         )}
 
-        <Card className="!p-4">
-          <div className="flex items-center justify-between gap-3">
+        <Card className="!p-4 sm:col-span-2 flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-              <CalendarDays className="h-4 w-4 text-violet-600 shrink-0" />{t('gcal_title')}
-              {gcal?.connected && <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700">{t('gcal_connected')}</span>}
-            </div>
-            <p className="text-xs text-slate-500 mt-0.5 leading-snug">{gcal?.connected && gcal.email ? gcal.email : t('gcal_hint')}</p>
+            <div className="flex items-center gap-2 text-sm font-semibold text-slate-900"><CalendarDays className="h-4 w-4 text-violet-600 shrink-0" />{t('cal_link_title')}</div>
+            <p className="text-xs text-slate-500 mt-0.5 leading-snug">{t('cal_link_hint')}</p>
           </div>
-          {gcal?.connected ? (
-            <button onClick={disconnectGoogle} className="text-xs font-semibold text-slate-500 hover:text-rose-600 px-3 py-1.5 rounded-lg border border-slate-200">{t('gcal_disconnect')}</button>
-          ) : (
-            <button onClick={connectGoogle} className="text-xs font-semibold text-white bg-violet-600 hover:bg-violet-700 px-3 py-1.5 rounded-lg">{t('gcal_connect')}</button>
-          )}
-          </div>
-          {gcal?.connected && <PullControls provider="google" st={pull.google} onSet={setPullState} t={t} />}
-        </Card>
-
-        <Card className="!p-4">
-          <div className="flex items-center justify-between gap-3">
-          <div className="min-w-0">
-            <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-              <CalendarDays className="h-4 w-4 text-violet-600 shrink-0" />{t('mscal_title')}
-              {mscal?.connected && <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700">{t('gcal_connected')}</span>}
-            </div>
-            <p className="text-xs text-slate-500 mt-0.5 leading-snug">{mscal?.connected && mscal.email ? mscal.email : t('mscal_hint')}</p>
-          </div>
-          {mscal?.connected ? (
-            <button onClick={disconnectMicrosoft} className="text-xs font-semibold text-slate-500 hover:text-rose-600 px-3 py-1.5 rounded-lg border border-slate-200">{t('gcal_disconnect')}</button>
-          ) : (
-            <button onClick={connectMicrosoft} className="text-xs font-semibold text-white bg-violet-600 hover:bg-violet-700 px-3 py-1.5 rounded-lg">{t('gcal_connect')}</button>
-          )}
-          </div>
-          {mscal?.connected && <PullControls provider="microsoft" st={pull.microsoft} onSet={setPullState} t={t} />}
-        </Card>
-
-        <Card className="!p-4 sm:col-span-2">
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <div className="flex items-center gap-2 text-sm font-semibold text-slate-900"><CalendarDays className="h-4 w-4 text-violet-600 shrink-0" />{t('ics_title')}</div>
-              <p className="text-xs text-slate-500 mt-0.5 leading-snug">{t('ics_hint')}</p>
-            </div>
-            {!icsUrl && <button onClick={getIcsLink} className="text-xs font-semibold text-white bg-violet-600 hover:bg-violet-700 px-3 py-1.5 rounded-lg shrink-0">{t('ics_get')}</button>}
-          </div>
-          {icsUrl && (
-            <div className="flex items-center gap-2 mt-3">
-              <input readOnly value={icsUrl} className="flex-1 min-w-0 rounded-lg border border-slate-200 px-2 py-1.5 text-xs text-slate-600 bg-slate-50" />
-              <button onClick={copyIcs} className="inline-flex items-center gap-1.5 text-xs font-semibold text-violet-700 bg-violet-50 hover:bg-violet-100 rounded-lg px-3 py-1.5 shrink-0">
-                {icsCopied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}{icsCopied ? t('copied') : t('ics_copy')}
-              </button>
-            </div>
-          )}
+          <a href={`/${locale}/conta/calendario`} className="text-xs font-semibold text-white bg-violet-600 hover:bg-violet-700 px-3 py-1.5 rounded-lg shrink-0">{t('cal_link_cta')}</a>
         </Card>
 
         <Card className="!p-4 flex items-center justify-between gap-3">
