@@ -4981,5 +4981,7 @@
   "scormadmin.open": "Open",
   "scormlearn.title": "SCORM content",
   "scormlearn.open": "Open",
-  "scormadmin.no_course": "— no course (preview) —"
+  "scormadmin.no_course": "— no course (preview) —",
+  "org.nav.scorm_h": "SCORM packages",
+  "org.nav.scorm_p": "Import your company's SCORM 1.2/2004 content."
 }

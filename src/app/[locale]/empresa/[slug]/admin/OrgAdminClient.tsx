@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { Link } from '@/i18n/routing';
 import { 
   Palette, FileText, Sparkles, Users, BookOpen, Briefcase,
-  CreditCard, AlertCircle, Loader2, Save, ArrowLeft, Euro, ExternalLink
+  CreditCard, AlertCircle, Loader2, Save, ArrowLeft, Euro, ExternalLink, Package
 } from 'lucide-react';
 import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { updateBrandingAction, stripeCheckoutAction, stripePortalAction } from './actions';
@@ -98,6 +98,10 @@ function OverviewTab({ data, slug }: { data: Data; slug: string }) {
         <Link href={`/empresa/${slug}/admin/vagas` as any} className="bg-white rounded-xl border border-slate-200 hover:border-brand-300 hover:shadow-sm transition p-4">
           <div className="flex items-center gap-2 mb-1"><Briefcase className="h-5 w-5 text-emerald-600" /><h3 className="font-semibold text-slate-900">{t('org.nav.jobs_h')}</h3></div>
           <p className="text-sm text-slate-500">{t('org.nav.jobs_p')}</p>
+        </Link>
+        <Link href={`/empresa/${slug}/admin/scorm` as any} className="bg-white rounded-xl border border-slate-200 hover:border-brand-300 hover:shadow-sm transition p-4">
+          <div className="flex items-center gap-2 mb-1"><Package className="h-5 w-5 text-indigo-600" /><h3 className="font-semibold text-slate-900">{t('org.nav.scorm_h')}</h3></div>
+          <p className="text-sm text-slate-500">{t('org.nav.scorm_p')}</p>
         </Link>
       </div>
       

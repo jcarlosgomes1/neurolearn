@@ -4981,5 +4981,7 @@
   "scormadmin.open": "Abrir",
   "scormlearn.title": "Contenidos SCORM",
   "scormlearn.open": "Abrir",
-  "scormadmin.no_course": "— sin curso (vista previa) —"
+  "scormadmin.no_course": "— sin curso (vista previa) —",
+  "org.nav.scorm_h": "Paquetes SCORM",
+  "org.nav.scorm_p": "Importa los contenidos SCORM 1.2/2004 de tu empresa."
 }
