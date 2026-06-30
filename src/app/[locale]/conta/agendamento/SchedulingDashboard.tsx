@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import {
   Clock, Globe2, Plus, Trash2, Pencil, Copy, Check, Calendar, Video, Phone,
-  MapPin, Eye, EyeOff, Link2, X, Loader2, CalendarDays, Hourglass, UserRound,
+  MapPin, Eye, EyeOff, Link2, X, Loader2, CalendarDays, Hourglass, UserRound, Lock, RefreshCw,
 } from 'lucide-react';
 
 type Lang = 'pt' | 'en' | 'es' | 'fr';
@@ -34,6 +34,16 @@ const STR: Record<string, Record<Lang, string>> = {
   ics_hint: { pt: 'Subscreve este link no Apple Calendar, Outlook ou qualquer app — atualiza sozinho.', en: 'Subscribe to this link in Apple Calendar, Outlook or any app — it stays in sync.', es: 'Suscribe este enlace en Apple Calendar, Outlook o cualquier app — se actualiza solo.', fr: 'Abonne-toi à ce lien dans Apple Calendar, Outlook ou toute app — il se met à jour seul.' },
   ics_get: { pt: 'Obter link de subscrição', en: 'Get subscription link', es: 'Obtener enlace de suscripción', fr: 'Obtenir le lien d’abonnement' },
   ics_copy: { pt: 'Copiar link', en: 'Copy link', es: 'Copiar enlace', fr: 'Copier le lien' },
+  pull_title: { pt: 'Importar o meu calendário', en: 'Import my calendar', es: 'Importar mi calendario', fr: 'Importer mon agenda' },
+  pull_hint: { pt: 'A NeuroLearn passa a conhecer os teus eventos externos e evita marcações sobrepostas.', en: 'NeuroLearn learns your external events and avoids double-booking.', es: 'NeuroLearn conoce tus eventos externos y evita solapamientos.', fr: 'NeuroLearn connaît tes événements externes et évite les chevauchements.' },
+  privacy_level: { pt: 'O que a NeuroLearn vê', en: 'What NeuroLearn sees', es: 'Lo que NeuroLearn ve', fr: 'Ce que NeuroLearn voit' },
+  privacy_busy: { pt: 'Só ocupação', en: 'Busy only', es: 'Solo ocupación', fr: 'Occupé seulement' },
+  privacy_busy_hint: { pt: 'Apenas que estás ocupado. Privado.', en: 'Only that you are busy. Private.', es: 'Solo que estás ocupado. Privado.', fr: 'Seulement que tu es occupé. Privé.' },
+  privacy_full: { pt: 'Detalhes completos', en: 'Full details', es: 'Detalles completos', fr: 'Détails complets' },
+  privacy_full_hint: { pt: 'Título, local e notas dos eventos.', en: 'Event title, location and notes.', es: 'Título, lugar y notas.', fr: 'Titre, lieu et notes.' },
+  pull_last_sync: { pt: 'Sincronizado', en: 'Synced', es: 'Sincronizado', fr: 'Synchronisé' },
+  pull_never: { pt: 'A preparar a primeira sincronização…', en: 'Preparing first sync…', es: 'Preparando la primera sincronización…', fr: 'Préparation de la première synchro…' },
+  pull_realtime: { pt: 'Tempo real ativo', en: 'Real-time active', es: 'Tiempo real activo', fr: 'Temps réel actif' },
   public_link: { pt: 'A tua página', en: 'Your page', es: 'Tu página', fr: 'Ta page' },
   copy: { pt: 'Copiar', en: 'Copy', es: 'Copiar', fr: 'Copier' },
   copied: { pt: 'Copiado', en: 'Copied', es: 'Copiado', fr: 'Copié' },
@@ -115,6 +125,42 @@ function Card({ children, className }: { children: React.ReactNode; className?: 
   return <div className={cx('rounded-3xl border border-slate-200 bg-white/80 backdrop-blur p-5 sm:p-6', className)}>{children}</div>;
 }
 
+function PullControls({ provider, st, onSet, t }: { provider: string; st: any; onSet: (p: string, e: boolean, d: string) => void; t: (k: string) => string }) {
+  const enabled = !!st?.pull_enabled;
+  const detail = st?.detail_level || 'busy';
+  return (
+    <div className="mt-3 pt-3 border-t border-slate-100">
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <div className="text-sm font-medium text-slate-800">{t('pull_title')}</div>
+          <p className="text-xs text-slate-500 mt-0.5 leading-snug">{t('pull_hint')}</p>
+        </div>
+        <Toggle on={enabled} onChange={() => onSet(provider, !enabled, detail)} />
+      </div>
+      {enabled && (
+        <div className="mt-3">
+          <div className="text-xs font-medium text-slate-500 mb-1.5">{t('privacy_level')}</div>
+          <div className="grid grid-cols-2 gap-2">
+            <button onClick={() => onSet(provider, true, 'busy')}
+              className={cx('text-left rounded-xl border p-2.5 transition-colors', detail === 'busy' ? 'border-violet-400 bg-violet-50 ring-1 ring-violet-200' : 'border-slate-200 hover:border-slate-300')}>
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-800"><Lock className="h-3.5 w-3.5" />{t('privacy_busy')}</div>
+              <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">{t('privacy_busy_hint')}</p>
+            </button>
+            <button onClick={() => onSet(provider, true, 'full')}
+              className={cx('text-left rounded-xl border p-2.5 transition-colors', detail === 'full' ? 'border-violet-400 bg-violet-50 ring-1 ring-violet-200' : 'border-slate-200 hover:border-slate-300')}>
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-800"><Eye className="h-3.5 w-3.5" />{t('privacy_full')}</div>
+              <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">{t('privacy_full_hint')}</p>
+            </button>
+          </div>
+          <div className="flex items-center gap-1.5 text-[11px] text-slate-400 mt-2">
+            {st?.webhook_ok ? <span className="inline-flex items-center gap-1.5 text-emerald-600"><RefreshCw className="h-3 w-3" />{t('pull_realtime')}</span> : <span>{st?.last_pull_at ? t('pull_last_sync') : t('pull_never')}</span>}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function SchedulingDashboard({ initial }: { initial: any }) {
   const locale = (useLocale() as Lang) || 'pt';
   const t = (k: string) => STR[k]?.[locale] ?? STR[k]?.pt ?? k;
@@ -185,6 +231,17 @@ export function SchedulingDashboard({ initial }: { initial: any }) {
     if (!icsUrl) return;
     navigator.clipboard?.writeText(icsUrl);
     setIcsCopied(true); setTimeout(() => setIcsCopied(false), 1600);
+  }
+
+  const [pull, setPull] = useState<Record<string, any>>({});
+  useEffect(() => {
+    (async () => {
+      try { const { data } = await sb.rpc('nl_calendar_pull_status'); if (data) setPull(data); } catch {}
+    })();
+  }, [sb]);
+  async function setPullState(provider: string, enabled: boolean, detail: string) {
+    setPull((p) => ({ ...p, [provider]: { ...(p[provider] || {}), pull_enabled: enabled, detail_level: detail, connected: true } }));
+    try { await sb.rpc('nl_calendar_pull_set', { p_provider: provider, p_enabled: enabled, p_detail_level: detail }); } catch {}
   }
 
   const [savingCal, setSavingCal] = useState(false);
@@ -273,7 +330,8 @@ export function SchedulingDashboard({ initial }: { initial: any }) {
           </Card>
         )}
 
-        <Card className="!p-4 flex items-center justify-between gap-3">
+        <Card className="!p-4">
+          <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
               <CalendarDays className="h-4 w-4 text-violet-600 shrink-0" />{t('gcal_title')}
@@ -286,9 +344,12 @@ export function SchedulingDashboard({ initial }: { initial: any }) {
           ) : (
             <button onClick={connectGoogle} className="text-xs font-semibold text-white bg-violet-600 hover:bg-violet-700 px-3 py-1.5 rounded-lg">{t('gcal_connect')}</button>
           )}
+          </div>
+          {gcal?.connected && <PullControls provider="google" st={pull.google} onSet={setPullState} t={t} />}
         </Card>
 
-        <Card className="!p-4 flex items-center justify-between gap-3">
+        <Card className="!p-4">
+          <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
               <CalendarDays className="h-4 w-4 text-violet-600 shrink-0" />{t('mscal_title')}
@@ -301,6 +362,8 @@ export function SchedulingDashboard({ initial }: { initial: any }) {
           ) : (
             <button onClick={connectMicrosoft} className="text-xs font-semibold text-white bg-violet-600 hover:bg-violet-700 px-3 py-1.5 rounded-lg">{t('gcal_connect')}</button>
           )}
+          </div>
+          {mscal?.connected && <PullControls provider="microsoft" st={pull.microsoft} onSet={setPullState} t={t} />}
         </Card>
 
         <Card className="!p-4 sm:col-span-2">
