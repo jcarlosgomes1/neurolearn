@@ -12,6 +12,7 @@ import { LessonTutor } from '@/components/lesson/LessonTutor';
 import { MindMap } from '@/components/shared/MindMap';
 import { CoverImage } from '@/components/shared/CoverImage';
 import { VideoEmbed } from '@/components/shared/VideoEmbed';
+import { LessonMedia } from '@/components/lesson/LessonMedia';
 import { ReviewSystem } from '@/components/course/ReviewSystem';
 import { LessonOpenQuiz } from '@/components/lesson/LessonOpenQuiz';
 import { LessonPractice } from '@/components/lesson/LessonPractice';
@@ -52,6 +53,7 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
   const [quizReveal, setQuizReveal] = useState(false);
   const [completing, setCompleting] = useState(false);
   const [completed, setCompleted] = useState<boolean | null>(null);
+  const [transcript, setTranscript] = useState<{ status?: string; lang?: string; segments?: { start: number; end: number; text: string }[]; available?: string[] } | null>(null);
 
   useEffect(() => {
     const open = () => setTutorOpen(true);
@@ -82,6 +84,20 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
     setQuizReveal(false);
   }, [courseId, moduleIndex, lessonIndex]);
 
+  useEffect(() => {
+    const lessonObj = course.modules[moduleIndex]?.lessons[lessonIndex];
+    const url = (lessonObj?.stream_url || lessonObj?.video_url) || '';
+    const isLiveV = !!lessonObj?.stream_url;
+    const isHls = /\.m3u8($|\?)/i.test(url) || url.includes('mux.com');
+    if (!url || isLiveV || !isHls) { setTranscript(null); return; }
+    let active = true;
+    const sb = createClient();
+    sb.rpc('nl_lesson_transcript', { p_course_id: courseId, p_module: moduleIndex, p_lesson: lessonIndex, p_lang: locale })
+      .then(({ data }: { data: any }) => { if (active) setTranscript(data?.ok ? data : null); })
+      .catch(() => { if (active) setTranscript(null); });
+    return () => { active = false; };
+  }, [courseId, moduleIndex, lessonIndex, locale, course]);
+
   if (!mod || !lesson) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-16 text-center">
@@ -105,6 +121,14 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
   function goNext() {
     if (nextLesson) router.push(`/learn/curso/${courseId}/aula/${nextLesson.modIdx}/${nextLesson.lesIdx}` as any);
     else router.push('/learn' as any);
+  }
+
+  async function changeTranscriptLang(lang: string) {
+    const sb = createClient();
+    try {
+      const { data } = await sb.rpc('nl_lesson_transcript', { p_course_id: courseId, p_module: moduleIndex, p_lesson: lessonIndex, p_lang: lang });
+      if (data?.ok) setTranscript(data);
+    } catch { /* noop */ }
   }
 
   async function markComplete() {
@@ -201,7 +225,19 @@ export function LessonViewer({ courseId, course, moduleIndex, lessonIndex, local
 
             {hasVideo ? (
               <div className="mb-8">
-                <VideoEmbed url={(lesson.stream_url || lesson.video_url)!} title={lesson.title} />
+                {!isLive && transcript && Array.isArray(transcript.segments) && transcript.segments.length > 0 ? (
+                  <LessonMedia
+                    src={(lesson.stream_url || lesson.video_url)!}
+                    title={lesson.title}
+                    segments={transcript.segments}
+                    status={transcript.status}
+                    available={transcript.available || []}
+                    lang={transcript.lang}
+                    onLangChange={changeTranscriptLang}
+                  />
+                ) : (
+                  <VideoEmbed url={(lesson.stream_url || lesson.video_url)!} title={lesson.title} />
+                )}
                 {isLive && <p className="mt-2 text-xs text-slate-500 text-center">{t('live_note')}</p>}
               </div>
             ) : c.hero_image_url ? (

@@ -23,6 +23,15 @@ interface Props {
 
 const HLS_SRC = 'https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js';
 
+function vttStamp(s: number): string {
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), ss = Math.floor(s % 60), ms = Math.round((s % 1) * 1000);
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(ss).padStart(2, '0')}.${String(ms).padStart(3, '0')}`;
+}
+function buildVttDataUrl(segs: TranscriptSegment[]): string {
+  const vtt = 'WEBVTT\n\n' + segs.map((s, i) => `${i + 1}\n${vttStamp(s.start)} --> ${vttStamp(s.end)}\n${s.text}`).join('\n\n');
+  return 'data:text/vtt;charset=utf-8,' + encodeURIComponent(vtt);
+}
+
 export function LessonMedia({ src, poster, title, captions = [], segments, status, available = [], lang, onLangChange }: Props) {
   const ref = useRef<HTMLVideoElement>(null);
   const [now, setNow] = useState(0);
@@ -75,7 +84,11 @@ export function LessonMedia({ src, poster, title, captions = [], segments, statu
     if (p) void p.catch(() => { /* autoplay may be blocked; ignore */ });
   }
 
-  const needsCors = captions.some((c) => /^https?:/i.test(c.src));
+  // Se não vierem legendas explícitas, gera-as a partir dos segmentos (mesmo texto da transcrição).
+  const autoCaptions: Caption[] = captions.length
+    ? captions
+    : (segments.length ? [{ lang: lang || 'pt', label: (lang || 'pt').toUpperCase(), src: buildVttDataUrl(segments) }] : []);
+  const needsCors = autoCaptions.some((c) => /^https?:/i.test(c.src));
 
   return (
     <div className="grid gap-4 lg:grid-cols-[1fr_360px]">
@@ -90,7 +103,7 @@ export function LessonMedia({ src, poster, title, captions = [], segments, statu
           crossOrigin={needsCors ? 'anonymous' : undefined}
           className="absolute inset-0 w-full h-full"
         >
-          {captions.map((c, i) => (
+          {autoCaptions.map((c, i) => (
             <track key={c.lang} kind="subtitles" src={c.src} srcLang={c.lang} label={c.label} default={i === 0} />
           ))}
         </video>
