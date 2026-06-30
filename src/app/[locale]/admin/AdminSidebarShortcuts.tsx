@@ -43,6 +43,7 @@ const SECTIONS: ShortcutSection[] = [
       { href: '/admin/drip-schedules', label: 'Calendário drip', icon: CalendarClock },
       { href: '/admin/i18n', label: 'Traduções', icon: Languages },
       { href: '/admin/categorias', label: 'Categorias', icon: FolderTree },
+      { href: '/admin/scorm', label: 'Pacotes SCORM', icon: Package, badge: 'Novo' },
     ],
   },
   {
