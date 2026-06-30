@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import { SUPABASE_URL } from '@/lib/supabase/config';
 import { toast } from 'sonner';
 import { Teleprompter } from '@/components/course-editor/Teleprompter';
+import { VideoTrimmer } from '@/components/course-editor/VideoTrimmer';
 
 type Source = 'screen' | 'camera' | 'slides';
 type Phase = 'idle' | 'preview' | 'recording' | 'recorded' | 'uploading';
@@ -554,6 +555,9 @@ export function LessonStudioRecorder({ onUploaded, currentUrl, lessonTitle, cont
       {(phase === 'recorded' || phase === 'uploading') && previewUrl && (
         <div className="space-y-3">
           <video src={previewUrl} controls className="w-full rounded-lg bg-black aspect-video" />
+          {phase === 'recorded' && (
+            <VideoTrimmer blob={recordedBlob.current} onTrimmed={(b, u) => { recordedBlob.current = b; setPreviewUrl(u); }} />
+          )}
           <div className="flex gap-2">
             <button onClick={upload} disabled={phase === 'uploading'} className="btn-primary flex-1 disabled:opacity-50">
               {phase === 'uploading' ? t('uploading') : t('use_video')}
