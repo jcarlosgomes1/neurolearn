@@ -7,5 +7,5 @@ export async function generateMetadata() {
 }
 
 export default function Page() {
-  return <CandidaturasList />;
+  return <div className="px-4 sm:px-6 lg:px-8"><CandidaturasList /></div>;
 }
