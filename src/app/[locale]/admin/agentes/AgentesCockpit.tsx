@@ -1,6 +1,7 @@
 'use client';
 
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { Tabs } from '@/components/ui/Tabs';
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useTranslations, useLocale } from 'next-intl';
@@ -333,11 +334,8 @@ export function AgentesCockpit() {
   ];
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-      <header className="mb-6">
-        <AdminPageHeader title={t('agents.cockpit.title')} />
-        <p className="text-sm text-slate-600 mt-1.5">{t('agents.cockpit.subtitle')}</p>
-      </header>
+    <div className="px-4 sm:px-6 lg:px-8">
+      <AdminPageHeader title={t('agents.cockpit.title')} description={t('agents.cockpit.subtitle')} />
 
       <div className="mb-6 flex items-center justify-between gap-3 rounded-xl border border-violet-200/70 bg-violet-50/60 p-3.5 sm:p-4">
         <div className="min-w-0">
@@ -351,18 +349,12 @@ export function AgentesCockpit() {
         </button>
       </div>
 
-      <div className="flex gap-1 border-b border-slate-200 mb-6 overflow-x-auto">
-        {TABS.map((tb) => (
-          <button key={tb.id} onClick={() => setTab(tb.id)}
-            className={`flex items-center gap-2 px-3 sm:px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors shrink-0 whitespace-nowrap ${
-              tab === tb.id ? 'border-violet-600 text-violet-700' : 'border-transparent text-slate-500 hover:text-slate-800'}`}>
-            <tb.icon className="h-4 w-4" /> {tb.label}
-            {tb.count != null && tb.count > 0 && (
-              <span className="text-xs bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded-full">{tb.count}</span>
-            )}
-          </button>
-        ))}
-      </div>
+      <Tabs
+        items={TABS.map((tb) => ({ k: tb.id, label: tb.label, icon: tb.icon, count: tb.count }))}
+        value={tab}
+        onChange={(k) => setTab(k as typeof tab)}
+        className="mb-6"
+      />
 
       {loading ? (
         <div className="flex items-center justify-center py-20 text-slate-400">

@@ -7,6 +7,7 @@ export interface TabItem {
   k: string;
   label: string;
   icon?: LucideIcon;
+  count?: number | null;
 }
 
 /**
@@ -41,6 +42,16 @@ export function Tabs({
             )}
           >
             {Icon && <Icon className="h-4 w-4" />} {tb.label}
+            {typeof tb.count === 'number' && tb.count > 0 && (
+              <span
+                className={cn(
+                  'ml-1 text-xs px-1.5 py-0.5 rounded-full tabular-nums',
+                  active ? 'bg-brand-100 text-brand-700' : 'bg-slate-100 text-slate-600',
+                )}
+              >
+                {tb.count}
+              </span>
+            )}
           </button>
         );
       })}

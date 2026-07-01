@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useTranslations } from 'next-intl';
+import { Tabs } from '@/components/ui/Tabs';
 import { toast } from 'sonner';
 import { Loader2, Check, X, GraduationCap, BookOpen, AlertTriangle, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 
@@ -78,16 +79,12 @@ export function FormacaoConsole() {
   ];
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
-      <div className="flex gap-2 mb-5 flex-wrap">
-        {TABS.map((tb) => (
-          <button key={tb.k} onClick={() => setTab(tb.k)}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition ${tab === tb.k ? 'bg-violet-600 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:border-violet-300'}`}>
-            <tb.icon className="h-3.5 w-3.5" /> {tb.label}
-            {tb.count != null && tb.count > 0 && <span className={`text-xs px-1.5 rounded-full ${tab === tb.k ? 'bg-white/25' : 'bg-slate-100'}`}>{tb.count}</span>}
-          </button>
-        ))}
-      </div>
+    <div className="px-4 sm:px-6 lg:px-8">
+      <Tabs
+        items={TABS.map((tb) => ({ k: tb.k, label: tb.label, icon: tb.icon, count: tb.count }))}
+        value={tab}
+        onChange={(k) => setTab(k as typeof tab)}
+      />
 
       {tab === 'apps' && (
         <div className="space-y-3">
