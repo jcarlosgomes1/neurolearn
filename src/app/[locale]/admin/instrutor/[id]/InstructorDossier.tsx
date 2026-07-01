@@ -61,11 +61,12 @@ export function InstructorDossier({ instructorId }: { instructorId: string }) {
   return (
     <div className="space-y-3">
       {/* Sinais de avaliação em destaque */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
         <Stat label={t('instr_dossier.sig_rating')} value={rev.count > 0 ? `${rev.avg}★` : '—'} hint={rev.count > 0 ? t('instr_dossier.n_reviews', { n: rev.count }) : undefined} />
         <Stat label={t('instr_dossier.sig_response')} value={rev.responded > 0 ? `${rev.avg_response_hours}h` : '—'} hint={rev.responded > 0 ? t('instr_dossier.n_responded', { n: rev.responded }) : undefined} />
         <Stat label={t('instr_dossier.sig_ai')} value={engRatio !== null ? `${engRatio}%` : '—'} hint={engRatio !== null ? t('instr_dossier.ai_edited_hint') : t('instr_dossier.no_data')} />
         <Stat label={t('instr_dossier.sig_revenue')} value={fmtEUR(adm.total_revenue_cents)} hint={t('instr_dossier.rev_share', { pct: adm.revenue_share_pct ?? 0 })} />
+        <Stat label={t('instr_dossier.sig_ai_cost')} value={fmtEUR(d.ai_cost?.total_cents)} hint={t('instr_dossier.cost_calls', { n: d.ai_cost?.calls ?? 0 })} />
       </div>
 
       <Section icon={User} title={t('instr_dossier.sec_identity')} open={!!open.identity} onToggle={() => toggle('identity')}>
@@ -107,6 +108,12 @@ export function InstructorDossier({ instructorId }: { instructorId: string }) {
         <Row k={t('instr_dossier.feat_tutor')} v={feat.can_use_ai_tutor ? '✓' : '—'} />
         <Row k={t('instr_dossier.feat_studio')} v={feat.can_use_studio ? '✓' : '—'} />
         <Row k={t('instr_dossier.feat_credits')} v={`${feat.credits_used_this_month ?? 0} / ${feat.monthly_ai_credits ?? 0}`} />
+        <div className="border-t border-slate-100 mt-2 pt-2">
+          <Row k={t('instr_dossier.cost_total')} v={fmtEUR(d.ai_cost?.total_cents)} />
+          <Row k={t('instr_dossier.cost_month')} v={fmtEUR(d.ai_cost?.month_cents)} />
+          <Row k={t('instr_dossier.cost_calls_label')} v={d.ai_cost?.calls ?? 0} />
+          <Row k={t('instr_dossier.cost_tokens')} v={(d.ai_cost?.tokens ?? 0).toLocaleString('pt-PT')} />
+        </div>
       </Section>
 
       <Section icon={BookOpen} title={t('instr_dossier.sec_courses')} count={(d.courses || []).length} open={!!open.courses} onToggle={() => toggle('courses')}>
