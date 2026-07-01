@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { Link } from '@/i18n/routing';
 import { createClient } from '@/lib/supabase/client';
 import { useTranslations, useLocale } from 'next-intl';
-import { Loader2, CalendarDays, Users, Sparkles, ArrowUpRight, Video, MapPin } from 'lucide-react';
+import { Loader2, CalendarDays, Users, Sparkles, ArrowUpRight, Video, MapPin, Plus } from 'lucide-react';
 import { EmptyState } from '@/components/primitives/EmptyState';
 
 interface Ev { id: string; title: string; type: string | null; mode: string | null; status: string | null; starts_at: string | null; duration_min: number | null; capacity: number | null; host: string | null; language: string | null; rsvp_count: number }
@@ -38,7 +38,11 @@ export function AgendaClient() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-      <AdminPageHeader emoji="📅" title={t('agenda.title')} description={t('agenda.tip')} />
+      <AdminPageHeader emoji="📅" title={t('agenda.title')} description={t('agenda.tip')} actions={
+        <Link href={'/admin/webinars' as any} className="inline-flex items-center gap-1.5 rounded-lg bg-violet-600 text-white px-3 py-2 text-sm font-medium hover:bg-violet-700">
+          <Plus className="w-4 h-4" />{t('agenda.create')}
+        </Link>
+      } />
 
       {suggestions.length > 0 && (
         <div className="mb-6">
