@@ -1,8 +1,8 @@
-import { AdminInstructorDetail } from './AdminInstructorDetail';
+import { InstructorDossier } from './InstructorDossier';
 
-export const metadata = { title: 'Painel do instrutor · Admin' };
+export const metadata = { title: 'Ficha do instrutor · Admin' };
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  return <AdminInstructorDetail instructorId={id} />;
+  return <InstructorDossier instructorId={id} />;
 }
