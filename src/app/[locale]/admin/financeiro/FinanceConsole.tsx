@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
+import { Tabs } from '@/components/ui/Tabs';
 import {
   Loader2, TrendingUp, Wallet, AlertTriangle, Sliders, Table2,
   Sparkles, RefreshCw, Check, Flame, Target,
@@ -445,14 +446,17 @@ export function FinanceConsole({ locale: _locale }: { locale: string }) {
         </button>
       </div>
 
-      <div className="flex gap-1 border-b border-slate-200 overflow-x-auto -mx-4 px-4">
-        {([['resumo', 'Resumo', Target], ['pl', 'P&L', Table2], ['canais', 'Canais', Sliders], ['comparar', 'Comparar', GitCompare], ['agente', 'Agente', Sparkles]] as const).map(([k, lbl, Icon]) => (
-          <button key={k} onClick={() => setTab(k)}
-            className={`inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium whitespace-nowrap border-b-2 -mb-px transition-colors ${tab === k ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>
-            <Icon className="h-4 w-4" />{lbl}
-          </button>
-        ))}
-      </div>
+      <Tabs
+        items={[
+          { k: 'resumo', label: 'Resumo', icon: Target },
+          { k: 'pl', label: 'P&L', icon: Table2 },
+          { k: 'canais', label: 'Canais', icon: Sliders },
+          { k: 'comparar', label: 'Comparar', icon: GitCompare },
+          { k: 'agente', label: 'Agente', icon: Sparkles },
+        ]}
+        value={tab}
+        onChange={(k) => setTab(k as typeof tab)}
+      />
 
       {tab === 'resumo' && (
         <div className="space-y-4">
