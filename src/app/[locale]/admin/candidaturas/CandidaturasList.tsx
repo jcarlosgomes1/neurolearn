@@ -133,10 +133,10 @@ export function CandidaturasList() {
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 flex-wrap">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-semibold text-slate-900 text-base sm:text-lg">{app.full_name}</h3>
-                      <span className={`text-[11px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full ${statusColor}`}>{t(statusKey)}</span>
+                      <h3 className="t-item-title">{app.full_name}</h3>
+                      <span className={`t-chip ${statusColor}`}>{t(statusKey)}</span>
                       {app.proposed_email_subject && !app.email_sent_at && (
-                        <span className="text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-violet-100 text-violet-700">{t('candlist.email_ready')}</span>
+                        <span className="t-chip bg-violet-100 text-violet-700">{t('candlist.email_ready')}</span>
                       )}
                     </div>
                     <p className="text-sm text-slate-600 mt-0.5">{app.job_title}{app.current_company && ` · ${app.current_company}`}</p>

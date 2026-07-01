@@ -111,10 +111,10 @@ export function MentoresCockpit() {
                 : <div className="h-11 w-11 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 text-white font-bold flex items-center justify-center shrink-0">{(c.name || '?')[0]?.toUpperCase()}</div>}
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-semibold text-slate-900 text-sm truncate">{c.name}</span>
-                  <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500">{ROLE_LABEL[c.role]?.[locale] || c.role}</span>
+                  <span className="t-item-title truncate">{c.name}</span>
+                  <span className="t-chip bg-slate-100 text-slate-500">{ROLE_LABEL[c.role]?.[locale] || c.role}</span>
                 </div>
-                <div className="text-xs text-slate-500 truncate">@{c.handle}</div>
+                <div className="t-item-sub truncate">@{c.handle}</div>
                 <div className="flex items-center gap-3 mt-1 text-xs flex-wrap">
                   <span className={cx('inline-flex items-center gap-1', c.has_availability ? 'text-emerald-600' : 'text-slate-400')}>
                     <CalendarClock className="h-3 w-3" />{c.has_availability ? t('availability_on') : t('availability_off')}

@@ -145,6 +145,11 @@ body {
   .t-eyebrow { font-size: var(--t-eyebrow); font-weight: 600; text-transform: uppercase; letter-spacing: .09em; color: var(--accent); }
   .t-num { font-family: var(--font-num); font-weight: 500; font-feature-settings: "tnum" 1; letter-spacing: -.01em; }
 
+  /* Cartão de item (listas de pessoas/entidades) — letra homogénea em todos os hubs */
+  .t-item-title { font-size: .875rem; line-height: 1.25rem; font-weight: 600; color: rgb(15 23 42); }
+  .t-item-sub { font-size: .75rem; line-height: 1rem; color: rgb(100 116 139); }
+  .t-chip { display: inline-flex; align-items: center; font-size: .625rem; line-height: 1; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; padding: .125rem .375rem; border-radius: 9999px; }
+
   /* Assinatura: espinha de mestria (fio que enche do acento do tema) */
   .spine { position: relative; height: 3px; border-radius: 3px; background: var(--line); overflow: visible; }
   .spine > .fill { position: absolute; left: 0; top: 0; height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--accent), var(--accent-bright)); transition: width 1s cubic-bezier(.2,.7,.2,1); }

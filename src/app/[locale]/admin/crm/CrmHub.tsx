@@ -44,7 +44,7 @@ export function CrmHub() {
     catch { setRec(null); } finally { setRecLoading(false); }
   }, []);
 
-  // ---------- DETALHE (mesma página) ----------
+  // ---------- DETALHE (mesma pÃ¡gina) ----------
   if (sel) {
     const meta = KIND_META[sel.kind] || KIND_META.lead; const Icon = meta.icon;
     const idn = rec?.identity || {};
@@ -66,8 +66,8 @@ export function CrmHub() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h2 className="text-lg font-bold text-slate-900 truncate">{idn.name || '—'}</h2>
-                    <span className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${meta.cls}`}>{t('crm.kind_' + sel.kind)}</span>
+                    <h2 className="text-lg font-bold text-slate-900 truncate">{idn.name || 'â'}</h2>
+                    <span className={`t-chip ${meta.cls}`}>{t('crm.kind_' + sel.kind)}</span>
                     {idn.stage && <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 capitalize">{idn.stage}</span>}
                   </div>
                   <div className="mt-1.5 text-sm text-slate-500 flex flex-wrap gap-x-4 gap-y-1">
@@ -121,7 +121,7 @@ export function CrmHub() {
 
   return (
     <>
-      <AppPageHeader backHref="/admin" title={`🗂️ ${t('crm.title')}`} description={t('crm.subtitle')} />
+      <AppPageHeader backHref="/admin" title={`ðï¸ ${t('crm.title')}`} description={t('crm.subtitle')} />
       <div className="relative mt-4">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('crm.search_ph')}
@@ -131,7 +131,7 @@ export function CrmHub() {
         {chips.map((c) => (
           <button key={c.k} type="button" onClick={() => setKind(c.k)}
             className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors ${kind === c.k ? 'bg-brand-600 text-white border-brand-600' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'}`}>
-            {c.label}{typeof c.n === 'number' ? ` · ${c.n}` : ''}
+            {c.label}{typeof c.n === 'number' ? ` Â· ${c.n}` : ''}
           </button>
         ))}
       </div>
@@ -148,10 +148,10 @@ export function CrmHub() {
               <div className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${m.cls}`}><Icon className="h-4 w-4" /></div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold text-slate-900 text-sm truncate">{r.name}</span>
-                  <span className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${m.cls}`}>{t('crm.kind_' + r.kind)}</span>
+                  <span className="t-item-title truncate">{r.name}</span>
+                  <span className={`t-chip ${m.cls}`}>{t('crm.kind_' + r.kind)}</span>
                 </div>
-                <div className="text-xs text-slate-500 truncate">{r.email || '—'}</div>
+                <div className="t-item-sub truncate">{r.email || "—"}</div>
               </div>
               <ChevronRight className="h-4 w-4 text-slate-300 shrink-0" />
             </button>
