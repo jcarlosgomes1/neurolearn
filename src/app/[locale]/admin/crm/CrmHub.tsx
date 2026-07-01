@@ -4,7 +4,9 @@ import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useTranslations } from 'next-intl';
 import { AppPageHeader } from '@/components/layout/AppPageHeader';
-import { Search, Users, GraduationCap, Building2, UserPlus, Loader2, ChevronRight, ArrowLeft, Mail, Phone, Calendar } from 'lucide-react';
+import { EntityRow } from '@/components/ui/EntityRow';
+import { Chip } from '@/components/ui/Chip';
+import { Search, Users, GraduationCap, Building2, UserPlus, Loader2, ArrowLeft, Mail, Phone, Calendar } from 'lucide-react';
 
 const KIND_META: Record<string, { icon: any; cls: string }> = {
   lead: { icon: UserPlus, cls: 'bg-amber-100 text-amber-700' },
@@ -67,7 +69,7 @@ export function CrmHub() {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h2 className="text-lg font-bold text-slate-900 truncate">{idn.name || 'â'}</h2>
-                    <span className={`t-chip ${meta.cls}`}>{t('crm.kind_' + sel.kind)}</span>
+                    <Chip tone={meta.cls}>{t('crm.kind_' + sel.kind)}</Chip>
                     {idn.stage && <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 capitalize">{idn.stage}</span>}
                   </div>
                   <div className="mt-1.5 text-sm text-slate-500 flex flex-wrap gap-x-4 gap-y-1">
@@ -143,18 +145,13 @@ export function CrmHub() {
         ) : records.map((r) => {
           const m = KIND_META[r.kind] || KIND_META.lead; const Icon = m.icon;
           return (
-            <button key={`${r.kind}-${r.id}`} type="button" onClick={() => openRecord({ kind: r.kind, id: r.id })}
-              className="w-full flex items-center gap-3 p-3 rounded-xl border border-slate-200 bg-white hover:border-brand-300 hover:shadow-sm transition-all text-left">
-              <div className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${m.cls}`}><Icon className="h-4 w-4" /></div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="t-item-title truncate">{r.name}</span>
-                  <span className={`t-chip ${m.cls}`}>{t('crm.kind_' + r.kind)}</span>
-                </div>
-                <div className="t-item-sub truncate">{r.email || "—"}</div>
-              </div>
-              <ChevronRight className="h-4 w-4 text-slate-300 shrink-0" />
-            </button>
+            <EntityRow key={`${r.kind}-${r.id}`}
+              onClick={() => openRecord({ kind: r.kind, id: r.id })}
+              leading={<div className={`h-9 w-9 rounded-lg flex items-center justify-center ${m.cls}`}><Icon className="h-4 w-4" /></div>}
+              title={r.name}
+              chips={<Chip tone={m.cls}>{t('crm.kind_' + r.kind)}</Chip>}
+              subtitle={r.email || '—'}
+            />
           );
         })}
       </div>

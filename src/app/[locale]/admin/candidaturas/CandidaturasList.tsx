@@ -1,5 +1,6 @@
 'use client';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { Chip } from '@/components/ui/Chip';
 import { AgentSuggestionsRail } from '@/components/primitives/AgentSuggestionsRail';
 
 import { useEffect, useState } from 'react';
@@ -134,9 +135,9 @@ export function CandidaturasList() {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="t-item-title">{app.full_name}</h3>
-                      <span className={`t-chip ${statusColor}`}>{t(statusKey)}</span>
+                      <Chip tone={statusColor}>{t(statusKey)}</Chip>
                       {app.proposed_email_subject && !app.email_sent_at && (
-                        <span className="t-chip bg-violet-100 text-violet-700">{t('candlist.email_ready')}</span>
+                        <Chip tone="violet">{t('candlist.email_ready')}</Chip>
                       )}
                     </div>
                     <p className="text-sm text-slate-600 mt-0.5">{app.job_title}{app.current_company && ` · ${app.current_company}`}</p>

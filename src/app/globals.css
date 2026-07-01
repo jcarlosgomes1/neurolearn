@@ -30,10 +30,11 @@ body {
 @layer base {
   :root {
     color-scheme: light;
-    /* escala tipográfica fluida — comum a todos os temas */
-    --t-eyebrow: .6875rem;
-    --t-caption: clamp(.75rem, .72rem + .13vw, .8125rem);
-    --t-h3: clamp(1.0625rem, 1rem + .28vw, 1.25rem);
+    /* escala tipográfica fluida — comum a todos os temas. Mínimo absoluto 12px, legível em mobile */
+    --t-eyebrow: .75rem;
+    --t-caption: .8125rem;
+    --t-body: .9375rem;
+    --t-h3: clamp(1.125rem, 1.05rem + .3vw, 1.25rem);
     --t-h2: clamp(1.875rem, 1.4rem + 2.1vw, 2.875rem);
     --t-h1: clamp(1.5rem, 1.32rem + 0.78vw, 1.875rem);
     --t-display: clamp(2.5rem, 1.7rem + 3.55vw, 4.25rem);
@@ -145,10 +146,13 @@ body {
   .t-eyebrow { font-size: var(--t-eyebrow); font-weight: 600; text-transform: uppercase; letter-spacing: .09em; color: var(--accent); }
   .t-num { font-family: var(--font-num); font-weight: 500; font-feature-settings: "tnum" 1; letter-spacing: -.01em; }
 
-  /* Cartão de item (listas de pessoas/entidades) — letra homogénea em todos os hubs */
-  .t-item-title { font-size: .875rem; line-height: 1.25rem; font-weight: 600; color: rgb(15 23 42); }
-  .t-item-sub { font-size: .75rem; line-height: 1rem; color: rgb(100 116 139); }
-  .t-chip { display: inline-flex; align-items: center; font-size: .625rem; line-height: 1; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; padding: .125rem .375rem; border-radius: 9999px; }
+  /* Cartão de item (listas de pessoas/entidades) — letra homogénea e legível em todos os hubs */
+  .t-section { font-family: var(--font-display); font-size: var(--t-h3); font-weight: 600; line-height: 1.3; letter-spacing: -.01em; }
+  .t-body { font-size: var(--t-body); line-height: 1.55; }
+  .t-item-title { font-size: 1rem; line-height: 1.4; font-weight: 600; color: rgb(15 23 42); }
+  .t-item-sub { font-size: .8125rem; line-height: 1.4; color: rgb(100 116 139); }
+  .t-meta { font-size: .8125rem; line-height: 1.4; color: rgb(100 116 139); }
+  .t-chip { display: inline-flex; align-items: center; font-size: .75rem; line-height: 1; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; padding: .1875rem .5rem; border-radius: 9999px; }
 
   /* Assinatura: espinha de mestria (fio que enche do acento do tema) */
   .spine { position: relative; height: 3px; border-radius: 3px; background: var(--line); overflow: visible; }

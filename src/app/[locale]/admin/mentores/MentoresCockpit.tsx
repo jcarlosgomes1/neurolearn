@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { useLocale } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 import { AppPageHeader } from '@/components/layout/AppPageHeader';
+import { EntityRow } from '@/components/ui/EntityRow';
+import { Chip } from '@/components/ui/Chip';
 import { Search, Check, Loader2, CalendarClock, Video, ShieldCheck } from 'lucide-react';
 
 type Lang = 'pt' | 'en' | 'es' | 'fr';
@@ -104,29 +106,28 @@ export function MentoresCockpit() {
       ) : (
         <div className="space-y-2">
           {filtered.map((c) => (
-            <div key={c.id} className={cx('rounded-2xl border bg-white/80 backdrop-blur p-4 flex items-center gap-3 transition-colors',
-              c.is_mentor ? 'border-violet-200' : 'border-slate-200')}>
-              {c.avatar_url
-                ? <img src={c.avatar_url} alt="" className="h-11 w-11 rounded-full object-cover shrink-0" />
-                : <div className="h-11 w-11 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 text-white font-bold flex items-center justify-center shrink-0">{(c.name || '?')[0]?.toUpperCase()}</div>}
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="t-item-title truncate">{c.name}</span>
-                  <span className="t-chip bg-slate-100 text-slate-500">{ROLE_LABEL[c.role]?.[locale] || c.role}</span>
+            <EntityRow key={c.id}
+              className={cx(c.is_mentor && 'border-violet-200')}
+              leading={c.avatar_url
+                ? <img src={c.avatar_url} alt="" className="h-11 w-11 rounded-full object-cover" />
+                : <div className="h-11 w-11 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 text-white font-bold flex items-center justify-center">{(c.name || '?')[0]?.toUpperCase()}</div>}
+              title={c.name}
+              chips={<Chip>{ROLE_LABEL[c.role]?.[locale] || c.role}</Chip>}
+              subtitle={`@${c.handle}`}
+              trailing={
+                <div className="flex items-center gap-2 shrink-0">
+                  {c.is_mentor && <Check className="h-4 w-4 text-violet-600" />}
+                  <Toggle on={!!c.is_mentor} busy={savingId === c.id} onChange={() => setMentor(c.id, !c.is_mentor)} />
                 </div>
-                <div className="t-item-sub truncate">@{c.handle}</div>
-                <div className="flex items-center gap-3 mt-1 text-xs flex-wrap">
-                  <span className={cx('inline-flex items-center gap-1', c.has_availability ? 'text-emerald-600' : 'text-slate-400')}>
-                    <CalendarClock className="h-3 w-3" />{c.has_availability ? t('availability_on') : t('availability_off')}
-                  </span>
-                  <span className="inline-flex items-center gap-1 text-slate-500"><Video className="h-3 w-3" />{c.mentoring_links} {t('sessions')}</span>
-                </div>
+              }
+            >
+              <div className="flex items-center gap-3 mt-1 text-xs flex-wrap">
+                <span className={cx('inline-flex items-center gap-1', c.has_availability ? 'text-emerald-600' : 'text-slate-400')}>
+                  <CalendarClock className="h-3 w-3" />{c.has_availability ? t('availability_on') : t('availability_off')}
+                </span>
+                <span className="inline-flex items-center gap-1 text-slate-500"><Video className="h-3 w-3" />{c.mentoring_links} {t('sessions')}</span>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
-                {c.is_mentor && <Check className="h-4 w-4 text-violet-600" />}
-                <Toggle on={!!c.is_mentor} busy={savingId === c.id} onChange={() => setMentor(c.id, !c.is_mentor)} />
-              </div>
-            </div>
+            </EntityRow>
           ))}
         </div>
       )}
