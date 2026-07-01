@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from '@/i18n/routing';
 import { Activity, DollarSign, Zap, Clock, AlertTriangle, TrendingUp, Search, Users, BookOpen, ExternalLink, ChevronRight } from 'lucide-react';
+import { Tabs } from '@/components/ui/Tabs';
 
 interface AIStat {
   operation: string; model: string; calls: number;
@@ -55,11 +56,15 @@ export function ObservabilidadeClient({ hours, aiStats, aiRecent, kpis, seoSumma
   return (
     <div className="space-y-5">
       {/* Tab switcher */}
-      <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-xl p-1 w-fit">
-        <TabBtn active={tab === 'ai'} onClick={() => setTab('ai')} icon={Zap} label="Custos automatizados" />
-        <TabBtn active={tab === 'kpi'} onClick={() => setTab('kpi')} icon={TrendingUp} label="KPIs diários" />
-        <TabBtn active={tab === 'seo'} onClick={() => setTab('seo')} icon={Search} label="SEO" />
-      </div>
+      <Tabs
+        items={[
+          { k: 'ai', label: 'Custos automatizados', icon: Zap },
+          { k: 'kpi', label: 'KPIs diários', icon: TrendingUp },
+          { k: 'seo', label: 'SEO', icon: Search },
+        ]}
+        value={tab}
+        onChange={(k) => setTab(k as typeof tab)}
+      />
 
       {tab === 'ai' && (
         <>
@@ -259,14 +264,7 @@ export function ObservabilidadeClient({ hours, aiStats, aiRecent, kpis, seoSumma
   );
 }
 
-function TabBtn({ active, onClick, icon: Icon, label }: { active: boolean; onClick: () => void; icon: any; label: string }) {
-  return (
-    <button onClick={onClick}
-      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${active ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50'}`}>
-      <Icon className="h-3.5 w-3.5" /> {label}
-    </button>
-  );
-}
+
 
 function KPICard({ icon: Icon, label, value, sub, cls }: { icon: any; label: string; value: string; sub: string; cls: string }) {
   return (
