@@ -68,10 +68,10 @@ export interface TabNavItem {
 }
 
 /** Barra de separadores por ROTA (Link + ativo por pathname). Mesmo chrome do Tabs. */
-export function TabsNav({ items, className }: { items: readonly TabNavItem[]; className?: string }) {
+export function TabsNav({ items, className, seated = false }: { items: readonly TabNavItem[]; className?: string; seated?: boolean }) {
   const pathname = usePathname();
   return (
-    <div className={cn('border-b border-slate-200 mb-5 flex gap-1 overflow-x-auto scrollbar-none', className)}>
+    <div className={cn(seated ? '-mb-px flex gap-1 overflow-x-auto scrollbar-none' : 'border-b border-slate-200 mb-5 flex gap-1 overflow-x-auto scrollbar-none', className)}>
       {items.map((tb) => {
         const Icon = tb.icon;
         const active = pathname === tb.href || pathname.startsWith(tb.href + '/');

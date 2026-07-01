@@ -1,38 +1,27 @@
 'use client';
 
-import { Link, usePathname } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import { FileText, Users, Sparkles, Tag, ScrollText, Globe, Package, CalendarClock, Search, Handshake } from 'lucide-react';
+import { TabsNav } from '@/components/ui/Tabs';
 
-/** Barra de abas do workspace do curso. Cada aba migrada acrescenta-se aqui. */
+/** Barra de abas do workspace do curso. */
 export function CourseTabs({ courseId }: { courseId: string }) {
   const t = useTranslations();
-  const pathname = usePathname();
-  const tabs = [
-    { key: 'content', seg: 'editar', label: t('course_ws.tab.content'), icon: FileText },
-    { key: 'students', seg: 'alunos', label: t('course_ws.tab.students'), icon: Users },
-    { key: 'studio', seg: 'estudio', label: t('course_ws.tab.studio'), icon: Sparkles },
-    { key: 'ritmo', seg: 'ritmo', label: t('course_ws.tab.pace'), icon: CalendarClock },
-    { key: 'resources', seg: 'recursos', label: t('course_ws.tab.resources'), icon: Package },
-    { key: 'landing', seg: 'landing', label: t('course_ws.tab.landing'), icon: Globe },
-    { key: 'seo', seg: 'seo', label: t('course_ws.tab.seo'), icon: Search },
-    { key: 'price', seg: 'preco', label: t('course_ws.tab.price'), icon: Tag },
-    { key: 'peer', seg: 'peer', label: t('course_ws.tab.peer'), icon: Handshake },
-    { key: 'terms', seg: 'termos', label: t('course_ws.tab.terms'), icon: ScrollText },
-  ];
   return (
-    <nav className="flex gap-1 overflow-x-auto -mb-px">
-      {tabs.map((tab) => {
-        const href = `/admin/curso/${courseId}/${tab.seg}`;
-        const active = pathname === href || pathname.startsWith(href + '/');
-        const Icon = tab.icon;
-        return (
-          <Link key={tab.key} href={href as any}
-            className={`inline-flex items-center gap-1.5 whitespace-nowrap px-3 py-2 text-sm font-medium border-b-2 transition-colors ${active ? 'border-slate-900 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-200'}`}>
-            <Icon className="w-4 h-4" />{tab.label}
-          </Link>
-        );
-      })}
-    </nav>
+    <TabsNav
+      seated
+      items={[
+        { href: `/admin/curso/${courseId}/editar`, label: t('course_ws.tab.content'), icon: FileText },
+        { href: `/admin/curso/${courseId}/alunos`, label: t('course_ws.tab.students'), icon: Users },
+        { href: `/admin/curso/${courseId}/estudio`, label: t('course_ws.tab.studio'), icon: Sparkles },
+        { href: `/admin/curso/${courseId}/ritmo`, label: t('course_ws.tab.pace'), icon: CalendarClock },
+        { href: `/admin/curso/${courseId}/recursos`, label: t('course_ws.tab.resources'), icon: Package },
+        { href: `/admin/curso/${courseId}/landing`, label: t('course_ws.tab.landing'), icon: Globe },
+        { href: `/admin/curso/${courseId}/seo`, label: t('course_ws.tab.seo'), icon: Search },
+        { href: `/admin/curso/${courseId}/preco`, label: t('course_ws.tab.price'), icon: Tag },
+        { href: `/admin/curso/${courseId}/peer`, label: t('course_ws.tab.peer'), icon: Handshake },
+        { href: `/admin/curso/${courseId}/termos`, label: t('course_ws.tab.terms'), icon: ScrollText },
+      ]}
+    />
   );
 }
