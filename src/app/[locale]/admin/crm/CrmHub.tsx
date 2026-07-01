@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { EntityRow } from '@/components/ui/EntityRow';
 import { Chip } from '@/components/ui/Chip';
+import { FilterChips } from '@/components/ui/FilterChips';
 import { Search, Users, GraduationCap, Building2, UserPlus, Loader2, ArrowLeft, Mail, Phone, Calendar } from 'lucide-react';
 
 const KIND_META: Record<string, { icon: any; cls: string }> = {
@@ -17,7 +18,7 @@ const KIND_META: Record<string, { icon: any; cls: string }> = {
 
 function fmtDate(s?: string) { if (!s) return null; try { return new Date(s).toLocaleDateString('pt-PT'); } catch { return null; } }
 
-export function CrmHub() {
+export function CrmHub({ embedded = false }: { embedded?: boolean }) {
   const t = useTranslations();
   const [counts, setCounts] = useState<any>(null);
   const [kind, setKind] = useState<string>('');
@@ -123,20 +124,18 @@ export function CrmHub() {
 
   return (
     <>
-      <AppPageHeader backHref="/admin" title={t('crm.title')} description={t('crm.subtitle')} />
+      {!embedded && <AppPageHeader title={t('crm.title')} description={t('crm.subtitle')} />}
       <div className="relative mt-4">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('crm.search_ph')}
           className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-200" />
       </div>
-      <div className="flex flex-wrap gap-2 mt-3">
-        {chips.map((c) => (
-          <button key={c.k} type="button" onClick={() => setKind(c.k)}
-            className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors ${kind === c.k ? 'bg-brand-600 text-white border-brand-600' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'}`}>
-            {c.label}{typeof c.n === 'number' ? ` · ${c.n}` : ''}
-          </button>
-        ))}
-      </div>
+      <FilterChips
+        className="mt-3"
+        options={chips.map((c) => ({ k: c.k, label: c.label, count: typeof c.n === 'number' ? c.n : undefined }))}
+        value={kind}
+        onChange={setKind}
+      />
       <div className="mt-4 space-y-1.5">
         {loading ? (
           <div className="flex justify-center py-10 text-slate-400"><Loader2 className="h-5 w-5 animate-spin" /></div>

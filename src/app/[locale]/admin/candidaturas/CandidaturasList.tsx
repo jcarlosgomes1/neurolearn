@@ -1,6 +1,7 @@
 'use client';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { Chip } from '@/components/ui/Chip';
+import { FilterChips } from '@/components/ui/FilterChips';
 import { AgentSuggestionsRail } from '@/components/primitives/AgentSuggestionsRail';
 
 import { useEffect, useState } from 'react';
@@ -60,7 +61,7 @@ function ScoreBar({ label, score }: { label: string; score: number | null }) {
   );
 }
 
-export function CandidaturasList() {
+export function CandidaturasList({ embedded = false }: { embedded?: boolean }) {
   const t = useTranslations();
   const locale = useLocale();
   const localeMap: Record<string, string> = { pt: 'pt-PT', en: 'en-GB', es: 'es-ES', fr: 'fr-FR' };
@@ -88,32 +89,34 @@ export function CandidaturasList() {
 
   return (
     <div className="space-y-6">
-      <AdminPageHeader
-        emoji="🧑‍💼"
-        title={t('candlist.title')}
-        description={t('candlist.subtitle', { n: apps.length })}
-        actions={<button onClick={load} className="text-sm bg-white border border-slate-200 hover:border-slate-300 px-3 py-1.5 rounded-lg">{t('candlist.reload')}</button>}
-      />
+      {!embedded && (
+        <AdminPageHeader
+          emoji="🧑‍💼"
+          title={t('candlist.title')}
+          description={t('candlist.subtitle', { n: apps.length })}
+          actions={<button onClick={load} className="text-sm bg-white border border-slate-200 hover:border-slate-300 px-3 py-1.5 rounded-lg">{t('candlist.reload')}</button>}
+        />
+      )}
       <div className="mb-5">
         <AgentSuggestionsRail surface="talent" />
       </div>
 
-      <div className="mt-5 flex gap-2 overflow-x-auto pb-2">
-        {[
-          { v: 'all', labelKey: 'candlist.f.all', count: apps.length },
-          { v: 'submitted', labelKey: 'candlist.f.new', count: counts.submitted || 0 },
-          { v: 'shortlisted', labelKey: 'candlist.f.short', count: counts.shortlisted || 0 },
-          { v: 'screening_passed', labelKey: 'candlist.f.ai_ok', count: counts.screening_passed || 0 },
-          { v: 'under_review', labelKey: 'candlist.f.review', count: counts.under_review || 0 },
-          { v: 'waitlisted', labelKey: 'candlist.f.waitlisted', count: counts.waitlisted || 0 },
-          { v: 'auto_rejected', labelKey: 'candlist.f.ai_no', count: counts.auto_rejected || 0 },
-          { v: 'approved', labelKey: 'candlist.f.approved', count: counts.approved || 0 },
-          { v: 'rejected', labelKey: 'candlist.f.rejected', count: counts.rejected || 0 },
-        ].map((f) => (
-          <button key={f.v} onClick={() => setFilter(f.v)}
-            className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filter === f.v ? 'bg-slate-900 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:border-slate-300'}`}>{t(f.labelKey)} <span className="opacity-60 tabular-nums">{f.count}</span></button>
-        ))}
-      </div>
+      <FilterChips
+        className="mt-5 pb-2"
+        options={[
+          { k: 'all', label: t('candlist.f.all'), count: apps.length },
+          { k: 'submitted', label: t('candlist.f.new'), count: counts.submitted || 0 },
+          { k: 'shortlisted', label: t('candlist.f.short'), count: counts.shortlisted || 0 },
+          { k: 'screening_passed', label: t('candlist.f.ai_ok'), count: counts.screening_passed || 0 },
+          { k: 'under_review', label: t('candlist.f.review'), count: counts.under_review || 0 },
+          { k: 'waitlisted', label: t('candlist.f.waitlisted'), count: counts.waitlisted || 0 },
+          { k: 'auto_rejected', label: t('candlist.f.ai_no'), count: counts.auto_rejected || 0 },
+          { k: 'approved', label: t('candlist.f.approved'), count: counts.approved || 0 },
+          { k: 'rejected', label: t('candlist.f.rejected'), count: counts.rejected || 0 },
+        ]}
+        value={filter}
+        onChange={setFilter}
+      />
 
       {loading ? (
         <div className="text-center text-slate-500 py-12">{t('candlist.loading')}</div>

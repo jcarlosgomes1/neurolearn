@@ -47,7 +47,7 @@ function Toggle({ on, onChange, busy }: { on: boolean; onChange: () => void; bus
   );
 }
 
-export function MentoresCockpit() {
+export function MentoresCockpit({ embedded = false }: { embedded?: boolean }) {
   const locale = (useLocale() as Lang) || 'pt';
   const t = (k: string) => STR[k]?.[locale] ?? STR[k]?.pt ?? k;
   const sb = useMemo(() => createClient(), []);
@@ -80,7 +80,7 @@ export function MentoresCockpit() {
 
   return (
     <div className="space-y-6">
-      <AppPageHeader backHref="/admin" title={t('title')} description={t('subtitle')} />
+      {!embedded && <AppPageHeader title={t('title')} description={t('subtitle')} />}
 
       <div className="flex flex-wrap items-center gap-3">
         <div className="inline-flex items-center gap-2 rounded-full bg-violet-50 text-violet-700 px-3 py-1.5 text-sm font-semibold">

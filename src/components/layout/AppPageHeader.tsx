@@ -1,5 +1,5 @@
 import { Link } from '@/i18n/routing';
-import { ChevronRight, type LucideIcon } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { PageGlyph } from '@/components/layout/PageGlyph';
 
@@ -27,28 +27,14 @@ const LEADING_EMOJI = /^(\p{Extended_Pictographic}(?:\uFE0F)?(?:\u200D\p{Extende
  * Cabecalho canonico de TODAS as areas in-app (admin, aluno, instrutor, empresa) — homogeneo, sem excecao.
  * Glifo central via PageGlyph (resolvido por rota: nl_page_glyphs). Eyebrow e sempre so texto.
  */
-export function AppPageHeader({ backHref, backLabel, title, description, emoji, actions, related }: AppPageHeaderProps) {
+export function AppPageHeader({ title, description, emoji, actions, related }: AppPageHeaderProps) {
   const trimmedTitle = (title || '').trim();
   const m = trimmedTitle.match(LEADING_EMOJI);
   const titleEmoji = m ? m[1] : undefined;
   const cleanTitle = titleEmoji ? trimmedTitle.slice(m![0].length) : title;
   const glyphEmoji = titleEmoji || emoji;
-  const resolvedBack = backHref === '/admin' ? '/admin/overview' : backHref;
   return (
     <header className="mb-3 sm:mb-8">
-      {backHref && (
-        <nav aria-label="breadcrumb" className="mb-2 sm:mb-4">
-          <ol className="flex items-center gap-1 text-xs font-medium text-slate-400 min-w-0">
-            <li className="shrink-0">
-              <Link href={resolvedBack as any} className="hover:text-brand-600 transition-colors">
-                {backLabel || 'Voltar'}
-              </Link>
-            </li>
-            <li className="shrink-0"><ChevronRight className="h-3.5 w-3.5" /></li>
-            <li className="text-slate-600 font-semibold truncate">{cleanTitle}</li>
-          </ol>
-        </nav>
-      )}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-3">
         <div className="flex items-start gap-2.5 sm:gap-3 min-w-0 flex-1">
         <div className="flex-shrink-0 leading-none mt-0.5 sm:mt-1">
