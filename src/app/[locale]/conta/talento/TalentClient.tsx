@@ -4,9 +4,10 @@ import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { assertNotPeekClient } from '@/lib/peek-client';
 import { useRouter } from '@/i18n/routing';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { toast } from 'sonner';
 import { Save, X, Plus, Briefcase, MapPin, Globe, Award, EyeOff, Loader2, Sparkles } from 'lucide-react';
+import { TalentCatalogSkills } from '@/components/skills/TalentCatalogSkills';
 
 interface Profile {
   available?: boolean; headline?: string; bio?: string;
@@ -143,8 +144,9 @@ export function TalentClient({ initial }: { initial: Profile }) {
               <button onClick={() => addTag('desired_roles', roleInput, setRoleInput)} className="px-3 py-2 bg-violet-600 text-white rounded-lg"><Plus className="h-4 w-4" /></button>
             </div>
           </div>
+          <TalentCatalogSkills />
           <div>
-            <label className="text-xs font-semibold text-slate-700 mb-1 block">{t('talent.skills_label')}</label>
+            <label className="text-xs font-semibold text-slate-700 mb-1 block">{t('talent.free_skills_label')}</label>
             <div className="flex flex-wrap gap-1.5 mb-2">
               {(form.certified_skills || []).map((s, i) => (
                 <span key={i} className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-xs font-medium">
