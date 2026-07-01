@@ -157,7 +157,7 @@ export function PageEditor({ initial }: { initial: { page: any; translations: an
 
         {activeTab === 'preview' && (
           <div className="p-6">
-            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{current.title || '(sem título)'}</h1>
+            <h1 className="t-h1 text-slate-900">{current.title || '(sem título)'}</h1>
             {current.subtitle && <p className="mt-2 text-base text-slate-600">{current.subtitle}</p>}
             <div className="mt-6 prose prose-slate prose-sm sm:prose-base max-w-none whitespace-pre-wrap">
               {current.content_md || <span className="text-slate-400 italic">Sem conteúdo</span>}

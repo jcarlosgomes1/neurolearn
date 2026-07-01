@@ -150,7 +150,7 @@ export function CandidaturasList() {
                   </div>
                   {app.ai_score_total !== null && (
                     <div className="flex-shrink-0 text-right">
-                      <div className={`text-3xl font-bold tabular-nums ${scoreColor}`}>{app.ai_score_total}</div>
+                      <div className={`text-3xl t-num ${scoreColor}`}>{app.ai_score_total}</div>
                       <div className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">{t('candlist.score_ai')}</div>
                     </div>
                   )}
@@ -257,7 +257,7 @@ function DetailModal({ app, onClose, onReload, fmtDate }: { app: Application; on
               </div>
               <div className="flex items-center gap-6 flex-wrap">
                 <div className="text-center">
-                  <div className={`text-5xl font-bold tabular-nums ${(app.ai_score_total ?? 0) >= 80 ? 'text-emerald-600' : (app.ai_score_total ?? 0) >= 60 ? 'text-amber-600' : 'text-rose-600'}`}>{app.ai_score_total}</div>
+                  <div className={`text-5xl t-num ${(app.ai_score_total ?? 0) >= 80 ? 'text-emerald-600' : (app.ai_score_total ?? 0) >= 60 ? 'text-amber-600' : 'text-rose-600'}`}>{app.ai_score_total}</div>
                   <div className="text-xs text-slate-500 mt-1">{t('candlist.of_100')}</div>
                 </div>
                 <div className="flex-1 min-w-[200px] grid grid-cols-1 sm:grid-cols-2 gap-3">

@@ -116,7 +116,7 @@ export function GovernanceClient() {
             <div className="rounded-2xl border border-slate-200 bg-white p-5">
               <div className="flex items-center gap-2 mb-3 text-slate-500"><Gauge className="w-4 h-4" /><span className="text-xs font-medium uppercase tracking-wide">Curadoria</span></div>
               <div className="flex items-end gap-2">
-                <span className={'text-4xl font-bold ' + sc.text}>{score}</span>
+                <span className={'text-4xl t-num ' + sc.text}>{score}</span>
                 <span className="text-sm text-slate-400 mb-1">/ 100</span>
               </div>
               <div className="mt-3 h-2 rounded-full bg-slate-100 overflow-hidden">

@@ -66,11 +66,11 @@ export function EarningsClient() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
             <div className="rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-teal-50 p-5">
               <div className="flex items-center gap-2 text-emerald-700"><TrendingUp className="w-4 h-4" /><span className="text-xs font-medium uppercase tracking-wide">{t('teach.earnings.total')}</span></div>
-              <p className="mt-2 text-3xl font-bold text-slate-900">{money(data?.total_b2b_earnings_cents, subs[0]?.currency)}</p>
+              <p className="mt-2 text-3xl t-num text-slate-900">{money(data?.total_b2b_earnings_cents, subs[0]?.currency)}</p>
             </div>
             <div className="rounded-2xl border border-slate-200 bg-white p-5">
               <div className="flex items-center gap-2 text-slate-500"><Building2 className="w-4 h-4" /><span className="text-xs font-medium uppercase tracking-wide">{t('teach.earnings.active_subs')}</span></div>
-              <p className="mt-2 text-3xl font-bold text-slate-900">{data?.active_subscriptions || 0}</p>
+              <p className="mt-2 text-3xl t-num text-slate-900">{data?.active_subscriptions || 0}</p>
             </div>
           </div>
 

@@ -360,7 +360,7 @@ function Kpi({ label, value, sub, highlight, warning }: KpiProps) {
   return (
     <div className={`bg-white rounded-xl border-2 ${warning ? 'border-rose-200' : highlight ? 'border-amber-200' : 'border-slate-200'} p-4`}>
       <div className="text-xs uppercase tracking-wider text-slate-500 font-semibold">{label}</div>
-      <div className={`text-3xl font-bold tabular-nums mt-1 ${valueColor}`}>{value}</div>
+      <div className={`text-3xl t-num mt-1 ${valueColor}`}>{value}</div>
       {sub && <div className="text-[11px] text-slate-500 mt-1">{sub}</div>}
     </div>
   );

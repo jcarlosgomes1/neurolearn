@@ -91,7 +91,7 @@ export function ComplianceClient({ initialIssues, summary }: { initialIssues: Is
                 </div>
                 <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">{meta.label}</span>
               </div>
-              <div className="text-3xl font-bold text-slate-900 tracking-tight">{count}</div>
+              <div className="text-3xl t-num text-slate-900">{count}</div>
               <div className="text-[11px] text-slate-500 mt-0.5">abertas</div>
             </div>
           );

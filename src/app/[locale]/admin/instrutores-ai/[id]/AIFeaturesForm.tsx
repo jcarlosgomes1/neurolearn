@@ -195,7 +195,7 @@ export function AIFeaturesForm({ instructorId }: { instructorId: string }) {
         <div className="bg-slate-50 rounded-lg p-4">
           <div className="flex items-baseline justify-between gap-3 mb-3">
             <div>
-              <div className="text-3xl font-bold text-slate-900 tabular-nums">{features.monthly_ai_credits}</div>
+              <div className="text-3xl t-num text-slate-900">{features.monthly_ai_credits}</div>
               <div className="text-xs text-slate-500">{t('credits.month')}</div>
             </div>
             {features.monthly_ai_credits > 0 && (

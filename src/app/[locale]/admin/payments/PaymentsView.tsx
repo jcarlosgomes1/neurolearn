@@ -118,7 +118,7 @@ export function PaymentsView() {
           </div>
           <div className="text-right flex-shrink-0">
             <div className="text-xs uppercase tracking-wider text-slate-500 font-semibold">{t('pay.readiness')}</div>
-            <div className="text-3xl font-bold tabular-nums">{pctReady}%</div>
+            <div className="text-3xl t-num">{pctReady}%</div>
             <div className="text-xs text-slate-500">{t('pay.checks', { n: readyCount, total: totalChecks })}</div>
           </div>
         </div>

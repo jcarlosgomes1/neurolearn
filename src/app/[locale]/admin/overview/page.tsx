@@ -65,7 +65,7 @@ export default async function Page() {
               <c.icon className="h-5 w-5" />
             </div>
             <div className="text-[10px] uppercase tracking-wider font-bold text-slate-500 mb-1">{c.label}</div>
-            <div className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">{c.value}</div>
+            <div className="text-2xl sm:text-3xl t-num text-slate-900">{c.value}</div>
             <div className="text-[11px] text-slate-500 mt-0.5">{c.sub}</div>
           </Link>
         ))}
