@@ -31,7 +31,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
 
         {certs.length === 0 ? (
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-10 sm:p-14 text-center">
-            <div className="inline-flex h-14 w-14 rounded-2xl bg-gradient-to-br from-fuchsia-500 to-pink-600 text-white items-center justify-center mb-5 shadow-md">
+            <div className="inline-flex h-14 w-14 rounded-2xl bg-gradient-to-br from-brand-500 to-pink-600 text-white items-center justify-center mb-5 shadow-md">
               <GraduationCap className="h-7 w-7" />
             </div>
             <h2 className="text-lg font-bold text-slate-900">{t('certs.empty_title')}</h2>
@@ -40,7 +40,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
             </p>
             <Link
               href={'/cursos' as any}
-              className="inline-flex items-center gap-2 mt-6 px-5 py-2.5 rounded-xl bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-700 hover:to-pink-700 text-white text-sm font-semibold shadow-sm hover:shadow transition-all">
+              className="inline-flex items-center gap-2 mt-6 px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-600 to-pink-600 hover:from-brand-700 hover:to-pink-700 text-white text-sm font-semibold shadow-sm hover:shadow transition-all">
               {t('common.explore_courses')}
             </Link>
           </div>
@@ -49,7 +49,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
             {certs.map((c: any) => (
               <div key={c.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col">
                 <div className="flex items-start justify-between gap-3">
-                  <div className="inline-flex h-11 w-11 rounded-xl bg-gradient-to-br from-fuchsia-500 to-pink-600 text-white items-center justify-center shadow-md shrink-0">
+                  <div className="inline-flex h-11 w-11 rounded-xl bg-gradient-to-br from-brand-500 to-pink-600 text-white items-center justify-center shadow-md shrink-0">
                     <Award className="h-5 w-5" />
                   </div>
                   {c.grade != null && (
@@ -77,7 +77,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
                     href={`/${locale}/certificate/${c.verification_code}`}
                     target="_blank"
                     rel="noopener"
-                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-fuchsia-700 hover:text-fuchsia-800 hover:gap-2 transition-all">
+                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 hover:text-brand-800 hover:gap-2 transition-all">
                     <ShieldCheck className="h-4 w-4" /> {t('certs.view_verify')} <ExternalLink className="h-3.5 w-3.5" />
                   </a>
                 </div>

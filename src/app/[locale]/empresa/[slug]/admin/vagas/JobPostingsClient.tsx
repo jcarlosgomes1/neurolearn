@@ -23,7 +23,7 @@ const STATUS_COLOR: Record<string,string> = {
   draft: 'bg-slate-100 text-slate-600',
   open: 'bg-emerald-100 text-emerald-700',
   paused: 'bg-amber-100 text-amber-700',
-  filled: 'bg-indigo-100 text-indigo-700',
+  filled: 'bg-brand-100 text-brand-700',
   closed: 'bg-slate-100 text-slate-500',
 };
 
@@ -80,7 +80,7 @@ export function JobPostingsClient({ slug, initial }: { slug: string; initial: Jo
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="font-semibold text-slate-900">{j.title}</h3>
                     <span className={`text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded ${STATUS_COLOR[j.status]}`}>{STATUS_KEYS[j.status] ? t(STATUS_KEYS[j.status]) : j.status}</span>
-                    {j.remote_ok && <span className="text-[10px] uppercase font-bold tracking-wider bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded">{t('org.job.remote_badge')}</span>}
+                    {j.remote_ok && <span className="text-[10px] uppercase font-bold tracking-wider bg-brand-100 text-brand-700 px-1.5 py-0.5 rounded">{t('org.job.remote_badge')}</span>}
                   </div>
                   <div className="text-xs text-slate-500 mt-1 flex flex-wrap gap-3">
                     {j.location && <span>{j.location}</span>}
@@ -93,7 +93,7 @@ export function JobPostingsClient({ slug, initial }: { slug: string; initial: Jo
                 <div className="flex gap-1">
                   {j.status === 'open' && j.id && (
                     <Link href={`/empresa/${slug}/admin/vagas/${j.id}/candidatos` as any}
-                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold">
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-brand-50 hover:bg-brand-100 text-brand-700 text-xs font-semibold">
                       <Users className="h-3 w-3" /> {t('org.cand.title')} <ChevronRight className="h-3 w-3" />
                     </Link>
                   )}

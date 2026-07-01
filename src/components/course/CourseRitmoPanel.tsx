@@ -89,12 +89,12 @@ export function CourseRitmoPanel({ courseId }: { courseId: string }) {
   return (
     <div className="space-y-5">
       <div className="rounded-2xl border border-slate-200 bg-white p-4">
-        <div className="flex items-center gap-2 mb-1"><ListChecks className="h-4 w-4 text-violet-600" /><h3 className="text-sm font-semibold text-slate-900">{t('course_ws.ritmo.prog_title')}</h3></div>
+        <div className="flex items-center gap-2 mb-1"><ListChecks className="h-4 w-4 text-brand-600" /><h3 className="text-sm font-semibold text-slate-900">{t('course_ws.ritmo.prog_title')}</h3></div>
         <p className="text-[11px] text-slate-400 mb-3">{t('course_ws.ritmo.prog_hint')}</p>
         <div className="flex flex-wrap gap-2">
           {progOpts.map((o) => (
             <button key={o.v} type="button" disabled={progBusy} onClick={() => setProg(o.v)}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors disabled:opacity-50 ${progMode === o.v ? 'border-violet-500 bg-violet-50 text-violet-700' : 'border-slate-200 text-slate-600 hover:border-slate-300'}`}>
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors disabled:opacity-50 ${progMode === o.v ? 'border-brand-500 bg-brand-50 text-brand-700' : 'border-slate-200 text-slate-600 hover:border-slate-300'}`}>
               {o.label}
             </button>
           ))}

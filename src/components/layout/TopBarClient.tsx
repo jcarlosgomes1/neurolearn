@@ -14,8 +14,8 @@ interface TopBarData {
 }
 
 const STYLES: Record<string, { cls: string; icon: any }> = {
-  info:    { cls: 'from-blue-600 via-indigo-600 to-violet-600', icon: Info },
-  promo:   { cls: 'from-fuchsia-600 via-pink-600 to-rose-600',  icon: Sparkles },
+  info:    { cls: 'from-blue-600 via-brand-600 to-brand-600', icon: Info },
+  promo:   { cls: 'from-brand-600 via-pink-600 to-rose-600',  icon: Sparkles },
   warning: { cls: 'from-amber-500 via-orange-500 to-rose-500',  icon: AlertTriangle },
   success: { cls: 'from-emerald-500 via-teal-500 to-cyan-500',  icon: CheckCircle2 },
 };

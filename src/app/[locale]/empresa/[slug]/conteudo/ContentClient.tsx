@@ -248,13 +248,13 @@ export function ContentClient({ orgId, orgSlug, userId, items }: {
           ))}
         </div>
         {selected.size > 0 && (
-          <div className="flex items-center gap-2 bg-violet-50 border border-violet-200 rounded-lg px-3 py-1.5">
-            <span className="text-xs font-semibold text-violet-700">{t('org.cnt.selected_count', { count: selected.size })}</span>
+          <div className="flex items-center gap-2 bg-brand-50 border border-brand-200 rounded-lg px-3 py-1.5">
+            <span className="text-xs font-semibold text-brand-700">{t('org.cnt.selected_count', { count: selected.size })}</span>
             <button onClick={createProposal} disabled={busy}
-              className="inline-flex items-center gap-1 px-3 py-1 bg-gradient-to-br from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white text-xs font-semibold rounded shadow-sm disabled:opacity-50">
+              className="inline-flex items-center gap-1 px-3 py-1 bg-gradient-to-br from-brand-600 to-brand-600 hover:from-brand-700 hover:to-brand-700 text-white text-xs font-semibold rounded shadow-sm disabled:opacity-50">
               {busy ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />} {t('org.cnt.gen_proposal')}
             </button>
-            <button onClick={() => setSelected(new Set())} className="text-violet-600 hover:text-violet-900 text-xs">{t('org.cnt.clear')}</button>
+            <button onClick={() => setSelected(new Set())} className="text-brand-600 hover:text-brand-900 text-xs">{t('org.cnt.clear')}</button>
           </div>
         )}
       </div>
@@ -275,11 +275,11 @@ export function ContentClient({ orgId, orgSlug, userId, items }: {
             const isSelected = selected.has(it.id);
             const canSelect = DONE.includes(it.extraction_status);
             return (
-              <div key={it.id} className={`bg-white rounded-2xl border-2 p-4 transition-all ${isSelected ? 'border-violet-400 bg-violet-50/30' : 'border-slate-200 hover:border-slate-300'}`}>
+              <div key={it.id} className={`bg-white rounded-2xl border-2 p-4 transition-all ${isSelected ? 'border-brand-400 bg-brand-50/30' : 'border-slate-200 hover:border-slate-300'}`}>
                 <div className="flex items-start gap-3">
                   {canSelect && (
                     <input type="checkbox" checked={isSelected} onChange={() => toggleSelect(it.id)}
-                      className="h-4 w-4 rounded text-violet-600 mt-1 flex-shrink-0 cursor-pointer" />
+                      className="h-4 w-4 rounded text-brand-600 mt-1 flex-shrink-0 cursor-pointer" />
                   )}
                   {!canSelect && <div className="h-4 w-4 flex-shrink-0" />}
                   <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center flex-shrink-0 shadow-sm">

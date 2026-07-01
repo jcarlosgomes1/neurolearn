@@ -100,7 +100,7 @@ function OverviewTab({ data, slug }: { data: Data; slug: string }) {
           <p className="text-sm text-slate-500">{t('org.nav.jobs_p')}</p>
         </Link>
         <Link href={`/empresa/${slug}/admin/scorm` as any} className="bg-white rounded-xl border border-slate-200 hover:border-brand-300 hover:shadow-sm transition p-4">
-          <div className="flex items-center gap-2 mb-1"><Package className="h-5 w-5 text-indigo-600" /><h3 className="font-semibold text-slate-900">{t('org.nav.scorm_h')}</h3></div>
+          <div className="flex items-center gap-2 mb-1"><Package className="h-5 w-5 text-brand-600" /><h3 className="font-semibold text-slate-900">{t('org.nav.scorm_h')}</h3></div>
           <p className="text-sm text-slate-500">{t('org.nav.scorm_p')}</p>
         </Link>
       </div>
@@ -261,7 +261,7 @@ function BillingTab({ data, slug }: { data: Data; slug: string }) {
             </div>
             
             <button onClick={handleCheckout} disabled={isPending || !planId}
-              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-r from-brand-600 to-violet-600 hover:opacity-90 text-white text-sm font-semibold disabled:opacity-50">
+              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-r from-brand-600 to-brand-600 hover:opacity-90 text-white text-sm font-semibold disabled:opacity-50">
               {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
               {hasSub ? t('org.bill.change_btn') : t('org.bill.activate_btn')}
             </button>
@@ -324,7 +324,7 @@ function BrandingTab({ data, slug }: { data: Data; slug: string }) {
       <button onClick={handleSave} disabled={isPending} className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold disabled:opacity-50">
         {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} {t('org.brand.save_btn')}
       </button>
-      <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-3 text-xs text-indigo-900">
+      <div className="bg-brand-50 border border-brand-200 rounded-xl p-3 text-xs text-brand-900">
         💡 {t('org.brand.css_hint')}
       </div>
     </div>

@@ -20,7 +20,7 @@ export function EmptyState({ icon: Icon, emoji, title, hint, action, agentHint }
       </div>
       <h3 className="font-semibold text-slate-900 text-sm mb-1">{title}</h3>
       {hint && <p className="text-sm text-slate-500 max-w-md mx-auto leading-relaxed">{hint}</p>}
-      {agentHint && <p className="text-xs text-violet-600 mt-2 font-medium">{agentHint}</p>}
+      {agentHint && <p className="text-xs text-brand-600 mt-2 font-medium">{agentHint}</p>}
       {action && <div className="mt-4 flex justify-center">{action}</div>}
     </div>
   );

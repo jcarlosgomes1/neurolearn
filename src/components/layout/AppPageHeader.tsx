@@ -40,7 +40,7 @@ export function AppPageHeader({ backHref, backLabel, title, description, emoji, 
         <nav aria-label="breadcrumb" className="mb-3 sm:mb-4">
           <ol className="flex items-center gap-1 text-xs font-medium text-slate-400 min-w-0">
             <li className="shrink-0">
-              <Link href={resolvedBack as any} className="hover:text-violet-600 transition-colors">
+              <Link href={resolvedBack as any} className="hover:text-brand-600 transition-colors">
                 {backLabel || 'Voltar'}
               </Link>
             </li>
@@ -68,7 +68,7 @@ export function AppPageHeader({ backHref, backLabel, title, description, emoji, 
             <Link
               key={r.href}
               href={r.href as any}
-              className="inline-flex shrink-0 items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-violet-100 hover:text-violet-700 hover:ring-violet-200 transition-colors">
+              className="inline-flex shrink-0 items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-brand-100 hover:text-brand-700 hover:ring-brand-200 transition-colors">
               {r.emoji && <span className="text-sm leading-none">{r.emoji}</span>}
               {r.label}
             </Link>

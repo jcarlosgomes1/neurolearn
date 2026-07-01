@@ -110,7 +110,7 @@ export function OrgPathsClient({ orgId, canManage, initialAssigned, catalog }: {
     <div className="space-y-10">
       {/* ASSIGNED */}
       <section>
-        <h2 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2"><Route className="h-5 w-5 text-violet-600" /> {t('empresa.paths.assigned_h')}</h2>
+        <h2 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2"><Route className="h-5 w-5 text-brand-600" /> {t('empresa.paths.assigned_h')}</h2>
         {assigned.length === 0 ? (
           <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center text-slate-400">{t('empresa.paths.none_assigned')}</div>
         ) : (
@@ -122,11 +122,11 @@ export function OrgPathsClient({ orgId, canManage, initialAssigned, catalog }: {
               return (
                 <div key={a.path_id} className="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col">
                   <div className="flex items-start justify-between mb-2">
-                    <span className="flex items-center justify-center h-11 w-11 rounded-xl bg-gradient-to-br from-violet-100 to-fuchsia-100 text-2xl">{a.emoji || '🎓'}</span>
+                    <span className="flex items-center justify-center h-11 w-11 rounded-xl bg-gradient-to-br from-brand-100 to-brand-100 text-2xl">{a.emoji || '🎓'}</span>
                     {a.required && <span className="inline-flex items-center gap-1 text-[10px] uppercase font-bold bg-rose-100 text-rose-700 px-2 py-0.5 rounded"><Star className="h-3 w-3" /> {t('empresa.paths.required')}</span>}
                   </div>
                   <Link href={`/aprender/percursos/${a.slug}` as any} className="group">
-                    <h3 className="font-bold text-slate-900 group-hover:text-violet-700 transition-colors leading-tight">{a.title}</h3>
+                    <h3 className="font-bold text-slate-900 group-hover:text-brand-700 transition-colors leading-tight">{a.title}</h3>
                   </Link>
                   {a.tagline && <p className="text-xs text-slate-500 mt-1 line-clamp-2">{a.tagline}</p>}
 
@@ -137,14 +137,14 @@ export function OrgPathsClient({ orgId, canManage, initialAssigned, catalog }: {
                       <span className="flex items-center gap-1"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" /> {a.team_completed}</span>
                     </div>
                     <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-full transition-all" style={{ width: `${pct}%` }} />
+                      <div className="h-full bg-gradient-to-r from-brand-500 to-brand-500 rounded-full transition-all" style={{ width: `${pct}%` }} />
                     </div>
                     <div className="flex items-center gap-1 text-[11px] text-slate-400"><TrendingUp className="h-3 w-3" /> {t('empresa.paths.avg_progress', { n: a.team_avg_progress })}</div>
                   </div>
 
                   {canManage && (
                     <button onClick={() => toggleTeam(a)} disabled={teamBusy === a.path_id}
-                      className="mt-3 inline-flex items-center justify-center gap-1 text-xs font-semibold text-violet-700 hover:text-violet-900 disabled:opacity-50">
+                      className="mt-3 inline-flex items-center justify-center gap-1 text-xs font-semibold text-brand-700 hover:text-brand-900 disabled:opacity-50">
                       {teamBusy === a.path_id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : isOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
                       {isOpen ? t('empresa.paths.hide_team') : t('empresa.paths.view_team')}
                     </button>
@@ -162,7 +162,7 @@ export function OrgPathsClient({ orgId, canManage, initialAssigned, catalog }: {
                               {mb.completed && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 flex-shrink-0" />}
                             </div>
                             <div className="h-1.5 rounded-full bg-slate-100 overflow-hidden mt-1">
-                              <div className="h-full bg-violet-500 rounded-full" style={{ width: `${mb.enrolled ? mb.progress_pct : 0}%` }} />
+                              <div className="h-full bg-brand-500 rounded-full" style={{ width: `${mb.enrolled ? mb.progress_pct : 0}%` }} />
                             </div>
                           </div>
                           <span className="text-[11px] tabular-nums text-slate-500 w-16 text-right">
@@ -195,7 +195,7 @@ export function OrgPathsClient({ orgId, canManage, initialAssigned, catalog }: {
       {/* CATALOG (manage only) */}
       {canManage && available.length > 0 && (
         <section>
-          <h2 className="text-lg font-bold text-slate-900 mb-1 flex items-center gap-2"><Plus className="h-5 w-5 text-fuchsia-500" /> {t('empresa.paths.manage_h')}</h2>
+          <h2 className="text-lg font-bold text-slate-900 mb-1 flex items-center gap-2"><Plus className="h-5 w-5 text-brand-500" /> {t('empresa.paths.manage_h')}</h2>
           <p className="text-sm text-slate-500 mb-4">{t('empresa.paths.manage_sub')}</p>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {available.map((c) => (
@@ -205,12 +205,12 @@ export function OrgPathsClient({ orgId, canManage, initialAssigned, catalog }: {
                   {c.difficulty && <span className={`text-[10px] uppercase px-2 py-0.5 rounded font-bold ${DIFF_CLASS[c.difficulty] || 'bg-slate-100 text-slate-600'}`}>{c.difficulty}</span>}
                 </div>
                 <Link href={`/aprender/percursos/${c.slug}` as any} className="group">
-                  <h3 className="font-semibold text-slate-900 group-hover:text-violet-700 transition-colors leading-tight inline-flex items-center gap-1">{c.title} <ArrowRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-opacity" /></h3>
+                  <h3 className="font-semibold text-slate-900 group-hover:text-brand-700 transition-colors leading-tight inline-flex items-center gap-1">{c.title} <ArrowRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-opacity" /></h3>
                 </Link>
                 {(c.tagline || c.subtitle) && <p className="text-xs text-slate-500 mt-1 line-clamp-2 flex-1">{c.tagline || c.subtitle}</p>}
                 <div className="mt-4 flex items-center gap-2">
                   <button onClick={() => assign(c, false)} disabled={busy === c.id}
-                    className="flex-1 inline-flex items-center justify-center gap-1 text-sm font-semibold px-3 py-2 rounded-lg bg-violet-600 text-white hover:bg-violet-700 transition-colors disabled:opacity-50">
+                    className="flex-1 inline-flex items-center justify-center gap-1 text-sm font-semibold px-3 py-2 rounded-lg bg-brand-600 text-white hover:bg-brand-700 transition-colors disabled:opacity-50">
                     {busy === c.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} {t('empresa.paths.assign')}
                   </button>
                   <button onClick={() => assign(c, true)} disabled={busy === c.id}

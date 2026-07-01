@@ -37,7 +37,7 @@ export function SkillMapClient({ data, orgSlug }: { data: SkillMap; orgSlug: str
       <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center">
         <Target className="h-10 w-10 text-slate-300 mx-auto mb-3" />
         <p className="text-sm text-slate-500 max-w-md mx-auto leading-relaxed">{safeT('academy.skillmap.no_skills', 'Ainda sem competências mapeadas. Liga competências aos cursos para o mapa ganhar vida.')}</p>
-        <Link href={`/empresa/${orgSlug}/cursos/propostas` as never} className="inline-flex items-center gap-1.5 mt-4 text-sm text-indigo-600 font-medium hover:underline">
+        <Link href={`/empresa/${orgSlug}/cursos/propostas` as never} className="inline-flex items-center gap-1.5 mt-4 text-sm text-brand-600 font-medium hover:underline">
           <Sparkles className="h-4 w-4" /> {safeT('academy.skillmap.assign', 'Atribuir formação')}
         </Link>
       </div>
@@ -57,11 +57,11 @@ export function SkillMapClient({ data, orgSlug }: { data: SkillMap; orgSlug: str
       {/* Toggle de vista */}
       <div className="flex gap-1.5">
         <button onClick={() => setView('skill')}
-          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium ${view === 'skill' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium ${view === 'skill' ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
           <Target className="h-4 w-4" /> {safeT('academy.skillmap.by_skill', 'Por competência')}
         </button>
         <button onClick={() => setView('person')}
-          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium ${view === 'person' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium ${view === 'person' ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
           <Users className="h-4 w-4" /> {safeT('academy.skillmap.by_person', 'Por pessoa')}
         </button>
       </div>
@@ -118,7 +118,7 @@ export function SkillMapClient({ data, orgSlug }: { data: SkillMap; orgSlug: str
                       </div>
                     )}
                     {hasGap && (
-                      <Link href={`/empresa/${orgSlug}/cursos/propostas` as never} className="inline-flex items-center gap-1.5 mt-3 text-xs text-indigo-600 font-medium hover:underline">
+                      <Link href={`/empresa/${orgSlug}/cursos/propostas` as never} className="inline-flex items-center gap-1.5 mt-3 text-xs text-brand-600 font-medium hover:underline">
                         <Sparkles className="h-3.5 w-3.5" /> {safeT('academy.skillmap.assign', 'Atribuir formação')}
                       </Link>
                     )}
@@ -158,7 +158,7 @@ export function SkillMapClient({ data, orgSlug }: { data: SkillMap; orgSlug: str
 
 function SummaryCard({ icon, label, value, tone }: { icon: React.ReactNode; label: string; value: number; tone: 'slate' | 'indigo' | 'emerald' | 'amber' }) {
   const tones: Record<string, string> = {
-    slate: 'text-slate-500', indigo: 'text-indigo-500', emerald: 'text-emerald-500', amber: 'text-amber-500',
+    slate: 'text-slate-500', indigo: 'text-brand-500', emerald: 'text-emerald-500', amber: 'text-amber-500',
   };
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-4">

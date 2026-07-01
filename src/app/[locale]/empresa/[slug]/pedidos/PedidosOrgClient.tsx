@@ -11,8 +11,8 @@ const STATUS_BADGES: Record<string, { labelKey: string; className: string; icon:
   pending: { labelKey: 'org.ped.st_pending', className: 'bg-amber-100 text-amber-800', icon: Clock },
   quoted: { labelKey: 'org.ped.st_quoted', className: 'bg-blue-100 text-blue-800', icon: AlertCircle },
   accepted: { labelKey: 'org.ped.st_accepted', className: 'bg-emerald-100 text-emerald-800', icon: CheckCircle },
-  scheduled: { labelKey: 'org.ped.st_scheduled', className: 'bg-violet-100 text-violet-800', icon: Calendar },
-  in_delivery: { labelKey: 'org.ped.st_in_delivery', className: 'bg-violet-100 text-violet-800', icon: Calendar },
+  scheduled: { labelKey: 'org.ped.st_scheduled', className: 'bg-brand-100 text-brand-800', icon: Calendar },
+  in_delivery: { labelKey: 'org.ped.st_in_delivery', className: 'bg-brand-100 text-brand-800', icon: Calendar },
   completed: { labelKey: 'org.ped.st_completed', className: 'bg-slate-100 text-slate-700', icon: CheckCircle },
   cancelled: { labelKey: 'org.ped.st_cancelled', className: 'bg-slate-100 text-slate-500', icon: XCircle },
   rejected: { labelKey: 'org.ped.st_rejected', className: 'bg-red-100 text-red-700', icon: XCircle },
@@ -93,7 +93,7 @@ export function PedidosOrgClient({ orgId, orgName, orgSlug, memberRole, locale, 
                       {i.instructor_avatar ? (
                         <img src={i.instructor_avatar} alt={i.instructor_name} className="h-10 w-10 rounded-full object-cover" />
                       ) : (
-                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-brand-500 to-violet-600 text-white flex items-center justify-center font-bold text-sm">
+                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-brand-500 to-brand-600 text-white flex items-center justify-center font-bold text-sm">
                           {i.instructor_name?.charAt(0)?.toUpperCase() || '?'}
                         </div>
                       )}

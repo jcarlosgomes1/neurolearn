@@ -95,25 +95,25 @@ export function TalentClient({ initial }: { initial: Profile }) {
       {/* Resumo */}
       <section className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
         <header className="px-5 py-3 border-b border-slate-100 flex items-center gap-2.5">
-          <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 text-white flex items-center justify-center shadow-sm"><Briefcase className="h-4 w-4" /></div>
+          <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-brand-500 to-brand-600 text-white flex items-center justify-center shadow-sm"><Briefcase className="h-4 w-4" /></div>
           <h2 className="font-semibold text-sm text-slate-900">{t('talent.summary_title')}</h2>
         </header>
         <div className="p-5 space-y-3">
           <div>
             <label className="text-xs font-semibold text-slate-700 mb-1 block">{t('talent.headline_label')}</label>
             <input value={form.headline || ''} onChange={(e) => set('headline', e.target.value)} placeholder={t('talent.headline_ph')}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:border-violet-500 outline-none" />
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:border-brand-500 outline-none" />
           </div>
           <div>
             <label className="text-xs font-semibold text-slate-700 mb-1 block">{t('talent.bio_label')}</label>
             <textarea value={form.bio || ''} onChange={(e) => set('bio', e.target.value)} rows={4} placeholder={t('talent.bio_ph')}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:border-violet-500 outline-none resize-y" />
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:border-brand-500 outline-none resize-y" />
           </div>
           <div className="grid sm:grid-cols-2 gap-3">
             <div>
               <label className="text-xs font-semibold text-slate-700 mb-1 block">{t('talent.years_label')}</label>
               <input type="number" min="0" value={form.years_experience ?? ''} onChange={(e) => set('years_experience', e.target.value ? Number(e.target.value) : undefined)}
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:border-violet-500 outline-none" />
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:border-brand-500 outline-none" />
             </div>
           </div>
         </div>
@@ -130,9 +130,9 @@ export function TalentClient({ initial }: { initial: Profile }) {
             <label className="text-xs font-semibold text-slate-700 mb-1 block">{t('talent.desired_roles_label')}</label>
             <div className="flex flex-wrap gap-1.5 mb-2">
               {(form.desired_roles || []).map((r, i) => (
-                <span key={i} className="inline-flex items-center gap-1 bg-violet-100 text-violet-700 px-2 py-0.5 rounded text-xs font-medium">
+                <span key={i} className="inline-flex items-center gap-1 bg-brand-100 text-brand-700 px-2 py-0.5 rounded text-xs font-medium">
                   {r}
-                  <button onClick={() => removeTag('desired_roles', i)} className="hover:text-violet-900"><X className="h-2.5 w-2.5" /></button>
+                  <button onClick={() => removeTag('desired_roles', i)} className="hover:text-brand-900"><X className="h-2.5 w-2.5" /></button>
                 </span>
               ))}
             </div>
@@ -140,8 +140,8 @@ export function TalentClient({ initial }: { initial: Profile }) {
               <input value={roleInput} onChange={(e) => setRoleInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTag('desired_roles', roleInput, setRoleInput); } }}
                 placeholder={t('talent.role_ph')}
-                className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-violet-500" />
-              <button onClick={() => addTag('desired_roles', roleInput, setRoleInput)} className="px-3 py-2 bg-violet-600 text-white rounded-lg"><Plus className="h-4 w-4" /></button>
+                className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-brand-500" />
+              <button onClick={() => addTag('desired_roles', roleInput, setRoleInput)} className="px-3 py-2 bg-brand-600 text-white rounded-lg"><Plus className="h-4 w-4" /></button>
             </div>
           </div>
           <TalentCatalogSkills />
@@ -223,7 +223,7 @@ export function TalentClient({ initial }: { initial: Profile }) {
       <div className="sticky bottom-4 bg-white/95 backdrop-blur-sm border border-slate-200 shadow-lg rounded-2xl p-3 flex items-center justify-between">
         <div className="text-xs text-slate-500 px-2">{dirty ? <span className="text-amber-600 font-medium">{t('talent.unsaved')}</span> : t('talent.no_changes')}</div>
         <button onClick={save} disabled={busy || !dirty}
-          className="inline-flex items-center gap-1.5 px-5 py-2 bg-gradient-to-br from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm disabled:opacity-50">
+          className="inline-flex items-center gap-1.5 px-5 py-2 bg-gradient-to-br from-brand-600 to-brand-600 hover:from-brand-700 hover:to-brand-700 text-white text-sm font-semibold rounded-lg shadow-sm disabled:opacity-50">
           {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} {t('talent.save_profile')}
         </button>
       </div>

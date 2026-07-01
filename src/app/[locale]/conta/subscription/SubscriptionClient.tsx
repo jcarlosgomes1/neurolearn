@@ -47,10 +47,10 @@ export function SubscriptionClient({ initial }: { initial: any }) {
       <main className="bg-slate-50 min-h-screen">
         <div className="">
           <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center">
-            <Sparkles className="h-12 w-12 text-violet-500 mx-auto mb-3" />
+            <Sparkles className="h-12 w-12 text-brand-500 mx-auto mb-3" />
             <h1 className="font-bold text-slate-900 text-xl mb-2">{t('sub.none_title')}</h1>
             <p className="text-sm text-slate-600 mb-4">{t('sub.none_desc', { amount: fmt(data?.monthly_cents || 1990) })}</p>
-            <Link href={'/precos/all-access' as any} className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-violet-600 to-brand-700 text-white font-semibold rounded-lg">
+            <Link href={'/precos/all-access' as any} className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-brand-600 to-brand-700 text-white font-semibold rounded-lg">
               <Sparkles className="h-4 w-4" /> {t('sub.view_plans')}
             </Link>
           </div>

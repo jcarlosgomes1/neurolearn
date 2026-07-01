@@ -55,7 +55,7 @@ export function DocumentView({ eyebrow, title, signable, signableLabel, meta = [
         {eyebrow && <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">{eyebrow}</div>}
         <div className="flex items-start justify-between gap-3">
           <h2 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><ScrollText className="w-5 h-5 text-amber-500 shrink-0" />{title}</h2>
-          {signable && signableLabel && <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-indigo-50 text-indigo-700 text-[11px] font-medium px-2.5 py-1"><PenLine className="w-3 h-3" />{signableLabel}</span>}
+          {signable && signableLabel && <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-brand-50 text-brand-700 text-[11px] font-medium px-2.5 py-1"><PenLine className="w-3 h-3" />{signableLabel}</span>}
         </div>
         {meta.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1">

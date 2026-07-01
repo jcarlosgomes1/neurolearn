@@ -41,7 +41,7 @@ export function CandidatesClient({ slug, initial }: { slug: string; initial: Dat
             <span key={i} className="text-[10px] uppercase font-bold tracking-wider bg-rose-50 text-rose-700 px-1.5 py-0.5 rounded">{t('org.cand.req_label')}: {s}</span>
           ))}
           {(job.nice_to_have_skills || []).map((s, i) => (
-            <span key={i} className="text-[10px] uppercase font-bold tracking-wider bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded">{t('org.cand.nice_label')}: {s}</span>
+            <span key={i} className="text-[10px] uppercase font-bold tracking-wider bg-brand-50 text-brand-700 px-1.5 py-0.5 rounded">{t('org.cand.nice_label')}: {s}</span>
           ))}
         </div>
       </div>
@@ -80,7 +80,7 @@ function CandidateCard({ match, currency }: { match: Match; currency: string }) 
           <div className="mt-1 flex flex-wrap gap-3 text-xs text-slate-500">
             {match.years_experience != null && <span className="inline-flex items-center gap-1"><Briefcase className="h-3 w-3" /> {t('org.cand.years', { years: match.years_experience })}</span>}
             {match.location && <span className="inline-flex items-center gap-1"><MapPin className="h-3 w-3" /> {match.location}</span>}
-            {match.remote_ok && <span className="text-indigo-600 font-medium">{t('org.cand.remote_ok')}</span>}
+            {match.remote_ok && <span className="text-brand-600 font-medium">{t('org.cand.remote_ok')}</span>}
             {match.desired_salary_min_cents != null && match.desired_salary_max_cents != null && (
               <span className="inline-flex items-center gap-1"><Euro className="h-3 w-3" /> {(match.desired_salary_min_cents/100/1000).toFixed(0)}k–{(match.desired_salary_max_cents/100/1000).toFixed(0)}k</span>
             )}
@@ -99,9 +99,9 @@ function CandidateCard({ match, currency }: { match: Match; currency: string }) 
         )}
         {match.bonus_skills.length > 0 && (
           <div>
-            <span className="text-[10px] uppercase font-bold tracking-wider text-indigo-700">{t('org.cand.bonus')} ({match.bonus_skills.length}): </span>
+            <span className="text-[10px] uppercase font-bold tracking-wider text-brand-700">{t('org.cand.bonus')} ({match.bonus_skills.length}): </span>
             {match.bonus_skills.map((s, i) => (
-              <span key={i} className="text-xs bg-indigo-50 text-indigo-800 px-1.5 py-0.5 rounded mx-0.5 inline-block">{s}</span>
+              <span key={i} className="text-xs bg-brand-50 text-brand-800 px-1.5 py-0.5 rounded mx-0.5 inline-block">{s}</span>
             ))}
           </div>
         )}

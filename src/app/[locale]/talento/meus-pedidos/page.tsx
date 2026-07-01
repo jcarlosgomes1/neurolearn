@@ -10,8 +10,8 @@ export const dynamic = 'force-dynamic';
 
 const STAGE_LABELS: Record<string, { labelKey: string; color: string }> = {
   introduced: { labelKey: 'tal.stage_introduced', color: 'bg-blue-100 text-blue-800' },
-  interested: { labelKey: 'tal.stage_interested', color: 'bg-violet-100 text-violet-800' },
-  interviewed: { labelKey: 'tal.stage_interviewed', color: 'bg-violet-100 text-violet-800' },
+  interested: { labelKey: 'tal.stage_interested', color: 'bg-brand-100 text-brand-800' },
+  interviewed: { labelKey: 'tal.stage_interviewed', color: 'bg-brand-100 text-brand-800' },
   offered: { labelKey: 'tal.stage_offered', color: 'bg-amber-100 text-amber-800' },
   hired: { labelKey: 'tal.stage_hired', color: 'bg-emerald-100 text-emerald-800' },
   rejected: { labelKey: 'tal.stage_rejected', color: 'bg-rose-100 text-rose-700' },
@@ -57,7 +57,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
                     {p.org_logo ? (
                       <img src={p.org_logo} alt={p.org_name} className="h-10 w-10 rounded-lg object-cover" />
                     ) : (
-                      <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-brand-500 to-violet-600 text-white flex items-center justify-center font-bold">
+                      <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-brand-500 to-brand-600 text-white flex items-center justify-center font-bold">
                         {p.org_name?.charAt(0)?.toUpperCase() || '?'}
                       </div>
                     )}

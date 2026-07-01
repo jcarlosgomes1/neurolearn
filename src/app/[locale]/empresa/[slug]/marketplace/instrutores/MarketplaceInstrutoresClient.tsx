@@ -106,7 +106,7 @@ export function MarketplaceInstrutoresClient({ orgId, orgName, orgSlug, memberRo
                   {s.avatar_url ? (
                     <img src={s.avatar_url} alt={s.instructor_name} className="h-10 w-10 rounded-full object-cover" />
                   ) : (
-                    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-brand-500 to-violet-600 text-white flex items-center justify-center font-bold text-sm">
+                    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-brand-500 to-brand-600 text-white flex items-center justify-center font-bold text-sm">
                       {s.instructor_name?.charAt(0)?.toUpperCase() || '?'}
                     </div>
                   )}

@@ -61,7 +61,7 @@ export function OrgProvaSocialClient({ orgId, lang }: { orgId: string; lang: str
               <div key={c.source_type + c.source_id} className="flex items-start gap-3 bg-white border border-slate-200 rounded-xl p-3">
                 <div className="text-amber-500 text-sm shrink-0">{'★'.repeat(c.rating)}</div>
                 <div className="flex-1 min-w-0"><p className="text-sm text-slate-700 line-clamp-2">{c.quote}</p><p className="text-xs text-slate-400 mt-0.5">{c.author_name || 'Aluno'}{c.consent ? ' · consentiu' : ''}</p></div>
-                <button onClick={() => promote(c)} disabled={busy} className="shrink-0 inline-flex items-center gap-1 rounded-lg bg-violet-600 text-white px-2.5 py-1.5 text-xs font-semibold hover:bg-violet-700 disabled:opacity-50"><Plus className="h-3.5 w-3.5" /> Promover</button>
+                <button onClick={() => promote(c)} disabled={busy} className="shrink-0 inline-flex items-center gap-1 rounded-lg bg-brand-600 text-white px-2.5 py-1.5 text-xs font-semibold hover:bg-brand-700 disabled:opacity-50"><Plus className="h-3.5 w-3.5" /> Promover</button>
               </div>
             ))}
           </div>
@@ -71,7 +71,7 @@ export function OrgProvaSocialClient({ orgId, lang }: { orgId: string; lang: str
       <section>
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500">Curadoria</h2>
-          <button onClick={addManual} className="inline-flex items-center gap-1 text-xs font-semibold text-violet-700 hover:underline"><Plus className="h-3.5 w-3.5" /> Adicionar manual</button>
+          <button onClick={addManual} className="inline-flex items-center gap-1 text-xs font-semibold text-brand-700 hover:underline"><Plus className="h-3.5 w-3.5" /> Adicionar manual</button>
         </div>
         {items.length === 0 ? <p className="text-sm text-slate-400">Ainda sem itens.</p> : (
           <div className="space-y-3">
@@ -109,7 +109,7 @@ export function OrgProvaSocialClient({ orgId, lang }: { orgId: string; lang: str
                 <div className="text-amber-500 text-sm">{'★'.repeat(p.rating)}</div>
                 <p className="text-sm text-slate-700 mt-1.5">“{p.t}”</p>
                 <div className="flex items-center gap-2 mt-3">
-                  <div className="h-8 w-8 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 text-white flex items-center justify-center text-xs font-bold">{p.av}</div>
+                  <div className="h-8 w-8 rounded-full bg-gradient-to-br from-brand-500 to-brand-600 text-white flex items-center justify-center text-xs font-bold">{p.av}</div>
                   <div className="text-xs"><div className="font-semibold text-slate-900">{p.n}</div><div className="text-slate-500">{p.r}</div></div>
                 </div>
               </div>

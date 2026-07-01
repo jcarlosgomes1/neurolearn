@@ -174,7 +174,7 @@ export function ProposalReview({ slug, initial }: { slug: string; initial: Propo
             <div className="mt-3">
               <div className="flex flex-wrap gap-1.5">
                 {proposal.topics.map((topic, i) => (
-                  <span key={i} className="text-xs bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded">{topic}</span>
+                  <span key={i} className="text-xs bg-brand-50 text-brand-700 px-2 py-0.5 rounded">{topic}</span>
                 ))}
               </div>
             </div>
@@ -250,7 +250,7 @@ export function ProposalReview({ slug, initial }: { slug: string; initial: Propo
                 {t('org.pr.reject')}
               </button>
               <button type="button" onClick={handleApprove} disabled={isPending}
-                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-r from-brand-600 to-violet-600 hover:opacity-90 text-white text-sm font-semibold disabled:opacity-50">
+                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-r from-brand-600 to-brand-600 hover:opacity-90 text-white text-sm font-semibold disabled:opacity-50">
                 {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
                 {t('org.pr.approve')}
               </button>

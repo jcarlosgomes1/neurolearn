@@ -116,21 +116,21 @@ export function CoursePricePanel({ courseId }: { courseId: string }) {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50 to-violet-50 p-5">
-        <div className="flex items-center gap-2 mb-3 text-indigo-600"><Sparkles className="w-4 h-4" /><span className="text-xs font-medium uppercase tracking-wide">{t('course_ws.price.engagement')}</span></div>
+      <div className="rounded-2xl border border-brand-100 bg-gradient-to-br from-brand-50 to-brand-50 p-5">
+        <div className="flex items-center gap-2 mb-3 text-brand-600"><Sparkles className="w-4 h-4" /><span className="text-xs font-medium uppercase tracking-wide">{t('course_ws.price.engagement')}</span></div>
         {engOk ? (
           <>
             <div className="grid grid-cols-3 gap-3">
-              <div className="rounded-xl bg-white/70 p-3 text-center"><div className="text-2xl font-bold text-indigo-700">{eng?.authored ?? 0}</div><div className="text-[11px] text-slate-500 mt-0.5">{t('course_ws.price.eng_authored')}</div></div>
-              <div className="rounded-xl bg-white/70 p-3 text-center"><div className="text-2xl font-bold text-violet-700">{eng?.edited ?? 0}</div><div className="text-[11px] text-slate-500 mt-0.5">{t('course_ws.price.eng_edited')}</div></div>
+              <div className="rounded-xl bg-white/70 p-3 text-center"><div className="text-2xl font-bold text-brand-700">{eng?.authored ?? 0}</div><div className="text-[11px] text-slate-500 mt-0.5">{t('course_ws.price.eng_authored')}</div></div>
+              <div className="rounded-xl bg-white/70 p-3 text-center"><div className="text-2xl font-bold text-brand-700">{eng?.edited ?? 0}</div><div className="text-[11px] text-slate-500 mt-0.5">{t('course_ws.price.eng_edited')}</div></div>
               <div className="rounded-xl bg-white/70 p-3 text-center"><div className="text-2xl font-bold text-slate-500">{eng?.accepted ?? 0}</div><div className="text-[11px] text-slate-500 mt-0.5">{t('course_ws.price.eng_accepted')}</div></div>
             </div>
-            {editRatePct !== null ? <p className="mt-3 text-xs text-indigo-900">{t('course_ws.price.eng_rate')}: <span className="font-semibold">{editRatePct}%</span></p> : null}
+            {editRatePct !== null ? <p className="mt-3 text-xs text-brand-900">{t('course_ws.price.eng_rate')}: <span className="font-semibold">{editRatePct}%</span></p> : null}
           </>
         ) : (
-          <p className="text-sm text-indigo-900/70">{t('course_ws.price.eng_none')}</p>
+          <p className="text-sm text-brand-900/70">{t('course_ws.price.eng_none')}</p>
         )}
-        <p className="mt-3 text-[11px] text-indigo-900/60">{t('course_ws.price.eng_note')}</p>
+        <p className="mt-3 text-[11px] text-brand-900/60">{t('course_ws.price.eng_note')}</p>
       </div>
     </div>
   );

@@ -328,7 +328,7 @@ function SidebarContent({ groups, isActive, t }: { groups: { groupKey: string; i
                       <NavIcon name={item.emoji} className="h-[18px] w-[18px] flex-shrink-0" />
                       <span className="truncate flex-1">{ilabel}</span>
                       {item.badge && (
-                        <span className="text-[9px] bg-fuchsia-100 text-fuchsia-700 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider flex-shrink-0">{item.badge}</span>
+                        <span className="text-[9px] bg-brand-100 text-brand-700 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider flex-shrink-0">{item.badge}</span>
                       )}
                     </Link>
                   );

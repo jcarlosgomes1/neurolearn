@@ -77,7 +77,7 @@ export function CourseReviews({ courseId, currentUserId, isInstructor }: { cours
                 {r.author_avatar ? (
                   <img src={r.author_avatar} alt="" className="h-9 w-9 rounded-full object-cover" />
                 ) : (
-                  <div className="h-9 w-9 rounded-full bg-gradient-to-br from-brand-500 to-violet-600 text-white flex items-center justify-center text-xs font-bold">
+                  <div className="h-9 w-9 rounded-full bg-gradient-to-br from-brand-500 to-brand-600 text-white flex items-center justify-center text-xs font-bold">
                     {r.author_name?.charAt(0)?.toUpperCase() || '?'}
                   </div>
                 )}

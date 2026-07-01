@@ -28,7 +28,7 @@ export function DefinicoesClient({ org }: { org: Org }) {
       else toast.error(t('empresa.settings.error'));
     });
   }
-  const field = 'w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-400';
+  const field = 'w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400';
   const label = 'block text-xs font-semibold text-slate-600 mb-1';
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8">
@@ -69,7 +69,7 @@ export function DefinicoesClient({ org }: { org: Org }) {
         </div>
         <div className="pt-2">
           <button onClick={save} disabled={pending}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold disabled:opacity-50">
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold disabled:opacity-50">
             {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} {t('empresa.settings.save')}
           </button>
         </div>

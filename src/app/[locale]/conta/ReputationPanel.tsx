@@ -15,7 +15,7 @@ type RepData = {
 };
 
 const COLOR: Record<string, string> = {
-  violet: 'from-violet-500 to-purple-600',
+  violet: 'from-brand-500 to-brand-600',
   emerald: 'from-emerald-500 to-teal-600',
   blue: 'from-blue-500 to-cyan-600',
   amber: 'from-amber-500 to-orange-600',
@@ -57,7 +57,7 @@ export function ReputationPanel() {
         <div key={b.role} className="bg-white rounded-2xl border border-slate-200 p-5 overflow-hidden">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Award className="h-5 w-5 text-violet-600" />
+              <Award className="h-5 w-5 text-brand-600" />
               <div>
                 <h3 className="font-semibold text-slate-900">{t('rep.ui.title')}</h3>
                 <span className="text-xs text-slate-500">{b.role === 'instructor' ? t('rep.ui.as_instructor') : t('rep.ui.as_student')}</span>

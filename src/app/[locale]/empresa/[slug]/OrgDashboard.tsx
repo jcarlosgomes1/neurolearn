@@ -118,15 +118,15 @@ export function OrgDashboard({ data }: { data: unknown }) {
       {/* CTA mágico adaptativo */}
       {cta && (
         <Link href={cta.href as never}
-          className="group flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 hover:border-indigo-300 hover:shadow-md transition-all">
-          <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white flex items-center justify-center flex-shrink-0">
+          className="group flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 hover:border-brand-300 hover:shadow-md transition-all">
+          <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-brand-500 to-brand-500 text-white flex items-center justify-center flex-shrink-0">
             <cta.icon className="h-5 w-5" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="font-semibold text-slate-900">{cta.label}</div>
             <div className="text-xs text-slate-500 mt-0.5">{cta.sub}</div>
           </div>
-          <ArrowRight className="h-5 w-5 text-slate-300 group-hover:text-indigo-500 group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+          <ArrowRight className="h-5 w-5 text-slate-300 group-hover:text-brand-500 group-hover:translate-x-0.5 transition-all flex-shrink-0" />
         </Link>
       )}
 
@@ -159,8 +159,8 @@ export function OrgDashboard({ data }: { data: unknown }) {
       {org.is_admin && academy && (
         <div className="rounded-2xl border border-slate-200 bg-white p-5">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="font-semibold text-slate-800 text-sm flex items-center gap-2"><Target className="h-4 w-4 text-indigo-500" />{t('academy.skillmap.title')}</h2>
-            <Link href={`/empresa/${org.slug}/competencias` as never} className="text-xs text-indigo-600 hover:underline">{t('academy.skillmap.see_team')}</Link>
+            <h2 className="font-semibold text-slate-800 text-sm flex items-center gap-2"><Target className="h-4 w-4 text-brand-500" />{t('academy.skillmap.title')}</h2>
+            <Link href={`/empresa/${org.slug}/competencias` as never} className="text-xs text-brand-600 hover:underline">{t('academy.skillmap.see_team')}</Link>
           </div>
           {topSkills.length === 0 ? (
             <p className="text-xs text-slate-400 leading-relaxed">{t('academy.skillmap.empty')}</p>
@@ -175,7 +175,7 @@ export function OrgDashboard({ data }: { data: unknown }) {
                     </span>
                   </div>
                   <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
-                    <div className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 transition-all" style={{ width: `${s.coverage_pct}%` }} />
+                    <div className="h-full rounded-full bg-gradient-to-r from-brand-500 to-brand-500 transition-all" style={{ width: `${s.coverage_pct}%` }} />
                   </div>
                 </div>
               ))}
@@ -227,21 +227,21 @@ export function OrgDashboard({ data }: { data: unknown }) {
       {org.is_admin && (
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
           {!showInvite ? (
-            <button onClick={() => setShowInvite(true)} className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 hover:opacity-90 text-white font-medium">
+            <button onClick={() => setShowInvite(true)} className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-brand-600 to-brand-600 hover:opacity-90 text-white font-medium">
               <UserPlus className="h-4 w-4" /> {t('emp.dashboard.invite_btn')}
             </button>
           ) : (
             <div className="space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <input type="email" placeholder={t('emp.dashboard.invite_email')} value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} className="sm:col-span-2 px-3 py-2 rounded-lg border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none" />
-                <select value={inviteRole} onChange={(e) => setInviteRole(e.target.value as 'learner' | 'manager' | 'admin')} className="px-3 py-2 rounded-lg border border-slate-200 focus:border-indigo-500 outline-none bg-white">
+                <input type="email" placeholder={t('emp.dashboard.invite_email')} value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} className="sm:col-span-2 px-3 py-2 rounded-lg border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none" />
+                <select value={inviteRole} onChange={(e) => setInviteRole(e.target.value as 'learner' | 'manager' | 'admin')} className="px-3 py-2 rounded-lg border border-slate-200 focus:border-brand-500 outline-none bg-white">
                   <option value="learner">{t('emp.dashboard.role.learner')}</option>
                   <option value="manager">{t('emp.dashboard.role.manager')}</option>
                   <option value="admin">{t('emp.dashboard.role.admin')}</option>
                 </select>
               </div>
               <div className="flex gap-2">
-                <button onClick={sendInvite} disabled={sending || !inviteEmail.includes('@')} className="flex-1 sm:flex-initial px-5 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 hover:opacity-90 disabled:opacity-50 text-white text-sm font-semibold">{sending ? '…' : t('emp.dashboard.invite_send')}</button>
+                <button onClick={sendInvite} disabled={sending || !inviteEmail.includes('@')} className="flex-1 sm:flex-initial px-5 py-2 rounded-lg bg-gradient-to-r from-brand-600 to-brand-600 hover:opacity-90 disabled:opacity-50 text-white text-sm font-semibold">{sending ? '…' : t('emp.dashboard.invite_send')}</button>
                 <button onClick={() => setShowInvite(false)} className="px-4 py-2 rounded-lg hover:bg-slate-100 text-slate-600 text-sm">×</button>
               </div>
             </div>
@@ -302,7 +302,7 @@ function NavGroup({ title, children }: { title: string; children: React.ReactNod
 function Chip({ href, icon: Icon, label }: { href: string; icon: typeof Users; label: string }) {
   return (
     <Link href={href as never}
-      className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50 text-slate-700 hover:text-indigo-700 text-sm font-medium transition-colors">
+      className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white border border-slate-200 hover:border-brand-300 hover:bg-brand-50 text-slate-700 hover:text-brand-700 text-sm font-medium transition-colors">
       <Icon className="h-4 w-4" /> {label}
     </Link>
   );

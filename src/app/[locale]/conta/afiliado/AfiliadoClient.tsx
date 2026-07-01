@@ -64,15 +64,15 @@ export function AfiliadoClient({ initial, baseUrl }: { initial: any; baseUrl: st
         <div className="bg-white border border-slate-200 rounded-2xl p-8">
           <h2 className="font-bold text-slate-900 text-xl mb-4">{t('aff.how_title')}</h2>
           <ol className="space-y-3 text-slate-700 text-sm">
-            <li className="flex gap-3"><span className="h-6 w-6 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center text-xs font-bold flex-shrink-0">1</span> {t('aff.step1')}</li>
-            <li className="flex gap-3"><span className="h-6 w-6 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center text-xs font-bold flex-shrink-0">2</span> {t('aff.step2')}</li>
-            <li className="flex gap-3"><span className="h-6 w-6 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center text-xs font-bold flex-shrink-0">3</span> {t('aff.step3')}</li>
-            <li className="flex gap-3"><span className="h-6 w-6 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center text-xs font-bold flex-shrink-0">4</span> {t('aff.step4', { days: data?.cookie_days ?? 60, pct: data?.default_pct ?? 10 })}</li>
-            <li className="flex gap-3"><span className="h-6 w-6 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center text-xs font-bold flex-shrink-0">5</span> {t('aff.step5', { amount: fmt(data?.min_payout_cents ?? 5000) })}</li>
+            <li className="flex gap-3"><span className="h-6 w-6 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold flex-shrink-0">1</span> {t('aff.step1')}</li>
+            <li className="flex gap-3"><span className="h-6 w-6 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold flex-shrink-0">2</span> {t('aff.step2')}</li>
+            <li className="flex gap-3"><span className="h-6 w-6 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold flex-shrink-0">3</span> {t('aff.step3')}</li>
+            <li className="flex gap-3"><span className="h-6 w-6 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold flex-shrink-0">4</span> {t('aff.step4', { days: data?.cookie_days ?? 60, pct: data?.default_pct ?? 10 })}</li>
+            <li className="flex gap-3"><span className="h-6 w-6 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold flex-shrink-0">5</span> {t('aff.step5', { amount: fmt(data?.min_payout_cents ?? 5000) })}</li>
           </ol>
           {error && <div className="mt-4 p-3 bg-rose-50 border border-rose-200 rounded-lg text-sm text-rose-700">{error}</div>}
           <button onClick={signup} disabled={pending}
-            className="mt-6 w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-violet-600 to-brand-700 hover:opacity-90 text-white font-semibold rounded-lg disabled:opacity-50">
+            className="mt-6 w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-brand-600 to-brand-700 hover:opacity-90 text-white font-semibold rounded-lg disabled:opacity-50">
             {pending && <Loader2 className="h-4 w-4 animate-spin" />}
             {t('aff.activate')}
           </button>
@@ -91,7 +91,7 @@ export function AfiliadoClient({ initial, baseUrl }: { initial: any; baseUrl: st
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <KPI icon={<Users className="h-4 w-4 text-blue-600" />} label={t('aff.kpi_clicks')} value={String(aff.total_clicks)} />
-        <KPI icon={<Users className="h-4 w-4 text-violet-600" />} label={t('aff.kpi_signups')} value={String(aff.total_signups)} />
+        <KPI icon={<Users className="h-4 w-4 text-brand-600" />} label={t('aff.kpi_signups')} value={String(aff.total_signups)} />
         <KPI icon={<TrendingUp className="h-4 w-4 text-emerald-600" />} label={t('aff.kpi_paying')} value={String(aff.total_paid_signups)} />
         <KPI icon={<DollarSign className="h-4 w-4 text-emerald-700" />} label={t('aff.kpi_earned')} value={fmt(aff.total_earned_cents)} sub={t('aff.kpi_paid', { amount: fmt(aff.total_paid_cents) })} />
       </div>

@@ -144,7 +144,7 @@ export function CourseTermsPanel({ courseId }: { courseId: string }) {
                   {c.default_on ? <span className="ml-1 text-[10px] rounded bg-emerald-50 text-emerald-600 px-1.5 py-0.5">{t('course_ws.terms.suggested')}</span> : null}
                 </div>
                 <button onClick={() => toggle(c.code, !c.enabled)} role="switch" aria-checked={c.enabled}
-                  className={c.enabled ? 'relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors bg-violet-600' : 'relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors bg-slate-200'}>
+                  className={c.enabled ? 'relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors bg-brand-600' : 'relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors bg-slate-200'}>
                   <span className={c.enabled ? 'inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform translate-x-5' : 'inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform translate-x-0.5'} />
                 </button>
               </li>
@@ -156,12 +156,12 @@ export function CourseTermsPanel({ courseId }: { courseId: string }) {
       <section>
         <div className="flex items-center justify-between mb-2">
           <h2 className="text-sm font-semibold text-slate-800">{t('course_ws.terms.custom_title')}</h2>
-          <button onClick={() => setDraft({ id: null, title: '', body_md: '' })} className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 text-xs font-medium text-slate-600 px-2.5 py-1.5 hover:bg-slate-50"><Plus className="w-3.5 h-3.5 text-violet-500" />{t('course_ws.terms.add')}</button>
+          <button onClick={() => setDraft({ id: null, title: '', body_md: '' })} className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 text-xs font-medium text-slate-600 px-2.5 py-1.5 hover:bg-slate-50"><Plus className="w-3.5 h-3.5 text-brand-500" />{t('course_ws.terms.add')}</button>
         </div>
         {draft && (
-          <div className="mb-3 rounded-xl border border-violet-200 bg-violet-50/40 p-3 space-y-2">
-            <input value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} placeholder={t('course_ws.terms.title_opt')} className="w-full rounded-lg border border-slate-200 p-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-violet-200" />
-            <textarea value={draft.body_md} onChange={(e) => setDraft({ ...draft, body_md: e.target.value })} rows={4} placeholder={t('course_ws.terms.body_ph')} className="w-full rounded-lg border border-slate-200 p-2 text-sm bg-white font-mono focus:outline-none focus:ring-2 focus:ring-violet-200 resize-y" />
+          <div className="mb-3 rounded-xl border border-brand-200 bg-brand-50/40 p-3 space-y-2">
+            <input value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} placeholder={t('course_ws.terms.title_opt')} className="w-full rounded-lg border border-slate-200 p-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-200" />
+            <textarea value={draft.body_md} onChange={(e) => setDraft({ ...draft, body_md: e.target.value })} rows={4} placeholder={t('course_ws.terms.body_ph')} className="w-full rounded-lg border border-slate-200 p-2 text-sm bg-white font-mono focus:outline-none focus:ring-2 focus:ring-brand-200 resize-y" />
             <div className="flex items-center gap-2">
               <button onClick={saveCustom} disabled={saving || !draft.body_md.trim()} className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 text-white text-sm font-medium px-3.5 py-1.5 disabled:opacity-50 hover:bg-slate-800">{saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}{t('course_ws.terms.save')}</button>
               <button onClick={() => setDraft(null)} className="inline-flex items-center gap-1 text-sm text-slate-500 px-2 py-1.5 hover:text-slate-700"><X className="w-4 h-4" />{t('course_ws.terms.cancel')}</button>

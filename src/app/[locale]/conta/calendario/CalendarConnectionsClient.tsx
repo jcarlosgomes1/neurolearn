@@ -46,7 +46,7 @@ function Toggle({ on, onChange, disabled }: { on: boolean; onChange: () => void;
   return (
     <button type="button" disabled={disabled} onClick={onChange}
       className={cx('relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors',
-        disabled ? 'bg-slate-200 cursor-not-allowed' : on ? 'bg-gradient-to-r from-violet-500 to-indigo-600' : 'bg-slate-300')}>
+        disabled ? 'bg-slate-200 cursor-not-allowed' : on ? 'bg-gradient-to-r from-brand-500 to-brand-600' : 'bg-slate-300')}>
       <span className={cx('inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform', on ? 'translate-x-5' : 'translate-x-0.5')} />
     </button>
   );
@@ -72,12 +72,12 @@ function PullControls({ provider, connected, st, onSet, t }: { provider: string;
           <div className="text-xs font-medium text-slate-500 mb-1.5">{t('privacy_level')}</div>
           <div className="grid grid-cols-2 gap-2">
             <button onClick={() => onSet(provider, true, 'busy')}
-              className={cx('text-left rounded-xl border p-2.5 transition-colors', detail === 'busy' ? 'border-violet-400 bg-violet-50 ring-1 ring-violet-200' : 'border-slate-200 hover:border-slate-300')}>
+              className={cx('text-left rounded-xl border p-2.5 transition-colors', detail === 'busy' ? 'border-brand-400 bg-brand-50 ring-1 ring-brand-200' : 'border-slate-200 hover:border-slate-300')}>
               <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-800"><Lock className="h-3.5 w-3.5" />{t('privacy_busy')}</div>
               <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">{t('privacy_busy_hint')}</p>
             </button>
             <button onClick={() => onSet(provider, true, 'full')}
-              className={cx('text-left rounded-xl border p-2.5 transition-colors', detail === 'full' ? 'border-violet-400 bg-violet-50 ring-1 ring-violet-200' : 'border-slate-200 hover:border-slate-300')}>
+              className={cx('text-left rounded-xl border p-2.5 transition-colors', detail === 'full' ? 'border-brand-400 bg-brand-50 ring-1 ring-brand-200' : 'border-slate-200 hover:border-slate-300')}>
               <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-800"><Eye className="h-3.5 w-3.5" />{t('privacy_full')}</div>
               <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">{t('privacy_full_hint')}</p>
             </button>
@@ -148,7 +148,7 @@ export function CalendarConnectionsClient() {
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
               <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-                <CalendarDays className="h-4 w-4 text-violet-600 shrink-0" />{t('gcal_title')}
+                <CalendarDays className="h-4 w-4 text-brand-600 shrink-0" />{t('gcal_title')}
                 {gcal?.connected && <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700">{t('connected')}</span>}
               </div>
               <p className="text-xs text-slate-500 mt-0.5 leading-snug">{gcal?.connected && gcal.email ? gcal.email : t('gcal_hint')}</p>
@@ -156,7 +156,7 @@ export function CalendarConnectionsClient() {
             {gcal?.connected ? (
               <button onClick={disconnectGoogle} className="text-xs font-semibold text-slate-500 hover:text-rose-600 px-3 py-1.5 rounded-lg border border-slate-200">{t('disconnect')}</button>
             ) : (
-              <button onClick={connectGoogle} className="text-xs font-semibold text-white bg-violet-600 hover:bg-violet-700 px-3 py-1.5 rounded-lg">{t('connect')}</button>
+              <button onClick={connectGoogle} className="text-xs font-semibold text-white bg-brand-600 hover:bg-brand-700 px-3 py-1.5 rounded-lg">{t('connect')}</button>
             )}
           </div>
           <PullControls provider="google" connected={!!gcal?.connected} st={pull.google} onSet={setPullState} t={t} />
@@ -167,7 +167,7 @@ export function CalendarConnectionsClient() {
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
               <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-                <CalendarDays className="h-4 w-4 text-violet-600 shrink-0" />{t('mscal_title')}
+                <CalendarDays className="h-4 w-4 text-brand-600 shrink-0" />{t('mscal_title')}
                 {mscal?.connected && <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700">{t('connected')}</span>}
               </div>
               <p className="text-xs text-slate-500 mt-0.5 leading-snug">{mscal?.connected && mscal.email ? mscal.email : t('mscal_hint')}</p>
@@ -175,7 +175,7 @@ export function CalendarConnectionsClient() {
             {mscal?.connected ? (
               <button onClick={disconnectMicrosoft} className="text-xs font-semibold text-slate-500 hover:text-rose-600 px-3 py-1.5 rounded-lg border border-slate-200">{t('disconnect')}</button>
             ) : (
-              <button onClick={connectMicrosoft} className="text-xs font-semibold text-white bg-violet-600 hover:bg-violet-700 px-3 py-1.5 rounded-lg">{t('connect')}</button>
+              <button onClick={connectMicrosoft} className="text-xs font-semibold text-white bg-brand-600 hover:bg-brand-700 px-3 py-1.5 rounded-lg">{t('connect')}</button>
             )}
           </div>
           <PullControls provider="microsoft" connected={!!mscal?.connected} st={pull.microsoft} onSet={setPullState} t={t} />
@@ -185,15 +185,15 @@ export function CalendarConnectionsClient() {
         <Card className="!p-4 sm:col-span-2">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <div className="flex items-center gap-2 text-sm font-semibold text-slate-900"><CalendarDays className="h-4 w-4 text-violet-600 shrink-0" />{t('ics_title')}</div>
+              <div className="flex items-center gap-2 text-sm font-semibold text-slate-900"><CalendarDays className="h-4 w-4 text-brand-600 shrink-0" />{t('ics_title')}</div>
               <p className="text-xs text-slate-500 mt-0.5 leading-snug">{t('ics_hint')}</p>
             </div>
-            {!icsUrl && <button onClick={getIcsLink} className="text-xs font-semibold text-white bg-violet-600 hover:bg-violet-700 px-3 py-1.5 rounded-lg shrink-0">{t('ics_get')}</button>}
+            {!icsUrl && <button onClick={getIcsLink} className="text-xs font-semibold text-white bg-brand-600 hover:bg-brand-700 px-3 py-1.5 rounded-lg shrink-0">{t('ics_get')}</button>}
           </div>
           {icsUrl && (
             <div className="flex items-center gap-2 mt-3">
               <input readOnly value={icsUrl} className="flex-1 min-w-0 rounded-lg border border-slate-200 px-2 py-1.5 text-xs text-slate-600 bg-slate-50" />
-              <button onClick={copyIcs} className="inline-flex items-center gap-1.5 text-xs font-semibold text-violet-700 bg-violet-50 hover:bg-violet-100 rounded-lg px-3 py-1.5 shrink-0">
+              <button onClick={copyIcs} className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-700 bg-brand-50 hover:bg-brand-100 rounded-lg px-3 py-1.5 shrink-0">
                 {icsCopied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}{icsCopied ? t('copied') : t('ics_copy')}
               </button>
             </div>

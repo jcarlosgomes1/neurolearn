@@ -27,7 +27,7 @@ const LANGS = [
 ];
 
 const inputCls =
-  'w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-900 text-sm outline-none transition-colors focus:border-violet-500 focus:ring-2 focus:ring-violet-100';
+  'w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-900 text-sm outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-100';
 
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
@@ -133,7 +133,7 @@ export function ProfileForm({ email, handle, initial }: { email: string; handle:
           <button
             onClick={save}
             disabled={busy}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white text-sm font-semibold shadow-sm hover:shadow transition-all disabled:opacity-50">
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-600 to-brand-600 hover:from-brand-700 hover:to-brand-700 text-white text-sm font-semibold shadow-sm hover:shadow transition-all disabled:opacity-50">
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             {t('profile.save_changes')}
           </button>

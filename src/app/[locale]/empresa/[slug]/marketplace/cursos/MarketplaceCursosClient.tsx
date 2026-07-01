@@ -76,7 +76,7 @@ export function MarketplaceCursosClient({ orgId, orgName, orgSlug, memberRole, f
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {courses.map((c) => (
               <div key={c.id} className="bg-white border border-slate-200 rounded-xl overflow-hidden flex flex-col hover:shadow-md transition-shadow">
-                <div className="aspect-video bg-gradient-to-br from-brand-100 to-violet-100 flex items-center justify-center text-5xl">
+                <div className="aspect-video bg-gradient-to-br from-brand-100 to-brand-100 flex items-center justify-center text-5xl">
                   {c.cover_url ? <img src={c.cover_url} alt={c.title} className="w-full h-full object-cover" /> : (c.emoji || '📘')}
                 </div>
                 <div className="p-4 flex-1 flex flex-col">

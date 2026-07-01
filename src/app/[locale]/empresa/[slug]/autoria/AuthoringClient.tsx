@@ -110,7 +110,7 @@ export function AuthoringClient({ orgId, orgSlug, isAdmin }: { orgId: string; or
     <div className="space-y-8">
       {isAdmin && (
         <section className="rounded-2xl border border-slate-200 bg-white p-5">
-          <h2 className="font-semibold text-slate-800 flex items-center gap-2 mb-3"><UserPlus className="h-4 w-4 text-indigo-500" />{safeT('academy.authoring.convene_title', 'Convocar especialista')}</h2>
+          <h2 className="font-semibold text-slate-800 flex items-center gap-2 mb-3"><UserPlus className="h-4 w-4 text-brand-500" />{safeT('academy.authoring.convene_title', 'Convocar especialista')}</h2>
           <div className="space-y-2.5">
             <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={safeT('academy.authoring.title_ph', 'Tema do curso (ex.: Onboarding de Vendas)')} className="w-full text-sm rounded-lg border border-slate-200 px-3 py-2" />
             <textarea value={brief} onChange={(e) => setBrief(e.target.value)} placeholder={safeT('academy.authoring.brief_ph', 'Briefing: objetivos, público, pontos a cobrir…')} rows={3} className="w-full text-sm rounded-lg border border-slate-200 px-3 py-2" />
@@ -118,7 +118,7 @@ export function AuthoringClient({ orgId, orgSlug, isAdmin }: { orgId: string; or
               <option value="">{safeT('academy.authoring.pick_member', 'Escolher especialista…')}</option>
               {members.map((m) => <option key={m.user_id} value={m.user_id}>{m.name || m.user_id} · {m.role}</option>)}
             </select>
-            <button onClick={convene} disabled={busy === 'create'} className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 text-white text-sm font-medium px-4 py-2 hover:bg-indigo-700 disabled:opacity-50">
+            <button onClick={convene} disabled={busy === 'create'} className="inline-flex items-center gap-1.5 rounded-lg bg-brand-600 text-white text-sm font-medium px-4 py-2 hover:bg-brand-700 disabled:opacity-50">
               {busy === 'create' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}{safeT('academy.authoring.convene_btn', 'Convocar')}
             </button>
           </div>
@@ -139,7 +139,7 @@ export function AuthoringClient({ orgId, orgSlug, isAdmin }: { orgId: string; or
                     </button>
                   )}
                   {bridgeEnabled && it.status === 'published' && (it.marketplace_status || 'internal') === 'internal' && (
-                    <button onClick={() => proposeMarket(it.id)} disabled={busy === it.id} className="inline-flex items-center gap-1 rounded-lg bg-indigo-50 text-indigo-700 text-xs font-medium px-2.5 py-1.5 hover:bg-indigo-100 disabled:opacity-50">
+                    <button onClick={() => proposeMarket(it.id)} disabled={busy === it.id} className="inline-flex items-center gap-1 rounded-lg bg-brand-50 text-brand-700 text-xs font-medium px-2.5 py-1.5 hover:bg-brand-100 disabled:opacity-50">
                       {busy === it.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Globe className="h-3 w-3" />}{safeT('academy.authoring.mkt_propose', 'Propor ao marketplace')}
                     </button>
                   )}
@@ -163,7 +163,7 @@ export function AuthoringClient({ orgId, orgSlug, isAdmin }: { orgId: string; or
       )}
 
       <section>
-        <h2 className="font-semibold text-slate-800 flex items-center gap-2 mb-3"><PenLine className="h-4 w-4 text-violet-500" />{safeT('academy.authoring.mine_title', 'As minhas autorias')}</h2>
+        <h2 className="font-semibold text-slate-800 flex items-center gap-2 mb-3"><PenLine className="h-4 w-4 text-brand-500" />{safeT('academy.authoring.mine_title', 'As minhas autorias')}</h2>
         {mine.length === 0 ? (
           <p className="text-sm text-slate-500">{safeT('academy.authoring.mine_empty', 'Ainda não foste convocado para autoria.')}</p>
         ) : (
@@ -176,7 +176,7 @@ export function AuthoringClient({ orgId, orgSlug, isAdmin }: { orgId: string; or
                 </div>
                 {it.brief && <p className="text-xs text-slate-500 mt-1 whitespace-pre-line">{it.brief}</p>}
                 <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <Link href={'/teach/curso/novo' as never} className="inline-flex items-center gap-1 rounded-lg bg-violet-50 text-violet-700 text-xs font-medium px-2.5 py-1.5 hover:bg-violet-100">
+                  <Link href={'/teach/curso/novo' as never} className="inline-flex items-center gap-1 rounded-lg bg-brand-50 text-brand-700 text-xs font-medium px-2.5 py-1.5 hover:bg-brand-100">
                     <Sparkles className="h-3.5 w-3.5" />{safeT('academy.authoring.assist', 'Criar com assistência')}
                   </Link>
                   {it.status !== 'published' && (

@@ -119,7 +119,7 @@ function Toggle({ on, onChange, disabled }: { on: boolean; onChange: () => void;
   return (
     <button type="button" disabled={disabled} onClick={onChange}
       className={cx('relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors',
-        disabled ? 'bg-slate-200 cursor-not-allowed' : on ? 'bg-gradient-to-r from-violet-500 to-indigo-600' : 'bg-slate-300')}>
+        disabled ? 'bg-slate-200 cursor-not-allowed' : on ? 'bg-gradient-to-r from-brand-500 to-brand-600' : 'bg-slate-300')}>
       <span className={cx('inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform', on ? 'translate-x-5' : 'translate-x-0.5')} />
     </button>
   );
@@ -145,12 +145,12 @@ function PullControls({ provider, st, onSet, t }: { provider: string; st: any; o
           <div className="text-xs font-medium text-slate-500 mb-1.5">{t('privacy_level')}</div>
           <div className="grid grid-cols-2 gap-2">
             <button onClick={() => onSet(provider, true, 'busy')}
-              className={cx('text-left rounded-xl border p-2.5 transition-colors', detail === 'busy' ? 'border-violet-400 bg-violet-50 ring-1 ring-violet-200' : 'border-slate-200 hover:border-slate-300')}>
+              className={cx('text-left rounded-xl border p-2.5 transition-colors', detail === 'busy' ? 'border-brand-400 bg-brand-50 ring-1 ring-brand-200' : 'border-slate-200 hover:border-slate-300')}>
               <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-800"><Lock className="h-3.5 w-3.5" />{t('privacy_busy')}</div>
               <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">{t('privacy_busy_hint')}</p>
             </button>
             <button onClick={() => onSet(provider, true, 'full')}
-              className={cx('text-left rounded-xl border p-2.5 transition-colors', detail === 'full' ? 'border-violet-400 bg-violet-50 ring-1 ring-violet-200' : 'border-slate-200 hover:border-slate-300')}>
+              className={cx('text-left rounded-xl border p-2.5 transition-colors', detail === 'full' ? 'border-brand-400 bg-brand-50 ring-1 ring-brand-200' : 'border-slate-200 hover:border-slate-300')}>
               <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-800"><Eye className="h-3.5 w-3.5" />{t('privacy_full')}</div>
               <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">{t('privacy_full_hint')}</p>
             </button>
@@ -313,8 +313,8 @@ export function SchedulingDashboard({ initial }: { initial: any }) {
         <Card className="!p-4 flex items-center justify-between gap-3">
           <div className="min-w-0">
             <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-              <Calendar className="h-4 w-4 text-violet-600 shrink-0" />{t('active')}
-              {isMentor && <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-violet-100 text-violet-700">{t('mentor_badge')}</span>}
+              <Calendar className="h-4 w-4 text-brand-600 shrink-0" />{t('active')}
+              {isMentor && <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-brand-100 text-brand-700">{t('mentor_badge')}</span>}
             </div>
             <p className="text-xs text-slate-500 mt-0.5 leading-snug">{t('active_hint')}</p>
           </div>
@@ -325,7 +325,7 @@ export function SchedulingDashboard({ initial }: { initial: any }) {
           <Card className="!p-4 flex items-center justify-between gap-3">
             <div className="min-w-0">
               <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-                <UserRound className="h-4 w-4 text-violet-600 shrink-0" />{t('directory')}
+                <UserRound className="h-4 w-4 text-brand-600 shrink-0" />{t('directory')}
               </div>
               <p className="text-xs text-slate-500 mt-0.5 leading-snug">{t('directory_hint')}</p>
             </div>
@@ -335,19 +335,19 @@ export function SchedulingDashboard({ initial }: { initial: any }) {
 
         <Card className="!p-4 sm:col-span-2 flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <div className="flex items-center gap-2 text-sm font-semibold text-slate-900"><CalendarDays className="h-4 w-4 text-violet-600 shrink-0" />{t('cal_link_title')}</div>
+            <div className="flex items-center gap-2 text-sm font-semibold text-slate-900"><CalendarDays className="h-4 w-4 text-brand-600 shrink-0" />{t('cal_link_title')}</div>
             <p className="text-xs text-slate-500 mt-0.5 leading-snug">{t('cal_link_hint')}</p>
           </div>
-          <a href={`/${locale}/conta/calendario`} className="text-xs font-semibold text-white bg-violet-600 hover:bg-violet-700 px-3 py-1.5 rounded-lg shrink-0">{t('cal_link_cta')}</a>
+          <a href={`/${locale}/conta/calendario`} className="text-xs font-semibold text-white bg-brand-600 hover:bg-brand-700 px-3 py-1.5 rounded-lg shrink-0">{t('cal_link_cta')}</a>
         </Card>
 
         <Card className="!p-4 flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <div className="flex items-center gap-2 text-sm font-semibold text-slate-900"><Link2 className="h-4 w-4 text-violet-600 shrink-0" />{t('public_link')}</div>
+            <div className="flex items-center gap-2 text-sm font-semibold text-slate-900"><Link2 className="h-4 w-4 text-brand-600 shrink-0" />{t('public_link')}</div>
             <p className="text-xs text-slate-500 mt-0.5 truncate">/agendar/{handle || '—'}</p>
           </div>
           <button onClick={copyLink} disabled={!handle}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-violet-700 bg-violet-50 hover:bg-violet-100 disabled:opacity-50 rounded-full px-3 py-1.5 transition-colors shrink-0">
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-700 bg-brand-50 hover:bg-brand-100 disabled:opacity-50 rounded-full px-3 py-1.5 transition-colors shrink-0">
             {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}{copied ? t('copied') : t('copy')}
           </button>
         </Card>
@@ -356,22 +356,22 @@ export function SchedulingDashboard({ initial }: { initial: any }) {
       <Card>
         <div className="flex items-center justify-between mb-3 gap-3">
           <div className="min-w-0">
-            <h2 className="font-display text-lg font-bold text-slate-900 flex items-center gap-2"><UserRound className="h-5 w-5 text-violet-600 shrink-0" />{t('public_profile')}</h2>
+            <h2 className="font-display text-lg font-bold text-slate-900 flex items-center gap-2"><UserRound className="h-5 w-5 text-brand-600 shrink-0" />{t('public_profile')}</h2>
             <p className="text-xs text-slate-500 mt-0.5">{t('profile_hint')}</p>
           </div>
           <button onClick={() => saveCalendar()} disabled={savingCal}
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:opacity-90 rounded-full px-4 py-1.5 transition-opacity disabled:opacity-60 shrink-0">
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-white bg-gradient-to-r from-brand-600 to-brand-600 hover:opacity-90 rounded-full px-4 py-1.5 transition-opacity disabled:opacity-60 shrink-0">
             {savingCal ? <Loader2 className="h-4 w-4 animate-spin" /> : savedCal ? <Check className="h-4 w-4" /> : null}{savedCal ? t('saved') : t('save')}
           </button>
         </div>
         <div className="space-y-3">
           <div>
             <label className="block text-xs font-medium text-slate-500 mb-1">{t('headline')}</label>
-            <input value={headline} onChange={(e) => setHeadline(e.target.value)} placeholder={t('headline_ph')} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-violet-300 outline-none" />
+            <input value={headline} onChange={(e) => setHeadline(e.target.value)} placeholder={t('headline_ph')} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-300 outline-none" />
           </div>
           <div>
             <label className="block text-xs font-medium text-slate-500 mb-1">{t('bio_label')}</label>
-            <textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={3} placeholder={t('bio_ph')} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-violet-300 outline-none resize-none" />
+            <textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={3} placeholder={t('bio_ph')} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-300 outline-none resize-none" />
           </div>
         </div>
       </Card>
@@ -379,9 +379,9 @@ export function SchedulingDashboard({ initial }: { initial: any }) {
       <div className="grid gap-6 lg:grid-cols-5">
         <Card className="lg:col-span-3">
           <div className="flex items-center justify-between mb-4 gap-3">
-            <h2 className="font-display text-lg font-bold text-slate-900 flex items-center gap-2 min-w-0"><Clock className="h-5 w-5 text-violet-600 shrink-0" /><span className="truncate">{t('availability')}</span></h2>
+            <h2 className="font-display text-lg font-bold text-slate-900 flex items-center gap-2 min-w-0"><Clock className="h-5 w-5 text-brand-600 shrink-0" /><span className="truncate">{t('availability')}</span></h2>
             <button onClick={() => saveCalendar()} disabled={savingCal}
-              className="inline-flex items-center gap-1.5 text-sm font-semibold text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:opacity-90 rounded-full px-4 py-1.5 transition-opacity disabled:opacity-60 shrink-0">
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-white bg-gradient-to-r from-brand-600 to-brand-600 hover:opacity-90 rounded-full px-4 py-1.5 transition-opacity disabled:opacity-60 shrink-0">
               {savingCal ? <Loader2 className="h-4 w-4 animate-spin" /> : savedCal ? <Check className="h-4 w-4" /> : null}{savedCal ? t('saved') : t('save')}
             </button>
           </div>
@@ -402,14 +402,14 @@ export function SchedulingDashboard({ initial }: { initial: any }) {
                       {windows.map((win, i) => (
                         <div key={i} className="flex items-center gap-2">
                           <input type="time" value={win[0]} onChange={(e) => { const n = [...windows] as [string, string][]; n[i] = [e.target.value, n[i][1]]; setDayWindows(d.key, n); }}
-                            className="flex-1 min-w-0 rounded-lg border border-slate-200 px-2 py-1.5 text-sm focus:ring-2 focus:ring-violet-300 outline-none" />
+                            className="flex-1 min-w-0 rounded-lg border border-slate-200 px-2 py-1.5 text-sm focus:ring-2 focus:ring-brand-300 outline-none" />
                           <span className="text-slate-400 shrink-0">–</span>
                           <input type="time" value={win[1]} onChange={(e) => { const n = [...windows] as [string, string][]; n[i] = [n[i][0], e.target.value]; setDayWindows(d.key, n); }}
-                            className="flex-1 min-w-0 rounded-lg border border-slate-200 px-2 py-1.5 text-sm focus:ring-2 focus:ring-violet-300 outline-none" />
+                            className="flex-1 min-w-0 rounded-lg border border-slate-200 px-2 py-1.5 text-sm focus:ring-2 focus:ring-brand-300 outline-none" />
                           <button onClick={() => setDayWindows(d.key, windows.filter((_, j) => j !== i))} className="shrink-0 p-1 text-slate-300 hover:text-rose-500"><X className="h-4 w-4" /></button>
                         </div>
                       ))}
-                      <button onClick={() => setDayWindows(d.key, [...windows, ['09:00', '17:00']])} className="inline-flex items-center gap-1 text-xs font-medium text-violet-600 hover:text-violet-800">
+                      <button onClick={() => setDayWindows(d.key, [...windows, ['09:00', '17:00']])} className="inline-flex items-center gap-1 text-xs font-medium text-brand-600 hover:text-brand-800">
                         <Plus className="h-3.5 w-3.5" />{t('add_window')}
                       </button>
                     </div>
@@ -422,21 +422,21 @@ export function SchedulingDashboard({ initial }: { initial: any }) {
           <div className="grid grid-cols-2 gap-3 mt-5 pt-5 border-t border-slate-100">
             <label className="text-xs font-medium text-slate-500 col-span-2 sm:col-span-1">
               <span className="flex items-center gap-1.5 mb-1"><Globe2 className="h-3.5 w-3.5" />{t('timezone')}</span>
-              <select value={tz} onChange={(e) => setTz(e.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 focus:ring-2 focus:ring-violet-300 outline-none">
+              <select value={tz} onChange={(e) => setTz(e.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 focus:ring-2 focus:ring-brand-300 outline-none">
                 {(TZS.includes(tz) ? TZS : [tz, ...TZS]).map((z) => <option key={z} value={z}>{z}</option>)}
               </select>
             </label>
             <label className="text-xs font-medium text-slate-500">
               <span className="block mb-1 leading-tight">{t('buffer')}</span>
-              <input type="number" min={0} value={buffer} onChange={(e) => setBuffer(+e.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-violet-300 outline-none" />
+              <input type="number" min={0} value={buffer} onChange={(e) => setBuffer(+e.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-300 outline-none" />
             </label>
             <label className="text-xs font-medium text-slate-500">
               <span className="block mb-1 leading-tight">{t('min_notice')}</span>
-              <input type="number" min={0} value={minNotice} onChange={(e) => setMinNotice(+e.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-violet-300 outline-none" />
+              <input type="number" min={0} value={minNotice} onChange={(e) => setMinNotice(+e.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-300 outline-none" />
             </label>
             <label className="text-xs font-medium text-slate-500">
               <span className="block mb-1 leading-tight">{t('max_advance')}</span>
-              <input type="number" min={1} value={maxAdvance} onChange={(e) => setMaxAdvance(+e.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-violet-300 outline-none" />
+              <input type="number" min={1} value={maxAdvance} onChange={(e) => setMaxAdvance(+e.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-300 outline-none" />
             </label>
           </div>
         </Card>
@@ -444,9 +444,9 @@ export function SchedulingDashboard({ initial }: { initial: any }) {
         <div className="lg:col-span-2 space-y-6">
           <Card>
             <div className="flex items-center justify-between mb-4 gap-3">
-              <h2 className="font-display text-lg font-bold text-slate-900 flex items-center gap-2 min-w-0"><Video className="h-5 w-5 text-violet-600 shrink-0" /><span className="truncate">{t('session_types')}</span></h2>
+              <h2 className="font-display text-lg font-bold text-slate-900 flex items-center gap-2 min-w-0"><Video className="h-5 w-5 text-brand-600 shrink-0" /><span className="truncate">{t('session_types')}</span></h2>
               <button onClick={() => setEditing({ purpose: 'mentoring', location_type: 'video', visible: true, duration_min: 30, price_cents: 0 })}
-                className="inline-flex items-center gap-1.5 text-sm font-semibold text-violet-700 bg-violet-50 hover:bg-violet-100 rounded-full px-3 py-1.5 transition-colors shrink-0">
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 bg-brand-50 hover:bg-brand-100 rounded-full px-3 py-1.5 transition-colors shrink-0">
                 <Plus className="h-4 w-4" />{t('new_type')}
               </button>
             </div>
@@ -457,7 +457,7 @@ export function SchedulingDashboard({ initial }: { initial: any }) {
                 {links.map((l) => {
                   const Icon = LOC_ICON[l.location_type] || Video;
                   return (
-                    <div key={l.id} className="rounded-2xl border border-slate-100 p-3 hover:border-violet-200 transition-colors">
+                    <div key={l.id} className="rounded-2xl border border-slate-100 p-3 hover:border-brand-200 transition-colors">
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
                           <div className="font-semibold text-slate-900 text-sm truncate">{l.title}</div>
@@ -465,7 +465,7 @@ export function SchedulingDashboard({ initial }: { initial: any }) {
                             <span className="inline-flex items-center gap-1"><Hourglass className="h-3 w-3" />{l.duration_min}m</span>
                             <span className="inline-flex items-center gap-1"><Icon className="h-3 w-3" />{LOC_LABEL[l.location_type]?.[locale] || l.location_type}</span>
                             <span className={l.price_cents > 0 ? 'text-slate-700 font-semibold' : 'text-emerald-700 font-semibold'}>{l.price_cents > 0 ? `${(l.price_cents / 100).toFixed(2)} €` : t('free')}</span>
-                            <span className="text-violet-600">{PURPOSE_LABEL[l.purpose]?.[locale] || l.purpose}</span>
+                            <span className="text-brand-600">{PURPOSE_LABEL[l.purpose]?.[locale] || l.purpose}</span>
                           </div>
                           <div className="mt-1.5">
                             <span className={cx('text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full inline-flex items-center gap-1', l.visible ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500')}>
@@ -474,7 +474,7 @@ export function SchedulingDashboard({ initial }: { initial: any }) {
                           </div>
                         </div>
                         <div className="flex items-center gap-1 shrink-0">
-                          <button onClick={() => setEditing({ ...l })} className="p-1.5 text-slate-400 hover:text-violet-600 rounded-lg hover:bg-violet-50"><Pencil className="h-4 w-4" /></button>
+                          <button onClick={() => setEditing({ ...l })} className="p-1.5 text-slate-400 hover:text-brand-600 rounded-lg hover:bg-brand-50"><Pencil className="h-4 w-4" /></button>
                           <button onClick={() => deleteLink(l.id)} className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50"><Trash2 className="h-4 w-4" /></button>
                         </div>
                       </div>
@@ -486,13 +486,13 @@ export function SchedulingDashboard({ initial }: { initial: any }) {
           </Card>
 
           <Card>
-            <h2 className="font-display text-lg font-bold text-slate-900 flex items-center gap-2 mb-3"><CalendarDays className="h-5 w-5 text-violet-600 shrink-0" />{t('bookings')}</h2>
+            <h2 className="font-display text-lg font-bold text-slate-900 flex items-center gap-2 mb-3"><CalendarDays className="h-5 w-5 text-brand-600 shrink-0" />{t('bookings')}</h2>
             <div className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">{t('upcoming')}</div>
             {upcoming.length === 0 ? <p className="text-sm text-slate-400">{t('no_bookings')}</p> : (
               <div className="space-y-2">
                 {upcoming.map((b) => (
                   <div key={b.id} className="flex items-center gap-3 rounded-2xl border border-slate-100 p-3">
-                    <div className="h-9 w-9 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 text-white text-sm font-bold flex items-center justify-center shrink-0">{(b.guest_name || '?')[0]?.toUpperCase()}</div>
+                    <div className="h-9 w-9 rounded-full bg-gradient-to-br from-brand-500 to-brand-600 text-white text-sm font-bold flex items-center justify-center shrink-0">{(b.guest_name || '?')[0]?.toUpperCase()}</div>
                     <div className="min-w-0 flex-1">
                       <div className="text-sm font-semibold text-slate-900 truncate">{b.guest_name}</div>
                       <div className="text-xs text-slate-500">{new Date(b.scheduled_at).toLocaleString(locale)} · {b.duration_min}m</div>
@@ -526,19 +526,19 @@ export function SchedulingDashboard({ initial }: { initial: any }) {
               <button onClick={() => setEditing(null)} className="text-slate-400 hover:text-slate-700"><X className="h-5 w-5" /></button>
             </div>
             <div className="space-y-3">
-              <Field label={t('ttl')}><input value={editing.title || ''} onChange={(e) => setEditing({ ...editing, title: e.target.value })} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-violet-300 outline-none" /></Field>
-              <Field label={t('slug')}><input value={editing.slug || ''} onChange={(e) => setEditing({ ...editing, slug: e.target.value })} placeholder="mentoria-30min" className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-violet-300 outline-none" /></Field>
-              <Field label={t('desc')}><textarea value={editing.description || ''} onChange={(e) => setEditing({ ...editing, description: e.target.value })} rows={2} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-violet-300 outline-none resize-none" /></Field>
+              <Field label={t('ttl')}><input value={editing.title || ''} onChange={(e) => setEditing({ ...editing, title: e.target.value })} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-300 outline-none" /></Field>
+              <Field label={t('slug')}><input value={editing.slug || ''} onChange={(e) => setEditing({ ...editing, slug: e.target.value })} placeholder="mentoria-30min" className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-300 outline-none" /></Field>
+              <Field label={t('desc')}><textarea value={editing.description || ''} onChange={(e) => setEditing({ ...editing, description: e.target.value })} rows={2} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-300 outline-none resize-none" /></Field>
               <div className="grid grid-cols-2 gap-3">
-                <Field label={t('duration')}><input type="number" value={editing.duration_min ?? 30} onChange={(e) => setEditing({ ...editing, duration_min: +e.target.value })} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-violet-300 outline-none" /></Field>
-                <Field label={t('price')}><input type="number" value={editing.price_cents ?? 0} onChange={(e) => setEditing({ ...editing, price_cents: +e.target.value })} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-violet-300 outline-none" /></Field>
+                <Field label={t('duration')}><input type="number" value={editing.duration_min ?? 30} onChange={(e) => setEditing({ ...editing, duration_min: +e.target.value })} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-300 outline-none" /></Field>
+                <Field label={t('price')}><input type="number" value={editing.price_cents ?? 0} onChange={(e) => setEditing({ ...editing, price_cents: +e.target.value })} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-300 outline-none" /></Field>
                 <Field label={t('location')}>
-                  <select value={editing.location_type || 'video'} onChange={(e) => setEditing({ ...editing, location_type: e.target.value })} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-violet-300 outline-none">
+                  <select value={editing.location_type || 'video'} onChange={(e) => setEditing({ ...editing, location_type: e.target.value })} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-300 outline-none">
                     {LOCATIONS.map((l) => <option key={l} value={l}>{LOC_LABEL[l][locale]}</option>)}
                   </select>
                 </Field>
                 <Field label={t('purpose')}>
-                  <select value={editing.purpose || 'mentoring'} onChange={(e) => setEditing({ ...editing, purpose: e.target.value })} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-violet-300 outline-none">
+                  <select value={editing.purpose || 'mentoring'} onChange={(e) => setEditing({ ...editing, purpose: e.target.value })} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-300 outline-none">
                     {PURPOSES.map((p) => <option key={p} value={p}>{PURPOSE_LABEL[p][locale]}</option>)}
                   </select>
                 </Field>
@@ -547,7 +547,7 @@ export function SchedulingDashboard({ initial }: { initial: any }) {
             </div>
             <div className="flex items-center justify-end gap-2 mt-5">
               <button onClick={() => setEditing(null)} className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900">{t('cancel')}</button>
-              <button onClick={() => saveLink(editing)} disabled={busy} className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-violet-600 to-indigo-600 rounded-full hover:opacity-90 disabled:opacity-60">
+              <button onClick={() => saveLink(editing)} disabled={busy} className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-brand-600 to-brand-600 rounded-full hover:opacity-90 disabled:opacity-60">
                 {busy && <Loader2 className="h-4 w-4 animate-spin" />}{t('save')}
               </button>
             </div>

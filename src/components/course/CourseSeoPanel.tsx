@@ -57,7 +57,7 @@ export function CourseSeoPanel({ courseId }: { courseId: string }) {
         <input value={cur.meta_title} onChange={(e) => setCur({ meta_title: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" />
         <label className="block text-xs font-medium text-slate-500 mt-2">{t('seo.meta_desc')}</label>
         <textarea value={cur.meta_description} onChange={(e) => setCur({ meta_description: e.target.value })} rows={3} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm resize-none" />
-        <button onClick={save} disabled={saving} className="mt-1 inline-flex items-center gap-1.5 rounded-lg bg-violet-600 text-white text-sm font-medium px-4 py-2 disabled:opacity-50 hover:bg-violet-700">{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}{t('seo.save')}</button>
+        <button onClick={save} disabled={saving} className="mt-1 inline-flex items-center gap-1.5 rounded-lg bg-brand-600 text-white text-sm font-medium px-4 py-2 disabled:opacity-50 hover:bg-brand-700">{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}{t('seo.save')}</button>
       </div>
       <p className="text-[11px] text-slate-400">{t('course_ws.seo_hint')}</p>
     </div>

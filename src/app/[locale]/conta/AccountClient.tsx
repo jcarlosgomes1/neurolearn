@@ -156,7 +156,7 @@ export function AccountClient({ initialData, initialLocale }: Props) {
         <button
           onClick={save}
           disabled={saving}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-brand-600 to-violet-600 text-white text-sm font-semibold hover:opacity-90 disabled:opacity-50 transition-opacity shadow-sm"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-brand-600 to-brand-600 text-white text-sm font-semibold hover:opacity-90 disabled:opacity-50 transition-opacity shadow-sm"
         >
           <Save className="h-4 w-4" />
           {saving ? '…' : t('account.save')}

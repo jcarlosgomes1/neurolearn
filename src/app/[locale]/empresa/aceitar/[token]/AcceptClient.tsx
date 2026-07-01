@@ -38,12 +38,12 @@ export function AcceptClient({ token, invitation, userEmail, mismatch }: {
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
-      <div className="bg-violet-50 border border-violet-200 rounded-lg p-4 text-center">
-        <Building2 className="h-8 w-8 text-violet-600 mx-auto mb-2" />
+      <div className="bg-brand-50 border border-brand-200 rounded-lg p-4 text-center">
+        <Building2 className="h-8 w-8 text-brand-600 mx-auto mb-2" />
         <p className="text-sm text-slate-600">{t('org.acc.invited_to')}</p>
         <h2 className="font-bold text-lg text-slate-900 mt-0.5">{invitation.org_name}</h2>
         <p className="text-xs text-slate-500 mt-1">
-          {t('org.acc.as')} <span className="font-semibold text-violet-700">{invitation.role}</span>
+          {t('org.acc.as')} <span className="font-semibold text-brand-700">{invitation.role}</span>
         </p>
       </div>
       {mismatch && (
@@ -55,7 +55,7 @@ export function AcceptClient({ token, invitation, userEmail, mismatch }: {
         </div>
       )}
       <button onClick={accept} disabled={busy || mismatch}
-        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-br from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-semibold rounded-lg shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-br from-brand-600 to-brand-600 hover:from-brand-700 hover:to-brand-700 text-white font-semibold rounded-lg shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
         {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
         {t('org.acc.accept_btn')}
       </button>

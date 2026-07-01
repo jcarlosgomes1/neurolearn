@@ -15,7 +15,7 @@ const STATUS: Record<string, { labelKey: string; cls: string; icon: any }> = {
   failed: { labelKey: 'org.cc.st_failed', cls: 'bg-rose-50 text-rose-700 border-rose-200', icon: AlertCircle },
 };
 const PROP_STATUS: Record<string, { labelKey: string; cls: string }> = {
-  pending: { labelKey: 'org.cc.ps_pending', cls: 'bg-violet-50 text-violet-700' },
+  pending: { labelKey: 'org.cc.ps_pending', cls: 'bg-brand-50 text-brand-700' },
   processing: { labelKey: 'org.cc.ps_processing', cls: 'bg-blue-50 text-blue-700' },
   approved: { labelKey: 'org.cc.ps_approved', cls: 'bg-emerald-50 text-emerald-700' },
   completed: { labelKey: 'org.cc.ps_completed', cls: 'bg-emerald-100 text-emerald-800' },
@@ -160,16 +160,16 @@ export function ConteudoClient({ orgs, activeOrgId, content, proposals }: {
       </div>
 
       {selected.size > 0 && (
-        <div className="bg-white border border-violet-200 rounded-xl p-3 flex items-center justify-between shadow-sm sticky top-4 z-10">
+        <div className="bg-white border border-brand-200 rounded-xl p-3 flex items-center justify-between shadow-sm sticky top-4 z-10">
           <div className="text-sm">
-            <span className="font-semibold text-violet-700">{t('org.cc.selected_count', { count: selected.size })}</span>
+            <span className="font-semibold text-brand-700">{t('org.cc.selected_count', { count: selected.size })}</span>
           </div>
           <div className="flex items-center gap-2">
             <button onClick={() => setSelected(new Set())} className="text-xs text-slate-500 hover:text-slate-900 px-2">{t('org.cnt.clear')}</button>
             <button
               onClick={createProposal}
               disabled={busy}
-              className="inline-flex items-center gap-1.5 px-4 py-2 bg-gradient-to-br from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm disabled:opacity-50">
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-gradient-to-br from-brand-600 to-brand-600 hover:from-brand-700 hover:to-brand-700 text-white text-sm font-semibold rounded-lg shadow-sm disabled:opacity-50">
               <Sparkles className="h-3.5 w-3.5" />
               {busy ? t('org.cc.creating') : t('org.cc.propose_btn')}
             </button>
@@ -192,13 +192,13 @@ export function ConteudoClient({ orgs, activeOrgId, content, proposals }: {
               const SIcon = st.icon;
               const isSel = selected.has(c.id);
               return (
-                <div key={c.id} className={`p-3 flex items-center gap-3 group ${isSel ? 'bg-violet-50/50' : 'hover:bg-slate-50/60'}`}>
+                <div key={c.id} className={`p-3 flex items-center gap-3 group ${isSel ? 'bg-brand-50/50' : 'hover:bg-slate-50/60'}`}>
                   <input
                     type="checkbox"
                     checked={isSel}
                     onChange={() => toggleSel(c.id)}
                     disabled={c.extraction_status !== 'completed'}
-                    className="h-4 w-4 rounded text-violet-600 disabled:opacity-30" />
+                    className="h-4 w-4 rounded text-brand-600 disabled:opacity-30" />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-sm font-medium text-slate-900 truncate">{c.original_name}</span>
@@ -228,7 +228,7 @@ export function ConteudoClient({ orgs, activeOrgId, content, proposals }: {
       {proposals.length > 0 && (
         <section>
           <h2 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-violet-500" /> {t('org.cc.props_h', { count: proposals.length })}
+            <Sparkles className="h-4 w-4 text-brand-500" /> {t('org.cc.props_h', { count: proposals.length })}
           </h2>
           <div className="grid sm:grid-cols-2 gap-3">
             {proposals.map((p) => {

@@ -37,7 +37,7 @@ export function NotifPrefsClient({ initial, whatsappEnabled }: { initial: any; w
           <h2 className="font-semibold text-sm text-slate-900">{t('notifs.prefs.channels')}</h2>
         </header>
         <div className="divide-y divide-slate-100">
-          <ChannelRow icon={BellRing} title={t('notifs.prefs.ch_platform_title')} desc={t('notifs.prefs.ch_platform_desc')} enabled={form.channel_platform ?? true} onToggle={(v) => set('channel_platform', v)} accent="from-violet-500 to-indigo-600" />
+          <ChannelRow icon={BellRing} title={t('notifs.prefs.ch_platform_title')} desc={t('notifs.prefs.ch_platform_desc')} enabled={form.channel_platform ?? true} onToggle={(v) => set('channel_platform', v)} accent="from-brand-500 to-brand-600" />
           <ChannelRow icon={Mail} title={t('notifs.prefs.ch_email_title')} desc={t('notifs.prefs.ch_email_desc')} enabled={form.channel_email ?? true} onToggle={(v) => set('channel_email', v)} accent="from-blue-500 to-cyan-600" />
           {whatsappEnabled && (
             <>
@@ -137,7 +137,7 @@ function TypeRow({ title, desc, enabled, onToggle }: { title: string; desc: stri
         <div className="text-sm font-medium text-slate-900">{title}</div>
         <div className="text-xs text-slate-500 mt-0.5">{desc}</div>
       </div>
-      <button onClick={() => onToggle(!enabled)} className={`inline-flex items-center h-5 w-9 rounded-full p-0.5 transition-colors ${enabled ? 'bg-indigo-600' : 'bg-slate-200'}`}>
+      <button onClick={() => onToggle(!enabled)} className={`inline-flex items-center h-5 w-9 rounded-full p-0.5 transition-colors ${enabled ? 'bg-brand-600' : 'bg-slate-200'}`}>
         <span className={`h-4 w-4 bg-white rounded-full shadow-sm transition-transform ${enabled ? 'translate-x-4' : 'translate-x-0'}`} />
       </button>
     </div>

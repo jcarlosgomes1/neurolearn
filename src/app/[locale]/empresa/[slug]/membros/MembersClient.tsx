@@ -21,7 +21,7 @@ interface Invitation {
 
 const ROLE_META: Record<string, { labelKey: string; icon: any; cls: string }> = {
   owner:   { labelKey: 'org.mem.role_owner',   icon: Crown,       cls: 'bg-amber-100 text-amber-700' },
-  admin:   { labelKey: 'org.mem.role_admin',   icon: ShieldCheck, cls: 'bg-violet-100 text-violet-700' },
+  admin:   { labelKey: 'org.mem.role_admin',   icon: ShieldCheck, cls: 'bg-brand-100 text-brand-700' },
   manager: { labelKey: 'org.mem.role_manager', icon: ShieldCheck, cls: 'bg-blue-100 text-blue-700' },
   learner: { labelKey: 'org.mem.role_learner', icon: GraduationCap, cls: 'bg-emerald-100 text-emerald-700' },
 };
@@ -118,14 +118,14 @@ export function MembersClient({ orgId, orgSlug, seatsTotal, seatsUsed, plan, cur
   return (
     <div className="space-y-6">
       {/* Seats summary */}
-      <div className="bg-gradient-to-br from-violet-50 via-indigo-50 to-blue-50 border border-violet-200 rounded-2xl p-4 flex items-center justify-between flex-wrap gap-3">
+      <div className="bg-gradient-to-br from-brand-50 via-brand-50 to-blue-50 border border-brand-200 rounded-2xl p-4 flex items-center justify-between flex-wrap gap-3">
         <div>
-          <div className="text-[10px] uppercase tracking-wider font-bold text-violet-600">{t('org.mem.plan_label', { plan })}</div>
+          <div className="text-[10px] uppercase tracking-wider font-bold text-brand-600">{t('org.mem.plan_label', { plan })}</div>
           <div className="font-semibold text-sm text-slate-900">{t('org.mem.seats_summary', { used: seatsUsed, total: seatsTotalLabel, avail: seatsAvailLabel })}</div>
         </div>
         {!inviting && (
           <button onClick={() => setInviting(true)}
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-gradient-to-br from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm">
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-gradient-to-br from-brand-600 to-brand-600 hover:from-brand-700 hover:to-brand-700 text-white text-sm font-semibold rounded-lg shadow-sm">
             <UserPlus className="h-4 w-4" /> {t('org.mem.invite_btn')}
           </button>
         )}
@@ -133,7 +133,7 @@ export function MembersClient({ orgId, orgSlug, seatsTotal, seatsUsed, plan, cur
 
       {/* Invite form */}
       {inviting && (
-        <div className="bg-white border border-violet-200 rounded-2xl p-5 space-y-3">
+        <div className="bg-white border border-brand-200 rounded-2xl p-5 space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="font-bold text-slate-900 text-sm">{t('org.mem.new_invite')}</h3>
             <button onClick={() => setInviting(false)} className="p-1 hover:bg-slate-100 rounded"><X className="h-4 w-4" /></button>
@@ -144,20 +144,20 @@ export function MembersClient({ orgId, orgSlug, seatsTotal, seatsUsed, plan, cur
               <div className="relative">
                 <Mail className="h-4 w-4 absolute left-3 top-2.5 text-slate-400" />
                 <input type="email" value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} placeholder={t('org.mem.email_ph')}
-                  className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:border-violet-500 outline-none" />
+                  className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:border-brand-500 outline-none" />
               </div>
             </div>
             <div>
               <label className="text-[10px] uppercase font-bold text-slate-500 mb-1 block">{t('org.mem.role_label')}</label>
               <select value={form.role} onChange={(e) => setForm((p) => ({ ...p, role: e.target.value }))}
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:border-violet-500 outline-none">
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:border-brand-500 outline-none">
                 <option value="learner">{t('org.mem.role_learner')}</option>
                 <option value="manager">{t('org.mem.role_manager')}</option>
                 <option value="admin">{t('org.mem.role_admin')}</option>
               </select>
             </div>
             <button onClick={invite} disabled={busy}
-              className="inline-flex items-center gap-1.5 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold rounded-lg disabled:opacity-50">
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold rounded-lg disabled:opacity-50">
               {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />} {t('org.mem.send')}
             </button>
           </div>
@@ -225,7 +225,7 @@ export function MembersClient({ orgId, orgSlug, seatsTotal, seatsUsed, plan, cur
                   {m.avatar_url ? (
                     <img src={m.avatar_url} alt="" className="h-10 w-10 rounded-full object-cover flex-shrink-0" />
                   ) : (
-                    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-violet-400 to-indigo-600 text-white flex items-center justify-center font-bold text-sm flex-shrink-0">
+                    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 text-white flex items-center justify-center font-bold text-sm flex-shrink-0">
                       {(m.name || m.email || '?').charAt(0).toUpperCase()}
                     </div>
                   )}

@@ -207,7 +207,7 @@ export function ContentList({ slug, orgId, role, initial }: { slug: string; orgI
               </select>
             </div>
             <button type="button" onClick={handlePropose} disabled={isProposing}
-              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-r from-brand-600 to-violet-600 hover:opacity-90 text-white text-sm font-semibold disabled:opacity-50">
+              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-r from-brand-600 to-brand-600 hover:opacity-90 text-white text-sm font-semibold disabled:opacity-50">
               {isProposing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
               {t('org.cl.propose_btn')}
             </button>
@@ -311,7 +311,7 @@ function ContentCard({ item, slug, canArchive, canSelect, isSelected, onToggleSe
               <div>
                 <div className="text-[10px] uppercase font-bold tracking-wider text-slate-500 mb-1.5">{t('org.cl.topics')}</div>
                 <div className="flex flex-wrap gap-1.5">
-                  {item.detected_topics.map((topic, i) => (<span key={i} className="text-xs bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded">{topic}</span>))}
+                  {item.detected_topics.map((topic, i) => (<span key={i} className="text-xs bg-brand-50 text-brand-700 px-2 py-0.5 rounded">{topic}</span>))}
                 </div>
               </div>
             )}

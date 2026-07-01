@@ -61,7 +61,7 @@ function ProposalDetail({ d, t }: { d: Detail; t: ReturnType<typeof useTranslati
       {d.kind === 'course' && (
         <>
           {d.description && <p className="text-xs text-slate-600 leading-relaxed">{d.description}</p>}
-          {d.path_title && <Row label={t('rail.d.path')}><span className="inline-flex items-center gap-1"><Route className="w-3 h-3 text-indigo-500 shrink-0" />{d.path_title}{d.position ? ` · #${d.position}` : ''}</span></Row>}
+          {d.path_title && <Row label={t('rail.d.path')}><span className="inline-flex items-center gap-1"><Route className="w-3 h-3 text-brand-500 shrink-0" />{d.path_title}{d.position ? ` · #${d.position}` : ''}</span></Row>}
           {d.level && <Row label={t('rail.d.level')}>{d.level}</Row>}
           {topics.length > 0 && <Row label={t('rail.d.topics')}><Pills items={topics} /></Row>}
         </>
@@ -150,14 +150,14 @@ export function AgentSuggestionsRail({ surface = 'all', limit = 8, showWhenEmpty
   const surfaceLabel = (s: string) => t(`rail.surface.${KNOWN.includes(s) ? s : 'other'}` as never);
 
   return (
-    <div className="mb-6 rounded-2xl border border-violet-200/70 bg-gradient-to-br from-violet-50/70 to-indigo-50/40 p-3 sm:p-4">
+    <div className="mb-6 rounded-2xl border border-brand-200/70 bg-gradient-to-br from-brand-50/70 to-brand-50/40 p-3 sm:p-4">
       <div className="flex items-center gap-2 mb-3">
-        <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-violet-100 text-violet-600 shrink-0"><Sparkles className="w-4 h-4" /></span>
+        <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-brand-100 text-brand-600 shrink-0"><Sparkles className="w-4 h-4" /></span>
         <div className="min-w-0">
           <p className="text-sm font-semibold text-slate-900 leading-tight">{t('rail.title')}</p>
           <p className="text-xs text-slate-500 leading-tight">{t('rail.subtitle')}</p>
         </div>
-        <span className="ml-auto shrink-0 text-[11px] font-medium text-violet-700 bg-white/70 rounded-full px-2 py-0.5">{items.length} {t('rail.pending')}</span>
+        <span className="ml-auto shrink-0 text-[11px] font-medium text-brand-700 bg-white/70 rounded-full px-2 py-0.5">{items.length} {t('rail.pending')}</span>
       </div>
       {items.length === 0 ? (
         <p className="text-sm text-slate-500 px-1 py-2">{t('rail.empty')}</p>
@@ -170,12 +170,12 @@ export function AgentSuggestionsRail({ surface = 'all', limit = 8, showWhenEmpty
               <li key={s.id} className="rounded-xl border border-slate-200/70 bg-white/90 p-3 sm:p-3.5 shadow-sm">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0 flex flex-wrap items-center gap-1.5">
-                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-violet-700 bg-violet-50 border border-violet-100 rounded px-1.5 py-0.5">
+                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-brand-700 bg-brand-50 border border-brand-100 rounded px-1.5 py-0.5">
                       <Bot className="w-3 h-3 shrink-0" /><span className="capitalize truncate max-w-[140px]">{s.agent_name}</span>
                     </span>
                     <span className="text-[10px] uppercase tracking-wide font-medium text-slate-500 bg-slate-100 rounded px-1.5 py-0.5">{surfaceLabel(s.surface)}</span>
                   </div>
-                  <button onClick={() => setOpenId(isOpen ? null : s.id)} aria-expanded={isOpen} aria-label={t('rail.details')} className="shrink-0 -mt-1 -mr-1 inline-flex items-center gap-1 text-[11px] font-medium text-violet-700 hover:text-violet-900 px-1.5 py-1 rounded-lg hover:bg-violet-50">
+                  <button onClick={() => setOpenId(isOpen ? null : s.id)} aria-expanded={isOpen} aria-label={t('rail.details')} className="shrink-0 -mt-1 -mr-1 inline-flex items-center gap-1 text-[11px] font-medium text-brand-700 hover:text-brand-900 px-1.5 py-1 rounded-lg hover:bg-brand-50">
                     <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
                   </button>
                 </div>
@@ -194,7 +194,7 @@ export function AgentSuggestionsRail({ surface = 'all', limit = 8, showWhenEmpty
 
                 <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
                   {href ? (
-                    <Link href={href as any} className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-500 hover:text-violet-700">
+                    <Link href={href as any} className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-500 hover:text-brand-700">
                       <ExternalLink className="w-3.5 h-3.5" />{t('rail.open')}
                     </Link>
                   ) : <span />}

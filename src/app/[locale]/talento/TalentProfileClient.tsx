@@ -130,7 +130,7 @@ export function TalentProfileClient({ initial }: { initial: { ok: boolean; profi
       </div>
       
       <button onClick={handleSave} disabled={isPending}
-        className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-gradient-to-r from-brand-600 to-violet-600 hover:opacity-90 text-white font-semibold disabled:opacity-50">
+        className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-gradient-to-r from-brand-600 to-brand-600 hover:opacity-90 text-white font-semibold disabled:opacity-50">
         {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
         {t('tal.save_profile')}
       </button>

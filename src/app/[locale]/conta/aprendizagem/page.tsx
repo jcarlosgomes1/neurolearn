@@ -39,7 +39,7 @@ export default async function MeuAprendizagemPage({ params }: { params: Promise<
         actions={d.next_lesson ? (
           <Link
             href={`/curso/${d.next_lesson.course_id}`}
-            className="inline-flex items-center gap-2 bg-violet-600 text-white hover:bg-violet-700 px-5 py-2.5 rounded-xl font-semibold text-sm transition-colors">
+            className="inline-flex items-center gap-2 bg-brand-600 text-white hover:bg-brand-700 px-5 py-2.5 rounded-xl font-semibold text-sm transition-colors">
             <PlayCircle className="h-4 w-4" /> {t('learn.continue_course')}
             <ArrowRight className="h-4 w-4" />
           </Link>
@@ -62,7 +62,7 @@ export default async function MeuAprendizagemPage({ params }: { params: Promise<
       <section>
         <div className="flex items-baseline justify-between mb-4">
           <h2 className="text-lg font-bold text-slate-900 tracking-tight">{t('learn.in_progress')}</h2>
-          <Link href={'/learn' as any} className="text-xs text-violet-600 hover:underline font-medium">
+          <Link href={'/learn' as any} className="text-xs text-brand-600 hover:underline font-medium">
             {t('learn.all_courses')} →
           </Link>
         </div>
@@ -72,8 +72,8 @@ export default async function MeuAprendizagemPage({ params }: { params: Promise<
               <Link
                 key={c.id}
                 href={`/curso/${c.id}`}
-                className="group bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-xl hover:border-violet-200 transition-all hover:-translate-y-0.5">
-                <div className="h-32 bg-gradient-to-br from-violet-500 to-indigo-600 relative overflow-hidden">
+                className="group bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-xl hover:border-brand-200 transition-all hover:-translate-y-0.5">
+                <div className="h-32 bg-gradient-to-br from-brand-500 to-brand-600 relative overflow-hidden">
                   {c.cover_url && (
                     <img src={c.cover_url} alt="" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform" />
                   )}
@@ -87,7 +87,7 @@ export default async function MeuAprendizagemPage({ params }: { params: Promise<
                   </div>
                   <div className="mt-2 h-1.5 bg-slate-100 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-violet-500 to-indigo-500 transition-all duration-500"
+                      className="h-full bg-gradient-to-r from-brand-500 to-brand-500 transition-all duration-500"
                       style={{ width: `${Math.min(100, Number(c.progress_pct || 0))}%` }}
                     />
                   </div>
@@ -108,9 +108,9 @@ export default async function MeuAprendizagemPage({ params }: { params: Promise<
       <section>
         <div className="flex items-baseline justify-between mb-4">
           <h2 className="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2">
-            <GraduationCap className="h-5 w-5 text-indigo-500" /> {t('learn.paths_title')}
+            <GraduationCap className="h-5 w-5 text-brand-500" /> {t('learn.paths_title')}
           </h2>
-          <Link href={'/aprender/percursos' as any} className="text-xs text-violet-600 hover:underline font-medium">
+          <Link href={'/aprender/percursos' as any} className="text-xs text-brand-600 hover:underline font-medium">
             {t('learn.explore_paths')} →
           </Link>
         </div>
@@ -120,12 +120,12 @@ export default async function MeuAprendizagemPage({ params }: { params: Promise<
               <Link
                 key={p.id}
                 href={`/aprender/percursos/${p.slug}`}
-                className="flex items-center gap-4 bg-white border border-slate-200 hover:border-indigo-200 rounded-xl p-4 group transition-all">
-                <div className="text-3xl bg-gradient-to-br from-indigo-100 to-violet-100 h-14 w-14 rounded-xl flex items-center justify-center flex-shrink-0">
+                className="flex items-center gap-4 bg-white border border-slate-200 hover:border-brand-200 rounded-xl p-4 group transition-all">
+                <div className="text-3xl bg-gradient-to-br from-brand-100 to-brand-100 h-14 w-14 rounded-xl flex items-center justify-center flex-shrink-0">
                   {p.emoji || '🎓'}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-sm text-slate-900 truncate group-hover:text-indigo-700 transition-colors">{p.title}</div>
+                  <div className="font-semibold text-sm text-slate-900 truncate group-hover:text-brand-700 transition-colors">{p.title}</div>
                   <div className="text-xs text-slate-500 mt-1 flex items-center gap-3">
                     <span>{t('learn.pct_complete', { pct: Math.round(Number(p.progress_pct || 0)) })}</span>
                     <span>·</span>
@@ -133,12 +133,12 @@ export default async function MeuAprendizagemPage({ params }: { params: Promise<
                   </div>
                   <div className="mt-2 h-1 bg-slate-100 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-indigo-500 to-violet-500"
+                      className="h-full bg-gradient-to-r from-brand-500 to-brand-500"
                       style={{ width: `${Math.min(100, Number(p.progress_pct || 0))}%` }}
                     />
                   </div>
                 </div>
-                <ChevronRight className="h-5 w-5 text-slate-300 group-hover:text-indigo-500 transition-colors flex-shrink-0" />
+                <ChevronRight className="h-5 w-5 text-slate-300 group-hover:text-brand-500 transition-colors flex-shrink-0" />
               </Link>
             ))}
           </div>

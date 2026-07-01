@@ -31,7 +31,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
         <AccountTile href={`/conta/perfil`} icon={<User className="h-5 w-5" />} title={t('account.home.profile_title')} desc={t('account.home.profile_desc')} color="text-brand-600" />
         <AccountTile href={`/conta/seguranca`} icon={<Shield className="h-5 w-5" />} title={t('account.home.security_title')} desc={t('account.home.security_desc')} color="text-emerald-600" />
         <AccountTile href={`/conta/notificacoes`} icon={<Bell className="h-5 w-5" />} title={t('account.home.notifs_title')} desc={t('account.home.notifs_unread', { n: (unreadCount as number) || 0 })} color="text-amber-600" badge={(unreadCount as number) || 0} />
-        <AccountTile href={`/conta/certificados`} icon={<Award className="h-5 w-5" />} title={t('account.home.certs_title')} desc={t('account.home.certs_desc')} color="text-indigo-600" />
+        <AccountTile href={`/conta/certificados`} icon={<Award className="h-5 w-5" />} title={t('account.home.certs_title')} desc={t('account.home.certs_desc')} color="text-brand-600" />
         <AccountTile href={`/conta/privacidade`} icon={<FileText className="h-5 w-5" />} title={t('account.home.privacy_title')} desc={t('account.home.privacy_desc')} color="text-rose-600" />
         {profile?.role === 'admin' && (
           <AccountTile href={`/conta/subscription`} icon={<CreditCard className="h-5 w-5" />} title={t('account.home.admin_title')} desc={t('account.home.admin_desc')} color="text-slate-700" />

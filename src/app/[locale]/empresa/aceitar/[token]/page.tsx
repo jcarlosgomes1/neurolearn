@@ -52,7 +52,7 @@ export default async function AcceptPage({ params }: { params: Promise<{ token: 
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
             <p className="text-sm text-slate-600 leading-relaxed">
               Foste convidado(a) para fazer parte de <strong className="text-slate-900">{invitation.org_name}</strong> como{' '}
-              <span className="font-semibold text-violet-700">{invitation.role}</span>.
+              <span className="font-semibold text-brand-700">{invitation.role}</span>.
             </p>
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-start gap-2">
               <AlertTriangle className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
@@ -62,7 +62,7 @@ export default async function AcceptPage({ params }: { params: Promise<{ token: 
             </div>
             <div className="grid gap-2">
               <Link href={{ pathname: '/auth/login', query: { next: `/empresa/aceitar/${token}`, email: invitation.email } } as any}
-                className="block text-center px-4 py-2.5 bg-gradient-to-br from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-semibold rounded-lg shadow-sm">
+                className="block text-center px-4 py-2.5 bg-gradient-to-br from-brand-600 to-brand-600 hover:from-brand-700 hover:to-brand-700 text-white font-semibold rounded-lg shadow-sm">
                 Iniciar sessão e aceitar
               </Link>
               <Link href={{ pathname: '/auth/register', query: { next: `/empresa/aceitar/${token}`, email: invitation.email } } as any}

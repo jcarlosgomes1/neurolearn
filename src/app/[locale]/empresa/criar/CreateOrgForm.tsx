@@ -57,7 +57,7 @@ export function CreateOrgForm({ countries, locale }: { countries: Array<{ code: 
         </select>
       </div>
       <button type="submit" disabled={loading || !name.trim()}
-        className="w-full px-6 py-3 rounded-lg bg-gradient-to-r from-brand-600 to-violet-600 hover:opacity-90 disabled:opacity-50 text-white font-semibold transition">
+        className="w-full px-6 py-3 rounded-lg bg-gradient-to-r from-brand-600 to-brand-600 hover:opacity-90 disabled:opacity-50 text-white font-semibold transition">
         {loading ? '…' : t('emp.create.submit')}
       </button>
     </form>

@@ -16,7 +16,7 @@ type Org = { org_id: string; name: string; slug: string; role: string; plan: str
 
 const TIER_RING: Record<string, string> = {
   bronze: 'ring-amber-300 bg-amber-50', silver: 'ring-slate-300 bg-slate-50',
-  gold: 'ring-yellow-400 bg-yellow-50', platinum: 'ring-violet-400 bg-violet-50',
+  gold: 'ring-yellow-400 bg-yellow-50', platinum: 'ring-brand-400 bg-brand-50',
 };
 
 export function GamificationPanel() {
@@ -57,7 +57,7 @@ export function GamificationPanel() {
   const lockedCount = badges.length - earned.length;
 
   return (
-    <div className="bg-gradient-to-br from-violet-600 via-indigo-600 to-blue-600 rounded-3xl p-5 sm:p-6 text-white shadow-lg overflow-hidden relative">
+    <div className="bg-gradient-to-br from-brand-600 via-brand-600 to-blue-600 rounded-3xl p-5 sm:p-6 text-white shadow-lg overflow-hidden relative">
       <div className="absolute -top-8 -right-8 w-40 h-40 bg-white/10 rounded-full blur-2xl animate-pulse" />
       <div className="relative">
         <div className="flex items-center justify-between mb-4">
@@ -84,11 +84,11 @@ export function GamificationPanel() {
 
         <div className="flex gap-2 mb-4">
           <button onClick={() => setView('badges')}
-            className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full transition ${view === 'badges' ? 'bg-white text-violet-700' : 'bg-white/15 text-white hover:bg-white/25'}`}>
+            className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full transition ${view === 'badges' ? 'bg-white text-brand-700' : 'bg-white/15 text-white hover:bg-white/25'}`}>
             <Medal className="h-3.5 w-3.5" /> {t('gam.ui.badges')}
           </button>
           <button onClick={() => setView('leaderboard')}
-            className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full transition ${view === 'leaderboard' ? 'bg-white text-violet-700' : 'bg-white/15 text-white hover:bg-white/25'}`}>
+            className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full transition ${view === 'leaderboard' ? 'bg-white text-brand-700' : 'bg-white/15 text-white hover:bg-white/25'}`}>
             <Trophy className="h-3.5 w-3.5" /> {t('gam.ui.leaderboard')}
             {org && <span className="ml-1 inline-flex items-center gap-0.5"><Users className="h-3 w-3" /></span>}
           </button>

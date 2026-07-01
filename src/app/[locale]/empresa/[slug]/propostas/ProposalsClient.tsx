@@ -25,7 +25,7 @@ interface Proposal {
 const STATUS_META: Record<string, { labelKey: string; icon: any; cls: string; ring: string }> = {
   pending:    { labelKey: 'org.pc.st_pending',    icon: Clock,       cls: 'bg-amber-50 text-amber-700 border-amber-200',    ring: 'ring-amber-200' },
   processing: { labelKey: 'org.pc.st_processing', icon: Loader2,     cls: 'bg-blue-50 text-blue-700 border-blue-200',       ring: 'ring-blue-200' },
-  ready:      { labelKey: 'org.pc.st_ready',      icon: Sparkles,    cls: 'bg-violet-50 text-violet-700 border-violet-200', ring: 'ring-violet-300' },
+  ready:      { labelKey: 'org.pc.st_ready',      icon: Sparkles,    cls: 'bg-brand-50 text-brand-700 border-brand-200', ring: 'ring-brand-300' },
   approved:   { labelKey: 'org.pc.st_approved',   icon: CheckCircle, cls: 'bg-emerald-50 text-emerald-700 border-emerald-200', ring: 'ring-emerald-200' },
   rejected:   { labelKey: 'org.pc.st_rejected',   icon: XCircle,     cls: 'bg-slate-50 text-slate-500 border-slate-200',    ring: 'ring-slate-200' },
   failed:     { labelKey: 'org.pc.st_failed',     icon: XCircle,     cls: 'bg-rose-50 text-rose-700 border-rose-200',       ring: 'ring-rose-200' },
@@ -78,11 +78,11 @@ export function ProposalsClient({ orgId, orgSlug, isOrgAdmin, proposals: initial
   if (proposals.length === 0) {
     return (
       <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center">
-        <Sparkles className="h-10 w-10 text-violet-300 mx-auto mb-2" />
+        <Sparkles className="h-10 w-10 text-brand-300 mx-auto mb-2" />
         <p className="text-sm text-slate-600 font-medium">{t('org.pc.empty_h')}</p>
         <p className="text-xs text-slate-500 mt-1 mb-4">{t('org.pc.empty_p')}</p>
         <Link href={`/empresa/${orgSlug}/conteudo`}
-          className="inline-flex items-center gap-1.5 px-4 py-2 bg-gradient-to-br from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm">
+          className="inline-flex items-center gap-1.5 px-4 py-2 bg-gradient-to-br from-brand-600 to-brand-600 hover:from-brand-700 hover:to-brand-700 text-white text-sm font-semibold rounded-lg shadow-sm">
           <FileText className="h-4 w-4" /> {t('org.pc.go_docs')}
         </Link>
       </div>
@@ -132,7 +132,7 @@ export function ProposalsClient({ orgId, orgSlug, isOrgAdmin, proposals: initial
                     <div className="space-y-1.5">
                       {modules.map((m: any, i: number) => (
                         <div key={i} className="flex items-start gap-2 text-xs">
-                          <div className="h-5 w-5 rounded bg-violet-100 text-violet-700 flex items-center justify-center font-bold text-[10px] flex-shrink-0">
+                          <div className="h-5 w-5 rounded bg-brand-100 text-brand-700 flex items-center justify-center font-bold text-[10px] flex-shrink-0">
                             {i + 1}
                           </div>
                           <div className="flex-1 min-w-0">

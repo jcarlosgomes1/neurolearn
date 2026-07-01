@@ -11,7 +11,7 @@ import { Upload, Trash2, FileText, Award, Briefcase, FileSearch, ExternalLink, L
 type Kind = 'cv' | 'certificate' | 'portfolio' | 'sample' | 'other';
 
 const KIND_META: Record<Kind, { labelKey: string; icon: any; accent: string }> = {
-  cv: { labelKey: 'cand.kind_cv', icon: FileText, accent: 'from-violet-500 to-indigo-600' },
+  cv: { labelKey: 'cand.kind_cv', icon: FileText, accent: 'from-brand-500 to-brand-600' },
   certificate: { labelKey: 'cand.kind_certificate', icon: Award, accent: 'from-amber-500 to-orange-600' },
   portfolio: { labelKey: 'cand.kind_portfolio', icon: Briefcase, accent: 'from-emerald-500 to-teal-600' },
   sample: { labelKey: 'cand.kind_sample', icon: FileSearch, accent: 'from-blue-500 to-cyan-600' },
@@ -21,9 +21,9 @@ const KIND_META: Record<Kind, { labelKey: string; icon: any; accent: string }> =
 const STATUS_META: Record<string, { labelKey: string; icon: any; color: string }> = {
   submitted: { labelKey: 'cand.st_submitted', icon: Clock, color: 'bg-amber-50 text-amber-700 border-amber-200' },
   under_review: { labelKey: 'cand.st_under_review', icon: Clock, color: 'bg-blue-50 text-blue-700 border-blue-200' },
-  shortlisted: { labelKey: 'cand.st_shortlisted', icon: CheckCircle, color: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
+  shortlisted: { labelKey: 'cand.st_shortlisted', icon: CheckCircle, color: 'bg-brand-50 text-brand-700 border-brand-200' },
   screening_passed: { labelKey: 'cand.st_screening_passed', icon: CheckCircle, color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-  interview_scheduled: { labelKey: 'cand.st_interview_scheduled', icon: Clock, color: 'bg-violet-50 text-violet-700 border-violet-200' },
+  interview_scheduled: { labelKey: 'cand.st_interview_scheduled', icon: Clock, color: 'bg-brand-50 text-brand-700 border-brand-200' },
   approved: { labelKey: 'cand.st_approved', icon: CheckCircle, color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
   waitlisted: { labelKey: 'cand.st_waitlisted', icon: Clock, color: 'bg-amber-50 text-amber-700 border-amber-200' },
   rejected: { labelKey: 'cand.st_rejected', icon: XCircle, color: 'bg-rose-50 text-rose-700 border-rose-200' },
@@ -191,14 +191,14 @@ function KindBox({ kind, files, busy, onUpload, onDelete, onOpen }: {
             <div key={f.id} className="px-4 py-2.5 flex items-center gap-2 group hover:bg-slate-50/60">
               <div className="flex-1 min-w-0">
                 <button onClick={() => onOpen(f)} className="text-left w-full">
-                  <div className="text-xs font-medium text-slate-900 truncate group-hover:text-violet-700">{f.original_name}</div>
+                  <div className="text-xs font-medium text-slate-900 truncate group-hover:text-brand-700">{f.original_name}</div>
                   <div className="text-[10px] text-slate-400 mt-0.5">
                     {f.file_size_bytes ? formatBytes(f.file_size_bytes) : ''}
                     {f.uploaded_at && <> · {new Date(f.uploaded_at).toLocaleDateString()}</>}
                   </div>
                 </button>
               </div>
-              <button onClick={() => onOpen(f)} className="p-1.5 text-slate-400 hover:text-violet-600 opacity-0 group-hover:opacity-100" title={t('cand.open')}>
+              <button onClick={() => onOpen(f)} className="p-1.5 text-slate-400 hover:text-brand-600 opacity-0 group-hover:opacity-100" title={t('cand.open')}>
                 <ExternalLink className="h-3.5 w-3.5" />
               </button>
               <button onClick={() => onDelete(f)} className="p-1.5 text-slate-400 hover:text-rose-600 opacity-0 group-hover:opacity-100" title={t('cand.delete')}>

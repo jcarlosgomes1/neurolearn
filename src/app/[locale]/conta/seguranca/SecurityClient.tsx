@@ -24,7 +24,7 @@ export function SecurityClient({ userEmail, totpFactors }: { userEmail: string; 
       <PasswordChangeCard />
       <TwoFactorCard initial={totpFactors} />
 
-      <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 text-xs text-indigo-900">
+      <div className="bg-brand-50 border border-brand-200 rounded-xl p-4 text-xs text-brand-900">
         💡 <strong>{t('security.tip_label')}</strong>{t('security.tip_body')}
       </div>
     </div>

@@ -75,13 +75,13 @@ export function CohortsClient({ orgId, cohorts: initial, members }: { orgId: str
     <div className="space-y-4">
       {!creating ? (
         <button onClick={() => setCreating(true)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-violet-600 text-white text-sm font-medium hover:bg-violet-700">
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-600 text-white text-sm font-medium hover:bg-brand-700">
           <Plus className="h-4 w-4" /> {t('empresa.cohorts.new')}
         </button>
       ) : (
         <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-3">
           <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t('empresa.cohorts.name_ph')}
-            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-violet-400 outline-none" />
+            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-brand-400 outline-none" />
           <div className="grid grid-cols-2 gap-3">
             <label className="text-xs text-slate-500">{t('empresa.cohorts.start')}<input type="date" value={start} onChange={(e) => setStart(e.target.value)} className="w-full mt-1 rounded-lg border border-slate-200 px-3 py-2 text-sm" /></label>
             <label className="text-xs text-slate-500">{t('empresa.cohorts.end')}<input type="date" value={end} onChange={(e) => setEnd(e.target.value)} className="w-full mt-1 rounded-lg border border-slate-200 px-3 py-2 text-sm" /></label>
@@ -93,9 +93,9 @@ export function CohortsClient({ orgId, cohorts: initial, members }: { orgId: str
           <div className="rounded-xl border border-slate-200 p-3">
             <label className="flex items-center justify-between gap-2 cursor-pointer">
               <span className="flex items-center gap-2 text-sm font-medium text-slate-800">
-                <Repeat className="h-4 w-4 text-violet-600" /> {t('empresa.cohorts.sync_toggle')}
+                <Repeat className="h-4 w-4 text-brand-600" /> {t('empresa.cohorts.sync_toggle')}
               </span>
-              <input type="checkbox" checked={sync} onChange={(e) => setSync(e.target.checked)} className="h-4 w-4 accent-violet-600" />
+              <input type="checkbox" checked={sync} onChange={(e) => setSync(e.target.checked)} className="h-4 w-4 accent-brand-600" />
             </label>
             <p className="text-xs text-slate-500 mt-1">{t('empresa.cohorts.sync_hint')}</p>
             {sync && (
@@ -105,7 +105,7 @@ export function CohortsClient({ orgId, cohorts: initial, members }: { orgId: str
                   <div className="flex flex-wrap gap-1.5">
                     {WEEKDAYS.map((d) => (
                       <button key={d.key} type="button" onClick={() => toggleDay(d.key)}
-                        className={`text-xs font-medium px-2.5 py-1.5 rounded-lg border transition-colors ${days.includes(d.key) ? 'bg-violet-600 text-white border-violet-600' : 'border-slate-200 text-slate-600 hover:border-violet-300'}`}>
+                        className={`text-xs font-medium px-2.5 py-1.5 rounded-lg border transition-colors ${days.includes(d.key) ? 'bg-brand-600 text-white border-brand-600' : 'border-slate-200 text-slate-600 hover:border-brand-300'}`}>
                         {d.label}
                       </button>
                     ))}
@@ -130,7 +130,7 @@ export function CohortsClient({ orgId, cohorts: initial, members }: { orgId: str
           </div>
           <div className="flex gap-2">
             <button onClick={create} disabled={busy || !name.trim()}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-violet-600 text-white text-sm font-medium disabled:opacity-50">
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-brand-600 text-white text-sm font-medium disabled:opacity-50">
               {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} {t('empresa.cohorts.create')}
             </button>
             <button onClick={() => setCreating(false)} className="px-4 py-2 rounded-lg border border-slate-200 text-sm text-slate-600">{t('empresa.cohorts.cancel')}</button>
@@ -155,7 +155,7 @@ export function CohortsClient({ orgId, cohorts: initial, members }: { orgId: str
               </div>
             </div>
             <button onClick={() => setManageId(manageId === c.id ? null : c.id)}
-              className="inline-flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-lg bg-violet-50 text-violet-700 hover:bg-violet-100">
+              className="inline-flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-lg bg-brand-50 text-brand-700 hover:bg-brand-100">
               <UserPlus className="h-3.5 w-3.5" /> {t('empresa.cohorts.manage')}
             </button>
           </div>
@@ -165,7 +165,7 @@ export function CohortsClient({ orgId, cohorts: initial, members }: { orgId: str
               <div className="flex flex-wrap gap-2">
                 {members.map((m) => (
                   <button key={m.user_id} onClick={() => addMember(c.id, m.user_id)}
-                    className="text-xs px-2.5 py-1 rounded-full border border-slate-200 hover:border-violet-300 hover:bg-violet-50 text-slate-700">
+                    className="text-xs px-2.5 py-1 rounded-full border border-slate-200 hover:border-brand-300 hover:bg-brand-50 text-slate-700">
                     {m.name || m.email}
                   </button>
                 ))}

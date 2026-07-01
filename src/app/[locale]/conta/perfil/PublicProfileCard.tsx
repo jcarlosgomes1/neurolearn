@@ -95,9 +95,9 @@ export function PublicProfileCard({ catalogue, initialInterests, initialPublic }
       {/* Interesses */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8">
         <div className="flex items-start justify-between gap-3 mb-1">
-          <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2"><Heart className="h-5 w-5 text-violet-600" />{t('interests_title')}</h2>
+          <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2"><Heart className="h-5 w-5 text-brand-600" />{t('interests_title')}</h2>
           <button onClick={saveInterests} disabled={savingInt}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white text-sm font-semibold shadow-sm transition-all disabled:opacity-50 shrink-0">
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-brand-600 to-brand-600 hover:from-brand-700 hover:to-brand-700 text-white text-sm font-semibold shadow-sm transition-all disabled:opacity-50 shrink-0">
             {savingInt ? <Loader2 className="h-4 w-4 animate-spin" /> : savedInt ? <Check className="h-4 w-4" /> : null}{savedInt ? t('saved') : t('save')}
           </button>
         </div>
@@ -111,7 +111,7 @@ export function PublicProfileCard({ catalogue, initialInterests, initialPublic }
                   return (
                     <button key={it.slug} onClick={() => toggle(it.slug)}
                       className={cx('inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border transition-all',
-                        on ? 'bg-violet-600 text-white border-violet-600 shadow-sm' : 'bg-white text-slate-600 border-slate-200 hover:border-violet-300')}>
+                        on ? 'bg-brand-600 text-white border-brand-600 shadow-sm' : 'bg-white text-slate-600 border-slate-200 hover:border-brand-300')}>
                       <span>{it.emoji}</span>{it.label}
                     </button>
                   );
@@ -124,7 +124,7 @@ export function PublicProfileCard({ catalogue, initialInterests, initialPublic }
 
       {/* Apresentação automática */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8">
-        <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2 mb-1"><Wand2 className="h-5 w-5 text-violet-600" />{t('auto_title')}</h2>
+        <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2 mb-1"><Wand2 className="h-5 w-5 text-brand-600" />{t('auto_title')}</h2>
         <p className="text-sm text-slate-500 mb-4">{t('auto_desc')}</p>
 
         {status === 'approved' && appBlurb && (
@@ -136,13 +136,13 @@ export function PublicProfileCard({ catalogue, initialInterests, initialPublic }
         )}
 
         {status === 'proposed' && (
-          <div className="rounded-2xl border border-violet-200 bg-violet-50/40 p-4 mb-4">
-            <div className="text-[11px] font-bold uppercase tracking-wider text-violet-700 mb-1.5">{t('proposal')}</div>
+          <div className="rounded-2xl border border-brand-200 bg-brand-50/40 p-4 mb-4">
+            <div className="text-[11px] font-bold uppercase tracking-wider text-brand-700 mb-1.5">{t('proposal')}</div>
             {propHead && <div className="font-semibold text-slate-900">{propHead}</div>}
             <p className="text-sm text-slate-600 mt-1 leading-relaxed">{propBlurb}</p>
             <div className="flex items-center gap-2 mt-4">
               <button onClick={publish} disabled={busy}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white text-sm font-semibold shadow-sm disabled:opacity-50">
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-brand-600 to-brand-600 hover:from-brand-700 hover:to-brand-700 text-white text-sm font-semibold shadow-sm disabled:opacity-50">
                 {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}{t('publish')}
               </button>
               <button onClick={discard} disabled={busy}

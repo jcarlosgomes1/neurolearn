@@ -12,7 +12,7 @@ type Ev = {
   attendees_count: number | null; attendees_max: number | null; url: string; host: string;
 };
 
-const GRADS = ['from-violet-500 to-indigo-600', 'from-emerald-500 to-teal-600', 'from-amber-500 to-orange-600', 'from-fuchsia-500 to-pink-600', 'from-blue-500 to-cyan-600', 'from-rose-500 to-red-600'];
+const GRADS = ['from-brand-500 to-brand-600', 'from-emerald-500 to-teal-600', 'from-amber-500 to-orange-600', 'from-brand-500 to-pink-600', 'from-blue-500 to-cyan-600', 'from-rose-500 to-red-600'];
 
 export function OrgEventsClient({ slug }: { slug: string }) {
   const t = useTranslations();

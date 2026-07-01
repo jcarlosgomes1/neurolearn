@@ -63,7 +63,7 @@ export function TopLoader() {
   return (
     <div aria-hidden className="pointer-events-none fixed inset-x-0 top-0 z-[100] h-0.5">
       <div
-        className="h-full bg-gradient-to-r from-brand-400 via-brand-500 to-violet-500"
+        className="h-full bg-gradient-to-r from-brand-400 via-brand-500 to-brand-500"
         style={{
           width: `${progress}%`,
           opacity: visible ? 1 : 0,

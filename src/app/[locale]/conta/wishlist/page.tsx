@@ -34,7 +34,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {courses.map((c: any) => (
                 <Link key={c.id} href={`/curso/${c.id}` as any} className="bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow group">
-                  <div className="aspect-video bg-gradient-to-br from-brand-100 to-violet-100 flex items-center justify-center text-5xl">
+                  <div className="aspect-video bg-gradient-to-br from-brand-100 to-brand-100 flex items-center justify-center text-5xl">
                     {c.cover_url ? <img src={c.cover_url} alt="" className="w-full h-full object-cover" /> : (c.emoji || '📘')}
                   </div>
                   <div className="p-4">
