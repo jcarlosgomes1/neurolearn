@@ -1,7 +1,7 @@
-import { CrmHub } from './CrmHub';
+import { PessoasHub } from './PessoasHub';
 
-export const metadata = { title: 'CRM · Admin' };
+export const metadata = { title: 'Pessoas · Admin' };
 
 export default function Page() {
-  return <CrmHub />;
+  return <PessoasHub />;
 }
