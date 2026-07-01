@@ -1,7 +1,9 @@
-import { MentoresCockpit } from './MentoresCockpit';
+import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
-export default function Page() {
-  return <div className="px-4 sm:px-6 lg:px-8"><MentoresCockpit /></div>;
+// Absorvido pelo hub Pessoas (/admin/crm). Mantido só como redirect para não partir deep-links.
+export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  redirect(`/${locale}/admin/crm?tab=mentores`);
 }

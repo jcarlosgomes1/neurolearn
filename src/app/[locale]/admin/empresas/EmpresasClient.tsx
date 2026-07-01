@@ -27,12 +27,13 @@ interface Org {
 interface Props {
   locale: string;
   initial: { total: number; orgs: Org[] };
+  embedded?: boolean;
 }
 
 const PLANS = ['', 'trial', 'starter', 'growth', 'enterprise'] as const;
 const STATUSES = ['', 'active', 'trialing', 'expired', 'archived'] as const;
 
-export function EmpresasClient({ locale, initial }: Props) {
+export function EmpresasClient({ locale, initial, embedded = false }: Props) {
   const [orgs, setOrgs] = useState<Org[]>(initial.orgs);
   const [total, setTotal] = useState(initial.total);
   const [search, setSearch] = useState('');
@@ -72,19 +73,21 @@ export function EmpresasClient({ locale, initial }: Props) {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-      <AdminPageHeader
-        emoji="🏢"
-        title="Empresas"
-        description={`${total} ${total === 1 ? 'tenant' : 'tenants'} no total`}
-        actions={
-          <Link href={'/admin/empresas/novo' as any}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-medium text-sm shadow-sm transition-colors">
-            <Plus className="h-4 w-4" />
-            Criar Empresa
-          </Link>
-        }
-      />
+    <div className={embedded ? '' : 'max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8'}>
+      {!embedded && (
+        <AdminPageHeader
+          emoji="🏢"
+          title="Empresas"
+          description={`${total} ${total === 1 ? 'tenant' : 'tenants'} no total`}
+          actions={
+            <Link href={'/admin/empresas/novo' as any}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-medium text-sm shadow-sm transition-colors">
+              <Plus className="h-4 w-4" />
+              Criar Empresa
+            </Link>
+          }
+        />
+      )}
 
       {/* Filtros */}
       <div className="bg-white border border-slate-200 rounded-xl p-4 mb-4 grid sm:grid-cols-4 gap-3">

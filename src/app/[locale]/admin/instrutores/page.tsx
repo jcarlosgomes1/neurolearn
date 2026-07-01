@@ -1,11 +1,9 @@
-import { AdminInstructors } from './AdminInstructors';
-import { getTranslations } from 'next-intl/server';
+import { redirect } from 'next/navigation';
 
-export async function generateMetadata() {
-  const t = await getTranslations();
-  return { title: t('admin_meta.instrutores') };
-}
+export const dynamic = 'force-dynamic';
 
-export default function AdminInstructorsPage() {
-  return <AdminInstructors />;
+// Absorvido pelo hub Pessoas (/admin/crm). Mantido só como redirect para não partir deep-links.
+export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  redirect(`/${locale}/admin/crm?tab=instrutores`);
 }

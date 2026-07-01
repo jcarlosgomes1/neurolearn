@@ -10,7 +10,7 @@ import { fmtCents } from '@/lib/utils/cn';
 import { useTranslations } from 'next-intl';
 import { Check, ArrowUpRight, Users, Wallet, Star } from 'lucide-react';
 
-export function AdminInstructors() {
+export function AdminInstructors({ embedded = false }: { embedded?: boolean }) {
   const t = useTranslations();
   const [list, setList] = useState<any[] | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -71,12 +71,14 @@ export function AdminInstructors() {
   const statusColor = (s: string) => s === 'approved' ? 'bg-emerald-100 text-emerald-700' : s === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600';
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 animate-fade-in">
-      <AdminPageHeader
-        emoji="🎓"
-        title={t('admin_instr.title')}
-        description={t('admin_instr.subtitle', { n: list.length })}
-      />
+    <div className={embedded ? 'space-y-6 animate-fade-in' : 'max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 animate-fade-in'}>
+      {!embedded && (
+        <AdminPageHeader
+          emoji="🎓"
+          title={t('admin_instr.title')}
+          description={t('admin_instr.subtitle', { n: list.length })}
+        />
+      )}
 
       {list.length === 0 ? (
         <p className="text-sm text-slate-500">{t('admin_instr.empty')}</p>

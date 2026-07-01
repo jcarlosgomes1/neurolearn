@@ -1,20 +1,9 @@
 import { redirect } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
-import { listOrgsAction } from './actions';
-import { EmpresasClient } from './EmpresasClient';
 
-export const metadata = { title: 'Empresas · Admin' };
 export const dynamic = 'force-dynamic';
 
+// Absorvido pelo hub Pessoas (/admin/crm). Mantido só como redirect para não partir deep-links.
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  const sb = await createClient();
-  const { data: { user } } = await sb.auth.getUser();
-  if (!user) redirect(`/${locale}/login?next=/${locale}/admin/empresas`);
-  const { data: profile } = await sb.from('nl_profiles').select('role').eq('id', user.id).single();
-  if (!profile || !['admin','super_admin'].includes(profile.role)) redirect(`/${locale}`);
-  
-  const initial = await listOrgsAction({});
-  
-  return <EmpresasClient locale={locale} initial={initial.ok ? initial.data : { total: 0, orgs: [] }} />;
+  redirect(`/${locale}/admin/crm?tab=empresas`);
 }

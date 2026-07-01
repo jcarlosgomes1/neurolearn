@@ -1,11 +1,9 @@
-import { CandidaturasList } from './CandidaturasList';
-import { getTranslations } from 'next-intl/server';
+import { redirect } from 'next/navigation';
 
-export async function generateMetadata() {
-  const t = await getTranslations();
-  return { title: t('admin_meta.candidaturas') };
-}
+export const dynamic = 'force-dynamic';
 
-export default function Page() {
-  return <div className="px-4 sm:px-6 lg:px-8"><CandidaturasList /></div>;
+// Absorvido pelo hub Pessoas (/admin/crm). Mantido só como redirect para não partir deep-links.
+export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  redirect(`/${locale}/admin/crm?tab=candidaturas`);
 }

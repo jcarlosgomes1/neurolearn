@@ -1,27 +1,9 @@
-import { createClient } from '@/lib/supabase/server';
-import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { redirect } from 'next/navigation';
-import { ClausesClient } from './ClausesClient';
 
 export const dynamic = 'force-dynamic';
 
-export default async function Page() {
-  const sb = await createClient();
-  const { data: { user } } = await sb.auth.getUser();
-  if (!user) redirect('/auth/login?next=/admin/instructor-terms');
-  const { data: profile } = await sb.from('nl_profiles').select('role').eq('id', user.id).single();
-  if (!profile || !['admin', 'super_admin'].includes(profile.role)) redirect('/');
-
-  return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-      <AdminPageHeader
-        emoji="📜"
-        eyebrow="Pessoas · Contratação"
-        title="Termos do instrutor"
-        description="Cláusulas contratuais para instrutores aprovados. Texto editável; aplica-se na candidatura e por curso (com toggles por curso)."
-        iconGradient="from-violet-500 to-indigo-600"
-      />
-      <ClausesClient />
-    </div>
-  );
+// Absorvido pelo hub Pessoas (/admin/crm). Mantido só como redirect para não partir deep-links.
+export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  redirect(`/${locale}/admin/crm?tab=termos`);
 }
