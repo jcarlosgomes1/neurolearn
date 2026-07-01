@@ -2,7 +2,7 @@
 
 import { Link, usePathname } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
-import { LayoutDashboard, Users, Megaphone } from 'lucide-react';
+import { LayoutDashboard, Users, Megaphone, Ticket } from 'lucide-react';
 
 export function EventoTabs({ eventId }: { eventId: string }) {
   const t = useTranslations();
@@ -12,6 +12,7 @@ export function EventoTabs({ eventId }: { eventId: string }) {
     { key: 'overview', href: base, label: t('evt_ws.tab.overview'), icon: LayoutDashboard, exact: true },
     { key: 'guests', href: `${base}/convidados`, label: t('evt_ws.tab.guests'), icon: Users, exact: false },
     { key: 'promos', href: `${base}/promocoes`, label: t('evt_ws.tab.promos'), icon: Megaphone, exact: false },
+    { key: 'registos', href: `${base}/registos`, label: t('evt_ws.tab.registos'), icon: Ticket, exact: false },
   ];
   return (
     <nav className="flex gap-1 overflow-x-auto -mb-px">
