@@ -58,8 +58,40 @@ export function InstructorDossier({ instructorId }: { instructorId: string }) {
   const idn = d.identity || {}; const adm = d.admin || {}; const app = d.application; const rev = d.reviews || {}; const eng = d.ai_engagement || {}; const feat = d.ai_features || {};
   const engRatio = eng.total > 0 ? Math.round((eng.edited / eng.total) * 100) : null;
 
+  const score = d.score || {}; const bd = score.breakdown || {};
+  const tierStyle: Record<string, string> = {
+    ouro: 'bg-amber-100 text-amber-800 border-amber-300', prata: 'bg-slate-200 text-slate-700 border-slate-300',
+    bronze: 'bg-orange-100 text-orange-800 border-orange-300', base: 'bg-slate-100 text-slate-600 border-slate-200',
+    novo: 'bg-slate-50 text-slate-400 border-slate-200',
+  };
+  const tCls = tierStyle[score.tier] || tierStyle.novo;
   return (
     <div className="space-y-3">
+      {/* Score composito + tier */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-4">
+        <div className="flex items-center gap-4">
+          <div className={`flex flex-col items-center justify-center h-16 w-16 rounded-2xl border ${tCls}`}>
+            <span className="text-xl font-bold nl-num leading-none">{score.composite ?? '—'}</span>
+            <span className="text-[9px] uppercase tracking-wider opacity-70 mt-0.5">/100</span>
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className={`text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${tCls}`}>{t('instr_dossier.tier_' + (score.tier || 'novo'))}</span>
+              <span className="text-[11px] text-slate-400">{t('instr_dossier.signals_of', { n: score.signals ?? 0, max: score.signals_max ?? 4 })}</span>
+            </div>
+            <p className="text-[11px] text-slate-400 mt-1">{(score.signals ?? 0) < 2 ? t('instr_dossier.score_insufficient') : t('instr_dossier.score_hint')}</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3">
+          {([['rating', bd.rating, score.weights?.rating], ['craft', bd.craft, score.weights?.craft], ['response', bd.response, score.weights?.response], ['activity', bd.activity, score.weights?.activity]] as [string, number | null, number][]).map(([k, val, w]) => (
+            <div key={k} className="rounded-lg bg-slate-50 p-2">
+              <div className="text-[10px] uppercase tracking-wider text-slate-400 flex items-center justify-between"><span>{t('instr_dossier.bd_' + k)}</span><span className="text-slate-300">{w}%</span></div>
+              <div className={`text-sm font-bold ${val == null ? 'text-slate-300' : 'text-slate-800'}`}>{val == null ? '—' : Math.round(val)}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Sinais de avaliação em destaque */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
         <Stat label={t('instr_dossier.sig_rating')} value={rev.count > 0 ? `${rev.avg}★` : '—'} hint={rev.count > 0 ? t('instr_dossier.n_reviews', { n: rev.count }) : undefined} />
