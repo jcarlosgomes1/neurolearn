@@ -80,7 +80,7 @@ export function MentoresCockpit() {
 
   return (
     <div className="space-y-6">
-      <AppPageHeader backHref="/admin" title={`🎓 ${t('title')}`} description={t('subtitle')} />
+      <AppPageHeader backHref="/admin" title={t('title')} description={t('subtitle')} />
 
       <div className="flex flex-wrap items-center gap-3">
         <div className="inline-flex items-center gap-2 rounded-full bg-violet-50 text-violet-700 px-3 py-1.5 text-sm font-semibold">
@@ -109,8 +109,8 @@ export function MentoresCockpit() {
             <EntityRow key={c.id}
               className={cx(c.is_mentor && 'border-violet-200')}
               leading={c.avatar_url
-                ? <img src={c.avatar_url} alt="" className="h-11 w-11 rounded-full object-cover" />
-                : <div className="h-11 w-11 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 text-white font-bold flex items-center justify-center">{(c.name || '?')[0]?.toUpperCase()}</div>}
+                ? <img src={c.avatar_url} alt="" className="h-10 w-10 rounded-full object-cover" />
+                : <div className="h-10 w-10 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 text-white font-bold flex items-center justify-center">{(c.name || '?')[0]?.toUpperCase()}</div>}
               title={c.name}
               chips={<Chip>{ROLE_LABEL[c.role]?.[locale] || c.role}</Chip>}
               subtitle={`@${c.handle}`}

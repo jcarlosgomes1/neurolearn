@@ -39,21 +39,25 @@ export function EntityRow({
     <Comp
       {...(interactive ? { type: 'button', onClick } : {})}
       className={cn(
-        'w-full flex items-center gap-3 p-3 rounded-xl border border-slate-200 bg-white text-left',
+        'w-full flex items-start gap-3 p-3 rounded-xl border border-slate-200 bg-white text-left',
         interactive && 'hover:border-brand-300 hover:shadow-sm transition-all',
         className,
       )}
     >
       {leading && <div className="shrink-0">{leading}</div>}
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="t-item-title truncate">{title}</span>
-          {chips}
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="t-item-title truncate min-w-0">{title}</span>
+          {chips && <span className="shrink-0 flex items-center gap-1">{chips}</span>}
         </div>
         {subtitle && <div className="t-item-sub truncate">{subtitle}</div>}
         {children}
       </div>
-      {trailing !== undefined ? trailing : (interactive && <ChevronRight className="h-4 w-4 text-slate-300 shrink-0" />)}
+      {(trailing !== undefined || interactive) && (
+        <div className="shrink-0 self-center">
+          {trailing !== undefined ? trailing : <ChevronRight className="h-4 w-4 text-slate-300" />}
+        </div>
+      )}
     </Comp>
   );
 }

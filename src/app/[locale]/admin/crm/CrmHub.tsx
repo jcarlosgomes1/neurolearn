@@ -147,7 +147,7 @@ export function CrmHub() {
           return (
             <EntityRow key={`${r.kind}-${r.id}`}
               onClick={() => openRecord({ kind: r.kind, id: r.id })}
-              leading={<div className={`h-9 w-9 rounded-lg flex items-center justify-center ${m.cls}`}><Icon className="h-4 w-4" /></div>}
+              leading={<div className={`h-10 w-10 rounded-lg flex items-center justify-center ${m.cls}`}><Icon className="h-4 w-4" /></div>}
               title={r.name}
               chips={<Chip tone={m.cls}>{t('crm.kind_' + r.kind)}</Chip>}
               subtitle={r.email || '—'}
