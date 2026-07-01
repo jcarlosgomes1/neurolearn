@@ -1,4 +1,5 @@
 import { Link } from '@/i18n/routing';
+import { ArrowLeft } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { PageGlyph } from '@/components/layout/PageGlyph';
@@ -27,7 +28,7 @@ const LEADING_EMOJI = /^(\p{Extended_Pictographic}(?:\uFE0F)?(?:\u200D\p{Extende
  * Cabecalho canonico de TODAS as areas in-app (admin, aluno, instrutor, empresa) — homogeneo, sem excecao.
  * Glifo central via PageGlyph (resolvido por rota: nl_page_glyphs). Eyebrow e sempre so texto.
  */
-export function AppPageHeader({ title, description, emoji, actions, related }: AppPageHeaderProps) {
+export function AppPageHeader({ title, description, emoji, actions, related, backHref, backLabel }: AppPageHeaderProps) {
   const trimmedTitle = (title || '').trim();
   const m = trimmedTitle.match(LEADING_EMOJI);
   const titleEmoji = m ? m[1] : undefined;
@@ -35,6 +36,12 @@ export function AppPageHeader({ title, description, emoji, actions, related }: A
   const glyphEmoji = titleEmoji || emoji;
   return (
     <header className="mb-3 sm:mb-8">
+      {backHref && (
+        <Link href={backHref as any} className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-brand-700 mb-2 transition-colors">
+          <ArrowLeft className="h-3.5 w-3.5" />
+          {backLabel || 'Voltar'}
+        </Link>
+      )}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-3">
         <div className="flex items-start gap-2.5 sm:gap-3 min-w-0 flex-1">
         <div className="flex-shrink-0 leading-none mt-0.5 sm:mt-1">
