@@ -18,8 +18,8 @@ const TABS = [
 export function PessoasHub() {
   const [tab, setTab] = useState<string>('crm');
   return (
-    <>
-      <div className="border-b border-slate-200 mb-5 flex gap-1 overflow-x-auto -mx-1 px-1">
+    <div className="px-4 sm:px-6 lg:px-8">
+      <div className="border-b border-slate-200 mb-5 flex gap-1 overflow-x-auto">
         {TABS.map((tb) => {
           const Icon = tb.icon; const active = tab === tb.k;
           return (
@@ -39,6 +39,6 @@ export function PessoasHub() {
           <CourseTermsClient />
         </div>
       )}
-    </>
+    </div>
   );
 }
