@@ -275,7 +275,7 @@ function NavIcon({ name, className }: { name?: string; className?: string }) {
   if (Cmp) {
     return <Cmp className={className} strokeWidth={1.75} style={{ filter: 'drop-shadow(0 1px 0.5px rgba(255,255,255,0.75)) drop-shadow(0 -1px 0.5px rgba(2,6,23,0.16))' }} />;
   }
-  return <span className={`inline-flex items-center justify-center ${className || ''}`} style={{ fontSize: '1.05rem', lineHeight: 1 }}>{name}</span>;
+  return <span className={`inline-flex items-center justify-center ${className || ''}`}><span className="h-1.5 w-1.5 rounded-full bg-current opacity-40" /></span>;
 }
 
 function SidebarContent({ groups, isActive, t }: { groups: { groupKey: string; items: NavItem[] }[]; isActive: (href: string) => boolean; t: any }) {
