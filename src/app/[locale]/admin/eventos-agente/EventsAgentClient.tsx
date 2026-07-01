@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { Loader2, Wand2, Check, UserPlus, Send, Users, Sparkles, Calendar, FileText, X, Layers } from 'lucide-react';
 import BuildCockpit from './BuildCockpit';
 
-type Suggestion = { id: string; title: string; rationale: string | null; suggested_kind: string; topic: string | null; audience: string | null; score: number; status: string; created_session_id: string | null; plan: any | null; plan_at?: string | null };
+type Suggestion = { id: string; title: string; description: string | null; rationale: string | null; suggested_kind: string; topic: string | null; audience: string | null; score: number; status: string; created_session_id: string | null; plan: any | null; plan_at?: string | null };
 type EventMin = { id: string; title: string; session_kind: string; published?: boolean };
 type Candidate = { id: string; user_id: string | null; email: string | null; name: string; source: string; match_reason: string | null; score: number; status: string };
 
@@ -346,7 +346,13 @@ export function EventsAgentClient() {
                   {s.plan && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700">plano</span>}
                 </div>
                 <h3 className="font-medium text-neutral-900 leading-snug">{s.title}</h3>
-                {s.rationale ? <p className="text-sm text-neutral-500 mt-1 line-clamp-3 flex-1">{s.rationale}</p> : <div className="flex-1" />}
+                {s.description && <p className="text-sm text-neutral-700 mt-1.5">{s.description}</p>}
+                {s.rationale ? (
+                  <div className="mt-2 flex-1">
+                    <span className="text-[10px] uppercase tracking-wider font-bold text-neutral-400">{t('events.agent.why')}</span>
+                    <p className="text-sm text-neutral-500 mt-0.5 whitespace-pre-line">{s.rationale}</p>
+                  </div>
+                ) : <div className="flex-1" />}
                 <div className="mt-3 flex items-center gap-2">
                   <button onClick={() => openPlan(s)} disabled={planLoadingId === s.id} className="inline-flex items-center gap-1.5 rounded-lg bg-violet-600 text-white px-3 py-1.5 text-sm font-medium hover:bg-violet-700 disabled:opacity-50">
                     {planLoadingId === s.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileText className="w-3.5 h-3.5" />} {s.plan ? 'Ver plano' : 'Gerar plano'}
