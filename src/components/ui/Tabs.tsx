@@ -65,6 +65,7 @@ export interface TabNavItem {
   label: string;
   icon?: LucideIcon;
   count?: number | null;
+  exact?: boolean;
 }
 
 /** Barra de separadores por ROTA (Link + ativo por pathname). Mesmo chrome do Tabs. */
@@ -74,7 +75,7 @@ export function TabsNav({ items, className, seated = false }: { items: readonly 
     <div className={cn(seated ? '-mb-px flex gap-1 overflow-x-auto scrollbar-none' : 'border-b border-slate-200 mb-5 flex gap-1 overflow-x-auto scrollbar-none', className)}>
       {items.map((tb) => {
         const Icon = tb.icon;
-        const active = pathname === tb.href || pathname.startsWith(tb.href + '/');
+        const active = tb.exact ? pathname === tb.href : (pathname === tb.href || pathname.startsWith(tb.href + '/'));
         return (
           <Link
             key={tb.href}
