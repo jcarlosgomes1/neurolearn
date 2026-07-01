@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
+import { JobPostingCatalogSkills } from '@/components/skills/JobPostingCatalogSkills';
 import { toast } from 'sonner';
 import { Link } from '@/i18n/routing';
 import { Plus, ArrowLeft, X, Save, Loader2, Users, Eye, EyeOff, ChevronRight } from 'lucide-react';
@@ -138,6 +139,12 @@ function JobEditDialog({ job, setJob, onSave, onCancel, isPending }: { job: Job;
           <Field label={t('org.job.f_desc')}><textarea rows={3} value={job.description || ''} onChange={(e) => update('description', e.target.value)} className="w-full text-sm px-3 py-2 rounded-lg border border-slate-200 resize-none" /></Field>
           <Field label={t('org.job.f_req_skills')}><input type="text" value={reqInput} onChange={(e) => setReqInput(e.target.value)} onBlur={persistSkills} placeholder={t('org.job.ph_req')} className="w-full text-sm px-3 py-2 rounded-lg border border-slate-200" /></Field>
           <Field label={t('org.job.f_nice_skills')}><input type="text" value={niceInput} onChange={(e) => setNiceInput(e.target.value)} onBlur={persistSkills} placeholder={t('org.job.ph_nice')} className="w-full text-sm px-3 py-2 rounded-lg border border-slate-200" /></Field>
+          {job.id ? (
+            <div>
+              <label className="text-xs font-semibold text-slate-500 mb-1 block">{t('org.job.catalog_label')}</label>
+              <JobPostingCatalogSkills jobId={job.id} />
+            </div>
+          ) : <p className="text-[11px] text-slate-400">{t('org.job.catalog_save_first')}</p>}
           <div className="grid grid-cols-2 gap-2">
             <Field label={t('org.job.f_location')}><input type="text" value={job.location || ''} onChange={(e) => update('location', e.target.value)} className="w-full text-sm px-3 py-2 rounded-lg border border-slate-200" /></Field>
             <Field label={t('org.job.f_type')}><input type="text" value={job.employment_type || ''} onChange={(e) => update('employment_type', e.target.value)} placeholder={t('org.job.ph_type')} className="w-full text-sm px-3 py-2 rounded-lg border border-slate-200" /></Field>
