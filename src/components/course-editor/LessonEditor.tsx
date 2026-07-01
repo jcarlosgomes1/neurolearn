@@ -59,7 +59,7 @@ export function LessonEditor({ course, moduleName, moduleIndex, lesson, lessonIn
       });
       const data = await res.json();
       if (!data.ok) throw new Error(data.error || t('gen_failure'));
-      onUpdate({ content: data.content });
+      onUpdate({ content: data.content, ai_original: data.content, ai_generated: true });
       refetchFeatures();
       if (typeof data.remaining_credits === 'number' && !isAdmin) {
         toast.success(t('generated_with_credits', { n: data.remaining_credits }));

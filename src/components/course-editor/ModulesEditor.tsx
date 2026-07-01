@@ -10,6 +10,8 @@ export interface Lesson {
   type: 'video' | 'reading' | 'exercise';
   duration_minutes?: number;
   content?: { p?: string[]; kp?: string[]; code?: string | null; tip?: string | null; q?: any };
+  ai_original?: { p?: string[]; kp?: string[]; code?: string | null; tip?: string | null; q?: any };
+  ai_generated?: boolean;
 }
 export interface Module {
   id?: string;
