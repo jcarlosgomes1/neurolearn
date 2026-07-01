@@ -35,9 +35,9 @@ export function AppPageHeader({ backHref, backLabel, title, description, emoji, 
   const glyphEmoji = titleEmoji || emoji;
   const resolvedBack = backHref === '/admin' ? '/admin/overview' : backHref;
   return (
-    <header className="mb-6 sm:mb-8">
+    <header className="mb-3 sm:mb-8">
       {backHref && (
-        <nav aria-label="breadcrumb" className="mb-3 sm:mb-4">
+        <nav aria-label="breadcrumb" className="mb-2 sm:mb-4">
           <ol className="flex items-center gap-1 text-xs font-medium text-slate-400 min-w-0">
             <li className="shrink-0">
               <Link href={resolvedBack as any} className="hover:text-brand-600 transition-colors">
@@ -52,12 +52,11 @@ export function AppPageHeader({ backHref, backLabel, title, description, emoji, 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-3">
         <div className="flex items-start gap-2.5 sm:gap-3 min-w-0 flex-1">
         <div className="flex-shrink-0 leading-none mt-0.5 sm:mt-1">
-          <PageGlyph fallback={glyphEmoji} />
+          <PageGlyph fallback={glyphEmoji} className="text-xl sm:text-3xl leading-none" />
         </div>
         <div className="flex-1 min-w-0">
-          
           <h1 className="t-h1 text-slate-900 text-balance">{cleanTitle}</h1>
-          {description && <p className="text-sm text-slate-600 mt-1.5 max-w-2xl leading-relaxed">{description}</p>}
+          {description && <p className="text-sm text-slate-600 mt-1 sm:mt-1.5 max-w-2xl leading-relaxed line-clamp-1 sm:line-clamp-none">{description}</p>}
         </div>
         </div>
         {actions && <div className="flex-shrink-0">{actions}</div>}
