@@ -1,6 +1,5 @@
 'use client';
 
-import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Link } from '@/i18n/routing';
@@ -16,7 +15,7 @@ const ROLE_META: Record<string, { label: string; icon: any; cls: string }> = {
 
 interface Detail { ok: boolean; error?: string; profile: any; stats: any; enrollments: any[]; certificates: any[]; transactions: any[]; instructor: any; }
 
-export function UserDetailClient({ userId }: { userId: string }) {
+export function UserDetailClient({ userId, embedded = false }: { userId: string; embedded?: boolean }) {
   const [data, setData] = useState<Detail | null>(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
@@ -47,8 +46,7 @@ export function UserDetailClient({ userId }: { userId: string }) {
   const RoleIcon = roleMeta.icon;
 
   return (
-    <div className="max-w-5xl mx-auto space-y-5 pb-16">
-      <AdminPageHeader backHref="/admin/users" backLabel="Utilizadores" title={p.name || 'Sem nome'} />
+    <div className={embedded ? "space-y-5" : "max-w-5xl mx-auto space-y-5 pb-16"}>
 
       <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6">
         <div className="flex items-start gap-4">
