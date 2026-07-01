@@ -3544,6 +3544,7 @@
   "lesson_quiz.answer_ph": "Write your answer...",
   "lesson_quiz.submitted": "Answer submitted",
   "lesson_tutor.intro_hi": "Hi! I'm your tutor for this lesson.",
+  "lesson_tutor.helpful_q": "Helpful?",
   "lesson_viewer.minutes": "{n} min",
   "mkt.factcheck_confirm": "I confirm I have reviewed the facts and nothing is fabricated/inaccurate.",
   "mkt.kpi_expired_count": "{n} expired",

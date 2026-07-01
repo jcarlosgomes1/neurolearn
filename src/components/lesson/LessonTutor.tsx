@@ -6,7 +6,7 @@ import { SUPABASE_URL } from '@/lib/supabase/config';
 import { createClient } from '@/lib/supabase/client';
 import { Markdown } from '@/components/shared/Markdown';
 import { toast } from 'sonner';
-import { GraduationCap } from 'lucide-react';
+import { GraduationCap, ThumbsUp, ThumbsDown } from 'lucide-react';
 
 interface Msg { role: 'user' | 'assistant'; content: string }
 
@@ -38,6 +38,12 @@ export function LessonTutor({ context, onClose }: { context: LessonContext; onCl
   const [dailyLimit, setDailyLimit] = useState<number | null>(null);
   const [disabled, setDisabled] = useState(false);
   const [disabledReason, setDisabledReason] = useState<string | null>(null);
+  const [fb, setFb] = useState<boolean | null>(null);
+
+  async function feedback(helpful: boolean) {
+    setFb(helpful);
+    try { const sb = createClient(); await sb.rpc('nl_tutor_feedback_last', { p_helpful: helpful }); } catch { /* noop */ }
+  }
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -83,6 +89,7 @@ export function LessonTutor({ context, onClose }: { context: LessonContext; onCl
 
   async function send(text: string) {
     if (!text.trim() || sending || disabled) return;
+    setFb(null);
     const next: Msg[] = [...messages, { role: 'user', content: text.trim() }];
     setMessages(next);
     setInput('');
@@ -179,10 +186,17 @@ export function LessonTutor({ context, onClose }: { context: LessonContext; onCl
           </div>
         )}
         {messages.map((m, i) => (
-          <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+          <div key={i} className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'}`}>
             <div className={`max-w-[85%] rounded-2xl px-3.5 py-2 text-sm leading-relaxed ${m.role === 'user' ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-800'}`}>
               {m.role === 'assistant' ? <div className="prose prose-sm prose-slate max-w-none"><Markdown source={m.content} /></div> : m.content}
             </div>
+            {m.role === 'assistant' && i === messages.length - 1 && !sending && (
+              <div className="flex items-center gap-1 mt-1 ml-1">
+                <span className="text-[10px] text-slate-400 mr-0.5">{t('helpful_q')}</span>
+                <button type="button" onClick={() => feedback(true)} aria-label="util" className={`p-1 rounded transition-colors ${fb === true ? 'text-emerald-600' : 'text-slate-300 hover:text-slate-500'}`}><ThumbsUp className="h-3.5 w-3.5" /></button>
+                <button type="button" onClick={() => feedback(false)} aria-label="nao util" className={`p-1 rounded transition-colors ${fb === false ? 'text-rose-600' : 'text-slate-300 hover:text-slate-500'}`}><ThumbsDown className="h-3.5 w-3.5" /></button>
+              </div>
+            )}
           </div>
         ))}
         {sending && (
