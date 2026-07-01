@@ -3301,6 +3301,7 @@
   "shell.admin.contacts": "Contacts",
   "crm.title": "CRM",
   "crm.subtitle": "All people and companies in one place — leads, students, instructors and companies.",
+  "crm.back": "← Back to CRM",
   "crm.record_360": "360 record",
   "crm.record_unavailable": "Record unavailable.",
   "crm.open_full": "Open full management",

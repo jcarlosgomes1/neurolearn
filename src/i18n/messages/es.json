@@ -3301,6 +3301,7 @@
   "shell.admin.contacts": "Contactos",
   "crm.title": "CRM",
   "crm.subtitle": "Todas las personas y empresas en un solo lugar.",
+  "crm.back": "← Volver al CRM",
   "crm.record_360": "Ficha 360",
   "crm.record_unavailable": "Ficha no disponible.",
   "crm.open_full": "Abrir gestión completa",
