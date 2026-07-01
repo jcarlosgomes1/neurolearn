@@ -46,7 +46,7 @@ export function CrmHub() {
     catch { setRec(null); } finally { setRecLoading(false); }
   }, []);
 
-  // ---------- DETALHE (mesma pÃ¡gina) ----------
+  // ---------- DETALHE (mesma página) ----------
   if (sel) {
     const meta = KIND_META[sel.kind] || KIND_META.lead; const Icon = meta.icon;
     const idn = rec?.identity || {};
@@ -68,7 +68,7 @@ export function CrmHub() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h2 className="text-lg font-bold text-slate-900 truncate">{idn.name || 'â'}</h2>
+                    <h2 className="text-lg font-bold text-slate-900 truncate">{idn.name || '—'}</h2>
                     <Chip tone={meta.cls}>{t('crm.kind_' + sel.kind)}</Chip>
                     {idn.stage && <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 capitalize">{idn.stage}</span>}
                   </div>
@@ -123,7 +123,7 @@ export function CrmHub() {
 
   return (
     <>
-      <AppPageHeader backHref="/admin" title={`ðï¸ ${t('crm.title')}`} description={t('crm.subtitle')} />
+      <AppPageHeader backHref="/admin" title={t('crm.title')} description={t('crm.subtitle')} />
       <div className="relative mt-4">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('crm.search_ph')}
@@ -133,7 +133,7 @@ export function CrmHub() {
         {chips.map((c) => (
           <button key={c.k} type="button" onClick={() => setKind(c.k)}
             className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors ${kind === c.k ? 'bg-brand-600 text-white border-brand-600' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'}`}>
-            {c.label}{typeof c.n === 'number' ? ` Â· ${c.n}` : ''}
+            {c.label}{typeof c.n === 'number' ? ` · ${c.n}` : ''}
           </button>
         ))}
       </div>
