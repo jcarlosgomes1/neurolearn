@@ -3109,6 +3109,7 @@
   "instr_dossier.bd_rating": "Students",
   "instr_dossier.bd_craft": "AI effort",
   "instr_dossier.bd_response": "Response",
+  "instr_dossier.bd_eval": "Grading",
   "instr_dossier.bd_activity": "Activity",
   "instr_dossier.sig_response": "Avg response",
   "instr_dossier.sig_ai": "AI edit rate",

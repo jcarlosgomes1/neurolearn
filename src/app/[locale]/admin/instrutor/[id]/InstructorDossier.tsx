@@ -82,8 +82,8 @@ export function InstructorDossier({ instructorId }: { instructorId: string }) {
             <p className="text-[11px] text-slate-400 mt-1">{(score.signals ?? 0) < 2 ? t('instr_dossier.score_insufficient') : t('instr_dossier.score_hint')}</p>
           </div>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3">
-          {([['rating', bd.rating, score.weights?.rating], ['craft', bd.craft, score.weights?.craft], ['response', bd.response, score.weights?.response], ['activity', bd.activity, score.weights?.activity]] as [string, number | null, number][]).map(([k, val, w]) => (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 mt-3">
+          {([['rating', bd.rating, score.weights?.rating], ['craft', bd.craft, score.weights?.craft], ['response', bd.response, score.weights?.response], ['eval', bd.eval, score.weights?.eval], ['activity', bd.activity, score.weights?.activity]] as [string, number | null, number][]).map(([k, val, w]) => (
             <div key={k} className="rounded-lg bg-slate-50 p-2">
               <div className="text-[10px] uppercase tracking-wider text-slate-400 flex items-center justify-between"><span>{t('instr_dossier.bd_' + k)}</span><span className="text-slate-300">{w}%</span></div>
               <div className={`text-sm font-bold ${val == null ? 'text-slate-300' : 'text-slate-800'}`}>{val == null ? '—' : Math.round(val)}</div>
