@@ -44,7 +44,7 @@ export function LeagueClient({ locale }: { locale: string }) {
       <AppPageHeader title={t('liga.title')} description={t('liga.subtitle')} />
 
       {myRank != null && (
-        <div className="rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white px-4 py-3 text-sm font-medium">
+        <div className="rounded-2xl bg-gradient-to-r from-brand-600 to-brand-600 text-white px-4 py-3 text-sm font-medium">
           {t('liga.my_rank')}: #{myRank}
         </div>
       )}
@@ -54,7 +54,7 @@ export function LeagueClient({ locale }: { locale: string }) {
       ) : (
         <div className="space-y-2">
           {rows.map((r) => (
-            <div key={r.rank} className={'flex items-center gap-3 rounded-2xl border p-3 ' + (r.is_me ? 'border-violet-300 bg-violet-50' : 'border-slate-200 bg-white')}>
+            <div key={r.rank} className={'flex items-center gap-3 rounded-2xl border p-3 ' + (r.is_me ? 'border-brand-300 bg-brand-50' : 'border-slate-200 bg-white')}>
               <div className="w-8 text-center text-lg font-bold text-slate-700">{medal(r.rank)}</div>
               {r.avatar_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -66,7 +66,7 @@ export function LeagueClient({ locale }: { locale: string }) {
                 <div className="font-medium text-slate-900 truncate">{r.is_me ? t('liga.you') : (r.student_name ?? '—')}</div>
                 <div className="text-xs text-slate-500">{t('liga.level')} {r.level}</div>
               </div>
-              <div className="text-sm font-semibold text-violet-600">{r.xp_total} XP</div>
+              <div className="text-sm font-semibold text-brand-600">{r.xp_total} XP</div>
             </div>
           ))}
         </div>

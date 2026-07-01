@@ -41,21 +41,21 @@ export function PathsGrid({ paths, basePath = '/aprender/percursos' }: { paths: 
           <Link
             href={`${basePath}/${p.slug}` as any}
             className={`group relative flex flex-col h-full rounded-2xl border bg-white p-6 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl ${
-              p.featured ? 'border-violet-300 ring-2 ring-violet-200' : 'border-slate-200 hover:border-violet-300'
+              p.featured ? 'border-brand-300 ring-2 ring-brand-200' : 'border-slate-200 hover:border-brand-300'
             }`}
           >
             {p.featured && (
-              <span className="absolute -top-2.5 left-6 inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 shadow animate-pulse">
+              <span className="absolute -top-2.5 left-6 inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-brand-600 to-brand-600 text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 shadow animate-pulse">
                 <Trophy className="h-3 w-3" /> {t('path.featured_badge')}
               </span>
             )}
             <div className="flex items-start justify-between mb-3">
-              <span className="flex items-center justify-center h-12 w-12 rounded-xl bg-gradient-to-br from-violet-100 to-fuchsia-100 text-2xl transition-transform duration-300 group-hover:scale-125 group-hover:rotate-6">{p.emoji || '🎓'}</span>
+              <span className="flex items-center justify-center h-12 w-12 rounded-xl bg-gradient-to-br from-brand-100 to-brand-100 text-2xl transition-transform duration-300 group-hover:scale-125 group-hover:rotate-6">{p.emoji || '🎓'}</span>
               <span className={`text-[10px] uppercase px-2 py-0.5 rounded font-bold ${DIFF_CLASS[p.difficulty] || 'bg-slate-100 text-slate-600'}`}>
                 {DIFF_KEY[p.difficulty] ? t(DIFF_KEY[p.difficulty]) : p.difficulty}
               </span>
             </div>
-            <h3 className="font-bold text-slate-900 text-lg leading-tight group-hover:text-violet-700 transition-colors">{p.title}</h3>
+            <h3 className="font-bold text-slate-900 text-lg leading-tight group-hover:text-brand-700 transition-colors">{p.title}</h3>
             {(p.tagline || p.subtitle) && <p className="text-sm text-slate-500 mt-1.5 line-clamp-2 flex-1">{p.tagline || p.subtitle}</p>}
 
             {p.outcomes_count > 0 && (
@@ -68,7 +68,7 @@ export function PathsGrid({ paths, basePath = '/aprender/percursos' }: { paths: 
               <span className="flex items-center gap-1"><BookOpen className="h-3.5 w-3.5" /> {t('bn.courses', { count: p.course_count })}</span>
               <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> {p.estimated_hours}h</span>
               <span className="flex items-center gap-1"><Users className="h-3.5 w-3.5" /> {p.enrollment_count}</span>
-              <ArrowRight className="h-4 w-4 ml-auto text-slate-300 group-hover:text-violet-600 group-hover:translate-x-1 transition-all" />
+              <ArrowRight className="h-4 w-4 ml-auto text-slate-300 group-hover:text-brand-600 group-hover:translate-x-1 transition-all" />
             </div>
           </Link>
         </div>

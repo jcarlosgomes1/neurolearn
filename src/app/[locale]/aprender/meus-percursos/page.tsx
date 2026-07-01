@@ -47,24 +47,24 @@ export default async function MyLearningPathsPage({ params }: { params: Promise<
 
       {orgPaths.length > 0 && (
         <section className="mb-8">
-          <h2 className="text-sm font-bold uppercase tracking-widest text-violet-700 mb-1 flex items-center gap-2"><Building2 className="h-4 w-4" /> {t('path.org_assigned_h')}</h2>
+          <h2 className="text-sm font-bold uppercase tracking-widest text-brand-700 mb-1 flex items-center gap-2"><Building2 className="h-4 w-4" /> {t('path.org_assigned_h')}</h2>
           <p className="text-xs text-slate-500 mb-4">{t('path.org_assigned_sub')}</p>
           <div className="grid sm:grid-cols-2 gap-3">
             {orgPaths.map((p: any) => {
               const opct = Math.round(Number(p.my_progress || 0));
               return (
                 <Link key={`${p.path_id}-${p.org_name}`} href={`/aprender/percursos/${p.slug}` as any}
-                  className="group block rounded-2xl border border-violet-100 bg-gradient-to-br from-violet-50/60 to-fuchsia-50/40 p-5 hover:shadow-md hover:border-violet-300 transition-all">
+                  className="group block rounded-2xl border border-brand-100 bg-gradient-to-br from-brand-50/60 to-brand-50/40 p-5 hover:shadow-md hover:border-brand-300 transition-all">
                   <div className="flex items-start gap-3">
                     <span className="text-3xl flex-shrink-0">{p.emoji || '\u{1F393}'}</span>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-bold text-slate-900 group-hover:text-violet-700 leading-tight">{p.title}</h3>
+                        <h3 className="font-bold text-slate-900 group-hover:text-brand-700 leading-tight">{p.title}</h3>
                         {p.required && <span className="text-[10px] uppercase font-bold bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded">{t('empresa.paths.required')}</span>}
                       </div>
                       <div className="text-xs text-slate-500 mt-0.5">{t('path.via_org', { org: p.org_name })}</div>
                       <div className="mt-3 h-1.5 bg-white rounded-full overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-violet-500 to-fuchsia-500" style={{ width: `${opct}%` }} />
+                        <div className="h-full bg-gradient-to-r from-brand-500 to-brand-500" style={{ width: `${opct}%` }} />
                       </div>
                     </div>
                     <span className="text-sm font-bold text-slate-700 self-center flex-shrink-0">{opct}%</span>
@@ -119,7 +119,7 @@ export default async function MyLearningPathsPage({ params }: { params: Promise<
                       </div>
                     </div>
                     <div className="mt-3 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                      <div className={`h-full transition-all ${completed ? 'bg-emerald-500' : 'bg-gradient-to-r from-brand-500 to-violet-500'}`} style={{ width: `${pct}%` }} />
+                      <div className={`h-full transition-all ${completed ? 'bg-emerald-500' : 'bg-gradient-to-r from-brand-500 to-brand-500'}`} style={{ width: `${pct}%` }} />
                     </div>
                   </div>
                   <ChevronRight className="h-5 w-5 text-slate-300 group-hover:text-brand-600 transition-colors flex-shrink-0 self-center" />

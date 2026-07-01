@@ -67,7 +67,7 @@ export function PeerReviewClient() {
             const d = drafts[a.id];
             return (
               <div key={a.id} className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
-                <div className="bg-gradient-to-r from-violet-600 to-indigo-600 px-5 py-3 text-white">
+                <div className="bg-gradient-to-r from-brand-600 to-brand-600 px-5 py-3 text-white">
                   <span className="text-sm font-semibold">{a.title_md}</span>
                 </div>
                 <div className="p-5 space-y-4">
@@ -84,18 +84,18 @@ export function PeerReviewClient() {
                     <div className="w-28">
                       <label className="text-xs font-medium text-slate-500 mb-1 block">{t('peer.your_score')} (0–{a.max_score})</label>
                       <input type="number" min={0} max={a.max_score} value={d?.score ?? ''} onChange={(e) => patch(a.id, 'score', e.target.value)}
-                        className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-violet-400 outline-none" />
+                        className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-brand-400 outline-none" />
                     </div>
                   </div>
 
                   <div>
                     <label className="text-xs font-medium text-slate-500 mb-1 block">{t('peer.your_feedback')}</label>
                     <textarea value={d?.feedback ?? ''} onChange={(e) => patch(a.id, 'feedback', e.target.value)} placeholder={t('peer.feedback_ph')} rows={3}
-                      className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-violet-400 outline-none resize-y" />
+                      className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-brand-400 outline-none resize-y" />
                   </div>
 
                   <button onClick={() => submit(a)} disabled={savingId === a.id}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-violet-600 text-white text-sm font-medium disabled:opacity-50 hover:bg-violet-700">
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-brand-600 text-white text-sm font-medium disabled:opacity-50 hover:bg-brand-700">
                     {savingId === a.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />} {t('peer.submit')}
                   </button>
                 </div>

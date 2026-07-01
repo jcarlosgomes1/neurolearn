@@ -41,7 +41,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
     if (cancelled(s)) return 'bg-rose-100 text-rose-700';
     if (s === 'live') return 'bg-emerald-100 text-emerald-700';
     if (s === 'completed' || s === 'ended') return 'bg-slate-100 text-slate-500';
-    return 'bg-violet-100 text-violet-700';
+    return 'bg-brand-100 text-brand-700';
   };
   const fmt = (iso: string) => new Date(iso).toLocaleString(locale, { weekday: 'short', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
 
@@ -52,7 +52,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
     return (
       <div key={r.kind + r.ref_id} className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 hover:shadow-md transition-shadow">
         <div className="flex items-start gap-3">
-          <div className="flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center bg-gradient-to-br from-violet-500 to-indigo-500 text-white">
+          <div className="flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center bg-gradient-to-br from-brand-500 to-brand-500 text-white">
             {r.kind === 'live' ? <Video className="h-5 w-5" /> : <Calendar className="h-5 w-5" />}
           </div>
           <div className="flex-1 min-w-0">
@@ -75,7 +75,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
               <div className="flex items-center gap-2 mt-3">
                 {canJoin && (
                   <a href={r.join_url as string} target="_blank" rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold bg-violet-600 text-white hover:bg-violet-700 transition-colors">
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold bg-brand-600 text-white hover:bg-brand-700 transition-colors">
                     <Video className="h-4 w-4" /> {t('agenda.join')}
                   </a>
                 )}

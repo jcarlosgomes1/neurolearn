@@ -59,7 +59,7 @@ export function CourseFeedbackPanel({ courseId, courseTitle }: { courseId: strin
   if (!open) {
     return (
       <button onClick={() => setOpen(true)}
-        className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl border border-dashed border-violet-300 bg-violet-50/50 text-violet-700 text-sm font-medium hover:bg-violet-50 transition">
+        className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl border border-dashed border-brand-300 bg-brand-50/50 text-brand-700 text-sm font-medium hover:bg-brand-50 transition">
         <MessageSquarePlus className="h-4 w-4" /> {t('feedback.title')}{courseTitle ? ` · ${courseTitle}` : ''}
       </button>
     );
@@ -91,7 +91,7 @@ export function CourseFeedbackPanel({ courseId, courseTitle }: { courseId: strin
             <div className="flex flex-wrap gap-1">
               {Array.from({ length: 11 }, (_, i) => i).map((n) => (
                 <button key={n} onClick={() => setAnswers((a) => ({ ...a, [q.id]: { ...a[q.id], nps: n } }))}
-                  className={`w-8 h-8 rounded-lg text-xs font-semibold transition ${(answers[q.id]?.nps) === n ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-violet-100'}`}>
+                  className={`w-8 h-8 rounded-lg text-xs font-semibold transition ${(answers[q.id]?.nps) === n ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-brand-100'}`}>
                   {n}
                 </button>
               ))}
@@ -101,13 +101,13 @@ export function CourseFeedbackPanel({ courseId, courseTitle }: { courseId: strin
           {q.qtype === 'text' && (
             <textarea value={answers[q.id]?.comment || ''} onChange={(e) => setAnswers((a) => ({ ...a, [q.id]: { ...a[q.id], comment: e.target.value } }))}
               placeholder={t('feedback.comment_ph')} rows={3}
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-violet-400 outline-none resize-none" />
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-brand-400 outline-none resize-none" />
           )}
         </div>
       ))}
 
       <button onClick={submit} disabled={submitting}
-        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-violet-600 text-white text-sm font-medium disabled:opacity-50">
+        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-brand-600 text-white text-sm font-medium disabled:opacity-50">
         {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />} {t('feedback.submit')}
       </button>
     </div>

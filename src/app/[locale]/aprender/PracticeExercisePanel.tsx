@@ -82,7 +82,7 @@ export function PracticeExercisePanel({ exercise }: { exercise: Exercise }) {
 
   return (
     <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
-      <div className="bg-gradient-to-r from-violet-600 to-indigo-600 px-5 py-3 flex items-center gap-2 text-white">
+      <div className="bg-gradient-to-r from-brand-600 to-brand-600 px-5 py-3 flex items-center gap-2 text-white">
         <Code2 className="h-4 w-4" />
         <span className="text-sm font-semibold">{t('practice.title')}</span>
         {isCode && <span className="text-[10px] uppercase tracking-wider bg-white/20 px-1.5 py-0.5 rounded font-mono">{lang}</span>}
@@ -99,7 +99,7 @@ export function PracticeExercisePanel({ exercise }: { exercise: Exercise }) {
           <label className="text-xs font-medium text-slate-500 mb-1 block">{t('practice.your_solution')}</label>
           <textarea value={code} onChange={(e) => setCode(e.target.value)} placeholder={t('practice.placeholder')}
             rows={isCode ? 10 : 5} spellCheck={!isCode}
-            className={`w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-violet-400 outline-none resize-y ${isCode ? 'font-mono bg-slate-900 text-slate-100' : ''}`} />
+            className={`w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-brand-400 outline-none resize-y ${isCode ? 'font-mono bg-slate-900 text-slate-100' : ''}`} />
         </div>
 
         {isCode && output && (
@@ -142,7 +142,7 @@ export function PracticeExercisePanel({ exercise }: { exercise: Exercise }) {
             </button>
           )}
           <button onClick={submit} disabled={submitting || running || !code.trim()}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-violet-600 text-white text-sm font-medium disabled:opacity-50 hover:bg-violet-700">
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-brand-600 text-white text-sm font-medium disabled:opacity-50 hover:bg-brand-700">
             {submitting ? <><Loader2 className="h-4 w-4 animate-spin" /> {t('practice.submitting')}</> : <><Play className="h-4 w-4" /> {my ? t('practice.resubmit') : t('practice.submit')}</>}
           </button>
         </div>

@@ -205,15 +205,15 @@ export function LearnerJourney({
               {data.courses.map((c) => (
                 <Link key={c.course_id}
                   href={`/learn/curso/${c.course_id}/continuar` as never}
-                  className="group flex items-center gap-3 rounded-2xl border border-slate-200/70 bg-white p-3.5 nl-surface nl-surface-int hover:border-indigo-300">
+                  className="group flex items-center gap-3 rounded-2xl border border-slate-200/70 bg-white p-3.5 nl-surface nl-surface-int hover:border-brand-300">
                   <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-lg shrink-0">{c.emoji || '📘'}</div>
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-sm text-slate-900 truncate">{c.title}</div>
                     <div className="mt-1 h-1.5 rounded-full bg-slate-100 overflow-hidden">
-                      <div className={`h-full rounded-full ${c.completed ? 'bg-emerald-500' : 'bg-gradient-to-r from-indigo-500 to-violet-500'}`} style={{ width: `${c.completed ? 100 : Math.round(c.progress_pct || 0)}%` }} />
+                      <div className={`h-full rounded-full ${c.completed ? 'bg-emerald-500' : 'bg-gradient-to-r from-brand-500 to-brand-500'}`} style={{ width: `${c.completed ? 100 : Math.round(c.progress_pct || 0)}%` }} />
                     </div>
                   </div>
-                  {c.completed ? <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" /> : <ChevronRight className="h-5 w-5 text-slate-300 group-hover:text-indigo-500 shrink-0" />}
+                  {c.completed ? <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" /> : <ChevronRight className="h-5 w-5 text-slate-300 group-hover:text-brand-500 shrink-0" />}
                 </Link>
               ))}
             </div>
@@ -225,17 +225,17 @@ export function LearnerJourney({
       {data.discover.length > 0 && (
         <Reveal i={7}>
           <section>
-            <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-1.5"><Sparkles className="h-4 w-4 text-violet-500" />{safeT('academy.learn.discover', 'Descobrir na Academia')}</h2>
+            <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-1.5"><Sparkles className="h-4 w-4 text-brand-500" />{safeT('academy.learn.discover', 'Descobrir na Academia')}</h2>
             <div className={`grid gap-6 ${data.discover.length === 1 ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
               {data.discover.slice(0, 2).map((c) => (
                 <Link key={c.course_id} href={`/curso/${c.course_id}` as never}
-                  className="group flex items-center gap-3 rounded-2xl border border-slate-200/70 bg-white p-3.5 nl-surface nl-surface-int hover:border-violet-300">
-                  <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-100 to-fuchsia-100 flex items-center justify-center text-lg shrink-0">{c.emoji || '✨'}</div>
+                  className="group flex items-center gap-3 rounded-2xl border border-slate-200/70 bg-white p-3.5 nl-surface nl-surface-int hover:border-brand-300">
+                  <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-brand-100 to-brand-100 flex items-center justify-center text-lg shrink-0">{c.emoji || '✨'}</div>
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-sm text-slate-900 truncate">{c.title}</div>
                     {c.subtitle && <div className="text-[11px] text-slate-400 truncate">{c.subtitle}</div>}
                   </div>
-                  <ChevronRight className="h-4 w-4 text-slate-300 group-hover:text-violet-500 shrink-0" />
+                  <ChevronRight className="h-4 w-4 text-slate-300 group-hover:text-brand-500 shrink-0" />
                 </Link>
               ))}
             </div>
@@ -286,7 +286,7 @@ export function LearnerJourney({
             <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-1.5"><Trophy className="h-4 w-4 text-amber-500" />{safeT('academy.learn.ranking', 'Ranking da equipa')}</h2>
             <div className="rounded-2xl border border-slate-200/70 bg-white divide-y divide-slate-100 nl-surface">
               {lb.map((r) => (
-                <div key={r.rank} className={`flex items-center gap-3 p-3 ${r.is_me ? 'bg-indigo-50/60' : ''}`}>
+                <div key={r.rank} className={`flex items-center gap-3 p-3 ${r.is_me ? 'bg-brand-50/60' : ''}`}>
                   <div className={`w-7 text-center font-bold text-sm tabular-nums ${r.rank === 1 ? 'text-amber-500' : r.rank === 2 ? 'text-slate-400' : r.rank === 3 ? 'text-orange-400' : 'text-slate-300'}`}>
                     {r.rank <= 3 ? <Crown className="h-4 w-4 inline" /> : r.rank}
                   </div>
@@ -309,7 +309,7 @@ export function LearnerJourney({
       {skills.length > 0 && (
         <Reveal i={6}>
           <section>
-            <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-1.5"><Target className="h-4 w-4 text-indigo-500" />{safeT('academy.learn.skills', 'As minhas competências')}</h2>
+            <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-1.5"><Target className="h-4 w-4 text-brand-500" />{safeT('academy.learn.skills', 'As minhas competências')}</h2>
             <div className="flex flex-wrap gap-2">
               {skills.slice(0, 12).map((s) => (
                 <span key={s.skill_id} className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium ${s.status === 'validated' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-white text-slate-600'}`}>

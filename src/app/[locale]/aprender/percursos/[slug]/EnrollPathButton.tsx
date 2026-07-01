@@ -44,7 +44,7 @@ export function EnrollPathButton({ pathId, isEnrolled }: { pathId: string; isEnr
 
   return (
     <button onClick={enroll} disabled={pending}
-      className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-violet-600 to-brand-600 hover:from-violet-700 hover:to-brand-700 text-white rounded-lg text-sm font-semibold shadow-sm disabled:opacity-50">
+      className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-brand-600 to-brand-600 hover:from-brand-700 hover:to-brand-700 text-white rounded-lg text-sm font-semibold shadow-sm disabled:opacity-50">
       <Sparkles className="h-4 w-4" /> {pending ? t('path.enrolling') : t('path.start_path')}
     </button>
   );
