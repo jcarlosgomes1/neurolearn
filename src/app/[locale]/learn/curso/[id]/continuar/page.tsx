@@ -9,8 +9,9 @@ export default async function ContinuarPage({ params }: { params: Promise<{ id: 
   if (!user) redirect(`/${locale}/login?redirect_to=/learn/curso/${id}/continuar`);
 
   const { data: course } = await sb.from('nl_courses').select('modules, published').eq('id', id).maybeSingle();
-  if (!course || !course.published) redirect(`/${locale}/learn`);
+  if (!course) redirect(`/${locale}/learn`);
 
+  // Acesso pela INSCRIÇÃO, não por published (aluno inscrito acede mesmo arquivado).
   const { data: enrollment } = await sb.from('nl_enrollments_v2').select('id').eq('user_id', user.id).eq('course_id', id).maybeSingle();
   if (!enrollment) redirect(`/${locale}/curso/${id}`);
 

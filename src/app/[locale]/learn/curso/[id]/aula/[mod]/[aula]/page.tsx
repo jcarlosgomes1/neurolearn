@@ -22,8 +22,11 @@ export default async function Page({ params }: { params: Promise<{ id: string; m
   const { data: course } = await sb.from('nl_courses')
     .select('id, title, subtitle, emoji, level, modules, published, progression')
     .eq('id', id).maybeSingle();
-  if (!course || !course.published) redirect(`/${locale}/learn`);
+  if (!course) redirect(`/${locale}/learn`);
 
+  // Acesso vive na INSCRIÇÃO, não no estado de publicação: quem está inscrito acede
+  // mesmo que o curso tenha sido arquivado/despublicado (já pagou). published governa
+  // apenas catálogo/checkout (quem se pode inscrever), nunca quem já tem acesso.
   const { data: enrollment } = await sb.from('nl_enrollments_v2')
     .select('id').eq('user_id', user.id).eq('course_id', id).maybeSingle();
   if (!enrollment) redirect(`/${locale}/curso/${id}`);
