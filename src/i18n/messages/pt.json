@@ -5086,5 +5086,16 @@
   "scormlearn.open": "Abrir",
   "scormadmin.no_course": "— sem curso (pré-visualização) —",
   "org.nav.scorm_h": "Pacotes SCORM",
-  "org.nav.scorm_p": "Importa conteúdos SCORM 1.2/2004 da tua empresa."
+  "org.nav.scorm_p": "Importa conteúdos SCORM 1.2/2004 da tua empresa.",
+  "course_editor": {
+    "confirm_archive": "Arquivar este curso? Sai da montra e deixa de aceitar novas inscrições. Quem já está inscrito mantém o acesso.",
+    "confirm_unarchive": "Desarquivar este curso?",
+    "archived_toast": "Curso arquivado",
+    "unarchived_toast": "Curso desarquivado",
+    "archive_title": "Arquivar curso",
+    "archived_title": "Curso arquivado",
+    "archive_desc": "Retira o curso da montra sem o apagar. Os alunos inscritos mantêm o acesso ao conteúdo.",
+    "archive_btn": "Arquivar",
+    "unarchive_btn": "Desarquivar"
+  }
 }

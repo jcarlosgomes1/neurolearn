@@ -5086,5 +5086,16 @@
   "scormlearn.open": "Open",
   "scormadmin.no_course": "— no course (preview) —",
   "org.nav.scorm_h": "SCORM packages",
-  "org.nav.scorm_p": "Import your company's SCORM 1.2/2004 content."
+  "org.nav.scorm_p": "Import your company's SCORM 1.2/2004 content.",
+  "course_editor": {
+    "confirm_archive": "Archive this course? It leaves the catalog and stops accepting new enrollments. Already-enrolled students keep access.",
+    "confirm_unarchive": "Unarchive this course?",
+    "archived_toast": "Course archived",
+    "unarchived_toast": "Course unarchived",
+    "archive_title": "Archive course",
+    "archived_title": "Course archived",
+    "archive_desc": "Removes the course from the catalog without deleting it. Enrolled students keep access to the content.",
+    "archive_btn": "Archive",
+    "unarchive_btn": "Unarchive"
+  }
 }

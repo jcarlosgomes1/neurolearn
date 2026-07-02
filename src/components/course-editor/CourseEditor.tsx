@@ -25,6 +25,7 @@ interface Course {
   price_cents: number;
   currency: string | null;
   published: boolean;
+  archived?: boolean;
   approval_status: string | null;
   course_type?: string | null;
   modules: Module[] | null;
@@ -90,6 +91,19 @@ export function CourseEditor({ courseId, backHref, mode = 'instructor' }: Props)
       await callAgentOps('teach_submit_course_for_review', { course_id: course.id });
       toast.success(t('submitted'));
       router.push(backHref as any);
+    } catch (e: any) { toast.error(e.message); }
+  }
+
+  async function toggleArchived() {
+    if (!course) return;
+    const next = !course.archived;
+    if (!confirm(next ? t('confirm_archive') : t('confirm_unarchive'))) return;
+    try {
+      assertNotPeekClient();
+      const { data, error } = await createClient().rpc('nl_course_set_archived', { p_course_id: course.id, p_archived: next });
+      if (error || !(data as any)?.ok) throw new Error((data as any)?.error || error?.message || 'error');
+      toast.success(next ? t('archived_toast') : t('unarchived_toast'));
+      setCourse((c) => c ? { ...c, archived: next, published: next ? false : c.published } : c);
     } catch (e: any) { toast.error(e.message); }
   }
 
@@ -230,8 +244,8 @@ export function CourseEditor({ courseId, backHref, mode = 'instructor' }: Props)
             <div className="bg-white rounded-xl border border-slate-200 p-6">
               <h2 className="font-semibold text-slate-900 mb-3">{t('submit_title')}</h2>
               <p className="text-sm text-slate-600 mb-4">{t('submit_desc')}</p>
-              <button onClick={submitForReview} disabled={dirty || course.approval_status === 'pending_review' || course.published} className="btn-primary disabled:opacity-50">
-                {course.published ? t('already_published') : course.approval_status === 'pending_review' ? t('awaiting_review') : t('submit_btn')}
+              <button onClick={submitForReview} disabled={dirty || course.approval_status === 'submitted' || course.published} className="btn-primary disabled:opacity-50">
+                {course.published ? t('already_published') : course.approval_status === 'submitted' ? t('awaiting_review') : t('submit_btn')}
               </button>
             </div>
           ) : (
@@ -243,6 +257,13 @@ export function CourseEditor({ courseId, backHref, mode = 'instructor' }: Props)
               </button>
             </div>
           )}
+          <div className="bg-white rounded-xl border border-slate-200 p-6">
+            <h2 className="font-semibold text-slate-900 mb-1">{course.archived ? t('archived_title') : t('archive_title')}</h2>
+            <p className="text-sm text-slate-600 mb-4">{t('archive_desc')}</p>
+            <button onClick={toggleArchived} className="btn-secondary">
+              {course.archived ? t('unarchive_btn') : t('archive_btn')}
+            </button>
+          </div>
           <CourseTranslationManager courseId={course.id} />
         </div>
       )}
