@@ -6,6 +6,7 @@ import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Layers, Library, HelpCircle, Route, FileText, Sparkles, ArrowLeft, Plus, Trash2, Save, ShieldCheck } from 'lucide-react';
+import { Tabs } from '@/components/ui/Tabs';
 
 type Tab = 'flashcards' | 'glossary' | 'faq' | 'timeline' | 'sources';
 
@@ -16,14 +17,6 @@ interface FaqItem { id: string; question: string; answer: string }
 interface TimelineStep { id: string; label: string; detail: string | null }
 interface Source { id: string; title: string; kind: string; origin_url: string | null; rights_flag: string | null; lang: string | null; summary: string | null; citations: number }
 interface Policy { require_attribution?: boolean; show_provenance_to_learner?: boolean; max_quote_words?: number }
-
-const TABS: { key: Tab; icon: React.ElementType; color: string }[] = [
-  { key: 'flashcards', icon: Layers, color: 'text-violet-600' },
-  { key: 'glossary', icon: Library, color: 'text-emerald-600' },
-  { key: 'faq', icon: HelpCircle, color: 'text-amber-600' },
-  { key: 'timeline', icon: Route, color: 'text-blue-600' },
-  { key: 'sources', icon: FileText, color: 'text-slate-600' },
-];
 
 export function StudioWorkspace({ courseId, courseTitle }: { courseId: string; courseTitle: string }) {
   const t = useTranslations();
@@ -143,18 +136,17 @@ export function StudioWorkspace({ courseId, courseTitle }: { courseId: string; c
       <AdminPageHeader emoji="🎬" title={courseTitle} description={t('studio.hub_desc')} />
 
       {/* Abas */}
-      <div className="flex gap-1 overflow-x-auto border-b border-slate-200 mb-5">
-        {TABS.map((tb) => {
-          const Icon = tb.icon; const active = tab === tb.key;
-          const count = tb.key === 'flashcards' ? cards.length : tb.key === 'glossary' ? (ov?.glossary || 0) : tb.key === 'faq' ? (ov?.faq || 0) : (ov?.timeline || 0);
-          return (
-            <button key={tb.key} onClick={() => setTab(tb.key)}
-              className={`inline-flex items-center gap-1.5 whitespace-nowrap px-3 py-2 text-sm font-medium border-b-2 transition-colors ${active ? 'border-slate-900 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-800'}`}>
-              <Icon className={`h-4 w-4 ${active ? tb.color : ''}`} />{t('studio.' + tb.key)} {count > 0 && <span className="text-xs text-slate-400">({count})</span>}
-            </button>
-          );
-        })}
-      </div>
+      <Tabs
+        value={tab}
+        onChange={(k) => setTab(k as Tab)}
+        items={[
+          { k: 'flashcards', label: t('studio.flashcards'), icon: Layers, count: cards.length },
+          { k: 'glossary', label: t('studio.glossary'), icon: Library, count: ov?.glossary || 0 },
+          { k: 'faq', label: t('studio.faq'), icon: HelpCircle, count: ov?.faq || 0 },
+          { k: 'timeline', label: t('studio.timeline'), icon: Route, count: ov?.timeline || 0 },
+          { k: 'sources', label: t('studio.sources'), icon: FileText, count: sources.length },
+        ]}
+      />
 
       {/* Barra de geração */}
       <div className="rounded-2xl border border-slate-200 bg-white p-4 mb-5 flex flex-wrap gap-2 items-center">
