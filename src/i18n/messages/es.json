@@ -5099,5 +5099,21 @@
   "admin_courses.btn_essential": "Hacer Essential",
   "admin_courses.btn_essential_on": "Essential",
   "admin_courses.toast_essential_on": "Curso marcado como Essential",
-  "admin_courses.toast_essential_off": "Essential quitado"
+  "admin_courses.toast_essential_off": "Essential quitado",
+  "credits.eyebrow": "Mi cuenta · Cartera",
+  "credits.title": "Créditos",
+  "credits.desc": "Gana créditos invitando a amigos y progresando. Úsalos en ventajas de la plataforma.",
+  "credits.balance_label": "Saldo actual",
+  "credits.balance_hint": "Los créditos caducan — úsalos dentro del plazo.",
+  "credits.history_title": "Movimientos",
+  "credits.history_empty": "Aún no tienes movimientos.",
+  "credits.expired": "Caducado",
+  "credits.reason.invite_signup": "Invitación: registro de amigo",
+  "credits.reason.invite_essential": "Invitación: amigo completó un Essential",
+  "credits.reason.invite_purchase": "Invitación: amigo compró un curso",
+  "credits.reason.essential_complete": "Essential completado",
+  "credits.reason.spend_talent_boost": "Destaque en perfil de talento",
+  "credits.reason.talent_boost": "Destaque en perfil de talento",
+  "credits.reason.expiry": "Créditos caducados",
+  "credits.reason.admin_adjust": "Ajuste de la plataforma"
 }

@@ -5099,5 +5099,21 @@
   "admin_courses.btn_essential": "Rendre Essentiel",
   "admin_courses.btn_essential_on": "Essentiel",
   "admin_courses.toast_essential_on": "Cours marqué comme Essentiel",
-  "admin_courses.toast_essential_off": "Essentiel retiré"
+  "admin_courses.toast_essential_off": "Essentiel retiré",
+  "credits.eyebrow": "Mon compte · Portefeuille",
+  "credits.title": "Crédits",
+  "credits.desc": "Gagne des crédits en invitant des amis et en progressant. Utilise-les pour des avantages sur la plateforme.",
+  "credits.balance_label": "Solde actuel",
+  "credits.balance_hint": "Les crédits expirent — utilise-les dans le délai.",
+  "credits.history_title": "Mouvements",
+  "credits.history_empty": "Aucun mouvement pour l’instant.",
+  "credits.expired": "Expiré",
+  "credits.reason.invite_signup": "Invitation : inscription d’un ami",
+  "credits.reason.invite_essential": "Invitation : ami a terminé un Essentiel",
+  "credits.reason.invite_purchase": "Invitation : ami a acheté un cours",
+  "credits.reason.essential_complete": "Essentiel terminé",
+  "credits.reason.spend_talent_boost": "Mise en avant du profil talent",
+  "credits.reason.talent_boost": "Mise en avant du profil talent",
+  "credits.reason.expiry": "Crédits expirés",
+  "credits.reason.admin_adjust": "Ajustement de la plateforme"
 }

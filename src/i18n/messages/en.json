@@ -5099,5 +5099,21 @@
   "admin_courses.btn_essential": "Make Essential",
   "admin_courses.btn_essential_on": "Essential",
   "admin_courses.toast_essential_on": "Course marked as Essential",
-  "admin_courses.toast_essential_off": "Essential removed"
+  "admin_courses.toast_essential_off": "Essential removed",
+  "credits.eyebrow": "My account · Wallet",
+  "credits.title": "Credits",
+  "credits.desc": "Earn credits by inviting friends and progressing. Use them for perks on the platform.",
+  "credits.balance_label": "Current balance",
+  "credits.balance_hint": "Credits have an expiry — use them within the period.",
+  "credits.history_title": "Activity",
+  "credits.history_empty": "No activity yet.",
+  "credits.expired": "Expired",
+  "credits.reason.invite_signup": "Invite: friend signed up",
+  "credits.reason.invite_essential": "Invite: friend completed an Essential",
+  "credits.reason.invite_purchase": "Invite: friend purchased a course",
+  "credits.reason.essential_complete": "Essential completed",
+  "credits.reason.spend_talent_boost": "Talent profile boost",
+  "credits.reason.talent_boost": "Talent profile boost",
+  "credits.reason.expiry": "Credits expired",
+  "credits.reason.admin_adjust": "Platform adjustment"
 }
