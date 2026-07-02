@@ -5087,15 +5087,13 @@
   "scormadmin.no_course": "— sin curso (vista previa) —",
   "org.nav.scorm_h": "Paquetes SCORM",
   "org.nav.scorm_p": "Importa los contenidos SCORM 1.2/2004 de tu empresa.",
-  "course_editor": {
-    "confirm_archive": "¿Archivar este curso? Sale del catálogo y deja de aceptar nuevas inscripciones. Quienes ya están inscritos mantienen el acceso.",
-    "confirm_unarchive": "¿Desarchivar este curso?",
-    "archived_toast": "Curso archivado",
-    "unarchived_toast": "Curso desarchivado",
-    "archive_title": "Archivar curso",
-    "archived_title": "Curso archivado",
-    "archive_desc": "Retira el curso del catálogo sin eliminarlo. Los alumnos inscritos mantienen el acceso al contenido.",
-    "archive_btn": "Archivar",
-    "unarchive_btn": "Desarchivar"
-  }
+  "course_editor.confirm_archive": "¿Archivar este curso? Sale del catálogo y deja de aceptar nuevas inscripciones. Quienes ya están inscritos mantienen el acceso.",
+  "course_editor.confirm_unarchive": "¿Desarchivar este curso?",
+  "course_editor.archived_toast": "Curso archivado",
+  "course_editor.unarchived_toast": "Curso desarchivado",
+  "course_editor.archive_title": "Archivar curso",
+  "course_editor.archived_title": "Curso archivado",
+  "course_editor.archive_desc": "Retira el curso del catálogo sin eliminarlo. Los alumnos inscritos mantienen el acceso al contenido.",
+  "course_editor.archive_btn": "Archivar",
+  "course_editor.unarchive_btn": "Desarchivar"
 }
