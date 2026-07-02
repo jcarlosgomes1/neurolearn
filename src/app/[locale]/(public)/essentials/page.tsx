@@ -21,9 +21,9 @@ export default async function EssentialsPage({ params }: { params: Promise<{ loc
   const sb = await createClient();
   const { data: tracks } = await sb
     .from('nl_courses')
-    .select('id, title, subtitle, emoji, price_cents, currency, rating_avg, enrollments_count, level, course_type')
+    .select('id, title, subtitle, emoji, price_cents, currency, rating_avg, enrollments_count, level, course_type, hero_image_url')
     .eq('published', true)
-    .or('course_type.eq.track,course_type.eq.essential')
+    .eq('is_essential', true)
     .order('rating_avg', { ascending: false, nullsFirst: false })
     .limit(24);
   const blocks = await getHomeBlocks(locale);
