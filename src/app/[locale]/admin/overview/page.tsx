@@ -47,8 +47,6 @@ export default async function Page() {
         description="Estado da plataforma em tempo real. Clica em cada cartão para detalhes."
       />
 
-      <AgentSuggestionsRail surface="all" />
-
       {error && (
         <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700">
           Erro a carregar KPIs: {error.message}
@@ -68,6 +66,10 @@ export default async function Page() {
           </Link>
         ))}
       </div>
+
+      <AgentSuggestionsRail surface="all" />
+
+
 
       {k && k.top_courses && k.top_courses.length > 0 && (
         <section className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6">
