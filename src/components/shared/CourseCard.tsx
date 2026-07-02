@@ -36,7 +36,7 @@ export function CourseCard({ course, ratingMin = 5, enrollMin = 25 }: { course: 
   return (
     <Link
       href={`/curso/${course.id}` as any}
-      className="group flex flex-col rounded-2xl overflow-hidden bg-white transition-all hover:shadow-[0_12px_32px_-12px_rgba(66,61,55,0.25)]"
+      className="group flex flex-col h-full rounded-2xl overflow-hidden bg-white transition-all hover:shadow-[0_12px_32px_-12px_rgba(66,61,55,0.25)]"
       style={{ border: `1px solid ${LINE}` }}
     >
       {/* imagem */}
@@ -65,7 +65,7 @@ export function CourseCard({ course, ratingMin = 5, enrollMin = 25 }: { course: 
             <span className="px-2 py-0.5 rounded-full text-[11px] font-medium" style={{ backgroundColor: 'rgb(209 250 229)', color: 'rgb(4 120 87)' }}>{t('new')}</span>
           )}
         </div>
-        <h3 className="font-display font-bold leading-snug" style={{ fontSize: '1.2rem', color: INK }}>{course.title}</h3>
+        <h3 className="font-display font-bold leading-snug line-clamp-2" style={{ fontSize: '1.2rem', color: INK }}>{course.title}</h3>
         {course.subtitle && <p className="mt-2 text-sm leading-relaxed line-clamp-2" style={{ color: INK2 }}>{course.subtitle}</p>}
         {showEnroll && (
           <div className="mt-3 flex items-center gap-3 text-xs" style={{ color: INK3 }}>

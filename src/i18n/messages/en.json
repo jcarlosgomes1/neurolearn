@@ -5115,5 +5115,8 @@
   "credits.reason.spend_talent_boost": "Talent profile boost",
   "credits.reason.talent_boost": "Talent profile boost",
   "credits.reason.expiry": "Credits expired",
-  "credits.reason.admin_adjust": "Platform adjustment"
+  "credits.reason.admin_adjust": "Platform adjustment",
+  "course_editor.hero_image": "Cover image",
+  "course_editor.hero_image_ph": "https://… image URL",
+  "course_editor.hero_image_hint": "Paste an image URL. Shown on the course card and catalog."
 }

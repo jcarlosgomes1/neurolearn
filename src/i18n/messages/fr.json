@@ -5115,5 +5115,8 @@
   "credits.reason.spend_talent_boost": "Mise en avant du profil talent",
   "credits.reason.talent_boost": "Mise en avant du profil talent",
   "credits.reason.expiry": "Crédits expirés",
-  "credits.reason.admin_adjust": "Ajustement de la plateforme"
+  "credits.reason.admin_adjust": "Ajustement de la plateforme",
+  "course_editor.hero_image": "Image de couverture",
+  "course_editor.hero_image_ph": "https://… URL de l’image",
+  "course_editor.hero_image_hint": "Colle l’URL d’une image. Affichée sur la carte du cours et le catalogue."
 }

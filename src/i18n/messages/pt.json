@@ -5115,5 +5115,8 @@
   "credits.reason.spend_talent_boost": "Destaque no perfil de talento",
   "credits.reason.talent_boost": "Destaque no perfil de talento",
   "credits.reason.expiry": "Créditos expirados",
-  "credits.reason.admin_adjust": "Ajuste da plataforma"
+  "credits.reason.admin_adjust": "Ajuste da plataforma",
+  "course_editor.hero_image": "Imagem de capa",
+  "course_editor.hero_image_ph": "https://… URL da imagem",
+  "course_editor.hero_image_hint": "Cola o endereço de uma imagem. Aparece no cartão do curso e no catálogo."
 }

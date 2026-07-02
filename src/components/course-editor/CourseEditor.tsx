@@ -26,6 +26,7 @@ interface Course {
   currency: string | null;
   published: boolean;
   archived?: boolean;
+  hero_image_url?: string | null;
   approval_status: string | null;
   course_type?: string | null;
   modules: Module[] | null;
@@ -77,6 +78,8 @@ export function CourseEditor({ courseId, backHref, mode = 'instructor' }: Props)
         emoji: course.emoji, level: course.level, category: course.category, price_cents: course.price_cents,
         modules: course.modules, topics: course.topics,
       });
+      // hero_image_url persistido por update direto (RLS admin/dono); handler agent-ops não o inclui
+      await createClient().from('nl_courses').update({ hero_image_url: course.hero_image_url || null }).eq('id', course.id);
       toast.success(t('saved'));
       setDirty(false);
     } catch (e: any) { toast.error(e.message); } finally { setSaving(false); }
@@ -187,6 +190,20 @@ export function CourseEditor({ courseId, backHref, mode = 'instructor' }: Props)
             <div>
               <label className="label">{t('description')}</label>
               <textarea className="input min-h-[120px]" value={course.description || ''} onChange={(e) => update({ description: e.target.value })} />
+            </div>
+            <div>
+              <label className="label">{t('hero_image')}</label>
+              <div className="flex gap-4 items-start">
+                <div className="w-40 shrink-0 aspect-[16/10] rounded-lg overflow-hidden border border-slate-200 bg-slate-50 flex items-center justify-center">
+                  {course.hero_image_url
+                    ? <img src={course.hero_image_url} alt="" className="w-full h-full object-cover" />
+                    : <span className="text-3xl">{course.emoji || '📘'}</span>}
+                </div>
+                <div className="flex-1">
+                  <input className="input" value={course.hero_image_url || ''} onChange={(e) => update({ hero_image_url: e.target.value })} placeholder={t('hero_image_ph')} />
+                  <p className="text-xs text-slate-500 mt-1">{t('hero_image_hint')}</p>
+                </div>
+              </div>
             </div>
             <div className="grid grid-cols-3 gap-4">
               <div>
