@@ -138,18 +138,26 @@ export function CourseEditor({ courseId, backHref, mode = 'instructor' }: Props)
   return (
     <div className="max-w-7xl mx-auto px-6 lg:px-8 py-8 space-y-6 animate-fade-in">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <div className="min-w-0">
-          <Link href={backHref as any} className="text-sm text-brand-600 hover:underline">{t('back')}</Link>
-          <h1 className="text-2xl font-bold text-slate-900 mt-1 truncate">{course.emoji || '📘'} {course.title || t('untitled')}</h1>
-          <div className="text-sm text-slate-500 mt-1 flex flex-wrap items-center gap-2">
-            <span className={`px-2 py-0.5 rounded-full text-xs ${course.published ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>{course.published ? t('published') : (course.approval_status || t('draft'))}</span>
-            {course.course_type && <><span>·</span><span className="text-xs">{course.course_type}</span></>}
-            <span>·</span><span>{t('modules', { n: (course.modules || []).length })}</span>
+        {!isAdmin ? (
+          <div className="min-w-0">
+            <Link href={backHref as any} className="text-sm text-brand-600 hover:underline">{t('back')}</Link>
+            <h1 className="text-2xl font-bold text-slate-900 mt-1 truncate">{course.emoji || '📘'} {course.title || t('untitled')}</h1>
+            <div className="text-sm text-slate-500 mt-1 flex flex-wrap items-center gap-2">
+              <span className={`px-2 py-0.5 rounded-full text-xs ${course.published ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>{course.published ? t('published') : (course.approval_status || t('draft'))}</span>
+              {course.course_type && <><span>·</span><span className="text-xs">{course.course_type}</span></>}
+              <span>·</span><span>{t('modules', { n: (course.modules || []).length })}</span>
+              <span>·</span><span>{t('lessons', { n: lessonCount })}</span>
+              {lessonCount > 0 && <><span>·</span><span>{t('with_content_count', { done: generatedCount, total: lessonCount })}</span></>}
+            </div>
+          </div>
+        ) : (
+          <div className="text-sm text-slate-500 flex flex-wrap items-center gap-2">
+            <span>{t('modules', { n: (course.modules || []).length })}</span>
             <span>·</span><span>{t('lessons', { n: lessonCount })}</span>
             {lessonCount > 0 && <><span>·</span><span>{t('with_content_count', { done: generatedCount, total: lessonCount })}</span></>}
           </div>
-        </div>
-        <div className="flex gap-2 flex-shrink-0 items-center">
+        )}
+        <div className="flex gap-2 flex-shrink-0 items-center ml-auto">
           {dirty && <span className="text-xs text-amber-600">{t('dirty')}</span>}
           {isAdmin && (
             <button onClick={togglePublished} className={course.published ? 'btn-secondary' : 'bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-5 py-2.5 rounded-lg text-sm'}>
