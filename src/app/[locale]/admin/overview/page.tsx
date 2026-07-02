@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
-import { PeekLauncher } from '@/components/peek/PeekLauncher';
+
 import { AgentSuggestionsRail } from '@/components/primitives/AgentSuggestionsRail';
 import { Link } from '@/i18n/routing';
 import { getLocale } from 'next-intl/server';
@@ -46,8 +46,6 @@ export default async function Page() {
         title="Visão geral"
         description="Estado da plataforma em tempo real. Clica em cada cartão para detalhes."
       />
-
-      <PeekLauncher />
 
       <AgentSuggestionsRail surface="all" />
 

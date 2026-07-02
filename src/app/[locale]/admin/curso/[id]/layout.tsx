@@ -4,7 +4,6 @@ import { createClient } from '@/lib/supabase/server';
 import { Link } from '@/i18n/routing';
 import { getTranslations } from 'next-intl/server';
 import { GraduationCap, ArrowLeft } from 'lucide-react';
-import { PreviewAs } from '@/components/primitives/PreviewAs';
 import { CourseTabs } from './CourseTabs';
 
 export default async function CourseWorkspaceLayout({ children, params }: { children: ReactNode; params: Promise<{ id: string; locale: string }> }) {
@@ -45,7 +44,6 @@ export default async function CourseWorkspaceLayout({ children, params }: { chil
                 }
               />
             </div>
-            {course && <PreviewAs courseId={course.id} />}
           </div>
           <div className="mt-3">
             <CourseTabs courseId={id} />
