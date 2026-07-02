@@ -5095,5 +5095,9 @@
   "course_editor.archived_title": "Course archived",
   "course_editor.archive_desc": "Removes the course from the catalog without deleting it. Enrolled students keep access to the content.",
   "course_editor.archive_btn": "Archive",
-  "course_editor.unarchive_btn": "Unarchive"
+  "course_editor.unarchive_btn": "Unarchive",
+  "admin_courses.btn_essential": "Make Essential",
+  "admin_courses.btn_essential_on": "Essential",
+  "admin_courses.toast_essential_on": "Course marked as Essential",
+  "admin_courses.toast_essential_off": "Essential removed"
 }

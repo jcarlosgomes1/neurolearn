@@ -5095,5 +5095,9 @@
   "course_editor.archived_title": "Cours archivé",
   "course_editor.archive_desc": "Retire le cours du catalogue sans le supprimer. Les élèves inscrits conservent l’accès au contenu.",
   "course_editor.archive_btn": "Archiver",
-  "course_editor.unarchive_btn": "Désarchiver"
+  "course_editor.unarchive_btn": "Désarchiver",
+  "admin_courses.btn_essential": "Rendre Essentiel",
+  "admin_courses.btn_essential_on": "Essentiel",
+  "admin_courses.toast_essential_on": "Cours marqué comme Essentiel",
+  "admin_courses.toast_essential_off": "Essentiel retiré"
 }

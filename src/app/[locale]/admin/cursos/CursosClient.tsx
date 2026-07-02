@@ -14,6 +14,7 @@ interface Course {
   category: string | null;
   level: string | null;
   course_type: string | null;
+  is_essential?: boolean;
   price_cents: number | null;
   currency: string | null;
   published: boolean;
@@ -64,7 +65,7 @@ export function CursosClient() {
     setLoading(true);
     const [{ data: cs }, { data: ts }] = await Promise.all([
       supabase.from('nl_courses')
-        .select('id, title, category, level, course_type, price_cents, currency, published, featured, archived, enrollments_count, rating_avg, rating_count, approval_status, instructor_id, created_at, hero_image_url')
+        .select('id, title, category, level, course_type, price_cents, currency, published, featured, archived, enrollments_count, rating_avg, rating_count, approval_status, instructor_id, created_at, hero_image_url, is_essential')
         .order('created_at', { ascending: false }),
       supabase.from('nl_course_translations').select('course_id, lang_code'),
     ]);
@@ -109,6 +110,18 @@ export function CursosClient() {
       return true;
     });
   }, [courses, statusFilter, categoryFilter, search]);
+
+  async function toggleEssential(c: Course) {
+    setSavingId(c.id);
+    const newVal = !c.is_essential;
+    const { data, error } = await supabase.rpc('nl_admin_course_set_essential', { p_course_id: c.id, p_on: newVal });
+    if (error || !(data as any)?.ok) { toast.error((data as any)?.error || error?.message || 'erro'); }
+    else {
+      toast.success(newVal ? t('admin_courses.toast_essential_on') : t('admin_courses.toast_essential_off'));
+      setCourses((prev) => prev.map((p) => p.id === c.id ? { ...p, is_essential: newVal } : p));
+    }
+    setSavingId(null);
+  }
 
   async function togglePublished(c: Course) {
     setSavingId(c.id);
@@ -266,6 +279,10 @@ export function CursosClient() {
                     <button onClick={() => toggleArchived(c)} disabled={savingId === c.id}
                       className="text-xs font-medium px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 disabled:opacity-50">
                       {c.archived ? t('admin_courses.btn_unarchive') : t('admin_courses.btn_archive')}
+                    </button>
+                    <button onClick={() => toggleEssential(c)} disabled={savingId === c.id}
+                      className={`text-xs font-medium px-3 py-1.5 rounded-lg ${c.is_essential ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'} disabled:opacity-50`}>
+                      {c.is_essential ? `✓ ${t('admin_courses.btn_essential_on')}` : t('admin_courses.btn_essential')}
                     </button>
                     <Link href={`/admin/curso/${c.id}/editar` as any} className="text-xs font-medium px-3 py-1.5 rounded-lg bg-brand-600 text-white hover:bg-brand-700">
                       {t('admin_courses.col_edit')}

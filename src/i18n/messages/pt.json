@@ -5095,5 +5095,9 @@
   "course_editor.archived_title": "Curso arquivado",
   "course_editor.archive_desc": "Retira o curso da montra sem o apagar. Os alunos inscritos mantêm o acesso ao conteúdo.",
   "course_editor.archive_btn": "Arquivar",
-  "course_editor.unarchive_btn": "Desarquivar"
+  "course_editor.unarchive_btn": "Desarquivar",
+  "admin_courses.btn_essential": "Tornar Essential",
+  "admin_courses.btn_essential_on": "Essential",
+  "admin_courses.toast_essential_on": "Curso marcado como Essential",
+  "admin_courses.toast_essential_off": "Essential removido"
 }
