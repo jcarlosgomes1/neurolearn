@@ -188,7 +188,7 @@ export function CatalogClient({ courses, cats = [], initialCat = 'all', ratingMi
       ) : (
         <>
           <p className="text-sm text-slate-500 mb-5 sm:mb-6">{t('catalog.count_available', { count: filtered.length })}</p>
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-5" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
             {filtered.map((c) => <CourseCard key={c.id} course={c as any} ratingMin={ratingMin} enrollMin={enrollMin} />)}
           </div>
         </>

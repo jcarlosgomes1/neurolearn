@@ -43,7 +43,7 @@ export default async function EssentialsPage({ params }: { params: Promise<{ loc
               </div>
             </div>
           ) : (
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-5" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
               {tracks.map((tk) => <CourseCard key={tk.id} course={tk} />)}
             </div>
           )}
